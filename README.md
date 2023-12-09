@@ -3,7 +3,7 @@
 
 <img src="https://i.imgur.com/VQJ3ZNe.png"/>
 
-Named after the famous scientist who posed one variation of the Brachistochrone problem, *Galileo* is an efficient optimal control that uses Gauss-Legendre Pseudospectral Collocation to solve the switched systems problem for legged robots.
+Named after the famous scientist who posed one variation of the Brachistochrone problem, *Galileo* is an efficient optimal control framework that uses Gauss-Legendre Pseudospectral Collocation to solve the switched systems problem for legged robots.
 
 Features:  
 

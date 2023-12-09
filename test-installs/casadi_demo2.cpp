@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
   // Degree of interpolating polynomial
-  int d = 3;
+  int d = 2;
 
   // if (argc > 1) {
   //   d = std::atoi(argv[1]);
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   Function f("f", {x, u}, {xdot, L});
 
   // Control discretization
-  int N = 1000; // number of control intervals
+  int N = 2; // number of control intervals
   double h = T / N;
 
   // Variables for a single collocation interval

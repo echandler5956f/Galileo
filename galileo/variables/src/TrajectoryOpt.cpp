@@ -34,7 +34,7 @@ namespace acro
             printf("Starting\n");
             for (std::size_t i = 0; i < 1; ++i)
             {
-                auto ps = PseudospectralSegment(d, 1, 0.2, this->state_indices, this->Fint);
+                auto ps = PseudospectralSegment(d, 2, 0.5, this->state_indices, this->Fint);
                 ps.initialize_knot_segments(prev_final_state);
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
                 std::vector<std::shared_ptr<ConstraintData>> G;
@@ -46,10 +46,10 @@ namespace acro
                 ps.fill_times(this->all_times);
                 if (i == 0)
                 {
-                    // auto curr_initial_state = ps.get_initial_state();
-                    // this->g.push_back(prev_final_state - curr_initial_state);
-                    // this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end());
-                    // this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end());
+                    auto curr_initial_state = ps.get_initial_state();
+                    this->g.push_back(prev_final_state - curr_initial_state);
+                    this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end());
+                    this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end());
                 }
                 else if (i > 0)
                 {

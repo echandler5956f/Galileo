@@ -17,7 +17,7 @@ namespace acro
              * @brief Construct a new States object
              *
              */
-            States() {}
+            States() {this->nu = 1; this->ndx = 2; this->nx = 2;}
 
             /**
              * @brief Construct a new States object
