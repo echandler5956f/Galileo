@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<robot name="huron" 
+    xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="pi" value="3.141592654"/>
+    <!-- Import xacro file -->
+    <xacro:include filename="resources/urdf/materials.xacro" />
+    <xacro:include filename="resources/urdf/huron_visuals.xacro" />
+    <xacro:include filename="resources/urdf/huron_inertia.xacro" />
+    <xacro:include filename="resources/urdf/huron_transmissions.xacro" />
+    <xacro:include filename="resources/urdf/huron_right_leg.xacro" />
+    <xacro:include filename="resources/urdf/huron_left_leg.xacro" />
+    <xacro:include filename="resources/urdf/huron_gazebo.xacro" />
+    <!-- Used for fixing robot -->
+    <!--<link name="world"></link> 
+    <joint name="world_fixed" type="fixed">
+        <origin xyz="0 0 0.764" rpy="0 0 0"/>
+        <parent link="world"/>
+        <child link="base_link"/>
+    </joint> -->
+    <link name="base_link"></link>
+    <joint name="base_fixed" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="base_footprint"/>
+    </joint>
+    <!-- base_link -->
+    <link name="base_footprint">
+        <visual>
+            <xacro:insert_mesh_base_link />
+        </visual>
+        <collision>
+            <xacro:insert_mesh_base_link />
+        </collision>
+        <inertial>
+            <xacro:insert_inertia_base_link />
+        </inertial>
+    </link>
+
+    <!-- Battery -->
+    <link name="battery_link">
+        <visual>
+            <xacro:insert_mesh_battery_link />
+        </visual>
+        <collision>
+            <xacro:insert_mesh_battery_link />
+        </collision>
+        <inertial>
+            <xacro:insert_inertia_battery_link />
+        </inertial>
+    </link>
+    <joint name="battery_fixed" type="fixed">
+        <origin xyz="0 0 0.0895" rpy="0 0 0"/>
+        <parent link="base_footprint"/>
+        <child link="battery_link"/>
+    </joint>
+
+    <!-- Upper body visualization -->
+    <link name="upper_body_link">
+        <visual>
+            <xacro:insert_mesh_upper_body_link />
+        </visual>
+        <collision>
+            <xacro:insert_mesh_upper_body_link />
+        </collision>
+        <inertial>
+            <xacro:insert_inertia_upper_body_link />
+        </inertial>
+    </link>
+    <joint name="upper_body_fixed" type="fixed">
+        <origin xyz="0 0 0.1505" rpy="0 0 0"/>
+        <parent link="battery_link"/>
+        <child link="upper_body_link"/>
+    </joint>
+
+    <!-- imu joint -->
+    <joint name="imu_fixed" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="base_footprint"/>
+        <child link="imu_link"/>
+    </joint>
+    <link name="imu_link"></link>
+    
+    <!-- leg link -->
+    <xacro:huron_right_leg parent="base_footprint" dxl_effort="1000000" dxl_speed="3000"/>
+    <xacro:huron_left_leg parent="base_footprint" dxl_effort="1000000" dxl_speed="3000"/>
+</robot>
