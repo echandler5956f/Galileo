@@ -12,25 +12,56 @@ namespace acro
         class LeggedBody : public pinocchio::Model
         {
         public:
+            /**
+             * @brief Construct a new Legged Body object
+             *
+             */
             LeggedBody() : pinocchio::Model() {}
 
-            // Provide the string IDs that correspond to the pinocchio end effector frames.
+            /**
+             * @brief Provide the string IDs that correspond to the pinocchio end effector frames.
+             *
+             * @param ee_names
+             */
             void setEndEffectors(const std::vector<std::string> &ee_names);
 
-            // Generate combinations of contacts.
+            /**
+             * @brief Generate combinations of contacts.
+             *
+             */
             void GenerateContactCombination();
 
-            // ContactCombination getContactCombination(const std::string&);
-
-            // Referenced by binary value instead
+            /**
+             * @brief Get the Contact Combination object from a binary combination mask
+             *
+             * @param contact_mask
+             * @return contact::ContactCombination
+             */
             contact::ContactCombination getContactCombination(int contact_mask) { return contact_combinations_[contact_mask]; }
 
         private:
+            /**
+             * @brief
+             *
+             */
             std::vector<std::string> ee_names_;
-            // Contact combination "1 2 3", where ee's 1,2, and 3 are in contact is at index with
-            // a binary value of (1110) for a system with 4 EEs
+
+            /**
+             * @brief Contact combination "1 2 3", where ee's 1,2, and 3 are in contact is at index with a binary value of (1110) for a system with 4 EEs
+             *
+             */
             std::vector<contact::ContactCombination> contact_combinations_;
+
+            /**
+             * @brief
+             *
+             */
             contact::RobotEndEffectors ees_;
+
+            /**
+             * @brief
+             *
+             */
             int num_end_effectors_;
         };
     }

@@ -11,7 +11,7 @@ void acro::model::LeggedBody::setEndEffectors(const std::vector<std::string> &ee
         std::shared_ptr<contact::EndEffector> ee_obj_ptr = std::make_shared<contact::EndEffector>();
         ee_obj_ptr->frame_name = ee_name;
         ee_obj_ptr->frame_id = getFrameId(ee_name);
-        
+
         // todo : use the jacobian from the body frame to find the actual DOFs of this frame.
         ee_obj_ptr->is_6d = false;
 
@@ -48,8 +48,8 @@ void acro::model::LeggedBody::GenerateContactCombination()
         for (int i = 0; i < num_end_effectors_; i++)
         {
             bool ee_i_is_in_contact = (bit_mask & binary_value_combination_bits).any();
-            //bit shift
-            bit_mask<<=1;
+            // bit shift
+            bit_mask <<= 1;
             new_contact_combination[ee_names_[i]] = ee_i_is_in_contact;
         }
         contact_combinations[binary_value_combination] = new_contact_combination;
