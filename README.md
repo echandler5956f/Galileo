@@ -6,6 +6,7 @@
 Named after the famous scientist who posed one variation of the Brachistochrone problem, *Galileo* is an efficient optimal control that uses Gauss-Legendre Pseudospectral Collocation to solve the switched systems problem for legged robots.
 
 Features:  
+
 :heavy_check_mark: Intuitive and efficient formulation of variables, cost and constraints using [casadi].   
 
 :heavy_check_mark: Solver interface nables using the high-performance solvers [Ipopt] and [Snopt].  
@@ -26,21 +27,20 @@ Features:
   <a href="#publications">Publications</a> •
   <a href="#authors">Authors</a>
 </p>
-
 <br/>
 
 ## Install
 
-### From source
+### From source with [CMake]
 
 1. Install Galileo's mandatory dependencies:
-   * [casadi](https://github.com/casadi/casadi)
-   * [pinocchio](https://github.com/stack-of-tasks/pinocchio)
-   * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
-   * [Boost](https://www.boost.org/)
+   * [casadi]
+   * [pinocchio]
+   * [Eigen]
+   * [Boost]
 
 2. (optional) Install Galileo's optional dependencies
-   * [Ipopt](https://github.com/coin-or/Ipopt)
+   * [Ipopt]
 
 We created a `test-installs` folder with some simple scripts to test your `casadi` + `pinocchio` install. Be sure to take a look if you are running into trouble.
 
@@ -91,3 +91,15 @@ Coming soon (ICRA 2025?).
 <!-- - Nikhil Gangaram -->
 <!-- - Dheeraj Bhogisetty -->
 <!-- - Nhi Nguyen -->
+
+[casadi]: https://github.com/casadi/casadi
+[pinocchio]: https://github.com/stack-of-tasks/pinocchio
+[CMake]: https://cmake.org/cmake/help/v3.0
+[ROS]: http://www.ros.org
+[Ipopt]: https://projects.coin-or.org/Ipopt
+[Snopt]: http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.html
+[rviz]: http://wiki.ros.org/rviz
+[catkin]: http://wiki.ros.org/catkin
+[catkin tools]: http://catkin-tools.readthedocs.org
+[Eigen]: http://eigen.tuxfamily.org
+[Boost]: https://www.boost.org
