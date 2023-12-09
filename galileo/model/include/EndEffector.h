@@ -1,11 +1,11 @@
 #pragma once
 
+#include "EnvironmentSurfaces.h"
+#include <pinocchio/multibody/fwd.hpp>
 #include <string>
 #include <memory>
 #include <map>
-#include "EnvironmentSurfaces.h"
 
-#include <pinocchio/multibody/fwd.hpp>
 
 namespace acro
 {

@@ -1,12 +1,12 @@
 #pragma once
 
+#include "States.h"
+#include "Constraint.h"
+#include <Eigen/Sparse>
 #include <vector>
 #include <string>
 #include <cassert>
-#include "States.h"
-#include "Constraint.h"
 #include <bits/stdc++.h>
-#include <Eigen/Sparse>
 
 using namespace casadi;
 

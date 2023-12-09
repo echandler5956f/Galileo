@@ -1,11 +1,10 @@
 #pragma once
 
 #include "EndEffector.h"
-
 #include <pinocchio/multibody/model.hpp>
 #include <vector>
-
 #include <bitset>
+
 namespace acro
 {
     namespace model

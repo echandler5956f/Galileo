@@ -1,4 +1,5 @@
 #include "ContactSequence.h"
+
 namespace acro
 {
     namespace contact

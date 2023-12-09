@@ -35,7 +35,7 @@ namespace acro
                 NOT_IN_DT
             };
 
-            ContactSequence(int num_end_effectors);
+            ContactSequence(int num_end_effectors) : num_end_effectors_(num_end_effectors){}
 
             // Does the phase timing change? if so, then the _t0_offset and dt_ need to change.
             struct Phase

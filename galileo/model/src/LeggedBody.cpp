@@ -8,15 +8,10 @@ void acro::model::LeggedBody::setEndEffectors(const std::vector<std::string> &ee
         auto &ee_name = ee_names[i];
         assert(existFrame(ee_name));
         // Throw an error otherwise.
-        std::cout << "existFrame" << std::endl;
-
         std::shared_ptr<contact::EndEffector> ee_obj_ptr = std::make_shared<contact::EndEffector>();
-        std::cout << "std::shared_ptr<contact::EndEffector> ee_obj_ptr" << std::endl;
         ee_obj_ptr->frame_name = ee_name;
-        std::cout << "ee_obj_ptr->frame_name = ee_name" << std::endl;
         ee_obj_ptr->frame_id = getFrameId(ee_name);
-        std::cout << "getFrameId(ee_name)" << std::endl;
-
+        
         // todo : use the jacobian from the body frame to find the actual DOFs of this frame.
         ee_obj_ptr->is_6d = false;
 
