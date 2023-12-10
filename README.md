@@ -3,13 +3,16 @@
 
 <img src="https://i.imgur.com/VQJ3ZNe.png"/>
 
+[![Documentation](https://img.shields.io/badge/docs-generate-brightgreen.svg)](https://github.com/echandler5956f/Galileo/tree/main/docs)
+[![License BSD-3-Clause](https://img.shields.io/badge/license-MIT-blue.svg)](https://mit-license.org/)
+
 Named after the famous scientist who posed one variation of the Brachistochrone problem, *Galileo* is an efficient optimal control framework that uses Gauss-Legendre Pseudospectral Collocation to solve the switched systems problem for legged robots.
 
 Features:  
 
 :heavy_check_mark: Intuitive and efficient formulation of variables, cost and constraints using [casadi].   
 
-:heavy_check_mark: Solver interface nables using the high-performance solvers [Ipopt] and [Snopt].  
+:heavy_check_mark: Solver interface enables using the high-performance solvers [Ipopt] and [Snopt].  
 
 :heavy_check_mark: [pinocchio] makes custom robot integration as simple as switching the URDF.
 
@@ -71,7 +74,7 @@ We are a small team of WPI students with no lab and no funding. We are open to c
 
 Coming soon (ICRA 2025?).
 
-### :copyright: Credits
+### Credits
 
 ### Written by 
 
