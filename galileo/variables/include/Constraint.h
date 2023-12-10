@@ -37,6 +37,10 @@ namespace acro
             casadi::Function Fint;
 
 
+            /**
+             * @brief 
+             * 
+             */
             casadi::Function F;
 
             /**
@@ -58,11 +62,18 @@ namespace acro
          */
         struct ConstraintData
         {
+
             /**
-             * @brief 
+             * @brief If global is true, use a map to apply the constraints across all knot points AND collocation points, and do not check flags
              * 
              */
-            Eigen::VectorXi flags;
+            bool global;
+
+            /**
+             * @brief If global is false, apply the constraints at these knot points (NOT collocation points) indices
+             * 
+             */
+            Eigen::VectorXi apply_at;
 
             /**
              * @brief 
@@ -80,7 +91,7 @@ namespace acro
              * @brief 
              * 
              */
-            casadi::Function F;
+            casadi::Function G;
         };
 
         /**
@@ -109,21 +120,21 @@ namespace acro
              */
             void BuildConstraint(const ProblemData &problem_data, ConstraintData &constraint_data)
             {
-                CreateFlags(problem_data, constraint_data.flags);
+                CreateApplyAt(problem_data, constraint_data.apply_at);
                 CreateBounds(problem_data, constraint_data.upper_bound, constraint_data.lower_bound);
-                CreateFunction(problem_data, constraint_data.F);
+                CreateFunction(problem_data, constraint_data.G);
             }
 
             /**
-             * @brief Generate flags for each collocation point
+             * @brief Generate flags for each knot point
              * 
              * @param problem_data 
-             * @param flags 
+             * @param apply_at 
              */
-            virtual void CreateFlags(const ProblemData &problem_data, Eigen::VectorXi &flags) const;
+            virtual void CreateApplyAt(const ProblemData &problem_data, Eigen::VectorXi &apply_at) const;
 
             /**
-             * @brief Generate bounds for a vector of concatinated collocation points
+             * @brief Generate bounds for a vector of points
              * 
              * @param problem_data 
              * @param upper_bound 
@@ -132,12 +143,12 @@ namespace acro
             virtual void CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
 
             /**
-             * @brief Generate a function to evaluate each collocation point.
+             * @brief Generate a function to evaluate each point
              * 
              * @param problem_data 
-             * @param F 
+             * @param G
              */
-            virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &F) const;
+            virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &G) const;
         };
     };
 

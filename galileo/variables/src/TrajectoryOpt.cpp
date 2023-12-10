@@ -56,18 +56,18 @@ namespace acro
                     curr_initial_state_deviant = ps.get_initial_state_deviant();
                     /*For general jump map functions you can use the following syntax:*/
                     // g.push_back(jump_map_function(casadi::SXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
-                    // this->g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
-                    // this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end()-1);
-                    // this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end()-1);
+                    this->g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
+                    this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end()-1);
+                    this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end()-1);
                 }
                 prev_final_state = ps.get_final_state();
                 prev_final_state_deviant = ps.get_final_state_deviant();
-                // if (i == 2)
-                // {
-                //     /*Add terminal cost*/
-                //     this->J += this->Phi(casadi::SXVector{prev_final_state}).at(0);
-                // }
-                // ++i;
+                if (i == 2)
+                {
+                    /*Add terminal cost*/
+                    this->J += this->Phi(casadi::SXVector{prev_final_state}).at(0);
+                }
+                ++i;
             }
             printf("Finished init\n");
         }

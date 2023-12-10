@@ -205,31 +205,47 @@ namespace acro
                      this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0);
             auto tmp = N;
             std::vector<tuple_size_t> ranges;
-            // for (int i = 0; i < G.size(); ++i)
-            // {
-            //     auto g_data = G[i];
-            //     SXVector tmp_map = g_data->F.map(this->dX_poly.d, "serial")(SXVector{vertcat(tmp_x), vertcat(u_at_c)});
-            //     auto tmap = Function("fg",
-            //                          SXVector{this->X0, vertcat(tmp_dx), vertcat(this->Uc)},
-            //                          SXVector{vertcat(tmp_map)});
-            //     this->general_constraint_maps.push_back(tmap);
-            //     ranges.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
-            //     N += tmap.size1_out(0) * tmap.size2_out(0);
-            // }
+            for (int i = 0; i < G.size(); ++i)
+            {
+                auto g_data = G[i];
+                if (g_data->global) {
+                    /*TODO: Add assertions to check the inputs and outputs of F here!!!*/
+
+                    SXVector tmp_map = g_data->G.map(this->dX_poly.d, "serial")(SXVector{vertcat(tmp_x), vertcat(u_at_c)});
+                    auto tmap = Function("fg",
+                                        SXVector{this->X0, vertcat(tmp_dx), vertcat(this->Uc)},
+                                        SXVector{vertcat(tmp_map)});
+                    this->general_constraint_maps.push_back(tmap);
+                    ranges.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
+                    N += tmap.size1_out(0) * tmap.size2_out(0);
+                }
+                else {
+                    /*TODO: Add assertions to check the inputs and outputs of F here!!!*/
+                    for (int k = 0; k < g_data->apply_at.rows(); ++k)
+                    {
+                        
+                    }
+                }
+            }
 
             this->general_lb.resize(N, 1);
             this->general_ub.resize(N, 1);
             this->general_lb(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
             this->general_ub(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
 
-            // for (int i = 0; i < G.size(); ++i)
-            // {
-            //     auto g_data = G[i];
-            //     this->general_lb(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
-            //         vertcat(g_data->lower_bound.map(this->knot_num, "serial")(this->times));
-            //     this->general_ub(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
-            //         vertcat(g_data->upper_bound.map(this->knot_num, "serial")(this->times));
-            // }
+            for (int i = 0; i < G.size(); ++i)
+            {
+                auto g_data = G[i];
+                if (g_data->global) {
+                    this->general_lb(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
+                        vertcat(g_data->lower_bound.map(this->knot_num, "serial")(this->times));
+                    this->general_ub(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
+                        vertcat(g_data->upper_bound.map(this->knot_num, "serial")(this->times));
+                }
+                else {
+                    
+                }
+            }
         }
 
         void PseudospectralSegment::evaluate_expression_graph(SX &J0, SXVector &g)
@@ -258,11 +274,11 @@ namespace acro
             result.push_back(reshape(xf_con_mat, xf_con_mat.size1() * xf_con_mat.size2(), 1) -
                              dxs_offset);
 
-            // for (std::size_t i = 0; i < this->general_constraint_maps.size(); ++i)
-            // {
-            //     auto g_con_mat = this->general_constraint_maps[i](SXVector{xs, dxcs, dxs, us}).at(0);
-            //     result.push_back(reshape(g_con_mat, g_con_mat.size1() * g_con_mat.size2(), 1));
-            // }
+            for (std::size_t i = 0; i < this->general_constraint_maps.size(); ++i)
+            {
+                auto g_con_mat = this->general_constraint_maps[i](SXVector{xs, dxcs, dxs, us}).at(0);
+                result.push_back(reshape(g_con_mat, g_con_mat.size1() * g_con_mat.size2(), 1));
+            }
 
             // Worried about aliasing here
             SX cost = this->q_cost_fold(SXVector{J0, xs, dxcs, dxs, us}).at(0);
