@@ -28,7 +28,7 @@ Features:
   <a href="#develop">Develop</a> •
   <a href="#contribute">Contribute</a> •
   <a href="#publications">Publications</a> •
-  <a href="#authors">Authors</a>
+  <a href="#credits">Credits</a>
 </p>
 <br/>
 
@@ -64,7 +64,7 @@ to view the doxygen output.
 
 ## Develop
 
-Right now, our main development goal is to get the framework to solve general trajectory optimization problems with fixed contact sequences in an MPC context. This is essentially the same problem that OCS2 and Crocoddyl solve. Our hope is that using Pseudospectral Collocation will yield faster convergence, and that tha Casadi + Pinocchio pipeline will result in smaller, more digestible code, which is easier to expand upon than the bulky frameworks mentioned prior.
+Right now, our main development goal is to get the framework to solve general trajectory optimization problems with fixed contact sequences in an MPC context. This is essentially the same problem that OCS2 and Crocoddyl solve. Our hope is that using Pseudospectral Collocation will yield faster convergence, and that the Casadi + Pinocchio pipeline will result in smaller, more digestible code, which is easier to expand upon than the bulky frameworks mentioned prior.
 
 ## Contribute
 
@@ -74,7 +74,7 @@ We are a small team of WPI students with no lab and no funding. We are open to c
 
 Coming soon (ICRA 2025?).
 
-### Credits
+## Credits
 
 ### Written by 
 
