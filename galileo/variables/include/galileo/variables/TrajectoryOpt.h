@@ -12,6 +12,7 @@ namespace galileo
             initializing the finite elements, and optimizing the trajectory.
          *
          */
+        template<class ProblemData>
         class TrajectoryOpt
         {
         public:

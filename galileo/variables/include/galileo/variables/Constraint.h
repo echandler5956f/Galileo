@@ -12,7 +12,7 @@ namespace galileo
          * @brief Problem data for the trajectory optimization problem.
          * 
          */
-        struct ProblemData
+        struct GeneralProblemData
         {
             /**
              * @brief Construct a new Problem Data object.
@@ -22,7 +22,7 @@ namespace galileo
              * @param L_ 
              * @param Phi_ 
              */
-            ProblemData(casadi::Function Fint_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
+            GeneralProblemData(casadi::Function Fint_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
             {
                 this->Fint = Fint_;
                 this->F = F_;
@@ -98,6 +98,7 @@ namespace galileo
          * @brief 
          * 
          */
+        template <class ProblemData>
         class ConstraintBuilder
         {
             /**
@@ -131,7 +132,7 @@ namespace galileo
              * @param problem_data 
              * @param apply_at 
              */
-            virtual void CreateApplyAt(const ProblemData &problem_data, Eigen::VectorXi &apply_at) const;
+            virtual void CreateApplyAt(const ProblemData &problem_data, Eigen::VectorXi &apply_at) const = 0;
 
             /**
              * @brief Generate bounds for a vector of points
@@ -140,7 +141,7 @@ namespace galileo
              * @param upper_bound 
              * @param lower_bound 
              */
-            virtual void CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
+            virtual void CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
 
             /**
              * @brief Generate a function to evaluate each point
@@ -148,7 +149,7 @@ namespace galileo
              * @param problem_data 
              * @param G
              */
-            virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &G) const;
+            virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &G) const = 0;
         };
     };
 
