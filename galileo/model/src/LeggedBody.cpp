@@ -48,9 +48,10 @@ void acro::model::LeggedBody::GenerateContactCombination()
         for (int i = 0; i < num_end_effectors_; i++)
         {
             bool ee_i_is_in_contact = (bit_mask & binary_value_combination_bits).any();
-            // bit shift
+            // bit shift. Since we are shifting to the left,
+            // we are considering the end effectors from "right to left", or from the end of the list to the start.
             bit_mask <<= 1;
-            new_contact_combination[ee_names_[i]] = ee_i_is_in_contact;
+            new_contact_combination[ee_names_[num_end_effectors_ - i - 1]] = ee_i_is_in_contact;
         }
         contact_combinations[binary_value_combination] = new_contact_combination;
     }

@@ -35,7 +35,7 @@ typedef ADModel::TangentVectorType TangentVectorAD;
 
 const std::string huron_location = "resources/urdf/huron_cheat.urdf";
 
-int main(int argc, char **argv)
+int main()
 {
     double q0[] = {
         0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,

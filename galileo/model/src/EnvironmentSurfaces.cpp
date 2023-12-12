@@ -56,24 +56,24 @@ namespace acro
             c_center.tail(1)[0] = surface_data.origin_z_offset;
         }
 
-        Eigen::VectorXd CalculateChebyshevCenter(const Eigen::MatrixXd &A, const Eigen::VectorXd &b)
-        {
-            // min (-r)
-            // r (scalar)
-            // d in Rn
-            //  s.t
-            //       (r * a_i / ||a_i||) + d  \leq  ||a_i|| * b
-            // where a_i = A[i,:] .transpose()
+        // Eigen::VectorXd CalculateCenter(const Eigen::MatrixXd &A, const Eigen::VectorXd &b)
+        // {
+        //     // min (-r)
+        //     // r (scalar)
+        //     // d in Rn
+        //     //  s.t
+        //     //       (r * a_i / ||a_i||) + d  \leq  ||a_i|| * b
+        //     // where a_i = A[i,:] .transpose()
 
-            // or
+        //     // or
 
-            // min [[-1] [0 0 ... 0]] * x
-            // x = [r;d]
-            //  s.t [normalized(a_i) I_(nxn)] * r \leq  b~
-            // where b~_i = b_i * ||a_i||
+        //     // min [[-1] [0 0 ... 0]] * x
+        //     // x = [r;d]
+        //     //  s.t [normalized(a_i) I_(nxn)] * r \leq  b~
+        //     // where b~_i = b_i * ||a_i||
 
-            // this is a linear program.
-        }
+        //     // this is a linear program.
+        // }
 
         std::vector<int> EnvironmentSurfaces::getSurfacesUnder(const Eigen::Vector2d &ee_pos) const
         {

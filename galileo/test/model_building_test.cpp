@@ -57,6 +57,7 @@ int main(int argc, char**argv)
     contact::ContactMode initial_mode;
     initial_mode.combination_definition = bot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
+    
 
     
     contact::ContactMode intermediate_mode;
@@ -91,40 +92,40 @@ int main(int argc, char**argv)
     
     std::cout << "phase 0 time -- " << phase_0.time_value << std::endl;
 
-    // std::cout << "phase 0 contacts -- ";
-    // for(auto& end_effector_contact : phase_0.mode.combination_definition){
-    //     if(end_effector_contact.second){
-    //        std::cout << end_effector_contact.first << ",  ";
-    //     }
-    // }
-    // std::cout << std::endl;
+    std::cout << "phase 0 contacts -- ";
+    for(auto& end_effector_contact : phase_0.mode.combination_definition){
+        if(end_effector_contact.second){
+           std::cout << end_effector_contact.first << ",  ";
+        }
+    }
+    std::cout << std::endl;
 
-    // contact::ContactSequence::Phase phase_1; 
-    // problem_setup.contact_sequence->getPhaseAtTime(phase_0.time_value + 0.01, phase_1, error_status_0);
+    contact::ContactSequence::Phase phase_1; 
+    problem_setup.contact_sequence->getPhaseAtTime(phase_0.time_value + 0.01, phase_1, error_status_0);
         
-    // std::cout << "phase 1 time -- " << phase_1.time_value << std::endl;
+    std::cout << "phase 1 time -- " << phase_1.time_value << std::endl;
 
-    // std::cout << "phase 1 contacts -- ";
-    // for(auto& end_effector_contact : phase_1.mode.combination_definition){
-    //     if(end_effector_contact.second){
-    //        std::cout << end_effector_contact.first << ",  ";
-    //     }
-    // }
-    // std::cout << std::endl;
+    std::cout << "phase 1 contacts -- ";
+    for(auto& end_effector_contact : phase_1.mode.combination_definition){
+        if(end_effector_contact.second){
+           std::cout << end_effector_contact.first << ",  ";
+        }
+    }
+    std::cout << std::endl;
 
 
-    // contact::ContactSequence::Phase phase_2; 
-    // problem_setup.contact_sequence->getPhaseAtTime(phase_0.time_value + phase_1.time_value + 0.01, phase_2, error_status_0);
+    contact::ContactSequence::Phase phase_2; 
+    problem_setup.contact_sequence->getPhaseAtTime(phase_0.time_value + phase_1.time_value + 0.01, phase_2, error_status_0);
         
-    // std::cout << "phase 1 time -- " << phase_2.time_value << std::endl;
+    std::cout << "phase 2 time -- " << phase_2.time_value << std::endl;
 
-    // std::cout << "phase 1 contacts -- ";
-    // for(auto& end_effector_contact : phase_2.mode.combination_definition){
-    //     if(end_effector_contact.second){
-    //        std::cout << end_effector_contact.first << ",  ";
-    //     }
-    // }
-    // std::cout << std::endl;
+    std::cout << "phase 2 contacts -- ";
+    for(auto& end_effector_contact : phase_2.mode.combination_definition){
+        if(end_effector_contact.second){
+           std::cout << end_effector_contact.first << ",  ";
+        }
+    }
+    std::cout << std::endl;
 
     return 0;
 }
