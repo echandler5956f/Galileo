@@ -74,10 +74,12 @@ namespace galileo
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
             assert(h_ > 0 && "h must be a positive duration");
             assert(Fint_.n_in() == 3 && "Fint must have 3 inputs");
-            
+            assert(Fint_.n_out() == 1 && "Fint must have 1 output");
+
             Fint_.assert_size_in(0, st_m_->nx, 1);
             Fint_.assert_size_in(1, st_m_->ndx, 1);
             Fint_.assert_size_in(2, 1, 1);
+            Fint_.assert_size_out(0, st_m_->nx, 1);
 
             this->knot_num = knot_num_;
             this->Fint = Fint_;
@@ -152,12 +154,18 @@ namespace galileo
         void PseudospectralSegment::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G)
         {
             assert(F.n_in() == 2 && "F must have 2 inputs");
-            F.assert_size_in(0, this->st_m->nx, 1);
-            F.assert_size_in(1, this->st_m->nu, 1);
+            assert(F.n_out() == 1 && "F must have 1 output");
 
             assert(L.n_in() == 2 && "L must have 2 inputs");
+            assert(L.n_out() == 1 && "L must have 1 output");
+
+            F.assert_size_in(0, this->st_m->nx, 1);
+            F.assert_size_in(1, this->st_m->nu, 1);
+            F.assert_size_out(0, this->st_m->nx, 1);
+
             L.assert_size_in(0, this->st_m->nx, 1);
             L.assert_size_in(1, this->st_m->nu, 1);
+            L.assert_size_out(0, 1, 1);
 
             /*Collocation equations*/
             SXVector eq;
