@@ -9,7 +9,7 @@ namespace galileo
     {
 
         /**
-         * @brief
+         * @brief A struct for holding the contact mode of the robot.
          *
          */
         struct ContactMode
@@ -20,24 +20,24 @@ namespace galileo
              */
             enum ContactModeValidity
             {
-                VALID,
-                SURFACE_NOT_DEFINED,
-                DIFFERING_SIZES
+                VALID,               // No error
+                SURFACE_NOT_DEFINED, // The surface is not defined
+                DIFFERING_SIZES      // The sizes of the contact combination and contact surfaces are different
             };
             /**
-             * @brief Maps EE's to flags (true = in contact)
+             * @brief Maps EE's to flags (true = in contact).
              *
              */
             ContactCombination combination_definition;
 
             /**
-             * @brief Gets which surfaces the EEs are in contact with
+             * @brief Gets which surfaces the EEs are in contact with.
              *
              */
             std::vector<environment::SurfaceID> contact_surfaces;
 
             /**
-             * @brief Makes the combination valid. If an EE is not in contact, it makes the corresponding contact surface NO_SURFACE
+             * @brief Makes the combination valid. If an EE is not in contact, it makes the corresponding contact surface NO_SURFACE.
              *
              * @param validity Error code
              */
@@ -45,18 +45,28 @@ namespace galileo
         };
 
         /**
-         * @brief Class for holding simple contact sequence metadata
+         * @brief Class for holding simple contact sequence metadata.
          *
          */
         class ContactSequence
         {
         public:
+            /**
+             * @brief Error codes.
+             *
+             */
             enum CONTACT_SEQUENCE_ERROR
             {
-                OK,
-                NOT_IN_DT
+
+                OK,       // No error
+                NOT_IN_DT // The time is out of bounds
             };
 
+            /**
+             * @brief Construct a new Contact Sequence object.
+             *
+             * @param num_end_effectors The number of end effectors in the contact sequence.
+             */
             ContactSequence(int num_end_effectors) : num_end_effectors_(num_end_effectors) {}
 
             /**
@@ -66,120 +76,132 @@ namespace galileo
             struct Phase
             {
                 /**
-                 * @brief Contains the basic info about the current contact configuration
+                 * @brief Contains the basic info about the current contact configuration.
                  *
                  */
                 ContactMode mode;
                 /**
-                 * @brief Number of knot points for which the phase applies over
+                 * @brief Number of knot points for which the phase applies over.
                  *
                  */
                 int knot_points = 1;
+
                 /**
-                 * @brief Duration of the phase
-                 *
+                 * @brief The time value for the phase.
                  */
                 double time_value = 1;
             };
 
             /**
-             * @brief
+             * @brief Adds a new phase to the contact sequence.
              *
-             * @param mode
-             * @param knot_points
-             * @param dt
-             * @return int
+             * This function adds a new phase to the contact sequence with the specified contact mode,
+             * number of knot points, and time step.
+             *
+             * @param mode The contact mode of the phase.
+             * @param knot_points The number of knot points in the phase.
+             * @param dt The time step between each knot point.
+             * @return The index of the newly added phase.
              */
             int addPhase(const ContactMode &mode, int knot_points, double dt);
 
             /**
-             * @brief Get the Phase Index At Time object
+             * @brief Get the phase index at a given time.
              *
-             * @param t
-             * @param error_status
-             * @return int
+             * This function returns the phase index at a given time in the contact sequence.
+             *
+             * @param t The time for which to retrieve the phase index.
+             * @param error_status A reference to a CONTACT_SEQUENCE_ERROR enum that will be updated with the error status.
+             * @return The phase index at the given time.
              */
             int getPhaseIndexAtTime(double t, CONTACT_SEQUENCE_ERROR &error_status) const;
 
             /**
-             * @brief Get the Phase Index At Knot object
+             * @brief Get the phase index at the specified knot index.
              *
-             * @param knot_idx
-             * @param error_status
-             * @return int
+             * This function returns the phase index corresponding to the given knot index.
+             *
+             * @param knot_idx The index of the knot.
+             * @param error_status The reference to the CONTACT_SEQUENCE_ERROR enum to store the error status.
+             * @return The phase index at the specified knot index.
              */
             int getPhaseIndexAtKnot(int knot_idx, CONTACT_SEQUENCE_ERROR &error_status) const;
 
             /**
-             * @brief Get the Phase object
+             * @brief Get the phase at the specified index.
              *
-             * @param index
-             * @return const ContactSequence::Phase
+             * @param index The index of the phase to retrieve.
+             * @return The phase at the specified index.
              */
             const ContactSequence::Phase getPhase(int index) const { return phase_sequence_[index]; }
 
             /**
-             * @brief Get the Phase At Time object
+             * @brief Get the phase at a given time.
              *
-             * @param t
-             * @param phase
-             * @param error_status
+             * This function retrieves the phase at a specified time.
+             *
+             * @param t The time at which to retrieve the phase.
+             * @param phase [out] The phase at the specified time.
+             * @param error_status [out] The error status of the operation.
              */
             void getPhaseAtTime(double t, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const;
 
             /**
-             * @brief Get the Phase At Knot object
+             * @brief Get the phase at a specific knot index.
              *
-             * @param knot_idx
-             * @param phase
-             * @param error_status
+             * This function retrieves the phase at the specified knot index.
+             *
+             * @param knot_idx The index of the knot.
+             * @param phase [out] The phase at the specified knot index.
+             * @param error_status [out] The error status of the operation.
              */
             void getPhaseAtKnot(int knot_idx, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const;
 
             /**
-             * @brief
+             * @brief Get the number of phases in the contact sequence.
              *
-             * @return int
+             * @return The number of phases.
              */
             int num_phases() const { return phase_sequence_.size(); }
 
-            // we will fill this out as needed.
-            // private:
             /**
-             * @brief
+             * @brief A vector of Phase objects.
              *
+             * This vector represents a sequence of phases.
              */
             std::vector<Phase> phase_sequence_;
 
             /**
-             * @brief 
-            */
-            struct GlobalPhaseOffset{
-                double t0_offset;
-                int knot0_offset;
+             * @brief Struct representing the global phase offset.
+             *
+             * This struct contains the time offset (t0_offset) and knot offset (knot0_offset)
+             * for a contact sequence.
+             */
+            struct GlobalPhaseOffset
+            {
+                double t0_offset; /**< Time offset */
+                int knot0_offset; /**< Knot offset */
             };
 
             /**
-             * @brief
+             * @brief A vector of GlobalPhaseOffset objects.
              *
+             * This vector stores GlobalPhaseOffset objects, which represent phase offsets in a contact sequence.
              */
             std::vector<GlobalPhaseOffset> phase_offset_;
 
             /**
-             * @brief
-             *
+             * @brief The time step used for the contact sequence.
              */
             double dt_ = 0;
 
             /**
-             * @brief
-             *
+             * @brief The total number of knots.
              */
             int total_knots_ = 0;
 
             /**
-             * @brief
-             *
+             * @brief The number of end effectors in the contact sequence.
              */
             int num_end_effectors_;
         };

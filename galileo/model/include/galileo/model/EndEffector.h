@@ -11,12 +11,11 @@ namespace galileo
     namespace contact
     {
         /**
-         * @brief
+         * @brief A struct for holding the end effector data of the robot.
          *
          */
         struct EndEffector
         {
-            //
             /**
              * @brief The name of the end effector frame in pinocchio. Used as the key pair in global end effector maps.
              *
@@ -24,7 +23,7 @@ namespace galileo
             std::string frame_name;
 
             /**
-             * @brief The id of the frame in pinocchio
+             * @brief The id of the frame in pinocchio.
              *
              */
             pinocchio::FrameIndex frame_id;
@@ -36,7 +35,7 @@ namespace galileo
             int local_ee_idx;
 
             /**
-             * @brief Is 6-DOF or is 3-DOF
+             * @brief Is 6-DOF or is 3-DOF.
              *
              */
             bool is_6d;
@@ -49,7 +48,7 @@ namespace galileo
         typedef std::map<std::string, std::shared_ptr<EndEffector>> RobotEndEffectors;
 
         /**
-         * @brief
+         * @brief Maps the end effector name to the frame name.
          *
          */
         typedef std::map<std::string, bool> ContactCombination;

@@ -4,7 +4,6 @@ namespace galileo
 {
     namespace contact
     {
-
         // Makes the combination valid. If an EE is not in contact, it makes the corresponding contact surface NO_SURFACE
         void ContactMode::MakeValid(ContactModeValidity &validity)
         {
@@ -48,9 +47,8 @@ namespace galileo
             GlobalPhaseOffset new_phase_offset;
             new_phase.mode = mode;
             ContactMode::ContactModeValidity validity;
-            
-            new_phase.mode.MakeValid(validity);
 
+            new_phase.mode.MakeValid(validity);
 
             if (validity != ContactMode::VALID)
             {
@@ -68,12 +66,12 @@ namespace galileo
             dt_ += dt;
             total_knots_ += knot_points;
 
-            return phase_sequence_.size()-1;
+            return phase_sequence_.size() - 1;
         }
 
         int ContactSequence::getPhaseIndexAtTime(double t, CONTACT_SEQUENCE_ERROR &error_status) const
         {
-            
+
             if ((t < 0) || (t > dt_))
             {
                 error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;

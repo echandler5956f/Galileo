@@ -9,16 +9,16 @@ namespace galileo
     {
 
         /**
-         * @brief 
+         * @brief Problem data for the trajectory optimization problem.
          * 
          */
         struct ProblemData
         {
             /**
-             * @brief Construct a new Problem Data object
+             * @brief Construct a new Problem Data object.
              * 
              * @param Fint_ 
-             * @param F_ 
+             * @param F_
              * @param L_ 
              * @param Phi_ 
              */
