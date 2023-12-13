@@ -3,6 +3,12 @@
 namespace acro{
 namespace model{
 namespace legged{
+
+    // struct FrictionConeProblemData{
+    //     // Contact Sequence
+    //     // Num End Effectors
+    // };
+
     /**
      * A builder for the Friction Cone Constraint. 
      * 
@@ -67,13 +73,34 @@ namespace legged{
 
         private:
 
+        int getNumConstraints();
+
+        int getNumKnotPoints();
+
         void CreateSingleEndEffectorFunction(const std::string& EndEffectorID, const ProblemData &problem_data, casadi::Function &G);
+
         void CreateSingleEndEffectorBounds(const std::string& EndEffectorID, const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound);
             
         double mu_;
         ApproximationOrder approximation_order_;
 
     };            
+
+
+template <class ProblemData>
+void FrictionConeConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const override;
+{
+}
+
+template <class ProblemData>
+void  FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, casadi::Function &G) const;
+
+template <class ProblemData>
+void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string& EndEffectorID, const ProblemData &problem_data, casadi::Function &G);
+
+template <class ProblemData>
+void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorBounds(const std::string& EndEffectorID, const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound);
+            
 }
 }
 }
