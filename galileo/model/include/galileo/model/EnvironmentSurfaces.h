@@ -4,7 +4,7 @@
 #include <Eigen/Geometry>
 #include <vector>
 
-namespace acro
+namespace galileo
 {
     namespace environment
     {

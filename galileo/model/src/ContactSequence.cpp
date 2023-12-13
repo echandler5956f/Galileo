@@ -1,6 +1,6 @@
-#include "ContactSequence.h"
+#include "galileo/model/ContactSequence.h"
 
-namespace acro
+namespace galileo
 {
     namespace contact
     {

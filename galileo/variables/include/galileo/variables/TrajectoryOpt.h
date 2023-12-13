@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../model/include/ContactSequence.h"
-#include "PseudospectralSegment.h"
+#include "galileo/variables/PseudospectralSegment.h"
+#include "galileo/model/ContactSequence.h"
 
-namespace acro
+namespace galileo
 {
     namespace variables
     {

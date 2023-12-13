@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include <pinocchio/autodiff/casadi.hpp>
 
-namespace acro
+namespace galileo
 {
     namespace variables
     {

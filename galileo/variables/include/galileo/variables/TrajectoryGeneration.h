@@ -1,7 +1,9 @@
-#include "States.h"
-#include "../../model/include/ContactSequence.h"
+#pragma once
 
-namespace acro
+#include "galileo/variables/States.h"
+#include "galileo/model/ContactSequence.h"
+
+namespace galileo
 {
     namespace variables
     {

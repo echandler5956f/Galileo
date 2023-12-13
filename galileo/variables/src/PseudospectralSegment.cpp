@@ -1,8 +1,8 @@
-#include "PseudospectralSegment.h"
+#include "galileo/variables/PseudospectralSegment.h"
 
 using namespace casadi;
 
-namespace acro
+namespace galileo
 {
     namespace variables
     {

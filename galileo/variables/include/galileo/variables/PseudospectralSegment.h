@@ -1,7 +1,7 @@
 #pragma once
 
-#include "States.h"
-#include "Constraint.h"
+#include "galileo/variables/States.h"
+#include "galileo/variables/Constraint.h"
 #include <Eigen/Sparse>
 #include <vector>
 #include <string>
@@ -10,7 +10,7 @@
 
 using namespace casadi;
 
-namespace acro
+namespace galileo
 {
     namespace variables
     {

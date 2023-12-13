@@ -1,6 +1,6 @@
-#include "EnvironmentSurfaces.h"
+#include "galileo/model/EnvironmentSurfaces.h"
 
-namespace acro
+namespace galileo
 {
     namespace environment
     {

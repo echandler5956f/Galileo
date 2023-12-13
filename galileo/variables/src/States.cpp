@@ -1,6 +1,6 @@
-#include "States.h"
+#include "galileo/variables/States.h"
 
-namespace acro
+namespace galileo
 {
     namespace variables
     {

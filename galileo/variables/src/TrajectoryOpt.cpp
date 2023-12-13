@@ -1,6 +1,6 @@
-#include "TrajectoryOpt.h"
+#include "galileo/variables/TrajectoryOpt.h"
 
-namespace acro
+namespace galileo
 {
     namespace variables
     {

@@ -1,7 +1,7 @@
-#include "../model/include/LeggedBody.h"
-#include "../variables/include/TrajectoryOpt.h"
+#include "galileo/model/LeggedBody.h"
+#include "galileo/variables/TrajectoryOpt.h"
 
-using namespace acro;
+using namespace galileo;
 
 int main(int argc, char **argv)
 {

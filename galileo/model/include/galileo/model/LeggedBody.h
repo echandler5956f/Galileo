@@ -1,11 +1,11 @@
 #pragma once
 
-#include "EndEffector.h"
+#include "galileo/model/EndEffector.h"
 #include <pinocchio/multibody/model.hpp>
 #include <vector>
 #include <bitset>
 
-namespace acro
+namespace galileo
 {
     namespace model
     {

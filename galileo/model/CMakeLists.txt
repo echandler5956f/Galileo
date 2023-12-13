@@ -1,11 +1,23 @@
-# Source/Include files
-include_directories(".")
-include_directories("include/" ) # acrobatics includes
+set(dir "${CMAKE_CURRENT_SOURCE_DIR}")
 
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${PROJECT_SOURCE_DIR})
-file(GLOB_RECURSE sources "src/*.cpp") # acrobatics library cpp files
+FILE(GLOB_RECURSE SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+)
 
-# Library
-add_library(model SHARED ${sources}) # produce a library used by interface
-target_link_libraries(model casadi pinocchio Eigen3::Eigen)
+FILE(GLOB_RECURSE HEADER_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+)
+
+set(INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+
+target_sources(galileo
+        PRIVATE
+        ${SOURCE_FILES}
+)
+target_include_directories(galileo
+        PUBLIC
+        $<BUILD_INTERFACE:${INCLUDE_DIRS}>
+        $<INSTALL_INTERFACE:include>
+)
+
+install(DIRECTORY ${INCLUDE_DIRS} DESTINATION include)

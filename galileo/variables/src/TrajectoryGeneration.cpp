@@ -1,6 +1,6 @@
-#include "TrajectoryGeneration.h"
+#include "galileo/variables/TrajectoryGeneration.h"
 
-namespace acro
+namespace galileo
 {
     namespace variables
     {

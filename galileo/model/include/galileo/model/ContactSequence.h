@@ -1,9 +1,9 @@
 #pragma once
 
-#include "EndEffector.h"
-#include "EnvironmentSurfaces.h"
+#include "galileo/model/EndEffector.h"
+#include "galileo/model/EnvironmentSurfaces.h"
 
-namespace acro
+namespace galileo
 {
     namespace contact
     {

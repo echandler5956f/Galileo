@@ -1,15 +1,15 @@
-#include "../model/include/LeggedBody.h"
-#include "../model/include/ContactSequence.h"
-#include "../model/include/EnvironmentSurfaces.h"
+#include "galileo/model/LeggedBody.h"
+#include "galileo/model/ContactSequence.h"
+#include "galileo/model/EnvironmentSurfaces.h"
 
-#include "../variables/include/States.h"
-#include "../variables/include/TrajectoryGeneration.h"
+#include "galileo/variables/States.h"
+#include "galileo/variables/TrajectoryGeneration.h"
 
 #include <string>
 
 #include <pinocchio/parsers/urdf.hpp>
 
-using namespace acro;
+using namespace galileo;
 
 const std::string huron_location = "resources/urdf/huron_cheat.urdf";
 const int num_ees = 2;

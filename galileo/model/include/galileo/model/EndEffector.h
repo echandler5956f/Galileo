@@ -1,12 +1,12 @@
 #pragma once
 
-#include "EnvironmentSurfaces.h"
+#include "galileo/model/EnvironmentSurfaces.h"
 #include <pinocchio/multibody/fwd.hpp>
 #include <string>
 #include <memory>
 #include <map>
 
-namespace acro
+namespace galileo
 {
     namespace contact
     {

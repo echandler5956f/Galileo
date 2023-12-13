@@ -1,0 +1,19 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+set(huron_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include)
+set(galileo_LIBRARIES galileo::galileo)
+
+# Create an imported target for "galileo"
+# add_library(galileo::galileo INTERFACE IMPORTED)
+# set_target_properties(galileo::galileo PROPERTIES
+#     INTERFACE_INCLUDE_DIRECTORIES "${galileo_INCLUDE_DIRS}"
+# )
+
+# Find dependencies (if any)
+# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/Modules/")
+find_dependency(casadi pinocchio Eigen::Eigen3)
+
+include("${CMAKE_CURRENT_LIST_DIR}/galileoTargets.cmake")
