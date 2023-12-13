@@ -152,16 +152,18 @@ namespace galileo
             std::vector<Phase> phase_sequence_;
 
             /**
-             * @brief
-             *
-             */
-            std::vector<double> phase_t0_offset_;
+             * @brief 
+            */
+            struct GlobalPhaseOffset{
+                double t0_offset;
+                int knot0_offset;
+            };
 
             /**
              * @brief
              *
              */
-            std::vector<int> phase_knot0_idx_;
+            std::vector<GlobalPhaseOffset> phase_offset_;
 
             /**
              * @brief

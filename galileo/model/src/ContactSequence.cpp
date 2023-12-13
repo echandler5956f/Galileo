@@ -19,6 +19,7 @@ namespace galileo
             for (uint i = 0; i < combination_definition.size(); i++)
             {
                 bool is_in_contact = (*it).second;
+
                 if (!is_in_contact)
                 {
                     // If it is not in contact, make the contact surface NO_SURFACE
@@ -36,32 +37,43 @@ namespace galileo
                 if (i < combination_definition.size() - 1)
                     it++;
             }
+
+            validity = ContactMode::ContactModeValidity::VALID;
         }
 
         int ContactSequence::addPhase(const ContactMode &mode, int knot_points, double dt)
         {
             // assert that contacts.size() == num_end_effectors_
             Phase new_phase;
+            GlobalPhaseOffset new_phase_offset;
             new_phase.mode = mode;
             ContactMode::ContactModeValidity validity;
+            
             new_phase.mode.MakeValid(validity);
-            if (validity != ContactMode::ContactModeValidity::VALID)
+
+
+            if (validity != ContactMode::VALID)
             {
-                return -1;
+                throw std::runtime_error(std::string("'Contact is not valid!'"));
             }
+
             new_phase.knot_points = knot_points;
             new_phase.time_value = dt;
 
-            phase_sequence_.push_back(new_phase);
-            phase_t0_offset_.push_back(dt_);
-            dt_ += dt;
+            new_phase_offset.t0_offset = dt_;
+            new_phase_offset.knot0_offset = total_knots_;
 
-            phase_knot0_idx_.push_back(total_knots_);
+            phase_sequence_.push_back(new_phase);
+            phase_offset_.push_back(new_phase_offset);
+            dt_ += dt;
             total_knots_ += knot_points;
+
+            return phase_sequence_.size()-1;
         }
 
         int ContactSequence::getPhaseIndexAtTime(double t, CONTACT_SEQUENCE_ERROR &error_status) const
         {
+            
             if ((t < 0) || (t > dt_))
             {
                 error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
@@ -70,7 +82,7 @@ namespace galileo
 
             for (int i = num_phases() - 1; i > 0; i--)
             {
-                bool is_in_phase_i = (t >= phase_t0_offset_[i]);
+                bool is_in_phase_i = (t >= phase_offset_[i].t0_offset);
                 if (is_in_phase_i)
                 {
                     error_status = CONTACT_SEQUENCE_ERROR::OK;
@@ -89,7 +101,7 @@ namespace galileo
 
             for (int i = num_phases() - 1; i > 0; i--)
             {
-                bool is_in_phase_i = (knot_idx >= phase_knot0_idx_[i]);
+                bool is_in_phase_i = (knot_idx >= phase_offset_[i].knot0_offset);
                 if (is_in_phase_i)
                 {
                     error_status = CONTACT_SEQUENCE_ERROR::OK;
