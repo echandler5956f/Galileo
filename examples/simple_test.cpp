@@ -6,7 +6,7 @@ using namespace galileo;
 int main()
 {
 
-    variables::States *si = new variables::States();
+    std::shared_ptr<variables::States> si = std::make_shared<variables::States>();
 
     // Declare model variables
     casadi::SX dt = SX::sym("dt", 1);
@@ -28,7 +28,7 @@ int main()
     casadi::Function Phi("Phi", {x}, {0});
 
     casadi::Dict opts;
-    variables::ProblemData *problem = new variables::ProblemData(Fint, F, L, Phi);
+    std::shared_ptr<variables::ProblemData> problem = std::make_shared<variables::ProblemData>(Fint, F, L, Phi);
     variables::TrajectoryOpt traj(opts, si, problem);
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);

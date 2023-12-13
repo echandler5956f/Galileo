@@ -22,7 +22,7 @@ namespace galileo
              * @param state_indices_ Helper class to get the state indices
              * @param problem Problem data containing the objective function and dynamics
              */
-            TrajectoryOpt(casadi::Dict opts_, States *state_indices_, ProblemData *problem);
+            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem);
 
             /**
              * @brief Initialize the finite elements.
@@ -44,7 +44,7 @@ namespace galileo
              * @brief A Trajectory is made up of pseudospectral finite elements.
              *
              */
-            std::vector<PseudospectralSegment> trajectory;
+            std::vector<std::shared_ptr<PseudospectralSegment>> trajectory;
 
             /**
              * @brief Continuous-time function. The decision variables are infinitesimal deviations from the initial state,
@@ -88,7 +88,7 @@ namespace galileo
              * @brief Slicer to get the states.
              *
              */
-            States *state_indices;
+            std::shared_ptr<States> state_indices;
 
             /**
              * @brief Fixed time horizon of the entire trajectory.

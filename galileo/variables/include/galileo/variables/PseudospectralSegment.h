@@ -7,6 +7,7 @@
 #include <string>
 #include <cassert>
 #include <bits/stdc++.h>
+#include <memory>
 
 using namespace casadi;
 
@@ -100,7 +101,7 @@ namespace galileo
              * @param st_m_ Pointer to the state indices helper
              * @param Fint_ Integrator function
              */
-            PseudospectralSegment(int d, int knot_num_, double h_, States *st_m_, Function &Fint_);
+            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -340,7 +341,7 @@ namespace galileo
              * @brief Helper for indexing the state variables.
              *
              */
-            States *st_m;
+            std::shared_ptr<States> st_m;
 
             /**
              * @brief Number of knot segments.

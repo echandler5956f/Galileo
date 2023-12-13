@@ -8,7 +8,6 @@ namespace galileo
     {
         LagrangePolynomial::LagrangePolynomial(int d_, const std::string &scheme)
         {
-            assert((d_ > 0) && (d_ < 10) && "Collocation degrees must be positive and no greater than 9");
             this->d = d_;
             /*Choose collocation points*/
             std::vector<double> troot = collocation_points(this->d, scheme);
@@ -53,6 +52,7 @@ namespace galileo
         const SX LagrangePolynomial::lagrange_interpolation(double t, const SXVector terms)
         {
             assert((t >= 0.0) && (t <= 1.0) && "t must be in the range [0,1]");
+
             SX result = 0;
             for (int j = 0; j < this->d; ++j)
             {
@@ -69,8 +69,16 @@ namespace galileo
             return result;
         }
 
-        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, States *st_m_, Function &Fint_)
+        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_)
         {
+            assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
+            assert(h_ > 0 && "h must be a positive duration");
+            assert(Fint_.n_in() == 3 && "Fint must have 3 inputs");
+            
+            Fint_.assert_size_in(0, st_m_->nx, 1);
+            Fint_.assert_size_in(1, st_m_->ndx, 1);
+            Fint_.assert_size_in(2, 1, 1);
+
             this->knot_num = knot_num_;
             this->Fint = Fint_;
             this->h = h_;
@@ -122,6 +130,8 @@ namespace galileo
 
         void PseudospectralSegment::initialize_knot_segments(SX x0)
         {
+            assert(x0.size1() == this->st_m->nx && x0.size2() == 1 && "x0 must be a column vector of size nx");
+
             this->dXc_var_vec.clear();
             this->U_var_vec.clear();
             this->dX0_var_vec.clear();
@@ -141,6 +151,14 @@ namespace galileo
 
         void PseudospectralSegment::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G)
         {
+            assert(F.n_in() == 2 && "F must have 2 inputs");
+            F.assert_size_in(0, this->st_m->nx, 1);
+            F.assert_size_in(1, this->st_m->nu, 1);
+
+            assert(L.n_in() == 2 && "L must have 2 inputs");
+            L.assert_size_in(0, this->st_m->nx, 1);
+            L.assert_size_in(1, this->st_m->nu, 1);
+
             /*Collocation equations*/
             SXVector eq;
             /*State at the end of the collocation interval*/
@@ -208,22 +226,23 @@ namespace galileo
             for (int i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
-                if (g_data->global) {
+                if (g_data->global)
+                {
                     /*TODO: Add assertions to check the inputs and outputs of F here!!!*/
 
                     SXVector tmp_map = g_data->G.map(this->dX_poly.d, "serial")(SXVector{vertcat(tmp_x), vertcat(u_at_c)});
                     auto tmap = Function("fg",
-                                        SXVector{this->X0, vertcat(tmp_dx), vertcat(this->Uc)},
-                                        SXVector{vertcat(tmp_map)});
+                                         SXVector{this->X0, vertcat(tmp_dx), vertcat(this->Uc)},
+                                         SXVector{vertcat(tmp_map)});
                     this->general_constraint_maps.push_back(tmap);
                     ranges.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
                     N += tmap.size1_out(0) * tmap.size2_out(0);
                 }
-                else {
+                else
+                {
                     /*TODO: Add assertions to check the inputs and outputs of F here!!!*/
                     for (int k = 0; k < g_data->apply_at.rows(); ++k)
                     {
-                        
                     }
                 }
             }
@@ -236,20 +255,23 @@ namespace galileo
             for (int i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
-                if (g_data->global) {
+                if (g_data->global)
+                {
                     this->general_lb(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
                         vertcat(g_data->lower_bound.map(this->knot_num, "serial")(this->times));
                     this->general_ub(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
                         vertcat(g_data->upper_bound.map(this->knot_num, "serial")(this->times));
                 }
-                else {
-                    
+                else
+                {
                 }
             }
         }
 
         void PseudospectralSegment::evaluate_expression_graph(SX &J0, SXVector &g)
         {
+            assert(J0.size1() == 1 && J0.size2() == 1 && "J0 must be a scalar");
+
             SXVector result;
             auto xs_offset = this->X0_var_vec[1];
             auto dxs_offset = this->dX0_var_vec[1];

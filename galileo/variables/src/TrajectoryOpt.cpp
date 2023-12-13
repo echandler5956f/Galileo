@@ -4,7 +4,7 @@ namespace galileo
 {
     namespace variables
     {
-        TrajectoryOpt::TrajectoryOpt(casadi::Dict opts_, States *state_indices_, ProblemData *problem)
+        TrajectoryOpt::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem)
         {
             this->opts = opts_;
             this->state_indices = state_indices_;
@@ -17,6 +17,8 @@ namespace galileo
 
         void TrajectoryOpt::init_finite_elements(int d, casadi::DM X0)
         {
+            assert(X0.size1() == this->state_indices->nx && X0.size2() == 1 && "Initial state must be a column vector");
+            this->trajectory.clear();
             this->w.clear();
             this->g.clear();
             this->lb.clear();
@@ -30,38 +32,39 @@ namespace galileo
             casadi::SX curr_initial_state_deviant;
 
             std::vector<double> equality_back(this->state_indices->nx, 0.0);
+            std::shared_ptr<PseudospectralSegment> ps;
             // std::size_t i = 0;
             printf("Starting\n");
             for (std::size_t i = 0; i < 1; ++i)
             {
-                auto ps = PseudospectralSegment(d, 2, 0.5, this->state_indices, this->Fint);
-                ps.initialize_knot_segments(prev_final_state);
+                ps = std::make_shared<PseudospectralSegment>(d, 2, 0.5, this->state_indices, this->Fint);
+                ps->initialize_knot_segments(prev_final_state);
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
                 std::vector<std::shared_ptr<ConstraintData>> G;
-                ps.initialize_expression_graph(this->F, this->L, G);
+                ps->initialize_expression_graph(this->F, this->L, G);
                 this->trajectory.push_back(ps);
-                ps.evaluate_expression_graph(this->J, this->g);
-                ps.fill_lb_ub(this->lb, this->ub);
-                ps.fill_w(this->w);
-                ps.fill_times(this->all_times);
+                ps->evaluate_expression_graph(this->J, this->g);
+                ps->fill_lb_ub(this->lb, this->ub);
+                ps->fill_w(this->w);
+                ps->fill_times(this->all_times);
                 if (i == 0)
                 {
-                    auto curr_initial_state = ps.get_initial_state();
+                    auto curr_initial_state = ps->get_initial_state();
                     this->g.push_back(prev_final_state - curr_initial_state);
                     this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end());
                     this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end());
                 }
                 else if (i > 0)
                 {
-                    curr_initial_state_deviant = ps.get_initial_state_deviant();
+                    curr_initial_state_deviant = ps->get_initial_state_deviant();
                     /*For general jump map functions you can use the following syntax:*/
                     // g.push_back(jump_map_function(casadi::SXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
                     this->g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
                     this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end()-1);
                     this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end()-1);
                 }
-                prev_final_state = ps.get_final_state();
-                prev_final_state_deviant = ps.get_final_state_deviant();
+                prev_final_state = ps->get_final_state();
+                prev_final_state_deviant = ps->get_final_state_deviant();
                 if (i == 2)
                 {
                     /*Add terminal cost*/
