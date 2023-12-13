@@ -30,7 +30,6 @@ namespace galileo
         // Generate combinations of contacts.
         void LeggedBody::GenerateContactCombination()
         {
-<<<<<<< HEAD
             std::vector<contact::ContactCombination> contact_combinations;
             // Generate the "basic" (no contact) contact combination.
             contact::ContactCombination basic_cc;
@@ -60,13 +59,6 @@ namespace galileo
                 contact_combinations[binary_value_combination] = new_contact_combination;
             }
             contact_combinations_ = contact_combinations;
-=======
-            bool ee_i_is_in_contact = (bit_mask & binary_value_combination_bits).any();
-            // bit shift. Since we are shifting to the left,
-            // we are considering the end effectors from "right to left", or from the end of the list to the start.
-            bit_mask <<= 1;
-            new_contact_combination[ee_names_[num_end_effectors_ - i - 1]] = ee_i_is_in_contact;
->>>>>>> c7f44bc7a31b8146fa1eb075cc93f06e3a705cc3
         }
     }
 }
