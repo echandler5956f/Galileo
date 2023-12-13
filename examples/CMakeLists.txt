@@ -3,11 +3,11 @@ set(CMAKE_CXX_STANDARD 11)
 
 project (examples)
 
-add_executable(simple simple_traj_test.cpp)
+add_executable(simple_test simple_test.cpp)
 add_executable(model_building_test model_building_test.cpp)
 add_executable(traj_test traj_test.cpp)
 
-target_link_libraries(simple
+target_link_libraries(simple_test
     PUBLIC
     galileo
 )

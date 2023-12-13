@@ -3,7 +3,7 @@
 
 using namespace galileo;
 
-int main(int argc, char **argv)
+int main()
 {
 
     variables::States *si = new variables::States();

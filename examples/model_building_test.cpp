@@ -30,7 +30,7 @@ void defineRobot(model::LeggedBody &bot)
     bot.GenerateContactCombination();
 }
 
-int main(int argc, char**argv)
+int main()
 {
     model::LeggedBody bot;
     defineRobot(bot);

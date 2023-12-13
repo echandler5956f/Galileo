@@ -45,9 +45,33 @@ Features:
 2. (optional) Install Galileo's optional dependencies
    * [Ipopt]
 
-We created a `test-installs` folder with some simple scripts to test your `casadi` + `pinocchio` install. Be sure to take a look if you are running into trouble.
+Once you have the required dependencies, you can install the library with
+```bash
+mkdir build && cd build && cmake .. && make -j4 && sudo make install
+```
+
+To uninstall the library, simply run
+```bash
+sudo make uninstall
+```
+from within the build directory.
 
 ## Run
+
+We created a `test-installs` folder with some simple scripts to test your `casadi` + `pinocchio` install. Be sure to take a look if you are running into trouble. To test the actual library, please refer to the `examples` folder. If you have already built the repo from source, you can test it by running
+
+```bash
+build/examples/simple_test
+```
+or
+```bash
+build/examples/model_building_test
+```
+or
+```bash
+build/examples/traj_test
+```
+in the main repo directory.
 
 ## Documentation
 
