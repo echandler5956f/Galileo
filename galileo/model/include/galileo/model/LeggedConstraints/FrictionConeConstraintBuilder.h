@@ -123,8 +123,7 @@ namespace acro
             void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, casadi::Function &G) const{
                 //CREATE CASADI MAP FROM EACH END EFFECTOR 
             }
-
-
+      
             template <class ProblemData>
             uint FrictionConeConstraintBuilder<ProblemData>::getNumConstraintPerEEPerState(const ProblemData &problem_data) const
             {
@@ -203,7 +202,6 @@ namespace acro
 
                 return (*problem_data.environment_surfaces)[contact_surface_id].Rotation();
             }
-
 
             template <class ProblemData>
             Eigen::MatrixXd FrictionConeConstraintBuilder<ProblemData>::getConeConstraintApproximation(const ProblemData &problem_data)
