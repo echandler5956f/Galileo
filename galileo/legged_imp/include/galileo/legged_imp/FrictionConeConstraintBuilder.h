@@ -1,6 +1,8 @@
-#include "variables/include/Constraint.h"
+#include "galileo/variables/Constraint.h"
+#include "galileo/model/ContactSequence.h"
+#include "galileo/variables/States.h"
 
-namespace acro
+namespace galileo
 {
     namespace model
     {
@@ -12,10 +14,12 @@ namespace acro
 
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
-
+                std::shared_ptr<variables::States> states;
                 std::shared_ptr<pinocchio::Model> model;
                 RobotEndEffectors robot_end_effectors;
-
+                casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
+                casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
+                casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
                 int num_knots;
                 int collocation_points_per_knot;
 
@@ -116,14 +120,24 @@ namespace acro
                 Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(num_constraints, 0);
                 Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(num_constraints, -std::numeric_limits<double>::infinity());
 
+                // Convert Eigen to casadi (see traj_test example)
+                casadi::SX upper_bound_casadi = casadi::SX(casadi::Sparsity::dense(upper_bound_vect.rows(), 1));
+                pinocchio::casadi::copy(upper_bound_vect, upper_bound_casadi);
+
+                casadi::SX lower_bound_casadi = casadi::SX(casadi::Sparsity::dense(lower_bound_vect.rows(), 1));
+                pinocchio::casadi::copy(lower_bound_vect, lower_bound_casadi);
+
+                upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.t}, casadi::SXVector{upper_bound_casadi});
+                lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.t}, casadi::SXVector{lower_bound_casadi});
                 // @TODO create a casadi::Function to return vectors
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, casadi::Function &G) const{
-                //CREATE CASADI MAP FROM EACH END EFFECTOR 
+            void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, casadi::Function &G) const
+            {
+                // CREATE CASADI MAP FROM EACH END EFFECTOR
             }
-      
+
             template <class ProblemData>
             uint FrictionConeConstraintBuilder<ProblemData>::getNumConstraintPerEEPerState(const ProblemData &problem_data) const
             {
@@ -149,27 +163,31 @@ namespace acro
                 {
                     // SET ALL ZEROS CASADI FUNCTION
                     //  Function = Eigen::MatrixXd::Zero(num_contraint_per_ee_per_point, 3) * GRF
+                    G = casadi::Function("G", casadi::SXVector{problem_data.x, problem_data.u}, casadi::SXVector{casadi::SX::zeros(num_contraint_per_ee_per_point, 3)});
                     return;
                 }
 
                 Eigen::Matrix<double, 3, 3> rotation = getContactSurfaceRotationAtMode(EndEffectorID, problem_data, mode);
-            
+
                 Eigen::MatrixXd cone_constraint_approximation = getConeConstraintApproximation(problem_data);
 
                 Eigen::MatrixXd rotated_cone_constraint = cone_constraint_approximation * rotation;
 
                 FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.approximation_order;
 
+                casadi::SX tmp1 = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
+                pinocchio::casadi::copy(rotated_cone_constraint, tmp1);
+
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
-                    //SET CASADI FUNCTION 
-                    // Function = rotated_cone_constraint * GRF(EndEffector)
+                    // SET CASADI FUNCTION
+                    //  Function = rotated_cone_constraint * GRF(EndEffector)
                 }
                 else
                 {
-                    //SET CASADI FUNCTION 
-                    // evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
-                    // Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
+                    // SET CASADI FUNCTION
+                    //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
+                    //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
                 }
             }
 
