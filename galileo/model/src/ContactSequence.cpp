@@ -4,6 +4,20 @@ namespace galileo
 {
     namespace contact
     {
+
+
+        environment::SurfaceID ContactMode::getSurfaceIDForEE(std::string EndEffectorID) const {
+            const auto& map_element = combination_definition.find(EndEffectorID);
+
+            if(map_element == combination_definition.end()){
+                throw std::runtime_error(std::string("'End Effector " + EndEffectorID + " not defined in contact mode!'"));
+            }
+
+            uint index = std::distance(combination_definition.begin(), map_element);
+
+            return contact_surfaces[index];
+        }
+
         // Makes the combination valid. If an EE is not in contact, it makes the corresponding contact surface NO_SURFACE
         void ContactMode::MakeValid(ContactModeValidity &validity)
         {

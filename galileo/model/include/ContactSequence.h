@@ -39,6 +39,11 @@ namespace acro
             std::vector<environment::SurfaceID> contact_surfaces;
 
             /**
+             * @brief Find the surface an EE is in contact with.
+            */
+            environment::SurfaceID getSurfaceIDForEE(std::string EndEffectorID) const;
+
+            /**
              * @brief Makes the combination valid. If an EE is not in contact, it makes the corresponding contact surface NO_SURFACE
              *
              * @param validity Error code
@@ -137,7 +142,7 @@ namespace acro
              * @param error_status
              */
             void getPhaseAtKnot(int knot_idx, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const;
-
+            
             /**
              * @brief
              *

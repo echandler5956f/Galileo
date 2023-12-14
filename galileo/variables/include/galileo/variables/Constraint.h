@@ -9,7 +9,9 @@ namespace galileo
     {
 
         /**
-         * @brief Problem data for the trajectory optimization problem.
+         * @brief Data necessary to build the problem or constraints.
+         * It is good practice to have a corresponding constraint specific 
+         * Problem Data for any data needed to build a constraint.
          * 
          */
         struct GeneralProblemData
@@ -18,9 +20,9 @@ namespace galileo
              * @brief Construct a new Problem Data object.
              * 
              * @param Fint_ 
-             * @param F_
-             * @param L_ 
-             * @param Phi_ 
+             * @param F_ Dynamics of the system
+             * @param L_ Running cost
+             * @param Phi_ Terminal cost
              */
             GeneralProblemData(casadi::Function Fint_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
             {
@@ -29,26 +31,26 @@ namespace galileo
                 this->L = L_;
                 this->Phi = Phi_;
             }
-
+        
             /**
              * @brief 
              * 
              */
             casadi::Function Fint;
-
-
+        
+        
             /**
              * @brief 
              * 
              */
             casadi::Function F;
-
+        
             /**
              * @brief 
              * 
              */
             casadi::Function L;
-
+        
             /**
              * @brief 
              * 
@@ -57,7 +59,8 @@ namespace galileo
         };
 
         /**
-         * @brief 
+         * @brief Results that describe a "built" constraint. 
+         * This contains the constraint Function, Bounds, etcetera. 
          * 
          */
         struct ConstraintData
@@ -94,8 +97,9 @@ namespace galileo
             casadi::Function G;
         };
 
+
         /**
-         * @brief 
+         * @brief Extend this class to implement constraints.
          * 
          */
         template <class ProblemData>
