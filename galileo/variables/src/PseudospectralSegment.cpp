@@ -234,10 +234,14 @@ namespace galileo
             for (int i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
+
+                assert(g_data->G.n_in() == 2 && "G must have 2 inputs");
+                g_data->G.assert_size_in(0, this->st_m->nx, 1);
+                g_data->G.assert_size_in(1, this->st_m->nu, 1);
+                /*TODO: Add assertions to check the bounds functions here!!!*/
+
                 if (g_data->global)
                 {
-                    /*TODO: Add assertions to check the inputs and outputs of F here!!!*/
-
                     SXVector tmp_map = g_data->G.map(this->dX_poly.d, "serial")(SXVector{vertcat(tmp_x), vertcat(u_at_c)});
                     auto tmap = Function("fg",
                                          SXVector{this->X0, vertcat(tmp_dx), vertcat(this->Uc)},
@@ -248,7 +252,6 @@ namespace galileo
                 }
                 else
                 {
-                    /*TODO: Add assertions to check the inputs and outputs of F here!!!*/
                     for (int k = 0; k < g_data->apply_at.rows(); ++k)
                     {
                     }
