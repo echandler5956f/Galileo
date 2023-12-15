@@ -2,6 +2,7 @@
 
 #include "galileo/variables/PseudospectralSegment.h"
 #include "galileo/model/ContactSequence.h"
+#include "third-party/gnuplot-iostream/gnuplot-iostream.h"
 
 namespace galileo
 {
@@ -109,16 +110,16 @@ namespace galileo
             casadi::SXVector g;
 
             /**
-             * @brief Vector of all constraint lower bounds.
+             * @brief Vector of all general constraint lower bounds.
              *
              */
-            std::vector<double> lb;
+            std::vector<double> lbg;
 
             /**
-             * @brief Vector of all constraint upper bounds.
+             * @brief Vector of all general constraint upper bounds.
              *
              */
-            std::vector<double> ub;
+            std::vector<double> ubg;
 
             /**
              * @brief Expression for objective cost.

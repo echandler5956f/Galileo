@@ -4,7 +4,7 @@
 #include <string>
 #include <Eigen/Dense>
 #include <boost/math/interpolators/barycentric_rational.hpp>
-#include "gnuplot-iostream.h"
+#include "../third-party/gnuplot-iostream/include/third-party/gnuplot-iostream/gnuplot-iostream.h"
 
 using namespace casadi;
 using namespace std;

@@ -177,15 +177,26 @@ namespace galileo
             SX get_final_state();
 
             /**
-             * @brief Fills the lower bound (lb) and upper bound (ub) vectors with values.
+             * @brief Fills the lower bounds on general constraints (lbg) and upper bounds on general constraints (ubg) vectors with values.
              *
-             * This function takes in two vectors, lb and ub, and fills them with values.
-             * The filled values represent the lower and upper bounds for some calculations.
+             * This function takes in two vectors, lbg and ubg, and fills them with values.
+             * The filled values represent the general constraint lower and upper bounds.
              *
-             * @param lb The vector to be filled with lower bound values.
-             * @param ub The vector to be filled with upper bound values.
+             * @param lbg The vector to be filled with general lower bound values.
+             * @param ubg The vector to be filled with general upper bound values.
              */
-            void fill_lb_ub(std::vector<double> &lb, std::vector<double> &ub);
+            void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg);
+
+            /**
+             * @brief Fills the lower bounds on decision variable (lbx) and upper bounds on decision variable (ubx) vectors with values.
+             *
+             * This function takes in two vectors, lbx and ubx, and fills them with values.
+             * The filled values represent the constraint lower and upper bounds on decision variables.
+             *
+             * @param lbx The vector to be filled with lower bound values on decision variables.
+             * @param ubx The vector to be filled with upper bound values on decision variables.
+             */
+            void fill_lbx_ubx(std::vector<double> &lbx, std::vector<double> &ubx);
 
             /**
              * @brief Fills the given SXVector with values.
@@ -211,11 +222,18 @@ namespace galileo
             tuple_size_t get_range_idx_constraint_expressions();
 
             /**
-             * @brief Returns the starting and ending index in g (call after fill_lb_ub!). This should match get_range_idx_constraint_expressions.
+             * @brief Returns the starting and ending index in bg (call after fill_lbg_ubg!). This should match get_range_idx_constraint_expressions.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_bounds();
+            tuple_size_t get_range_idx_bg();
+
+            /**
+             * @brief Returns the starting and ending index in bx (call after fill_lbx_ubx!).
+             *
+             * @return tuple_size_t The range of indices
+             */
+            tuple_size_t get_range_idx_bx();
 
         private:
             /**
@@ -281,13 +299,25 @@ namespace galileo
              * @brief Lower bounds associated with the general constraint maps.
              *
              */
-            DM general_lb;
+            DM general_lbg;
 
             /**
              * @brief Upper bounds associated with the general constraint maps.
              *
              */
-            DM general_ub;
+            DM general_ubg;
+
+            /**
+             * @brief Lower bounds associated with the decision variable constraint maps.
+             *
+             */
+            DM general_lbx;
+
+            /**
+             * @brief Upper bounds associated with the decision variable constraint maps.
+             *
+             */
+            DM general_ubx;
 
             /**
              * @brief Integrator function.
@@ -374,16 +404,28 @@ namespace galileo
             tuple_size_t w_range;
 
             /**
-             * @brief Starting and ending index of the constraint expressions in g corresponding to this segment. This should match lb_ub_range.
+             * @brief Starting and ending index of the constraint expressions in g corresponding to this segment. This should match lbg_ubg_range.
              *
              */
             tuple_size_t g_range;
 
             /**
-             * @brief Starting and ending index of the bounds in lb/ub corresponding to this segment. This should match g_range.
+             * @brief Starting and ending index of the constraint expressions in bx corresponding to this segment. This should match lbx_ubx_range.
              *
              */
-            tuple_size_t lb_ub_range;
+            tuple_size_t bx_range;
+
+            /**
+             * @brief Starting and ending index of the bounds in lbg/ubg corresponding to this segment. This should match g_range.
+             *
+             */
+            tuple_size_t lbg_ubg_range;
+
+            /**
+             * @brief Starting and ending index of the bounds in lbx/ubx corresponding to this segment. This should match bx_range.
+             *
+             */
+            tuple_size_t lbx_ubx_range;
         };
     }
 }

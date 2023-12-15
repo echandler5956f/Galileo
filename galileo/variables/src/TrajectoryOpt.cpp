@@ -21,8 +21,8 @@ namespace galileo
             this->trajectory.clear();
             this->w.clear();
             this->g.clear();
-            this->lb.clear();
-            this->ub.clear();
+            this->lbg.clear();
+            this->ubg.clear();
             this->J = 0;
 
             this->all_times.clear();
@@ -44,15 +44,15 @@ namespace galileo
                 ps->initialize_expression_graph(this->F, this->L, G);
                 this->trajectory.push_back(ps);
                 ps->evaluate_expression_graph(this->J, this->g);
-                ps->fill_lb_ub(this->lb, this->ub);
+                ps->fill_lbg_ubg(this->lbg, this->ubg);
                 ps->fill_w(this->w);
                 ps->fill_times(this->all_times);
                 if (i == 0)
                 {
                     auto curr_initial_state = ps->get_initial_state();
                     this->g.push_back(prev_final_state - curr_initial_state);
-                    this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end());
-                    this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end());
+                    this->lbg.insert(this->lbg.end(), equality_back.begin(), equality_back.end());
+                    this->ubg.insert(this->ubg.end(), equality_back.begin(), equality_back.end());
                 }
                 else if (i > 0)
                 {
@@ -60,8 +60,8 @@ namespace galileo
                     /*For general jump map functions you can use the following syntax:*/
                     // g.push_back(jump_map_function(casadi::SXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
                     this->g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
-                    this->lb.insert(this->lb.end(), equality_back.begin(), equality_back.end()-1);
-                    this->ub.insert(this->ub.end(), equality_back.begin(), equality_back.end()-1);
+                    this->lbg.insert(this->lbg.end(), equality_back.begin(), equality_back.end()-1);
+                    this->ubg.insert(this->ubg.end(), equality_back.begin(), equality_back.end()-1);
                 }
                 prev_final_state = ps->get_final_state();
                 prev_final_state_deviant = ps->get_final_state_deviant();
@@ -90,8 +90,9 @@ namespace galileo
                                   {"g", vertcat(this->g)}};
             this->solver = casadi::nlpsol("solver", "ipopt", nlp, this->opts);
             casadi::DMDict arg;
-            arg["lbg"] = this->lb;
-            arg["ubg"] = this->ub;
+            arg["lbg"] = this->lbg;
+            arg["ubg"] = this->ubg;
+            auto sol = this->solver(arg);
             return this->solver(arg);
         }
     }

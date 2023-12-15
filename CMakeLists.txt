@@ -9,6 +9,7 @@ project(Galileo)
 find_package(casadi)
 find_package(pinocchio)
 find_package (Eigen3 REQUIRED NO_MODULE)
+find_package(Boost REQUIRED COMPONENTS iostreams unit_test_framework)
 
 # libgalileo
 add_library(galileo SHARED galileo.cc)
@@ -24,6 +25,7 @@ set(CMAKE_CXX_FLAGS "-O3 -no-pie -ggdb -Wall \
 
 set(CMAKE_C_FLAGS "-O3 -ggdb -std=gnu99 -I.")
 
+add_subdirectory(third-party)
 add_subdirectory(galileo)
 
 target_link_libraries(galileo
@@ -31,6 +33,12 @@ target_link_libraries(galileo
     casadi
     pinocchio
     Eigen3::Eigen
+    ${Boost_LIBRARIES}
+)
+
+target_include_directories(galileo
+    PUBLIC
+    ${Boost_INCLUDE_DIRS}
 )
 
 # Install the "galileoConfig.cmake" file and export the target

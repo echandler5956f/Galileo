@@ -258,19 +258,19 @@ namespace galileo
                 }
             }
 
-            this->general_lb.resize(N, 1);
-            this->general_ub.resize(N, 1);
-            this->general_lb(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
-            this->general_ub(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
+            this->general_lbg.resize(N, 1);
+            this->general_ubg.resize(N, 1);
+            this->general_lbg(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
+            this->general_ubg(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
 
             for (int i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
                 if (g_data->global)
                 {
-                    this->general_lb(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
+                    this->general_lbg(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
                         vertcat(g_data->lower_bound.map(this->knot_num, "serial")(this->times));
-                    this->general_ub(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
+                    this->general_ubg(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
                         vertcat(g_data->upper_bound.map(this->knot_num, "serial")(this->times));
                 }
                 else
@@ -347,21 +347,38 @@ namespace galileo
             return this->X0_var_vec.back();
         }
 
-        void PseudospectralSegment::fill_lb_ub(std::vector<double> &lb, std::vector<double> &ub)
+        void PseudospectralSegment::fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg)
         {
             /*where lb/ub of this segment starts*/
-            auto tmp_it = lb.end() + 1;
-            std::vector<double> element_access1 = this->general_lb.get_elements();
-            std::vector<double> element_access2 = this->general_ub.get_elements();
+            auto tmp_it = lbg.end() + 1;
+            std::vector<double> element_access1 = this->general_lbg.get_elements();
+            std::vector<double> element_access2 = this->general_ubg.get_elements();
 
-            lb.insert(lb.end(), element_access1.begin(), element_access1.end());
-            ub.insert(ub.end(), element_access2.begin(), element_access2.end());
-            this->lb_ub_range = tuple_size_t(tmp_it - lb.begin(), lb.end() - lb.begin());
+            lbg.insert(lbg.end(), element_access1.begin(), element_access1.end());
+            ubg.insert(ubg.end(), element_access2.begin(), element_access2.end());
+            this->lbg_ubg_range = tuple_size_t(tmp_it - lbg.begin(), lbg.end() - lbg.begin());
         }
 
-        tuple_size_t PseudospectralSegment::get_range_idx_bounds()
+        void PseudospectralSegment::fill_lbx_ubx(std::vector<double> &lbx, std::vector<double> &ubx)
         {
-            return this->lb_ub_range;
+            /*where lb/ub of this segment starts*/
+            auto tmp_it = lbx.end() + 1;
+            std::vector<double> element_access1 = this->general_lbx.get_elements();
+            std::vector<double> element_access2 = this->general_ubx.get_elements();
+
+            lbx.insert(lbx.end(), element_access1.begin(), element_access1.end());
+            ubx.insert(ubx.end(), element_access2.begin(), element_access2.end());
+            this->lbx_ubx_range = tuple_size_t(tmp_it - lbx.begin(), lbx.end() - lbx.begin());
+        }
+
+        tuple_size_t PseudospectralSegment::get_range_idx_bg()
+        {
+            return this->lbg_ubg_range;
+        }
+
+        tuple_size_t PseudospectralSegment::get_range_idx_bx()
+        {
+            return this->lbx_ubx_range;
         }
 
         void PseudospectralSegment::fill_w(SXVector &w)

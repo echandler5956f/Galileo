@@ -12,7 +12,7 @@ Features:
 
 :heavy_check_mark: Intuitive and efficient formulation of variables, cost and constraints using [casadi].   
 
-:heavy_check_mark: Solver interface enables using the high-performance solvers [Ipopt] and [Snopt].  
+:heavy_check_mark: Solver interface enables using the high-performance solvers [Ipopt] and [SNOPT].  
 
 :heavy_check_mark: [pinocchio] makes custom robot integration as simple as switching the URDF.
 
@@ -38,12 +38,13 @@ Features:
 
 1. Install Galileo's mandatory dependencies:
    * [casadi]
+   * [Ipopt]
    * [pinocchio]
    * [Eigen]
    * [Boost]
 
 2. Install Galileo's optional dependencies
-   * [Ipopt]
+   * [SNOPT]
    * [gnuplot]
 
 ### Gnuplot Simple Install
@@ -131,7 +132,7 @@ Coming soon (ICRA 2025?).
 [CMake]: https://cmake.org/cmake/help/v3.0
 [ROS]: http://www.ros.org
 [Ipopt]: https://projects.coin-or.org/Ipopt
-[Snopt]: http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.html
+[SNOPT]: http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.html
 [rviz]: http://wiki.ros.org/rviz
 [catkin]: http://wiki.ros.org/catkin
 [catkin tools]: http://catkin-tools.readthedocs.org
