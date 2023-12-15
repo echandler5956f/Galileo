@@ -28,16 +28,21 @@ int main()
     casadi::Function Phi("Phi", {x}, {0});
 
     casadi::Dict opts;
+    opts["ipopt.tol"] = 1e-5;
+    // opts["ipopt.max_iter"] = 100;
+    // opts["ipopt.print_level"] = 5;
+    opts["expand"] = true;
+    opts["ipopt.linear_solver"] = "ma97";
     std::shared_ptr<variables::ProblemData> problem = std::make_shared<variables::ProblemData>(Fint, F, L, Phi);
     variables::TrajectoryOpt traj(opts, si, problem);
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1,0) = 1;
 
-    traj.init_finite_elements(2, X0);
+    traj.init_finite_elements(9, X0);
 
     auto sol = traj.optimize();
-    std::cout << sol << std::endl;
+    std::cout << sol["x"] << std::endl;
 
     return 0;
 }

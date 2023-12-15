@@ -37,7 +37,7 @@ namespace galileo
             printf("Starting\n");
             for (std::size_t i = 0; i < 1; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 2, 0.5, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 20, 10./20, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
                 std::vector<std::shared_ptr<ConstraintData>> G;
@@ -77,13 +77,13 @@ namespace galileo
 
         casadi::DMDict TrajectoryOpt::optimize()
         {
-            std::cout << "w: " << vertcat(this->w) << std::endl;
-            std::cout << "g: " << vertcat(this->g) << std::endl;
-            std::cout << "size w: " << vertcat(this->w).size() << std::endl;
-            std::cout << "size g: " << vertcat(this->g).size() << std::endl;
-            std::cout << this->lb.size() << std::endl;
-            std::cout << this->ub.size() << std::endl;
-            printf("HERE!!!!!!!!!!!!!!!!!!\n");
+            // std::cout << "w: " << vertcat(this->w) << std::endl;
+            // std::cout << "g: " << vertcat(this->g) << std::endl;
+            // std::cout << "size w: " << vertcat(this->w).size() << std::endl;
+            // std::cout << "size g: " << vertcat(this->g).size() << std::endl;
+            // std::cout << this->lb.size() << std::endl;
+            // std::cout << this->ub.size() << std::endl;
+            // printf("HERE!!!!!!!!!!!!!!!!!!\n");
 
             casadi::SXDict nlp = {{"x", vertcat(this->w)},
                                   {"f", this->J},

@@ -190,54 +190,54 @@ for k in range(N):
     interpolators_x1.append(x1_interp)
     interpolators_x2.append(x2_interp)
 
-# # Create a dense grid for interpolation over the entire trajectory
-# t_dense = np.linspace(0, T, 2 * N * (d + 1))
-
-# # Interpolate the values for the entire trajectory
-# x_interp_values_x1 = np.concatenate([np.hstack((x1_optk, interp(t_segment))) for x1_optk, interp, t_segment in zip(x_opt[0], interpolators_x1, np.array_split(t_dense, N))])
-# x_interp_values_x2 = np.concatenate([np.hstack((x2_optk, interp(t_segment))) for x2_optk, interp, t_segment in zip(x_opt[1], interpolators_x2, np.array_split(t_dense, N))])
-# t_dense = np.linspace(0, T, 2 * N * (d + 1) + N)
-
-# # Plot the interpolated values
-# plt.figure(1)
-# plt.clf()
-# plt.step(tgrid, np.append(np.nan, u_opt[0]), '-.')
-# plt.plot(tgrid, x_opt[0], '.')
-# plt.plot(t_dense, x_interp_values_x1, '-', label='x1')
-# # plt.plot(t_dense, x_interp_values_x2, '--', label='x2')
-# plt.xlabel('t')
-# plt.legend()
-# plt.grid()
-# plt.show()
-
 # Create a dense grid for interpolation over the entire trajectory
 t_dense = np.linspace(0, T, 2 * N * (d + 1))
 
 # Interpolate the values for the entire trajectory
-x_interp_values_x1 = np.concatenate([interp(t_segment) for interp, t_segment in zip(interpolators_x1, np.array_split(t_dense, N))])
-x_interp_values_x2 = np.concatenate([interp(t_segment) for interp, t_segment in zip(interpolators_x2, np.array_split(t_dense, N))])
+x_interp_values_x1 = np.concatenate([np.hstack((x1_optk, interp(t_segment))) for x1_optk, interp, t_segment in zip(x_opt[0], interpolators_x1, np.array_split(t_dense, N))])
+x_interp_values_x2 = np.concatenate([np.hstack((x2_optk, interp(t_segment))) for x2_optk, interp, t_segment in zip(x_opt[1], interpolators_x2, np.array_split(t_dense, N))])
+t_dense = np.linspace(0, T, 2 * N * (d + 1) + N)
 
 # Plot the interpolated values
 plt.figure(1)
 plt.clf()
 plt.step(tgrid, np.append(np.nan, u_opt[0]), '-.')
 plt.plot(tgrid, x_opt[0], '.')
-plt.plot(tgrid, x_opt[1], '.')
-plt.plot(t_dense, x_interp_values_x1, 'o-', label='x1 (interpolated)')
-plt.plot(t_dense, x_interp_values_x2, 'o-', label='x2 (interpolated)')
-
-
-# Plot the knot points (boundaries of each segment)
-for k in range(N):
-    t_knot_start = k * T / N
-    t_knot_end = (k + 1) * T / N
-    x1_knot_start = x_opt[0][k]
-    x1_knot_end = x_opt[0][k + 1]
-    
-    # plt.plot([t_knot_start, t_knot_start], [x1_knot_start, x_interp_values_x1[(k+1)*(d+1)-1]], 'ro', label=f'x1 (knot start) segment {k + 1}')
-    # plt.plot([t_knot_end, t_knot_end], [x1_knot_end, x_interp_values_x1[(k+1)*(d+1)]], 'ro', label=f'x1 (knot end) segment {k + 1}')
-
+plt.plot(t_dense, x_interp_values_x1, '-', label='x1')
+# plt.plot(t_dense, x_interp_values_x2, '--', label='x2')
 plt.xlabel('t')
 plt.legend()
 plt.grid()
 plt.show()
+
+# # Create a dense grid for interpolation over the entire trajectory
+# t_dense = np.linspace(0, T, 2 * N * (d + 1))
+
+# # Interpolate the values for the entire trajectory
+# x_interp_values_x1 = np.concatenate([interp(t_segment) for interp, t_segment in zip(interpolators_x1, np.array_split(t_dense, N))])
+# x_interp_values_x2 = np.concatenate([interp(t_segment) for interp, t_segment in zip(interpolators_x2, np.array_split(t_dense, N))])
+
+# # Plot the interpolated values
+# plt.figure(1)
+# plt.clf()
+# plt.step(tgrid, np.append(np.nan, u_opt[0]), '-.')
+# plt.plot(tgrid, x_opt[0], '.')
+# plt.plot(tgrid, x_opt[1], '.')
+# plt.plot(t_dense, x_interp_values_x1, 'o-', label='x1 (interpolated)')
+# plt.plot(t_dense, x_interp_values_x2, 'o-', label='x2 (interpolated)')
+
+
+# # Plot the knot points (boundaries of each segment)
+# for k in range(N):
+#     t_knot_start = k * T / N
+#     t_knot_end = (k + 1) * T / N
+#     x1_knot_start = x_opt[0][k]
+#     x1_knot_end = x_opt[0][k + 1]
+    
+#     # plt.plot([t_knot_start, t_knot_start], [x1_knot_start, x_interp_values_x1[(k+1)*(d+1)-1]], 'ro', label=f'x1 (knot start) segment {k + 1}')
+#     # plt.plot([t_knot_end, t_knot_end], [x1_knot_end, x_interp_values_x1[(k+1)*(d+1)]], 'ro', label=f'x1 (knot end) segment {k + 1}')
+
+# plt.xlabel('t')
+# plt.legend()
+# plt.grid()
+# plt.show()

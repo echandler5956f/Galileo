@@ -42,8 +42,15 @@ Features:
    * [Eigen]
    * [Boost]
 
-2. (optional) Install Galileo's optional dependencies
+2. Install Galileo's optional dependencies
    * [Ipopt]
+   * [gnuplot]
+
+### Gnuplot Simple Install
+```bash
+sudo apt-get update
+sudo apt-get install gnuplot
+```
 
 Once you have the required dependencies, you can install the library with
 ```bash
@@ -130,3 +137,4 @@ Coming soon (ICRA 2025?).
 [catkin tools]: http://catkin-tools.readthedocs.org
 [Eigen]: http://eigen.tuxfamily.org
 [Boost]: https://www.boost.org
+[gnuplot]: https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/

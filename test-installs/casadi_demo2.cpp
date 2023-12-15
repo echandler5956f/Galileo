@@ -2,6 +2,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <Eigen/Dense>
+#include <boost/math/interpolators/barycentric_rational.hpp>
+#include "gnuplot-iostream.h"
 
 using namespace casadi;
 using namespace std;
@@ -9,15 +12,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
   // Degree of interpolating polynomial
-  int d = 2;
-
-  // if (argc > 1) {
-  //   d = std::atoi(argv[1]);
-  //   std::cout << "Used arg" << std::endl;
-  // }
-  // else {
-  //   std::cout << "Did not use arg" << std::endl;
-  // }
+  int d = 3;
 
   // Choose collocation points
   auto troot = collocation_points(d, "radau");
@@ -76,7 +71,7 @@ int main(int argc, char **argv)
   Function f("f", {x, u}, {xdot, L});
 
   // Control discretization
-  int N = 2; // number of control intervals
+  int N = 5; // number of control intervals
   double h = T / N;
 
   // Variables for a single collocation interval
@@ -178,14 +173,103 @@ int main(int argc, char **argv)
   opti.subject_to(feqmap(vector<MX>{xcs, xs, us}).at(0) == 0);
   opti.subject_to(fxfmap(vector<MX>{xcs, xs, us}).at(0) - xsoffset == 0);
   J = fxqfold(vector<MX>{J, xcs, xs, us}).at(0);
+  xs = horzcat(xs, var_xs[N]);
 
   opti.minimize(J);
   Dict p_opts = {{"expand", true}};
-  Dict s_opts = {{"max_iter", 200}, 
-  // {"linear_solver", "ma97"}
+  Dict s_opts = {
+      {"max_iter", 200},
+      {"linear_solver", "ma97"}
   };
   opti.solver("ipopt", p_opts, s_opts);
   auto sol = opti.solve();
+
+  // Extract solution data
+  std::vector<double> x1s_sol = sol.value(xs)(0, casadi::Slice(0, xs.columns())).get_elements();
+  std::vector<double> x2s_sol = sol.value(xs)(1, casadi::Slice(0, xs.columns())).get_elements();
+  std::vector<double> us_sol = sol.value(us).get_elements();
+  std::vector<double> x1_all_sol;
+  std::vector<double> x2_all_sol;
+
+  for (int k = 0; k < N; ++k) {
+      x1_all_sol.push_back(x1s_sol[k]);
+      x2_all_sol.push_back(x2s_sol[k]);
+      std::vector<double> xc_k_sol = sol.value(var_xcs[k]).get_elements();
+      for (int i = 0; i < d; ++i) {
+          x1_all_sol.push_back(xc_k_sol[2 * i]);
+          x2_all_sol.push_back(xc_k_sol[2 * i + 1]);
+      }
+  }
+
+  std::vector<double> times;
+  std::vector<double> all_times;
+
+  for (int i = 0; i < N; ++i)
+  {
+    times.push_back(i * h);
+    all_times.push_back(i * h);
+    for (int j = 0; j < d; ++j)
+    {
+      all_times.push_back(i * h + tau_root(j + 1) * h);
+    }
+  }
+  times.push_back(N * h);
+
+  // Create a Gnuplot object
+  Gnuplot gp;
+
+  // Set the style of the plot
+  gp << "set style line 1 lc rgb '#2ca02c' lt 1 lw 2 pt 7 ps 1.5\n"; // Cooked asparagus green
+  gp << "set style line 2 lc rgb '#9467bd' lt 1 lw 2 pt 7 ps 1.5\n"; // Muted purple
+  gp << "set style line 3 lc rgb '#8c564b' lt 1 lw 2 pt 7 ps 1.5\n"; // Chestnut brown
+
+  // Set labels and title
+  gp << "set xlabel 'Time'\n";
+  gp << "set ylabel 'Values'\n";
+  gp << "set title 'Solution Plot'\n";
+
+  // Plot the data
+  gp << "plot '-' with linespoints linestyle 1 title 'x1', '-' with linespoints linestyle 2 title 'x2', '-' with linespoints linestyle 3 title 'u'\n";
+  // gp.send1d(std::make_tuple(all_times, x1_all_sol));
+  // gp.send1d(std::make_tuple(all_times, x2_all_sol));
+  // times.pop_back();
+  // gp.send1d(std::make_tuple(times, us_sol));
+
+  Eigen::MatrixXd xall_opt1 = Eigen::Map<Eigen::MatrixXd>(x1_all_sol.data(), d + 1, N);
+  Eigen::MatrixXd xall_opt2 = Eigen::Map<Eigen::MatrixXd>(x2_all_sol.data(), d + 1, N);
+
+  std::vector<boost::math::barycentric_rational<double>> interpolators_x1;
+  std::vector<boost::math::barycentric_rational<double>> interpolators_x2;
+
+  for (int k = 0; k < N; ++k) {
+    Eigen::VectorXd t_segment = Eigen::VectorXd::LinSpaced(d + 1, k * h, (k + 1) * h);
+    Eigen::VectorXd x1_segment = xall_opt1.col(k);
+    Eigen::VectorXd x2_segment = xall_opt2.col(k);
+
+    interpolators_x1.push_back(boost::math::barycentric_rational<double>(t_segment.data(), x1_segment.data(), d + 1));
+    interpolators_x2.push_back(boost::math::barycentric_rational<double>(t_segment.data(), x2_segment.data(), d + 1));
+  }
+
+  Eigen::VectorXd t_dense = Eigen::VectorXd::LinSpaced(2 * N * (d + 1), 0, T);
+  Eigen::VectorXd x_interp_values_x1(2 * N * (d + 1) + N);
+  Eigen::VectorXd x_interp_values_x2(2 * N * (d + 1) + N);
+
+  for (int k = 0; k < N; ++k) {
+    Eigen::VectorXd t_segment = t_dense.segment(k * (2 * (d + 1)), 2 * (d + 1));
+    x_interp_values_x1.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_x1[k]);
+    x_interp_values_x2.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_x2[k]);
+  }
+
+  t_dense = Eigen::VectorXd::LinSpaced(2 * N * (d + 1) + N, 0, T);
+
+  std::cout << t_dense.size() << std::endl;
+  std::cout << x_interp_values_x1.size() << std::endl;
+  std::cout << x_interp_values_x2.size() << std::endl;
+
+  gp.send1d(std::make_tuple(t_dense, x_interp_values_x1));
+  gp.send1d(std::make_tuple(t_dense, x_interp_values_x2));
+  times.pop_back();
+  gp.send1d(std::make_tuple(times, us_sol));
 
   return 0;
 }

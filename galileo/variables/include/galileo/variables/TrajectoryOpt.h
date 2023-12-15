@@ -131,6 +131,18 @@ namespace galileo
              *
              */
             std::vector<double> all_times;
+
+            /**
+             * @brief Vector of plottable states
+             *
+             */
+            casadi::SXVector xplot;
+
+            /**
+             * @brief Vector of plottable inputs
+             *
+             */
+            casadi::SXVector uplot;
         };
     }
 }
