@@ -126,7 +126,9 @@ namespace galileo
 
         void PseudospectralSegment::fill_times(std::vector<double> &all_times)
         {
-            std::vector<double> element_access1 = this->times.get_elements();
+            /*Cull unique time (start)?*/
+            auto tmp = this->times + all_times.back();
+            std::vector<double> element_access1 = tmp.get_elements();
             all_times.insert(all_times.end(), element_access1.begin(), element_access1.end());
         }
 
