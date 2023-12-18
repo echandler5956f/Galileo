@@ -45,7 +45,7 @@ namespace galileo
             for (std::size_t i = 0; i < 1; ++i)
             {
                 auto start = std::chrono::high_resolution_clock::now();
-                ps = std::make_shared<PseudospectralSegment>(d, 100, 10. / 100, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 1000, 10. / 1000, this->state_indices, this->Fint);
                 auto end = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
                 std::cout << "Time taken for ps Constructor call: " << duration.count() << " microseconds" << std::endl;

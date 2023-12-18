@@ -42,7 +42,7 @@ int main()
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1, 0) = 1;
     int d = 4;
-    int N = 100;
+    int N = 1000;
     double T = 10.0;
     double h = T / N;
 

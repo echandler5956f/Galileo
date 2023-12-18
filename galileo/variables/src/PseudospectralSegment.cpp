@@ -257,7 +257,8 @@ namespace galileo
 
             this->plot_map_func = Function("plot_map",
                                            SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
-                                           SXVector{horzcat(tmp_x), horzcat(u_at_c)});
+                                           SXVector{horzcat(tmp_x), horzcat(u_at_c)})
+                                      .map(this->knot_num, "openmp");
             // std::cout << "tmp_x: " << horzcat(tmp_x) << std::endl;
             //   .map(this->knot_num, "serial");
 
@@ -316,14 +317,15 @@ namespace galileo
             }
         }
 
-
-        SX PseudospectralSegment::processVector(SXVector& vec) {
+        SX PseudospectralSegment::processVector(SXVector &vec)
+        {
             SXVector temp = vec;
             temp.pop_back();
             return horzcat(temp);
         }
 
-        SX PseudospectralSegment::processOffsetVector(SXVector& vec) {
+        SX PseudospectralSegment::processOffsetVector(SXVector &vec)
+        {
             SXVector temp = vec;
             temp.erase(temp.begin());
             return horzcat(temp);
@@ -342,39 +344,14 @@ namespace galileo
             SX xs_offset = this->processOffsetVector(this->X0_var_vec);
             SX dxs_offset = this->processOffsetVector(this->dX0_var_vec);
 
-            SXVector tmpinit = this->plot_map_func(SXVector{this->X0_var_vec[0], this->dXc_var_vec[0], this->dX0_var_vec[0], this->U_var_vec[0]});
-            SX all_xs = tmpinit.at(0);
-            SX all_us =  tmpinit.at(1);
-
-            auto start = std::chrono::high_resolution_clock::now();
-            /*TODO: Convert plot_map_func to a map*/
-            for (int k = 1; k < this->knot_num; ++k)
-            {
-                SXVector tmp = this->plot_map_func(SXVector{this->X0_var_vec[k], this->dXc_var_vec[k], this->dX0_var_vec[k], this->U_var_vec[k]});
-                all_xs = horzcat(all_xs, tmp.at(0));
-                all_us = horzcat(all_us, tmp.at(1));
-            }
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            std::cout << "Time taken for plot_map_func calls: " << duration.count() << " microseconds" << std::endl;
-
-
-
-
-
-
-
-
-
-
-
-
+            SXVector plotmap_restult = this->plot_map_func(SXVector{xs, dxcs, dxs, us});
+            SX all_xs = plotmap_restult.at(0);
+            SX all_us = plotmap_restult.at(1);
 
             /*This section cannot get much faster, it is bounded by the time to evaluate the constraint*/
             result.reserve(this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
                            this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0) +
                            this->general_constraint_maps.size());
-            start = std::chrono::high_resolution_clock::now();
             SX col_con_mat = this->collocation_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
             SX xf_con_mat = this->xf_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
             dxs_offset = reshape(dxs_offset, dxs_offset.size1() * dxs_offset.size2(), 1);
