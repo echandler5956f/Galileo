@@ -8,6 +8,7 @@
 #include <cassert>
 #include <bits/stdc++.h>
 #include <memory>
+#include <chrono>
 
 using namespace casadi;
 
@@ -237,8 +238,28 @@ namespace galileo
 
         private:
             /**
+             * @brief Helper function to process a vector of type SX.
+             *
+             * This function takes a vector of type SX and performs some processing on it.
+             * It creates a temporary vector by copying the input vector and removing the last element.
+             * The modified vector is then returned.
+             *
+             * @param vec The input vector of type SX.
+             * @return The processed vector of type SX.
+             */
+            SX processVector(SXVector &vec);
+
+            /**
+             * @brief Process the offset vector by removing the first element and concatenating the remaining elements horizontally.
+             *
+             * @param vec The input offset vector.
+             * @return The processed offset vector.
+             */
+            SX processOffsetVector(SXVector &vec);
+
+            /**
              * @brief Actual initial state.
-            */
+             */
             SX x0_init;
             /**
              * @brief Collocation state decision variables.
@@ -286,8 +307,8 @@ namespace galileo
 
             /**
              * @brief Solution function.
-             * 
-            */
+             *
+             */
             Function get_sol_func;
 
             /**
@@ -343,7 +364,7 @@ namespace galileo
 
             /**
              * @brief Initial guess for associated with this segment
-            */
+             */
             DM w0;
 
             /**
@@ -435,7 +456,6 @@ namespace galileo
              *
              */
             tuple_size_t g_range;
-
 
             /**
              * @brief Starting and ending index of the bounds in lbg/ubg corresponding to this segment.

@@ -86,8 +86,18 @@ namespace galileo
             this->h = h_;
             this->st_m = st_m_;
             this->T = (this->knot_num + 1) * this->h;
+
+            auto start = std::chrono::high_resolution_clock::now();
             this->initialize_expression_variables(d);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            std::cout << "Time taken for initialize_expression_variables call: " << duration.count() << " microseconds" << std::endl;
+
+            start = std::chrono::high_resolution_clock::now();
             this->initialize_time_vector();
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            std::cout << "Time taken for initialize_time_vector call: " << duration.count() << " microseconds" << std::endl;
         }
 
         void PseudospectralSegment::initialize_expression_variables(int d)
@@ -115,18 +125,21 @@ namespace galileo
         {
             this->times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d + 1), 1);
             int i = 0;
+            int j = 0;
+            double kh = 0;
             for (int k = 0; k < this->knot_num; ++k)
             {
-                this->times(i, 0) = k * this->h;
+                kh = k * this->h;
+                this->times(i, 0) = kh;
                 ++i;
-                for (int j = 0; j < this->dX_poly.d; ++j)
+                for (j = 0; j < this->dX_poly.d; ++j)
                 {
-                    this->times(i, 0) = k * this->h + this->dX_poly.tau_root[j + 1] * this->h;
+                    this->times(i, 0) = kh + this->dX_poly.tau_root[j + 1] * this->h;
                     ++i;
                 }
             }
             // this->times(i, 0) = this->knot_num * this->h;
-            std::cout << "times: " << this->times << std::endl;
+            // std::cout << "times: " << this->times << std::endl;
         }
 
         void PseudospectralSegment::fill_times(std::vector<double> &all_times)
@@ -303,49 +316,67 @@ namespace galileo
             }
         }
 
+
+        SX PseudospectralSegment::processVector(SXVector& vec) {
+            SXVector temp = vec;
+            temp.pop_back();
+            return horzcat(temp);
+        }
+
+        SX PseudospectralSegment::processOffsetVector(SXVector& vec) {
+            SXVector temp = vec;
+            temp.erase(temp.begin());
+            return horzcat(temp);
+        }
+
         void PseudospectralSegment::evaluate_expression_graph(SX &J0, SXVector &w, SXVector &g)
         {
             assert(J0.size1() == 1 && J0.size2() == 1 && "J0 must be a scalar");
 
             SXVector result;
 
-            auto xs_offset = this->X0_var_vec[1];
-            auto dxs_offset = this->dX0_var_vec[1];
-            auto xs = this->X0_var_vec[0];
-            auto dxs = this->dX0_var_vec[0];
-            auto us = this->U_var_vec[0];
-            auto dxcs = this->dXc_var_vec[0];
-            auto tmpinit = this->plot_map_func(SXVector{this->X0_var_vec[0], this->dXc_var_vec[0], this->dX0_var_vec[0], this->U_var_vec[0]});
+            SX xs = this->processVector(this->X0_var_vec);
+            SX dxs = this->processVector(this->dX0_var_vec);
+            SX dxcs = horzcat(this->dXc_var_vec);
+            SX us = horzcat(this->U_var_vec);
+            SX xs_offset = this->processOffsetVector(this->X0_var_vec);
+            SX dxs_offset = this->processOffsetVector(this->dX0_var_vec);
+
+            SXVector tmpinit = this->plot_map_func(SXVector{this->X0_var_vec[0], this->dXc_var_vec[0], this->dX0_var_vec[0], this->U_var_vec[0]});
             SX all_xs = tmpinit.at(0);
             SX all_us =  tmpinit.at(1);
 
+            auto start = std::chrono::high_resolution_clock::now();
+            /*TODO: Convert plot_map_func to a map*/
             for (int k = 1; k < this->knot_num; ++k)
             {
-                xs_offset = horzcat(xs_offset, this->X0_var_vec[k + 1]);
-                dxs_offset = horzcat(dxs_offset, this->dX0_var_vec[k + 1]);
-                xs = horzcat(xs, this->X0_var_vec[k]);
-                dxs = horzcat(dxs, this->dX0_var_vec[k]);
-                dxcs = horzcat(dxcs, this->dXc_var_vec[k]);
-                us = horzcat(us, this->U_var_vec[k]);
-                // std::cout << "xs rows: " << all_xs.rows() << ", xs cols: " << all_xs.columns() << std::endl;
-                // std::cout << all_xs << std::endl;
-                auto tmp = this->plot_map_func(SXVector{this->X0_var_vec[k], this->dXc_var_vec[k], this->dX0_var_vec[k], this->U_var_vec[k]});
-                // std::cout << "tmp rows0: " << tmp.at(0).rows() << ", tmp cols0: " << tmp.at(0).columns() << std::endl;
-                // std::cout << tmp.at(0) << std::endl;
-                // std::cout << "all_xs rows: " << all_xs.rows() << ", all_xs cols: " << all_xs.columns() << std::endl;
-                // std::cout << all_xs << std::endl;
+                SXVector tmp = this->plot_map_func(SXVector{this->X0_var_vec[k], this->dXc_var_vec[k], this->dX0_var_vec[k], this->U_var_vec[k]});
                 all_xs = horzcat(all_xs, tmp.at(0));
-                // std::cout << "HERE!!!!!!!!!!!!!!" << std::endl;
-                // std::cout << "tmp rows1: " << tmp.at(1).rows() << ", tmp cols1: " << tmp.at(1).columns() << std::endl;
-                // std::cout << tmp.at(1) << std::endl;
-                // std::cout << "all_us rows: " << all_us.rows() << ", all_us cols: " << all_us.columns() << std::endl;
                 all_us = horzcat(all_us, tmp.at(1));
             }
-            // all_xs = horzcat(all_xs, this->X0_var_vec.back());
-            // all_us = horzcat(all_us, transpose(this->U_var_vec.back()));
-            // std::cout << "all_xs: " << all_xs << std::endl;
-            auto col_con_mat = this->collocation_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
-            auto xf_con_mat = this->xf_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            std::cout << "Time taken for plot_map_func calls: " << duration.count() << " microseconds" << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+            /*This section cannot get much faster, it is bounded by the time to evaluate the constraint*/
+            result.reserve(this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
+                           this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0) +
+                           this->general_constraint_maps.size());
+            start = std::chrono::high_resolution_clock::now();
+            SX col_con_mat = this->collocation_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
+            SX xf_con_mat = this->xf_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
             dxs_offset = reshape(dxs_offset, dxs_offset.size1() * dxs_offset.size2(), 1);
 
             result.push_back(reshape(col_con_mat, col_con_mat.size1() * col_con_mat.size2(), 1));
@@ -354,30 +385,30 @@ namespace galileo
 
             for (std::size_t i = 0; i < this->general_constraint_maps.size(); ++i)
             {
-                auto g_con_mat = this->general_constraint_maps[i](SXVector{xs, dxcs, dxs, us}).at(0);
+                SX g_con_mat = this->general_constraint_maps[i](SXVector{xs, dxcs, dxs, us}).at(0);
                 result.push_back(reshape(g_con_mat, g_con_mat.size1() * g_con_mat.size2(), 1));
             }
 
-            // Worried about aliasing here
             SX cost = this->q_cost_fold(SXVector{J0, xs, dxcs, dxs, us}).at(0);
             J0 = cost;
             /*where g of this segment starts*/
-            auto g_size = g.size();
-            g.insert(g.end(), result.begin(), result.end());
+            std::size_t g_size = g.size();
+            /*Use std::move to avoid copying the vectors. Reserve space for g in advance outside of PseudospectralSegment.*/
+            g.insert(g.end(), std::make_move_iterator(result.begin()), std::make_move_iterator(result.end()));
             this->g_range = tuple_size_t(g_size, g.size());
 
             /*where w of this segment starts*/
-            auto w_size = w.size();
-            w.insert(w.end(), this->dXc_var_vec.begin(), this->dXc_var_vec.end());
-            w.insert(w.end(), this->dX0_var_vec.begin(), this->dX0_var_vec.end());
-            w.insert(w.end(), this->U_var_vec.begin(), this->U_var_vec.end());
+            std::size_t w_size = w.size();
+            /*Use std::move to avoid copying the vectors. Reserve space for w in advance outside of PseudospectralSegment.*/
+            w.insert(w.end(), std::make_move_iterator(this->dXc_var_vec.begin()), std::make_move_iterator(this->dXc_var_vec.end()));
+            w.insert(w.end(), std::make_move_iterator(this->dX0_var_vec.begin()), std::make_move_iterator(this->dX0_var_vec.end()));
+            w.insert(w.end(), std::make_move_iterator(this->U_var_vec.begin()), std::make_move_iterator(this->U_var_vec.end()));
 
             this->w_range = tuple_size_t(w_size, std::accumulate(w.begin() + w_size, w.end(), 0, [](int sum, const SX &item)
                                                                  { return sum + item.size1() * item.size2(); }));
             this->get_sol_func = Function("func",
                                           SXVector({vertcat(SXVector(w.begin() + w_size, w.begin() + w.size()))}),
                                           SXVector({all_xs, all_us}));
-            std::cout << this->get_sol_func << std::endl;
         }
 
         const SXVector PseudospectralSegment::extract_solution(SX &w)

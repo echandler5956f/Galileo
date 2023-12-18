@@ -42,24 +42,24 @@ int main()
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1, 0) = 1;
     int d = 4;
-    int N = 10;
+    int N = 100;
     double T = 10.0;
     double h = T / N;
 
     traj.init_finite_elements(d, X0);
     auto sol = traj.optimize();
     auto times = traj.get_all_times();
-    std::cout << "sol: " << sol << std::endl;
+    // std::cout << "sol: " << sol << std::endl;
     auto dmsolx = (casadi::DM)sol[0];
     auto dmsolu = (casadi::DM)sol[1];
     std::vector<double> x1_all_sol = dmsolx(0, casadi::Slice(0, dmsolx.columns())).get_elements();
     std::vector<double> x2_all_sol = dmsolx(1, casadi::Slice(0, dmsolx.columns())).get_elements();
     std::vector<double> u_all_sol = dmsolu(0, casadi::Slice(0, dmsolu.columns())).get_elements();
 
-    std::cout << "times: " << times.size() << std::endl;
-    std::cout << "x1_all_sol: " << x1_all_sol.size() << std::endl;
-    std::cout << "x2_all_sol: " << x2_all_sol.size() << std::endl;
-    std::cout << "u_all_sol: " << u_all_sol.size() << std::endl;
+    // std::cout << "times: " << times.size() << std::endl;
+    // std::cout << "x1_all_sol: " << x1_all_sol.size() << std::endl;
+    // std::cout << "x2_all_sol: " << x2_all_sol.size() << std::endl;
+    // std::cout << "u_all_sol: " << u_all_sol.size() << std::endl;
 
     // Create a Gnuplot object
     Gnuplot gp;

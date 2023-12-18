@@ -38,21 +38,50 @@ namespace galileo
 
             std::vector<double> equality_back(this->state_indices->nx, 0.0);
             std::shared_ptr<PseudospectralSegment> ps;
+            std::vector<std::shared_ptr<ConstraintData>> G;
             // std::size_t i = 0;
             printf("Starting\n");
+            auto startinit = std::chrono::high_resolution_clock::now();
             for (std::size_t i = 0; i < 1; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 10, 10. / 10, this->state_indices, this->Fint);
+                auto start = std::chrono::high_resolution_clock::now();
+                ps = std::make_shared<PseudospectralSegment>(d, 100, 10. / 100, this->state_indices, this->Fint);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                std::cout << "Time taken for ps Constructor call: " << duration.count() << " microseconds" << std::endl;
+
+                start = std::chrono::high_resolution_clock::now();
                 ps->initialize_knot_segments(prev_final_state);
+                end = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                std::cout << "Time taken for initialize_knot_segments call: " << duration.count() << " microseconds" << std::endl;
+
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
-                std::vector<std::shared_ptr<ConstraintData>> G;
+                start = std::chrono::high_resolution_clock::now();
                 ps->initialize_expression_graph(this->F, this->L, G);
-                printf("Successfully initialized expression graph.\n");
+                end = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                std::cout << "Time taken for initialize_expression_graph call: " << duration.count() << " microseconds" << std::endl;
+
                 this->trajectory.push_back(ps);
+                start = std::chrono::high_resolution_clock::now();
                 ps->evaluate_expression_graph(this->J, this->w, this->g);
-                printf("Successfully evaluated expression graph.\n");
+                end = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                std::cout << "Time taken for evaluate_expression_graph call: " << duration.count() << " microseconds" << std::endl;
+
+                start = std::chrono::high_resolution_clock::now();
                 ps->fill_lbg_ubg(this->lbg, this->ubg);
+                end = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                std::cout << "Time taken for fill_lbg_ubg call: " << duration.count() << " microseconds" << std::endl;
+
+                start = std::chrono::high_resolution_clock::now();
                 ps->fill_times(this->all_times);
+                end = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                std::cout << "Time taken for fill_times call: " << duration.count() << " microseconds" << std::endl;
+
                 if (i == 0)
                 {
                     auto curr_initial_state = ps->get_initial_state();
@@ -78,6 +107,9 @@ namespace galileo
                 }
                 ++i;
             }
+            auto endinit = std::chrono::high_resolution_clock::now();
+            auto durationinit = std::chrono::duration_cast<std::chrono::microseconds>(endinit - startinit);
+            std::cout << "Time taken for all Pseudospectral segment methods: " << durationinit.count() << " microseconds" << std::endl;
             printf("Finished init\n");
         }
 
