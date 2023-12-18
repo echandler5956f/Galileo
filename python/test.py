@@ -56,7 +56,7 @@ L = x1**2 + x2**2 + u**2
 f = ca.Function('f', [x, u], [xdot, L], ['x', 'u'], ['xdot', 'L'])
 
 # Control discretization
-N = 20  # Number of control intervals
+N = 25  # Number of control intervals
 h = T/N
 
 # Start with an empty NLP
@@ -100,7 +100,7 @@ for k in range(N):
         x_all.append(Xkj)
         Xc.append(Xkj)
         w.append(Xkj)
-        lbw.append([-0.25, -np.inf])
+        lbw.append([-np.inf, -np.inf])
         ubw.append([np.inf,  np.inf])
         w0.append([0, 0])
 
@@ -127,7 +127,7 @@ for k in range(N):
     # New NLP variable for state at the end of the interval
     Xk = ca.MX.sym('X_' + str(k+1), 2)
     w.append(Xk)
-    lbw.append([-0.25, -np.inf])
+    lbw.append([-np.inf, -np.inf])
     ubw.append([np.inf,  np.inf])
     w0.append([0, 0])
     x_plot.append(Xk)
@@ -201,10 +201,11 @@ t_dense = np.linspace(0, T, 2 * N * (d + 1) + N)
 # Plot the interpolated values
 plt.figure(1)
 plt.clf()
-plt.step(tgrid, np.append(np.nan, u_opt[0]), '-.')
+plt.step(tgrid, np.append(np.nan, u_opt[0]), '-.', label='u')
 plt.plot(tgrid, x_opt[0], '.')
+plt.plot(tgrid, x_opt[1], '.')
 plt.plot(t_dense, x_interp_values_x1, '-', label='x1')
-# plt.plot(t_dense, x_interp_values_x2, '--', label='x2')
+plt.plot(t_dense, x_interp_values_x2, '--', label='x2')
 plt.xlabel('t')
 plt.legend()
 plt.grid()

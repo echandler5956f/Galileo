@@ -10,6 +10,7 @@ find_package(casadi)
 find_package(pinocchio)
 find_package (Eigen3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS iostreams unit_test_framework)
+find_package(OpenMP)
 
 # libgalileo
 add_library(galileo SHARED galileo.cc)
@@ -31,6 +32,7 @@ add_subdirectory(galileo)
 target_link_libraries(galileo
     PUBLIC
     casadi
+    OpenMP::OpenMP_CXX
     pinocchio
     Eigen3::Eigen
     ${Boost_LIBRARIES}

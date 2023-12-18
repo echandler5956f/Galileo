@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   Function f("f", {x, u}, {xdot, L});
 
   // Control discretization
-  int N = 5; // number of control intervals
+  int N = 4;// number of control intervals
   double h = T / N;
 
   // Variables for a single collocation interval
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
   for (int r = 0; r < d; ++r)
   {
     lb.push_back(-numeric_limits<double>::infinity());
-    lb.push_back(-0.25);
+    lb.push_back(-numeric_limits<double>::infinity());
     ub.push_back(numeric_limits<double>::infinity());
     ub.push_back(numeric_limits<double>::infinity());
   }
@@ -148,13 +148,10 @@ int main(int argc, char **argv)
   for (int k = 0; k < N; ++k)
   {
     var_us[k] = opti.variable(1);
-    opti.bounded(-1, var_us[k], 1);
 
     var_xcs[k] = opti.variable(2 * d);
-    opti.bounded(lb, var_xcs[k], ub);
 
     var_xs[k + 1] = opti.variable(2);
-    opti.bounded(vector<double>{-0.25, -numeric_limits<double>::infinity()}, var_xs[k + 1], vector<double>{numeric_limits<double>::infinity(), numeric_limits<double>::infinity()});
   }
 
   MX xsoffset = var_xs[1];
@@ -172,6 +169,8 @@ int main(int argc, char **argv)
   std::cout << "feqmap: " << feqmap(vector<MX>{xcs, xs, us}).at(0).size() << std::endl;
   opti.subject_to(feqmap(vector<MX>{xcs, xs, us}).at(0) == 0);
   opti.subject_to(fxfmap(vector<MX>{xcs, xs, us}).at(0) - xsoffset == 0);
+  opti.subject_to(us <= 1.0);
+  opti.subject_to(us >= -1.0);
   J = fxqfold(vector<MX>{J, xcs, xs, us}).at(0);
   xs = horzcat(xs, var_xs[N]);
 
@@ -179,8 +178,7 @@ int main(int argc, char **argv)
   Dict p_opts = {{"expand", true}};
   Dict s_opts = {
       {"max_iter", 200},
-      {"linear_solver", "ma97"}
-  };
+      {"linear_solver", "ma97"}};
   opti.solver("ipopt", p_opts, s_opts);
   auto sol = opti.solve();
 
@@ -191,14 +189,16 @@ int main(int argc, char **argv)
   std::vector<double> x1_all_sol;
   std::vector<double> x2_all_sol;
 
-  for (int k = 0; k < N; ++k) {
-      x1_all_sol.push_back(x1s_sol[k]);
-      x2_all_sol.push_back(x2s_sol[k]);
-      std::vector<double> xc_k_sol = sol.value(var_xcs[k]).get_elements();
-      for (int i = 0; i < d; ++i) {
-          x1_all_sol.push_back(xc_k_sol[2 * i]);
-          x2_all_sol.push_back(xc_k_sol[2 * i + 1]);
-      }
+  for (int k = 0; k < N; ++k)
+  {
+    x1_all_sol.push_back(x1s_sol[k]);
+    x2_all_sol.push_back(x2s_sol[k]);
+    std::vector<double> xc_k_sol = sol.value(var_xcs[k]).get_elements();
+    for (int i = 0; i < d; ++i)
+    {
+      x1_all_sol.push_back(xc_k_sol[2 * i]);
+      x2_all_sol.push_back(xc_k_sol[2 * i + 1]);
+    }
   }
 
   std::vector<double> times;
@@ -215,13 +215,19 @@ int main(int argc, char **argv)
   }
   times.push_back(N * h);
 
+  std::cout << "x1_sol size: " << x1_all_sol.size() << std::endl;
+  std::cout << "x2_sol size: " << x2_all_sol.size() << std::endl;
+  std::cout << "us_sol size: " << us_sol.size() << std::endl;
+  std::cout << "all_times size: " << all_times.size() << std::endl;
+  std::cout << "all_times: " << all_times << std::endl;
+
   // Create a Gnuplot object
   Gnuplot gp;
 
   // Set the style of the plot
-  gp << "set style line 1 lc rgb '#2ca02c' lt 1 lw 2 pt 7 ps 1.5\n"; // Cooked asparagus green
-  gp << "set style line 2 lc rgb '#9467bd' lt 1 lw 2 pt 7 ps 1.5\n"; // Muted purple
-  gp << "set style line 3 lc rgb '#8c564b' lt 1 lw 2 pt 7 ps 1.5\n"; // Chestnut brown
+  gp << "set style line 1 lc rgb '#2ca02c' lt 1 lw 2 pt 7 ps 0.5\n"; // Cooked asparagus green
+  gp << "set style line 2 lc rgb '#9467bd' lt 1 lw 2 pt 7 ps 0.5\n"; // Muted purple
+  gp << "set style line 3 lc rgb '#8c564b' lt 1 lw 2 pt 7 ps 0.5\n"; // Chestnut brown
 
   // Set labels and title
   gp << "set xlabel 'Time'\n";
@@ -241,7 +247,8 @@ int main(int argc, char **argv)
   std::vector<boost::math::barycentric_rational<double>> interpolators_x1;
   std::vector<boost::math::barycentric_rational<double>> interpolators_x2;
 
-  for (int k = 0; k < N; ++k) {
+  for (int k = 0; k < N; ++k)
+  {
     Eigen::VectorXd t_segment = Eigen::VectorXd::LinSpaced(d + 1, k * h, (k + 1) * h);
     Eigen::VectorXd x1_segment = xall_opt1.col(k);
     Eigen::VectorXd x2_segment = xall_opt2.col(k);
@@ -254,7 +261,8 @@ int main(int argc, char **argv)
   Eigen::VectorXd x_interp_values_x1(2 * N * (d + 1) + N);
   Eigen::VectorXd x_interp_values_x2(2 * N * (d + 1) + N);
 
-  for (int k = 0; k < N; ++k) {
+  for (int k = 0; k < N; ++k)
+  {
     Eigen::VectorXd t_segment = t_dense.segment(k * (2 * (d + 1)), 2 * (d + 1));
     x_interp_values_x1.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_x1[k]);
     x_interp_values_x2.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_x2[k]);

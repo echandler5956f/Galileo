@@ -36,9 +36,14 @@ namespace galileo
             /**
              * @brief Optimize and return the solution.
              *
-             * @return casadi::DMDict A dictionary containing the solution
+             * @return casadi::SXVector The solution
              */
-            casadi::DMDict optimize();
+            casadi::SXVector optimize();
+
+            /**
+             * @brief Get the times where the decision variables are evaluated.
+            */
+            std::vector<double> get_all_times();
 
         private:
             /**
@@ -120,6 +125,23 @@ namespace galileo
              *
              */
             std::vector<double> ubg;
+
+            /**
+             * @brief  Lower bounds associated with the decision variables.
+             *
+             */
+            std::vector<double> lbw;
+
+            /**
+             * @brief Upper bounds associated with the decision variables.
+             *
+             */
+            std::vector<double> ubw;
+
+            /**
+             * @brief Initial guess for the decision variables.
+            */
+            std::vector<double> w0;
 
             /**
              * @brief Expression for objective cost.

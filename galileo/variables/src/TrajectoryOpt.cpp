@@ -23,6 +23,9 @@ namespace galileo
             this->g.clear();
             this->lbg.clear();
             this->ubg.clear();
+            this->lbw.clear();
+            this->ubw.clear();
+            this->w0.clear();
             this->J = 0;
 
             this->all_times.clear();
@@ -31,21 +34,24 @@ namespace galileo
             casadi::SX prev_final_state_deviant;
             casadi::SX curr_initial_state_deviant;
 
+            // this->w0 = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., X0(0,0).get_elements().at(0), X0(1,0).get_elements().at(0), 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+
             std::vector<double> equality_back(this->state_indices->nx, 0.0);
             std::shared_ptr<PseudospectralSegment> ps;
             // std::size_t i = 0;
             printf("Starting\n");
             for (std::size_t i = 0; i < 1; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 20, 10./20, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 10, 10. / 10, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
                 std::vector<std::shared_ptr<ConstraintData>> G;
                 ps->initialize_expression_graph(this->F, this->L, G);
+                printf("Successfully initialized expression graph.\n");
                 this->trajectory.push_back(ps);
-                ps->evaluate_expression_graph(this->J, this->g);
+                ps->evaluate_expression_graph(this->J, this->w, this->g);
+                printf("Successfully evaluated expression graph.\n");
                 ps->fill_lbg_ubg(this->lbg, this->ubg);
-                ps->fill_w(this->w);
                 ps->fill_times(this->all_times);
                 if (i == 0)
                 {
@@ -60,8 +66,8 @@ namespace galileo
                     /*For general jump map functions you can use the following syntax:*/
                     // g.push_back(jump_map_function(casadi::SXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
                     this->g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
-                    this->lbg.insert(this->lbg.end(), equality_back.begin(), equality_back.end()-1);
-                    this->ubg.insert(this->ubg.end(), equality_back.begin(), equality_back.end()-1);
+                    this->lbg.insert(this->lbg.end(), equality_back.begin(), equality_back.end() - 1);
+                    this->ubg.insert(this->ubg.end(), equality_back.begin(), equality_back.end() - 1);
                 }
                 prev_final_state = ps->get_final_state();
                 prev_final_state_deviant = ps->get_final_state_deviant();
@@ -75,9 +81,9 @@ namespace galileo
             printf("Finished init\n");
         }
 
-        casadi::DMDict TrajectoryOpt::optimize()
+        casadi::SXVector TrajectoryOpt::optimize()
         {
-            // std::cout << "w: " << vertcat(this->w) << std::endl;
+            std::cout << "w: " << vertcat(this->w) << std::endl;
             // std::cout << "g: " << vertcat(this->g) << std::endl;
             // std::cout << "size w: " << vertcat(this->w).size() << std::endl;
             // std::cout << "size g: " << vertcat(this->g).size() << std::endl;
@@ -92,8 +98,18 @@ namespace galileo
             casadi::DMDict arg;
             arg["lbg"] = this->lbg;
             arg["ubg"] = this->ubg;
+            // arg["lbx"] = this->lbw;
+            // arg["ubx"] = this->ubw;
+            arg["x0"] = this->w0;
             auto sol = this->solver(arg);
-            return this->solver(arg);
+            auto tmp = casadi::SX(sol["x"]);
+            std::cout << "Extracting solution..." << std::endl;
+            return this->trajectory[0]->extract_solution(tmp);
+        }
+
+        std::vector<double> TrajectoryOpt::get_all_times()
+        {
+            return this->all_times;
         }
     }
 }

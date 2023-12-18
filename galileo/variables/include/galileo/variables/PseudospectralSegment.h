@@ -144,9 +144,18 @@ namespace galileo
              * @brief Evaluate the expressions with the actual decision variables.
              *
              * @param J0 Accumulated cost so far
+             * @param w Decision variable vector to fill
              * @param g Constraint vector to fill
              */
-            void evaluate_expression_graph(SX &J0, SXVector &g);
+            void evaluate_expression_graph(SX &J0, SXVector &w, SXVector &g);
+
+            /**
+             * @brief Extract the solution from the decision variable vector.
+             *
+             * @param w Decision variable vector
+             * @return SX Solution values
+             */
+            const SXVector extract_solution(SX &w);
 
             /**
              * @brief Get the initial state.
@@ -177,6 +186,17 @@ namespace galileo
             SX get_final_state();
 
             /**
+             * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
+             *
+             * This function takes in two vectors, lbw and ubw, and fills them with values.
+             * The filled values represent the constraint lower and upper bounds on decision variables.
+             *
+             * @param lbw The vector to be filled with lower bound values on decision variables.
+             * @param ubw The vector to be filled with upper bound values on decision variables.
+             */
+            void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw);
+
+            /**
              * @brief Fills the lower bounds on general constraints (lbg) and upper bounds on general constraints (ubg) vectors with values.
              *
              * This function takes in two vectors, lbg and ubg, and fills them with values.
@@ -188,27 +208,7 @@ namespace galileo
             void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg);
 
             /**
-             * @brief Fills the lower bounds on decision variable (lbx) and upper bounds on decision variable (ubx) vectors with values.
-             *
-             * This function takes in two vectors, lbx and ubx, and fills them with values.
-             * The filled values represent the constraint lower and upper bounds on decision variables.
-             *
-             * @param lbx The vector to be filled with lower bound values on decision variables.
-             * @param ubx The vector to be filled with upper bound values on decision variables.
-             */
-            void fill_lbx_ubx(std::vector<double> &lbx, std::vector<double> &ubx);
-
-            /**
-             * @brief Fills the given SXVector with values.
-             *
-             * This function fills the provided SXVector with values.
-             *
-             * @param w The SXVector to be filled.
-             */
-            void fill_w(SXVector &w);
-
-            /**
-             * @brief Returns the starting and ending index in w (call after fill_w!).
+             * @brief Returns the starting and ending index in w.
              *
              * @return tuple_size_t The range of indices
              */
@@ -222,20 +222,24 @@ namespace galileo
             tuple_size_t get_range_idx_constraint_expressions();
 
             /**
-             * @brief Returns the starting and ending index in bg (call after fill_lbg_ubg!). This should match get_range_idx_constraint_expressions.
+             * @brief Returns the starting and ending index in lbg/ubg.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_bg();
+            tuple_size_t get_range_idx_constraint_bounds();
 
             /**
-             * @brief Returns the starting and ending index in bx (call after fill_lbx_ubx!).
+             * @brief Returns the starting and ending index in lbw/ubw.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_bx();
+            tuple_size_t get_range_idx_decision_bounds();
 
         private:
+            /**
+             * @brief Actual initial state.
+            */
+            SX x0_init;
             /**
              * @brief Collocation state decision variables.
              *
@@ -257,6 +261,12 @@ namespace galileo
             SXVector U_at_c_vec;
 
             /**
+             * @brief Collocation state decision expressions at the collocation points.
+             *
+             */
+            SXVector x_at_c_vec;
+
+            /**
              * @brief Knot point deviants state decision variables.
              *
              */
@@ -267,6 +277,18 @@ namespace galileo
              *
              */
             SXVector X0_var_vec;
+
+            /**
+             * @brief Function map for converting solution to plottable results.
+             *
+             */
+            Function plot_map_func;
+
+            /**
+             * @brief Solution function.
+             * 
+            */
+            Function get_sol_func;
 
             /**
              * @brief Implicit discrete-time function map. This function map returns the vector of collocation equations
@@ -311,13 +333,18 @@ namespace galileo
              * @brief Lower bounds associated with the decision variable constraint maps.
              *
              */
-            DM general_lbx;
+            DM general_lbw;
 
             /**
              * @brief Upper bounds associated with the decision variable constraint maps.
              *
              */
-            DM general_ubx;
+            DM general_ubw;
+
+            /**
+             * @brief Initial guess for associated with this segment
+            */
+            DM w0;
 
             /**
              * @brief Integrator function.
@@ -404,28 +431,23 @@ namespace galileo
             tuple_size_t w_range;
 
             /**
-             * @brief Starting and ending index of the constraint expressions in g corresponding to this segment. This should match lbg_ubg_range.
+             * @brief Starting and ending index of the constraint expressions in g corresponding to this segment.
              *
              */
             tuple_size_t g_range;
 
-            /**
-             * @brief Starting and ending index of the constraint expressions in bx corresponding to this segment. This should match lbx_ubx_range.
-             *
-             */
-            tuple_size_t bx_range;
 
             /**
-             * @brief Starting and ending index of the bounds in lbg/ubg corresponding to this segment. This should match g_range.
+             * @brief Starting and ending index of the bounds in lbg/ubg corresponding to this segment.
              *
              */
             tuple_size_t lbg_ubg_range;
 
             /**
-             * @brief Starting and ending index of the bounds in lbx/ubx corresponding to this segment. This should match bx_range.
+             * @brief Starting and ending index of the bounds in lbw/ubw corresponding to this segment.
              *
              */
-            tuple_size_t lbx_ubx_range;
+            tuple_size_t lbw_ubw_range;
         };
     }
 }
