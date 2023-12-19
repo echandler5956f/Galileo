@@ -34,54 +34,33 @@ namespace galileo
             casadi::SX prev_final_state_deviant;
             casadi::SX curr_initial_state_deviant;
 
-            // this->w0 = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., X0(0,0).get_elements().at(0), X0(1,0).get_elements().at(0), 0., 0., 0., 0., 0., 0., 0., 0., 0.};
-
             std::vector<double> equality_back(this->state_indices->nx, 0.0);
             std::shared_ptr<PseudospectralSegment> ps;
-            std::vector<std::shared_ptr<ConstraintData>> G;
-            // std::size_t i = 0;
-            printf("Starting\n");
-            auto startinit = std::chrono::high_resolution_clock::now();
-            for (std::size_t i = 0; i < 1; ++i)
-            {
-                auto start = std::chrono::high_resolution_clock::now();
-                ps = std::make_shared<PseudospectralSegment>(d, 1000, 10. / 1000, this->state_indices, this->Fint);
-                auto end = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-                std::cout << "Time taken for ps Constructor call: " << duration.count() << " microseconds" << std::endl;
 
-                start = std::chrono::high_resolution_clock::now();
+            /*Each phase should have a vector of constraint data*/
+            std::size_t num_phases = 1;
+            std::vector<std::shared_ptr<ConstraintData>> G;
+            std::shared_ptr<DecisionData> W;
+
+            printf("Starting initialization\n");
+            for (std::size_t i = 0; i < num_phases; ++i)
+            {
+                ps = std::make_shared<PseudospectralSegment>(d, 1000, 10. / 1000, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
-                end = std::chrono::high_resolution_clock::now();
-                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-                std::cout << "Time taken for initialize_knot_segments call: " << duration.count() << " microseconds" << std::endl;
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
-                start = std::chrono::high_resolution_clock::now();
-                ps->initialize_expression_graph(this->F, this->L, G);
-                end = std::chrono::high_resolution_clock::now();
-                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-                std::cout << "Time taken for initialize_expression_graph call: " << duration.count() << " microseconds" << std::endl;
+                /*TODO: Pass in W which holds the decision variable bounds and initial guess data*/
+                ps->initialize_expression_graph(this->F, this->L, G, W);
 
                 this->trajectory.push_back(ps);
-                start = std::chrono::high_resolution_clock::now();
                 ps->evaluate_expression_graph(this->J, this->w, this->g);
-                end = std::chrono::high_resolution_clock::now();
-                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-                std::cout << "Time taken for evaluate_expression_graph call: " << duration.count() << " microseconds" << std::endl;
 
-                start = std::chrono::high_resolution_clock::now();
                 ps->fill_lbg_ubg(this->lbg, this->ubg);
-                end = std::chrono::high_resolution_clock::now();
-                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-                std::cout << "Time taken for fill_lbg_ubg call: " << duration.count() << " microseconds" << std::endl;
-
-                start = std::chrono::high_resolution_clock::now();
+                ps->fill_lbw_ubw(this->lbw, this->ubw);
+                ps->fill_w0(this->w0);
                 ps->fill_times(this->all_times);
-                end = std::chrono::high_resolution_clock::now();
-                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-                std::cout << "Time taken for fill_times call: " << duration.count() << " microseconds" << std::endl;
 
+                /*Initial state constraint*/
                 if (i == 0)
                 {
                     auto curr_initial_state = ps->get_initial_state();
@@ -89,6 +68,7 @@ namespace galileo
                     this->lbg.insert(this->lbg.end(), equality_back.begin(), equality_back.end());
                     this->ubg.insert(this->ubg.end(), equality_back.begin(), equality_back.end());
                 }
+                /*Continuity constraint for the state deviant between phases*/
                 else if (i > 0)
                 {
                     curr_initial_state_deviant = ps->get_initial_state_deviant();
@@ -100,17 +80,14 @@ namespace galileo
                 }
                 prev_final_state = ps->get_final_state();
                 prev_final_state_deviant = ps->get_final_state_deviant();
-                if (i == 2)
+
+                /*Terminal cost*/
+                if (i == num_phases - 1)
                 {
-                    /*Add terminal cost*/
                     this->J += this->Phi(casadi::SXVector{prev_final_state}).at(0);
                 }
-                ++i;
             }
-            auto endinit = std::chrono::high_resolution_clock::now();
-            auto durationinit = std::chrono::duration_cast<std::chrono::microseconds>(endinit - startinit);
-            std::cout << "Time taken for all Pseudospectral segment methods: " << durationinit.count() << " microseconds" << std::endl;
-            printf("Finished init\n");
+            printf("Finished initialization.\n");
         }
 
         casadi::SXVector TrajectoryOpt::optimize()
@@ -121,7 +98,6 @@ namespace galileo
             // std::cout << "size g: " << vertcat(this->g).size() << std::endl;
             // std::cout << this->lb.size() << std::endl;
             // std::cout << this->ub.size() << std::endl;
-            // printf("HERE!!!!!!!!!!!!!!!!!!\n");
 
             casadi::SXDict nlp = {{"x", vertcat(this->w)},
                                   {"f", this->J},
@@ -132,7 +108,7 @@ namespace galileo
             arg["ubg"] = this->ubg;
             // arg["lbx"] = this->lbw;
             // arg["ubx"] = this->ubw;
-            arg["x0"] = this->w0;
+            // arg["x0"] = this->w0;
             auto sol = this->solver(arg);
             auto tmp = casadi::SX(sol["x"]);
             std::cout << "Extracting solution..." << std::endl;

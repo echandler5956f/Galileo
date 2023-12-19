@@ -2,13 +2,10 @@
 
 #include "galileo/variables/States.h"
 #include "galileo/variables/Constraint.h"
-#include <Eigen/Sparse>
 #include <vector>
 #include <string>
 #include <cassert>
-#include <bits/stdc++.h>
 #include <memory>
-#include <chrono>
 
 using namespace casadi;
 
@@ -59,25 +56,25 @@ namespace galileo
              * @brief The roots of the polynomial.
              *
              */
-            Eigen::VectorXd tau_root;
+            std::vector<double> tau_root;
 
             /**
              * @brief Quadrature coefficients.
              *
              */
-            Eigen::VectorXd B;
+            std::vector<double> B;
 
             /**
              * @brief Collocation coeffficients.
              *
              */
-            Eigen::MatrixXd C;
+            std::vector<std::vector<double>> C;
 
             /**
              * @brief Continuity coefficients.
              *
              */
-            Eigen::VectorXd D;
+            std::vector<double> D;
         };
 
         /**
@@ -138,8 +135,9 @@ namespace galileo
              * @param F Function for the system dynamics
              * @param L Integrated cost
              * @param G Vector of constraint data
+             * @param W Decision bound and initial guess data
              */
-            void initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G);
+            void initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> W);
 
             /**
              * @brief Evaluate the expressions with the actual decision variables.
@@ -163,28 +161,28 @@ namespace galileo
              *
              * @return SX The initial state
              */
-            SX get_initial_state();
+            const SX get_initial_state();
 
             /**
              * @brief Get the initial state deviant.
              *
              * @return SX The initial state deviant
              */
-            SX get_initial_state_deviant();
+            const SX get_initial_state_deviant();
 
             /**
              * @brief Get the final state deviant.
              *
              * @return SX The final state deviant
              */
-            SX get_final_state_deviant();
+            const SX get_final_state_deviant();
 
             /**
              * @brief Get the actual final state.
              *
              * @return SX The final state.
              */
-            SX get_final_state();
+            const SX get_final_state();
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -209,32 +207,42 @@ namespace galileo
             void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg);
 
             /**
+             * @brief Fills the initial guess vector (w0) with values.
+             *
+             * This function takes in a vector, w0, and fills it with values.
+             * The filled values represent the initial guess for the decision variables.
+             *
+             * @param w0 The vector to be filled with initial guess values.
+             */
+            void fill_w0(std::vector<double> &w0);
+
+            /**
              * @brief Returns the starting and ending index in w.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_decision_variables();
+            const tuple_size_t get_range_idx_decision_variables();
 
             /**
              * @brief Returns the starting and ending index in g (call after evaluate_expression_graph!).
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_constraint_expressions();
+            const tuple_size_t get_range_idx_constraint_expressions();
 
             /**
              * @brief Returns the starting and ending index in lbg/ubg.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_constraint_bounds();
+            const tuple_size_t get_range_idx_constraint_bounds();
 
             /**
              * @brief Returns the starting and ending index in lbw/ubw.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_decision_bounds();
+            const tuple_size_t get_range_idx_decision_bounds();
 
         private:
             /**
@@ -247,7 +255,7 @@ namespace galileo
              * @param vec The input vector of type SX.
              * @return The processed vector of type SX.
              */
-            SX processVector(SXVector &vec);
+            const SX processVector(SXVector &vec);
 
             /**
              * @brief Process the offset vector by removing the first element and concatenating the remaining elements horizontally.
@@ -255,7 +263,7 @@ namespace galileo
              * @param vec The input offset vector.
              * @return The processed offset vector.
              */
-            SX processOffsetVector(SXVector &vec);
+            const SX processOffsetVector(SXVector &vec);
 
             /**
              * @brief Actual initial state.

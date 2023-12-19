@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Eigen/Core>
 #include <pinocchio/autodiff/casadi.hpp>
 
 namespace galileo
@@ -92,6 +91,38 @@ namespace galileo
              * 
              */
             casadi::Function G;
+        };
+
+        /**
+         * @brief 
+         * 
+         */
+        struct DecisionData
+        {
+
+            /**
+             * @brief Upper bound on decision variables.
+             * 
+             */
+            casadi::Function upper_bound;
+
+            /**
+             * @brief Lower bound on decision variables.
+             * 
+             */
+            casadi::Function lower_bound;
+
+            /**
+             * @brief Initial guess function for state and input as a function of time. Note that an inverse law for Fint will be used to generate the initial guess for the states.
+             * 
+             */
+            casadi::Function initial_guess;
+
+            /**
+             * @brief Decision variables at one knot or collocation point (x, u)
+             * 
+             */
+            casadi::SX w;
         };
 
         /**

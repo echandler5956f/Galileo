@@ -10,15 +10,16 @@ namespace galileo
         {
             this->d = d_;
             /*Choose collocation points*/
-            std::vector<double> troot = collocation_points(this->d, scheme);
-            troot.insert(troot.begin(), 0);
-            this->tau_root = Eigen::Map<Eigen::VectorXd>(troot.data(), troot.size());
+            this->tau_root = collocation_points(this->d, scheme);
+            this->tau_root.insert(this->tau_root.begin(), 0);
 
             /*Coefficients of the quadrature function*/
             this->B.resize(this->d + 1);
 
             /*Coefficients of the collocation equation*/
-            this->C.resize(this->d + 1, this->d + 1);
+            this->C.resize(this->d + 1);
+            for (int j = 0; j < this->d + 1; ++j)
+                this->C[j].resize(this->d + 1);
 
             /*Coefficients of the continuity equation*/
             this->D.resize(this->d + 1);
@@ -32,20 +33,20 @@ namespace galileo
                 {
                     if (r != j)
                     {
-                        p *= Polynomial(-this->tau_root(r), 1) / (this->tau_root(j) - this->tau_root(r));
+                        p *= Polynomial(-this->tau_root[r], 1) / (this->tau_root[j] - this->tau_root[r]);
                     }
                 }
                 /*Evaluate the polynomial at the final time to get the coefficients of the continuity equation*/
-                this->D(j) = p(1.0);
+                this->D[j] = p(1.0);
 
                 /*Evaluate the time derivative of the polynomial at all collocation points to get the coefficients of the continuity equation*/
                 Polynomial dp = p.derivative();
                 for (int r = 0; r < this->d + 1; ++r)
                 {
-                    this->C(j, r) = dp(this->tau_root(r));
+                    this->C[j][r] = dp(this->tau_root[r]);
                 }
                 Polynomial pint = p.anti_derivative();
-                this->B(j) = pint(1.0);
+                this->B[j] = pint(1.0);
             }
         }
 
@@ -61,7 +62,7 @@ namespace galileo
                 {
                     if (r != j)
                     {
-                        term *= (t - this->tau_root(r)) / (this->tau_root(j) - this->tau_root(r));
+                        term *= (t - this->tau_root[r]) / (this->tau_root[j] - this->tau_root[r]);
                     }
                 }
                 result += term;
@@ -87,17 +88,9 @@ namespace galileo
             this->st_m = st_m_;
             this->T = (this->knot_num + 1) * this->h;
 
-            auto start = std::chrono::high_resolution_clock::now();
             this->initialize_expression_variables(d);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            std::cout << "Time taken for initialize_expression_variables call: " << duration.count() << " microseconds" << std::endl;
 
-            start = std::chrono::high_resolution_clock::now();
             this->initialize_time_vector();
-            end = std::chrono::high_resolution_clock::now();
-            duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            std::cout << "Time taken for initialize_time_vector call: " << duration.count() << " microseconds" << std::endl;
         }
 
         void PseudospectralSegment::initialize_expression_variables(int d)
@@ -138,13 +131,10 @@ namespace galileo
                     ++i;
                 }
             }
-            // this->times(i, 0) = this->knot_num * this->h;
-            // std::cout << "times: " << this->times << std::endl;
         }
 
         void PseudospectralSegment::fill_times(std::vector<double> &all_times)
         {
-            /*Cull unique time (start)?*/
             double start_time = 0.0;
             if (all_times.size() != 0)
             {
@@ -179,7 +169,7 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G)
+        void PseudospectralSegment::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> W)
         {
             assert(F.n_in() == 2 && "F must have 2 inputs");
             assert(F.n_out() == 1 && "F must have 1 output");
@@ -198,7 +188,7 @@ namespace galileo
             /*Collocation equations*/
             SXVector eq;
             /*State at the end of the collocation interval*/
-            SX dXf = this->dX_poly.D(0) * this->dX0;
+            SX dXf = this->dX_poly.D[0] * this->dX0;
             /*Cost at the end of the collocation interval*/
             SX Qf = 0;
             /*Actual state at collocation points*/
@@ -212,16 +202,16 @@ namespace galileo
 
             for (int j = 1; j < this->dX_poly.d + 1; ++j)
             {
-                double dt_j = (this->dX_poly.tau_root(j) - this->dX_poly.tau_root(j - 1)) * this->h;
+                double dt_j = (this->dX_poly.tau_root[j] - this->dX_poly.tau_root[j - 1]) * this->h;
                 /*Expression for the state derivative at the collocation point*/
-                SX dxp = this->dX_poly.C(0, j) * this->dX0;
+                SX dxp = this->dX_poly.C[0][j] * this->dX0;
                 for (int r = 0; r < this->dX_poly.d; ++r)
                 {
-                    dxp += this->dX_poly.C(r + 1, j) * this->dXc[r];
+                    dxp += this->dX_poly.C[r + 1][j] * this->dXc[r];
                 }
                 /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j-1] if the states are already Euclidean*/
                 SX x_c = this->Fint(SXVector{this->X0, this->dXc[j - 1], dt_j}).at(0);
-                SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root(j - 1), this->Uc);
+                SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j - 1], this->Uc);
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
                 tmp_x.push_back(x_c);
@@ -233,10 +223,10 @@ namespace galileo
                 /*Add cost contribution*/
                 SXVector L_out = L(SXVector{x_c, u_c});
                 /*This is fine as long as the cost is not related to the Lie Group elements. See the state integrator and dX for clarity*/
-                Qf += this->dX_poly.B(j) * L_out.at(0) * this->h;
+                Qf += this->dX_poly.B[j] * L_out.at(0) * this->h;
                 // Qf += this->U_poly.B(j) * L_out.at(1) * this->h;
 
-                dXf += this->dX_poly.D(j) * this->dXc[j - 1];
+                dXf += this->dX_poly.D[j] * this->dXc[j - 1];
             }
 
             /*Implicit discrete-time equations*/
@@ -259,8 +249,6 @@ namespace galileo
                                            SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
                                            SXVector{horzcat(tmp_x), horzcat(u_at_c)})
                                       .map(this->knot_num, "openmp");
-            // std::cout << "tmp_x: " << horzcat(tmp_x) << std::endl;
-            //   .map(this->knot_num, "serial");
 
             long N = this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
                      this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0);
@@ -269,7 +257,7 @@ namespace galileo
             std::vector<tuple_size_t> ranges;
 
             /*Map the constraint to each collocation point, and then map the mapped constraint to each knot segment*/
-            for (int i = 0; i < G.size(); ++i)
+            for (std::size_t i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
 
@@ -301,7 +289,7 @@ namespace galileo
             this->general_lbg(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
             this->general_ubg(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
 
-            for (int i = 0; i < G.size(); ++i)
+            for (std::size_t i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
                 if (g_data->global)
@@ -315,16 +303,28 @@ namespace galileo
                 {
                 }
             }
+            N = this->dXc_var_vec.size() * this->dXc_var_vec.front().size1() * this->dXc_var_vec.front().size2() +
+                this->dX0_var_vec.size() * this->dX0_var_vec.front().size1() * this->dX0_var_vec.front().size2() +
+                this->U_var_vec.size() * this->U_var_vec.front().size1() * this->U_var_vec.front().size2();
+
+            // assert(W->initial_guess.n_in() == 1 && "W must have 1 inputs (time)");
+            // W->initial_guess.assert_size_in(0, 1, 1);
+            // W->initial_guess.assert_size_out(0, this->st_m->nx, 1);
+            // W->initial_guess.assert_size_out(1, this->st_m->nu, 1);
+
+            // this->w0 = vertcat(W->initial_guess.map(this->knot_num, "serial")(this->times));
+            // this->general_lbw = vertcat(W->lower_bound.map(this->knot_num, "serial")(this->times));
+            // this->general_ubw = vertcat(W->upper_bound.map(this->knot_num, "serial")(this->times));
         }
 
-        SX PseudospectralSegment::processVector(SXVector &vec)
+        const SX PseudospectralSegment::processVector(SXVector &vec)
         {
             SXVector temp = vec;
             temp.pop_back();
             return horzcat(temp);
         }
 
-        SX PseudospectralSegment::processOffsetVector(SXVector &vec)
+        const SX PseudospectralSegment::processOffsetVector(SXVector &vec)
         {
             SXVector temp = vec;
             temp.erase(temp.begin());
@@ -349,9 +349,6 @@ namespace galileo
             SX all_us = plotmap_restult.at(1);
 
             /*This section cannot get much faster, it is bounded by the time to evaluate the constraint*/
-            result.reserve(this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
-                           this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0) +
-                           this->general_constraint_maps.size());
             SX col_con_mat = this->collocation_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
             SX xf_con_mat = this->xf_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
             dxs_offset = reshape(dxs_offset, dxs_offset.size1() * dxs_offset.size2(), 1);
@@ -393,22 +390,22 @@ namespace galileo
             return this->get_sol_func(vertcat(SXVector(w(Slice(casadi_int(std::get<0>(this->w_range)), casadi_int(std::get<1>(this->w_range)))))));
         }
 
-        SX PseudospectralSegment::get_initial_state_deviant()
+        const SX PseudospectralSegment::get_initial_state_deviant()
         {
             return this->dX0_var_vec.front();
         }
 
-        SX PseudospectralSegment::get_initial_state()
+        const SX PseudospectralSegment::get_initial_state()
         {
             return this->X0_var_vec.front();
         }
 
-        SX PseudospectralSegment::get_final_state_deviant()
+        const SX PseudospectralSegment::get_final_state_deviant()
         {
             return this->dX0_var_vec.back();
         }
 
-        SX PseudospectralSegment::get_final_state()
+        const SX PseudospectralSegment::get_final_state()
         {
             return this->X0_var_vec.back();
         }
@@ -438,22 +435,28 @@ namespace galileo
             this->lbg_ubg_range = tuple_size_t(bg_size, lbg.size());
         }
 
-        tuple_size_t PseudospectralSegment::get_range_idx_decision_variables()
+        void PseudospectralSegment::fill_w0(std::vector<double> &all_w0)
+        {
+            std::vector<double> element_access1 = this->w0.get_elements();
+            all_w0.insert(all_w0.end(), element_access1.begin(), element_access1.end());
+        }
+
+        const tuple_size_t PseudospectralSegment::get_range_idx_decision_variables()
         {
             return this->w_range;
         }
 
-        tuple_size_t PseudospectralSegment::get_range_idx_constraint_expressions()
+        const tuple_size_t PseudospectralSegment::get_range_idx_constraint_expressions()
         {
             return this->g_range;
         }
 
-        tuple_size_t PseudospectralSegment::get_range_idx_constraint_bounds()
+        const tuple_size_t PseudospectralSegment::get_range_idx_constraint_bounds()
         {
             return this->lbg_ubg_range;
         }
 
-        tuple_size_t PseudospectralSegment::get_range_idx_decision_bounds()
+        const tuple_size_t PseudospectralSegment::get_range_idx_decision_bounds()
         {
             return this->lbw_ubw_range;
         }
