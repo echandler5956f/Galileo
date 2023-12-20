@@ -179,7 +179,7 @@ namespace galileo
 
             F.assert_size_in(0, this->st_m->nx, 1);
             F.assert_size_in(1, this->st_m->nu, 1);
-            F.assert_size_out(0, this->st_m->nx, 1);
+            F.assert_size_out(0, this->st_m->ndx, 1);
 
             L.assert_size_in(0, this->st_m->nx, 1);
             L.assert_size_in(1, this->st_m->nu, 1);

@@ -45,7 +45,7 @@ namespace galileo
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 1000, 10. / 1000, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 2, 1. / 2, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
@@ -93,7 +93,7 @@ namespace galileo
         casadi::SXVector TrajectoryOpt::optimize()
         {
             std::cout << "w: " << vertcat(this->w) << std::endl;
-            // std::cout << "g: " << vertcat(this->g) << std::endl;
+            std::cout << "g: " << vertcat(this->g) << std::endl;
             // std::cout << "size w: " << vertcat(this->w).size() << std::endl;
             // std::cout << "size g: " << vertcat(this->g).size() << std::endl;
             // std::cout << this->lb.size() << std::endl;
