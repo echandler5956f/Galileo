@@ -127,7 +127,7 @@ namespace galileo
              * @param x0 Starting state to integrate from. Can be a constant
              *
              */
-            void initialize_knot_segments(SX x0);
+            void initialize_knot_segments(MX x0);
 
             /**
              * @brief Build the function graph.
@@ -146,43 +146,43 @@ namespace galileo
              * @param w Decision variable vector to fill
              * @param g Constraint vector to fill
              */
-            void evaluate_expression_graph(SX &J0, SXVector &w, SXVector &g);
+            void evaluate_expression_graph(MX &J0, MXVector &w, MXVector &g);
 
             /**
              * @brief Extract the solution from the decision variable vector.
              *
              * @param w Decision variable vector
-             * @return SX Solution values
+             * @return MX Solution values
              */
-            const SXVector extract_solution(SX &w);
+            const MXVector extract_solution(MX &w);
 
             /**
              * @brief Get the initial state.
              *
-             * @return SX The initial state
+             * @return MX The initial state
              */
-            const SX get_initial_state();
+            const MX get_initial_state();
 
             /**
              * @brief Get the initial state deviant.
              *
-             * @return SX The initial state deviant
+             * @return MX The initial state deviant
              */
-            const SX get_initial_state_deviant();
+            const MX get_initial_state_deviant();
 
             /**
              * @brief Get the final state deviant.
              *
-             * @return SX The final state deviant
+             * @return MX The final state deviant
              */
-            const SX get_final_state_deviant();
+            const MX get_final_state_deviant();
 
             /**
              * @brief Get the actual final state.
              *
-             * @return SX The final state.
+             * @return MX The final state.
              */
-            const SX get_final_state();
+            const MX get_final_state();
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -246,16 +246,16 @@ namespace galileo
 
         private:
             /**
-             * @brief Helper function to process a vector of type SX.
+             * @brief Helper function to process a vector of type MX.
              *
-             * This function takes a vector of type SX and performs some processing on it.
+             * This function takes a vector of type MX and performs some processing on it.
              * It creates a temporary vector by copying the input vector and removing the last element.
              * The modified vector is then returned.
              *
-             * @param vec The input vector of type SX.
-             * @return The processed vector of type SX.
+             * @param vec The input vector of type MX.
+             * @return The processed vector of type MX.
              */
-            const SX processVector(SXVector &vec);
+            const MX processVector(MXVector &vec);
 
             /**
              * @brief Process the offset vector by removing the first element and concatenating the remaining elements horizontally.
@@ -263,23 +263,24 @@ namespace galileo
              * @param vec The input offset vector.
              * @return The processed offset vector.
              */
-            const SX processOffsetVector(SXVector &vec);
+            const MX processOffsetVector(MXVector &vec);
 
             /**
              * @brief Actual initial state.
              */
-            SX x0_init;
+            MX x0_init;
+
             /**
              * @brief Collocation state decision variables.
              *
              */
-            SXVector dXc_var_vec;
+            MXVector dXc_var_vec;
 
             /**
              * @brief Collocation input decision variables.
              *
              */
-            SXVector U_var_vec;
+            MXVector U_var_vec;
 
             /**
              * @brief Collocation input decision expressions at the state collocation points.
@@ -299,13 +300,13 @@ namespace galileo
              * @brief Knot point deviants state decision variables.
              *
              */
-            SXVector dX0_var_vec;
+            MXVector dX0_var_vec;
 
             /**
              * @brief Knot point state expressions (integral functions of the deviants).
              *
              */
-            SXVector X0_var_vec;
+            MXVector X0_var_vec;
 
             /**
              * @brief Function map for converting solution to plottable results.

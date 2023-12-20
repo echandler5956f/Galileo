@@ -38,7 +38,7 @@ namespace galileo
              *
              * @return casadi::SXVector The solution
              */
-            casadi::SXVector optimize();
+            casadi::MXVector optimize();
 
             /**
              * @brief Get the times where the decision variables are evaluated.
@@ -106,13 +106,13 @@ namespace galileo
              * @brief Vector of all decision variables.
              *
              */
-            casadi::SXVector w;
+            casadi::MXVector w;
 
             /**
              * @brief Vector of all constraint expressions.
              *
              */
-            casadi::SXVector g;
+            casadi::MXVector g;
 
             /**
              * @brief Vector of all general constraint lower bounds.
@@ -147,7 +147,7 @@ namespace galileo
              * @brief Expression for objective cost.
              *
              */
-            casadi::SX J;
+            casadi::MX J;
 
             /**
              * @brief Vector of all times where decision variables are evaluated.
@@ -159,13 +159,13 @@ namespace galileo
              * @brief Vector of plottable states
              *
              */
-            casadi::SXVector xplot;
+            casadi::MXVector xplot;
 
             /**
              * @brief Vector of plottable inputs
              *
              */
-            casadi::SXVector uplot;
+            casadi::MXVector uplot;
         };
     }
 }

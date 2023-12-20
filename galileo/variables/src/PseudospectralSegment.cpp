@@ -145,7 +145,7 @@ namespace galileo
             all_times.insert(all_times.end(), element_access1.begin(), element_access1.end());
         }
 
-        void PseudospectralSegment::initialize_knot_segments(SX x0)
+        void PseudospectralSegment::initialize_knot_segments(MX x0)
         {
             this->x0_init = x0;
             assert(this->x0_init.size1() == this->st_m->nx && this->x0_init.size2() == 1 && "x0 must be a column vector of size nx");
@@ -158,14 +158,14 @@ namespace galileo
             this->x_at_c_vec.clear();
             for (int k = 0; k < this->knot_num; ++k)
             {
-                this->dXc_var_vec.push_back(SX::sym("dXc_" + std::to_string(k), this->st_m->ndx * this->dX_poly.d, 1));
-                this->U_var_vec.push_back(SX::sym("U_" + std::to_string(k), this->st_m->nu * this->U_poly.d, 1));
+                this->dXc_var_vec.push_back(MX::sym("dXc_" + std::to_string(k), this->st_m->ndx * this->dX_poly.d, 1));
+                this->U_var_vec.push_back(MX::sym("U_" + std::to_string(k), this->st_m->nu * this->U_poly.d, 1));
             }
 
             for (int k = 0; k < this->knot_num + 1; ++k)
             {
-                this->dX0_var_vec.push_back(SX::sym("dX0_" + std::to_string(k), this->st_m->ndx, 1));
-                this->X0_var_vec.push_back(this->Fint(SXVector{this->x0_init, this->dX0_var_vec[k], 1.0}).at(0));
+                this->dX0_var_vec.push_back(MX::sym("dX0_" + std::to_string(k), this->st_m->ndx, 1));
+                this->X0_var_vec.push_back(this->Fint(MXVector{this->x0_init, this->dX0_var_vec[k], 1.0}).at(0));
             }
         }
 
@@ -303,9 +303,6 @@ namespace galileo
                 {
                 }
             }
-            N = this->dXc_var_vec.size() * this->dXc_var_vec.front().size1() * this->dXc_var_vec.front().size2() +
-                this->dX0_var_vec.size() * this->dX0_var_vec.front().size1() * this->dX0_var_vec.front().size2() +
-                this->U_var_vec.size() * this->U_var_vec.front().size1() * this->U_var_vec.front().size2();
 
             // assert(W->initial_guess.n_in() == 1 && "W must have 1 inputs (time)");
             // W->initial_guess.assert_size_in(0, 1, 1);
@@ -317,40 +314,40 @@ namespace galileo
             // this->general_ubw = vertcat(W->upper_bound.map(this->knot_num, "serial")(this->times));
         }
 
-        const SX PseudospectralSegment::processVector(SXVector &vec)
+        const MX PseudospectralSegment::processVector(MXVector &vec)
         {
-            SXVector temp = vec;
+            MXVector temp = vec;
             temp.pop_back();
             return horzcat(temp);
         }
 
-        const SX PseudospectralSegment::processOffsetVector(SXVector &vec)
+        const MX PseudospectralSegment::processOffsetVector(MXVector &vec)
         {
-            SXVector temp = vec;
+            MXVector temp = vec;
             temp.erase(temp.begin());
             return horzcat(temp);
         }
 
-        void PseudospectralSegment::evaluate_expression_graph(SX &J0, SXVector &w, SXVector &g)
+        void PseudospectralSegment::evaluate_expression_graph(MX &J0, MXVector &w, MXVector &g)
         {
             assert(J0.size1() == 1 && J0.size2() == 1 && "J0 must be a scalar");
 
-            SXVector result;
+            MXVector result;
 
-            SX xs = this->processVector(this->X0_var_vec);
-            SX dxs = this->processVector(this->dX0_var_vec);
-            SX dxcs = horzcat(this->dXc_var_vec);
-            SX us = horzcat(this->U_var_vec);
-            SX xs_offset = this->processOffsetVector(this->X0_var_vec);
-            SX dxs_offset = this->processOffsetVector(this->dX0_var_vec);
+            MX xs = this->processVector(this->X0_var_vec);
+            MX dxs = this->processVector(this->dX0_var_vec);
+            MX dxcs = horzcat(this->dXc_var_vec);
+            MX us = horzcat(this->U_var_vec);
+            MX xs_offset = this->processOffsetVector(this->X0_var_vec);
+            MX dxs_offset = this->processOffsetVector(this->dX0_var_vec);
 
-            SXVector plotmap_restult = this->plot_map_func(SXVector{xs, dxcs, dxs, us});
-            SX all_xs = plotmap_restult.at(0);
-            SX all_us = plotmap_restult.at(1);
+            MXVector plotmap_restult = this->plot_map_func(MXVector{xs, dxcs, dxs, us});
+            MX all_xs = plotmap_restult.at(0);
+            MX all_us = plotmap_restult.at(1);
 
             /*This section cannot get much faster, it is bounded by the time to evaluate the constraint*/
-            SX col_con_mat = this->collocation_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
-            SX xf_con_mat = this->xf_constraint_map(SXVector{xs, dxcs, dxs, us}).at(0);
+            MX col_con_mat = this->collocation_constraint_map(MXVector{xs, dxcs, dxs, us}).at(0);
+            MX xf_con_mat = this->xf_constraint_map(MXVector{xs, dxcs, dxs, us}).at(0);
             dxs_offset = reshape(dxs_offset, dxs_offset.size1() * dxs_offset.size2(), 1);
 
             result.push_back(reshape(col_con_mat, col_con_mat.size1() * col_con_mat.size2(), 1));
@@ -359,11 +356,11 @@ namespace galileo
 
             for (std::size_t i = 0; i < this->general_constraint_maps.size(); ++i)
             {
-                SX g_con_mat = this->general_constraint_maps[i](SXVector{xs, dxcs, dxs, us}).at(0);
+                MX g_con_mat = this->general_constraint_maps[i](MXVector{xs, dxcs, dxs, us}).at(0);
                 result.push_back(reshape(g_con_mat, g_con_mat.size1() * g_con_mat.size2(), 1));
             }
 
-            SX cost = this->q_cost_fold(SXVector{J0, xs, dxcs, dxs, us}).at(0);
+            MX cost = this->q_cost_fold(MXVector{J0, xs, dxcs, dxs, us}).at(0);
             J0 = cost;
             /*where g of this segment starts*/
             std::size_t g_size = g.size();
@@ -378,34 +375,34 @@ namespace galileo
             w.insert(w.end(), std::make_move_iterator(this->dX0_var_vec.begin()), std::make_move_iterator(this->dX0_var_vec.end()));
             w.insert(w.end(), std::make_move_iterator(this->U_var_vec.begin()), std::make_move_iterator(this->U_var_vec.end()));
 
-            this->w_range = tuple_size_t(w_size, std::accumulate(w.begin() + w_size, w.end(), 0, [](int sum, const SX &item)
+            this->w_range = tuple_size_t(w_size, std::accumulate(w.begin() + w_size, w.end(), 0, [](int sum, const MX &item)
                                                                  { return sum + item.size1() * item.size2(); }));
             this->get_sol_func = Function("func",
-                                          SXVector({vertcat(SXVector(w.begin() + w_size, w.begin() + w.size()))}),
-                                          SXVector({all_xs, all_us}));
+                                          MXVector({vertcat(MXVector(w.begin() + w_size, w.begin() + w.size()))}),
+                                          MXVector({all_xs, all_us}));
         }
 
-        const SXVector PseudospectralSegment::extract_solution(SX &w)
+        const MXVector PseudospectralSegment::extract_solution(MX &w)
         {
-            return this->get_sol_func(vertcat(SXVector(w(Slice(casadi_int(std::get<0>(this->w_range)), casadi_int(std::get<1>(this->w_range)))))));
+            return this->get_sol_func(MXVector{w(Slice(casadi_int(std::get<0>(this->w_range)), casadi_int(std::get<1>(this->w_range))))});
         }
 
-        const SX PseudospectralSegment::get_initial_state_deviant()
+        const MX PseudospectralSegment::get_initial_state_deviant()
         {
             return this->dX0_var_vec.front();
         }
 
-        const SX PseudospectralSegment::get_initial_state()
+        const MX PseudospectralSegment::get_initial_state()
         {
             return this->X0_var_vec.front();
         }
 
-        const SX PseudospectralSegment::get_final_state_deviant()
+        const MX PseudospectralSegment::get_final_state_deviant()
         {
             return this->dX0_var_vec.back();
         }
 
-        const SX PseudospectralSegment::get_final_state()
+        const MX PseudospectralSegment::get_final_state()
         {
             return this->X0_var_vec.back();
         }

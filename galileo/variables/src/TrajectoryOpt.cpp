@@ -30,9 +30,9 @@ namespace galileo
 
             this->all_times.clear();
 
-            casadi::SX prev_final_state = X0;
-            casadi::SX prev_final_state_deviant;
-            casadi::SX curr_initial_state_deviant;
+            casadi::MX prev_final_state = X0;
+            casadi::MX prev_final_state_deviant;
+            casadi::MX curr_initial_state_deviant;
 
             std::vector<double> equality_back(this->state_indices->nx, 0.0);
             std::shared_ptr<PseudospectralSegment> ps;
@@ -45,7 +45,7 @@ namespace galileo
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 2, 1. / 2, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 1000, 10. / 1000, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
@@ -84,22 +84,22 @@ namespace galileo
                 /*Terminal cost*/
                 if (i == num_phases - 1)
                 {
-                    this->J += this->Phi(casadi::SXVector{prev_final_state}).at(0);
+                    this->J += this->Phi(casadi::MXVector{prev_final_state}).at(0);
                 }
             }
             printf("Finished initialization.\n");
         }
 
-        casadi::SXVector TrajectoryOpt::optimize()
+        casadi::MXVector TrajectoryOpt::optimize()
         {
             std::cout << "w: " << vertcat(this->w) << std::endl;
-            std::cout << "g: " << vertcat(this->g) << std::endl;
+            // std::cout << "g: " << vertcat(this->g) << std::endl;
             // std::cout << "size w: " << vertcat(this->w).size() << std::endl;
             // std::cout << "size g: " << vertcat(this->g).size() << std::endl;
             // std::cout << this->lb.size() << std::endl;
             // std::cout << this->ub.size() << std::endl;
 
-            casadi::SXDict nlp = {{"x", vertcat(this->w)},
+            casadi::MXDict nlp = {{"x", vertcat(this->w)},
                                   {"f", this->J},
                                   {"g", vertcat(this->g)}};
             this->solver = casadi::nlpsol("solver", "ipopt", nlp, this->opts);
@@ -110,7 +110,7 @@ namespace galileo
             // arg["ubx"] = this->ubw;
             // arg["x0"] = this->w0;
             auto sol = this->solver(arg);
-            auto tmp = casadi::SX(sol["x"]);
+            auto tmp = casadi::MX(sol["x"]);
             std::cout << "Extracting solution..." << std::endl;
             return this->trajectory[0]->extract_solution(tmp);
         }
