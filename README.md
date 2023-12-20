@@ -45,6 +45,7 @@ Features:
 
 2. Install Galileo's optional dependencies
    * [SNOPT]
+   * [OpenMP]
    * [gnuplot]
 
 ### Gnuplot Simple Install
@@ -55,8 +56,10 @@ sudo apt-get install gnuplot
 
 Once you have the required dependencies, you can install the library with
 ```bash
-mkdir build && cd build && cmake .. && make -j4 && sudo make install
+mkdir build && cd build && cmake .. && make && sudo make install
 ```
+
+Optionally, you can add the `-DBUILD_WITH_OPENMP=OFF` flag to disable using [OpenMP] for parallel evaluation of the constraint maps.
 
 To uninstall the library, simply run
 ```bash
@@ -139,3 +142,4 @@ Coming soon (ICRA 2025?).
 [Eigen]: http://eigen.tuxfamily.org
 [Boost]: https://www.boost.org
 [gnuplot]: https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/
+[OpenMP]: https://www.openmp.org/

@@ -6,11 +6,21 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
 project(Galileo)
 
-find_package(casadi)
-find_package(pinocchio)
+option(BUILD_WITH_OPENMP "Build with OpenMP" ON)
+
+find_package(casadi REQUIRED)
+find_package(pinocchio REQUIRED)
 find_package (Eigen3 REQUIRED NO_MODULE)
-find_package(Boost REQUIRED COMPONENTS iostreams unit_test_framework)
-find_package(OpenMP)
+find_package(Boost REQUIRED COMPONENTS iostreams)
+
+if(BUILD_WITH_OPENMP)
+  find_package(OpenMP REQUIRED)
+  if(OpenMP_CXX_FOUND)
+    message(STATUS "OpenMP found")
+  else()
+    message(STATUS "OpenMP not found")
+  endif()
+endif()
 
 # libgalileo
 add_library(galileo SHARED galileo.cc)
@@ -30,11 +40,17 @@ add_subdirectory(galileo)
 target_link_libraries(galileo
     PUBLIC
     casadi
-    OpenMP::OpenMP_CXX
     pinocchio
     Eigen3::Eigen
     ${Boost_LIBRARIES}
 )
+
+if(BUILD_WITH_OPENMP)
+  target_link_libraries(galileo
+    PUBLIC
+    OpenMP::OpenMP_CXX
+  )
+endif(BUILD_WITH_OPENMP)
 
 target_include_directories(galileo
     PUBLIC

@@ -48,6 +48,8 @@ int main()
 
     traj.init_finite_elements(d, X0);
     auto sol = traj.optimize();
+
+    /*TODO: Make a function to do automate the plotting within the actual library. Allow the user to include plotting functionality as a cmake option*/
     auto times = traj.get_all_times();
     // std::cout << "sol: " << sol << std::endl;
     auto dmsolx = (casadi::DM)sol[0];
@@ -60,6 +62,8 @@ int main()
     // std::cout << "x1_all_sol: " << x1_all_sol.size() << std::endl;
     // std::cout << "x2_all_sol: " << x2_all_sol.size() << std::endl;
     // std::cout << "u_all_sol: " << u_all_sol.size() << std::endl;
+
+
 
     // Create a Gnuplot object
     Gnuplot gp;
