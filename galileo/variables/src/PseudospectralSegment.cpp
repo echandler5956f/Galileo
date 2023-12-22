@@ -212,6 +212,7 @@ namespace galileo
                 /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j-1] if the states are already Euclidean*/
                 SX x_c = this->Fint(SXVector{this->X0, this->dXc[j - 1], dt_j}).at(0);
                 SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j - 1], this->Uc);
+                // SX u_c = this->Uc[0];
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
                 tmp_x.push_back(x_c);

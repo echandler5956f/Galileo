@@ -45,7 +45,7 @@ namespace galileo
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 1000, 10. / 1000, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 25, 1. / 25, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
@@ -73,7 +73,7 @@ namespace galileo
                 {
                     curr_initial_state_deviant = ps->get_initial_state_deviant();
                     /*For general jump map functions you can use the following syntax:*/
-                    // g.push_back(jump_map_function(casadi::SXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
+                    // g.push_back(jump_map_function(casadi::MXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
                     this->g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
                     this->lbg.insert(this->lbg.end(), equality_back.begin(), equality_back.end() - 1);
                     this->ubg.insert(this->ubg.end(), equality_back.begin(), equality_back.end() - 1);
@@ -82,7 +82,7 @@ namespace galileo
                 prev_final_state_deviant = ps->get_final_state_deviant();
 
                 /*Terminal cost*/
-                if (i == num_phases - 1)
+                if (i == num_phases - 1 && i != 0)
                 {
                     this->J += this->Phi(casadi::MXVector{prev_final_state}).at(0);
                 }
@@ -92,7 +92,7 @@ namespace galileo
 
         casadi::MXVector TrajectoryOpt::optimize()
         {
-            std::cout << "w: " << vertcat(this->w) << std::endl;
+            // std::cout << "w: " << vertcat(this->w) << std::endl;
             // std::cout << "g: " << vertcat(this->g) << std::endl;
             // std::cout << "size w: " << vertcat(this->w).size() << std::endl;
             // std::cout << "size g: " << vertcat(this->g).size() << std::endl;
@@ -103,6 +103,15 @@ namespace galileo
                                   {"f", this->J},
                                   {"g", vertcat(this->g)}};
             this->solver = casadi::nlpsol("solver", "ipopt", nlp, this->opts);
+            // auto grad_f = casadi::Function("grad_f", {vertcat(this->w)}, {casadi::MX::gradient(this->J, vertcat(this->w))}).expand();
+            // auto jac_g = casadi::Function("jac_g", {vertcat(this->w)}, {casadi::MX::jacobian(vertcat(this->g), vertcat(this->w))}).expand();
+            // auto eval_grad_f = grad_f(vertcat(this->w));
+            // auto gradeval = eval_grad_f.at(0);
+            // std::cout << "eval_grad_f: " << gradeval(1215,0) << std::endl;
+
+            // auto eval_jac_g = jac_g(vertcat(this->w));
+            // auto jaceval = eval_jac_g.at(0);
+            // std::cout << "eval_jac_g: " << jaceval << std::endl;
             casadi::DMDict arg;
             arg["lbg"] = this->lbg;
             arg["ubg"] = this->ubg;

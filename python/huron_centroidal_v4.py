@@ -348,6 +348,11 @@ class CentroidalTrajOpt:
             ["x", "u", "vju"],
             ["L"],
         )
+        # print ("cq: ", s.cq)
+        # print("cv: ", s.cv)
+        # print("cq_d: ", s.cq_d)
+        # print("integrate: ", cpin.integrate(s.cmodel, s.cq, s.cq_d * s.cdt))
+        # print("F: ", s.xdot.sx_out(0))
 
         # Error in contact position
         s.dpcontacts = {}
