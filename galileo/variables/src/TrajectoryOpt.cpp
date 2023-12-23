@@ -45,7 +45,7 @@ namespace galileo
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 25, 1. / 25, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 10, 1. / 10, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
@@ -112,15 +112,25 @@ namespace galileo
             // auto eval_jac_g = jac_g(vertcat(this->w));
             // auto jaceval = eval_jac_g.at(0);
             // std::cout << "eval_jac_g: " << jaceval << std::endl;
+
+            double time_from_funcs = 0.0;
+            double time_just_ipopt = 0.0;
             casadi::DMDict arg;
             arg["lbg"] = this->lbg;
             arg["ubg"] = this->ubg;
             // arg["lbx"] = this->lbw;
             // arg["ubx"] = this->ubw;
             // arg["x0"] = this->w0;
-            auto sol = this->solver(arg);
+            casadi::DMDict sol = this->solver(arg);
+            this->w0 = sol["x"].get_elements();
+            casadi::Dict stats = this->solver.stats();
+            time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_hess_l"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
+            time_just_ipopt += (double)stats["t_wall_total"] - time_from_funcs;
             auto tmp = casadi::MX(sol["x"]);
             std::cout << "Extracting solution..." << std::endl;
+
+            std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
+            std::cout << "Total seconds from Ipopt w/o function: " << time_just_ipopt << std::endl;
             return this->trajectory[0]->extract_solution(tmp);
         }
 

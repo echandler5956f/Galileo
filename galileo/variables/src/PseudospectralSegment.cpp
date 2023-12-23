@@ -99,7 +99,7 @@ namespace galileo
             this->Uc.clear();
 
             this->dX_poly = LagrangePolynomial(d);
-            this->U_poly = LagrangePolynomial(d - 1);
+            this->U_poly = LagrangePolynomial(1);
 
             for (int j = 0; j < this->dX_poly.d; ++j)
             {
@@ -211,8 +211,8 @@ namespace galileo
                 }
                 /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j-1] if the states are already Euclidean*/
                 SX x_c = this->Fint(SXVector{this->X0, this->dXc[j - 1], dt_j}).at(0);
-                SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j - 1], this->Uc);
-                // SX u_c = this->Uc[0];
+                // SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j - 1], this->Uc);
+                SX u_c = this->Uc[0];
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
                 tmp_x.push_back(x_c);
@@ -230,21 +230,46 @@ namespace galileo
                 dXf += this->dX_poly.D[j] * this->dXc[j - 1];
             }
 
-            /*Implicit discrete-time equations*/
-            this->collocation_constraint_map = Function("feq",
-                                                        SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
-                                                        SXVector{vertcat(eq)})
-                                                   .map(this->knot_num, "openmp");
-            /*When you evaluate this map, subtract by the knot points list offset by 1 to be correct*/
-            this->xf_constraint_map = Function("fxf",
-                                               SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
-                                               SXVector{dXf})
-                                          .map(this->knot_num, "openmp");
+            casadi::Dict opts;
+            // opts["jit"] = true;
+            // opts["jit_options.flags"] = "-O3";
+            // opts["jit_options.compiler"] = "gcc";
+            // opts["compiler"] = "shell";
 
-            this->q_cost_fold = Function("fxq",
-                                         SXVector{this->Lc, this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
-                                         SXVector{this->Lc + Qf})
-                                    .fold(this->knot_num);
+            auto collocation_constraint = Function("feq",
+                                                   SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
+                                                   SXVector{vertcat(eq)}, opts);
+            // collocation_constraint_original.generate("feq");
+            // int flag1 = system("gcc -fPIC -shared -O3 feq.c -o feq.so");
+            // casadi_assert(flag1==0, "Compilation failed");
+            // auto collocation_constraint = external("feq");
+
+            // auto collocation_constraint_adj1 = collocation_constraint_original.reverse(1);
+            // collocation_constraint_adj1.generate("adj1_feq");
+            // int flag2 = system("gcc -fPIC -shared -O3 adj1_feq.c -o adj1_feq.so");
+            // casadi_assert(flag2==0, "Compilation failed");
+            // auto collocation_constraint_adj = external("adj1_feq");
+
+            auto xf_constraint = Function("fxf",
+                                          SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
+                                          SXVector{dXf}, opts);
+            // xf_constraint.generate("xf_constraint");
+            // int flag2 = system("gcc -fPIC -shared -O3 xf_constraint.c -o xf_constraint.so");
+            // casadi_assert(flag2==0, "Compilation failed");
+            // xf_constraint = external("xf_constraint");
+
+            auto q_cost = Function("fxq", SXVector{this->Lc, this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
+                                        SXVector{this->Lc + Qf}, opts);
+            // q_cost.generate("q_cost");
+            // int flag3 = system("gcc -fPIC -shared -O3 q_cost.c -o q_cost.so");
+            // casadi_assert(flag3==0, "Compilation failed");
+            // q_cost = external("q_cost");
+
+            /*Implicit discrete-time equations*/
+            this->collocation_constraint_map = collocation_constraint.map(this->knot_num, "openmp");
+            /*When you evaluate this map, subtract by the knot points list offset by 1 to be correct*/
+            this->xf_constraint_map = xf_constraint.map(this->knot_num, "openmp");
+            this->q_cost_fold = q_cost.fold(this->knot_num);
 
             this->plot_map_func = Function("plot_map",
                                            SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},

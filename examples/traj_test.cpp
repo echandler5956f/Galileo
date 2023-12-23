@@ -171,22 +171,17 @@ int main()
         0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
         0.0000, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000};
 
-    // Map the array to Eigen matrix
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
-
-    std::vector<double> q0_stdvec = {
-        0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
-        0.0000, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000};
 
     Model model;
     pinocchio::urdf::buildModel(huron_location, model);
     Data data(model);
 
-    ADModel cmodel = model.cast<ADScalar>();
-    ADData cdata(cmodel);
-
     pinocchio::computeTotalMass(model, data);
     pinocchio::framesForwardKinematics(model, data, q0_vec);
+
+    ADModel cmodel = model.cast<ADScalar>();
+    ADData cdata(cmodel);
 
     auto mass = data.mass[0];
     auto g = casadi::SX::zeros(3, 1);
@@ -214,62 +209,34 @@ int main()
     auto ctau = si->get_tau(cu);
     auto cvju = si->get_vju(cu);
 
-    std::cout << "ch.size: " << ch.size() << std::endl;
-    std::cout << "ch_d.size: " << ch_d.size() << std::endl;
-    std::cout << "cdh.size: " << cdh.size() << std::endl;
-    std::cout << "cdh_d.size: " << cdh_d.size() << std::endl;
-    std::cout << "cq.size: " << cq.size() << std::endl;
-    std::cout << "cq_d.size: " << cq_d.size() << std::endl;
-    std::cout << "cqj.size: " << cqj.size() << std::endl;
-    std::cout << "cv.size: " << cv.size() << std::endl;
-    std::cout << "cv_d.size: " << cv_d.size() << std::endl;
-    std::cout << "cvj.size: " << cvj.size() << std::endl;
-    std::cout << "cf.size: " << cf.size() << std::endl;
-    std::cout << "ctau.size: " << ctau.size() << std::endl;
-    std::cout << "cvju.size: " << cvju.size() << std::endl;
+    ConfigVectorAD q_AD(model.nq);
+    TangentVectorAD v_AD(model.nv);
+    TangentVectorAD q_d_AD(model.nv);
 
-    ConfigVectorAD cq_AD(model.nq);
-    for (Eigen::DenseIndex k = 0; k < model.nq; ++k)
-    {
-        cq_AD[k] = cq(k);
-    }
+    q_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq).data(), model.nq, 1);
+    v_AD = Eigen::Map<TangentVectorAD>(static_cast<std::vector<ADScalar>>(cv).data(), model.nv, 1);
+    q_d_AD = Eigen::Map<TangentVectorAD>(static_cast<std::vector<ADScalar>>(cq_d).data(), model.nv, 1);
 
-    TangentVectorAD cv_AD(model.nv);
-    for (Eigen::DenseIndex k = 0; k < model.nv; ++k)
-    {
-        cv_AD[k] = cv(k);
-    }
-
-    TangentVectorAD cq_d_AD(model.nv);
-    for (Eigen::DenseIndex k = 0; k < model.nv; ++k)
-    {
-        cq_d_AD[k] = cq_d(k);
-    }
-
-    // std::cout << "cq_AD: " << cq_AD << std::endl;
-    // std::cout << "cv_AD: " << cv_AD << std::endl;
-    // std::cout << "cq_d_AD: " << cq_d_AD << std::endl;
-
-    pinocchio::centerOfMass(cmodel, cdata, cq_AD, false);
-    pinocchio::computeCentroidalMap(cmodel, cdata, cq_AD);
-    pinocchio::forwardKinematics(cmodel, cdata, cq_AD, cv_AD);
+    pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
+    pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
+    pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
     pinocchio::updateFramePlacements(cmodel, cdata);
 
-    auto intres = pinocchio::integrate(cmodel, cq_AD, cq_d_AD * cdt);
-    casadi::SX tmp1 = casadi::SX::zeros(intres.rows(), 1);
-    pinocchio::casadi::copy(intres, tmp1);
+    ConfigVectorAD q_result = pinocchio::integrate(cmodel, q_AD, q_d_AD * cdt);
+    casadi::SX cq_result(model.nq, 1);
+    pinocchio::casadi::copy(q_result, cq_result);
 
     casadi::Function Fint("Fint",
                           {cx, cdx, cdt},
                           {vertcat(ch_d,
                                    cdh_d,
-                                   //    tmp1, // returns different expression (but yields same result) than python version, NO idea why
+                                   //    cq_result, // returns different expression than python version, NO idea why
                                    custom_fint(cx, cdx, cdt),
                                    cv_d)});
 
     auto Ag = cdata.Ag;
-    casadi::SX tmp2 = casadi::SX(casadi::Sparsity::dense(Ag.rows(), Ag.cols()));
-    pinocchio::casadi::copy(Ag, tmp2);
+    casadi::SX cAg(Ag.rows(), Ag.cols());
+    pinocchio::casadi::copy(Ag, cAg);
 
     casadi::Function F("F",
                        {cx, cu},
@@ -277,26 +244,32 @@ int main()
                                 (cf - mass * g) / mass,
                                 ctau / mass,
                                 cv,
-                                casadi::SX::mtimes(casadi::SX::inv(tmp2(casadi::Slice(0, 6), casadi::Slice(0, 6))), (mass * ch - casadi::SX::mtimes(tmp2(casadi::Slice(0, 6), casadi::Slice(6, int(Ag.cols()))), cvju))),
+                                casadi::SX::mtimes(casadi::SX::inv(cAg(casadi::Slice(0, 6), casadi::Slice(0, 6))), (mass * ch - casadi::SX::mtimes(cAg(casadi::Slice(0, 6), casadi::Slice(6, int(Ag.cols()))), cvju))),
                                 cvju)});
 
-    casadi::SX tmp3 = casadi::SX(casadi::Sparsity::dense(q0_vec.rows(), 1));
-    pinocchio::casadi::copy(q0_vec, tmp3);
+    casadi::SX cq0(model.nq);
+    pinocchio::casadi::copy(q0_vec, cq0);
 
     casadi::Function L("L",
                        {cx, cu},
                        {1e-3 * casadi::SX::sumsqr(cvju) +
                         1e-4 * casadi::SX::sumsqr(cf) +
                         1e-4 * casadi::SX::sumsqr(ctau) +
-                        1e1 * casadi::SX::sumsqr(cqj - tmp3(casadi::Slice(7, nq)))});
+                        1e1 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
 
-    /*Dummy terminal cost*/
     casadi::Function Phi("Phi",
                          {cx},
-                         {1e2 * casadi::SX::sumsqr(cqj - tmp3(casadi::Slice(7, nq)))});
+                         {1e2 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
 
     casadi::Dict opts;
+    // opts["ipopt.warm_start_init_point"] = "yes";
+    // opts["ipopt.warm_start_same_structure"] = "yes";
+    // opts["ipopt.print_timing_statistics"] = "yes";
     opts["ipopt.linear_solver"] = "ma97";
+    opts["ipopt.ma97_order"] = "metis";
+    opts["ipopt.fixed_variable_treatment"] = "make_constraint";
+    opts["ipopt.max_iter"] = 1;
+    // opts["ipopt.print_level"] = 5;
     std::shared_ptr<variables::ProblemData> problem = std::make_shared<variables::ProblemData>(Fint, F, L, Phi);
     variables::TrajectoryOpt traj(opts, si, problem);
 
@@ -304,13 +277,13 @@ int main()
     int j = 0;
     for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
     {
-        X0(i) = q0_stdvec[j];
+        X0(i) = q0_vec[j];
         ++j;
     }
 
-    // std::cout << "X0: " << X0 << std::endl;
+    std::cout << "X0: " << X0 << std::endl;
 
-    traj.init_finite_elements(3, X0);
+    traj.init_finite_elements(1, X0);
 
     auto sol = traj.optimize();
     std::cout << sol << std::endl;
