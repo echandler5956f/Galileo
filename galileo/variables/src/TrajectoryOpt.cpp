@@ -45,7 +45,7 @@ namespace galileo
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 10, 1. / 10, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 20, 1. / 20, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
@@ -134,7 +134,7 @@ namespace galileo
             return this->trajectory[0]->extract_solution(tmp);
         }
 
-        std::vector<double> TrajectoryOpt::get_all_times()
+        std::vector<double> TrajectoryOpt::get_all_times() const
         {
             return this->all_times;
         }

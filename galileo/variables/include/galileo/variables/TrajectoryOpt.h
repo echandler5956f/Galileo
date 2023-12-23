@@ -43,7 +43,7 @@ namespace galileo
             /**
              * @brief Get the times where the decision variables are evaluated.
             */
-            std::vector<double> get_all_times();
+            std::vector<double> get_all_times() const;
 
         private:
             /**

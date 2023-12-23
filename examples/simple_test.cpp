@@ -41,8 +41,8 @@ int main()
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1, 0) = 1;
-    int d = 9;
-    int N = 1000;
+    int d = 4;
+    int N = 20;
     double T = 10.0;
     double h = T / N;
 
@@ -51,7 +51,7 @@ int main()
 
     /*TODO: Make a function to do automate the plotting within the actual library. Allow the user to include plotting functionality as a cmake option*/
     auto times = traj.get_all_times();
-    std::cout << "sol: " << sol << std::endl;
+    // std::cout << "sol: " << sol << std::endl;
     auto solx = sol[0];
     auto solu = sol[1];
 

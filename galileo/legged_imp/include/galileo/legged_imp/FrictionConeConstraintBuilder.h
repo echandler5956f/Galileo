@@ -16,7 +16,7 @@ namespace galileo
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
                 std::shared_ptr<variables::States> states;
                 std::shared_ptr<pinocchio::Model> model;
-                RobotEndEffectors robot_end_effectors;
+                contact::RobotEndEffectors robot_end_effectors;
                 casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
                 casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
                 casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
@@ -73,7 +73,7 @@ namespace galileo
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
                  * @param apply_at
                  */
-                void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const override
+                void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const
                 {
                     uint num_points = problem_data.friction_cone_problem_data.collocation_points_per_knot;
                     apply_at = Eigen::VectorXi::Constant(num_points, 1);
@@ -88,7 +88,7 @@ namespace galileo
                  * @param upper_bound
                  * @param lower_bound
                  */
-                void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const override;
+                void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
 
                 /**
                  * @brief Generate a function to evaluate each point
@@ -134,7 +134,7 @@ namespace galileo
             };
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const override;
+            void FrictionConeConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
             {
                 uint num_points = problem_data.friction_cone_problem_data.collocation_points_per_knot;
 
@@ -156,7 +156,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, casadi::Function &G) const
+            void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
             {
                 // CREATE CASADI MAP FROM EACH END EFFECTOR
                 //CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
@@ -176,7 +176,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, casadi::Function &G) const
+            void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int knot_index, casadi::Function &G) const
             {
                 // Get the size of the constraint applied to an end effector at a state.
                 uint num_contraint_per_ee_per_point = getNumConstraintPerEEPerState(problem_data);

@@ -50,7 +50,7 @@ namespace galileo
             }
         }
 
-        const SX LagrangePolynomial::lagrange_interpolation(double t, const SXVector terms)
+        SX LagrangePolynomial::lagrange_interpolation(double t, const SXVector terms) const
         {
             assert((t >= 0.0) && (t <= 1.0) && "t must be in the range [0,1]");
 
@@ -98,8 +98,8 @@ namespace galileo
             this->dXc.clear();
             this->Uc.clear();
 
-            this->dX_poly = LagrangePolynomial(d);
-            this->U_poly = LagrangePolynomial(1);
+            this->dX_poly = LagrangePolynomial(d, "radau");
+            this->U_poly = LagrangePolynomial(1, "radau");
 
             for (int j = 0; j < this->dX_poly.d; ++j)
             {
@@ -133,7 +133,7 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::fill_times(std::vector<double> &all_times)
+        void PseudospectralSegment::fill_times(std::vector<double> &all_times) const
         {
             double start_time = 0.0;
             if (all_times.size() != 0)
@@ -340,14 +340,14 @@ namespace galileo
             // this->general_ubw = vertcat(W->upper_bound.map(this->knot_num, "serial")(this->times));
         }
 
-        const MX PseudospectralSegment::processVector(MXVector &vec)
+        MX PseudospectralSegment::processVector(MXVector &vec) const
         {
             MXVector temp = vec;
             temp.pop_back();
             return horzcat(temp);
         }
 
-        const MX PseudospectralSegment::processOffsetVector(MXVector &vec)
+        MX PseudospectralSegment::processOffsetVector(MXVector &vec) const
         {
             MXVector temp = vec;
             temp.erase(temp.begin());
@@ -408,27 +408,27 @@ namespace galileo
                                           MXVector({all_xs, all_us}));
         }
 
-        const MXVector PseudospectralSegment::extract_solution(MX &w)
+        MXVector PseudospectralSegment::extract_solution(MX &w) const
         {
             return this->get_sol_func(MXVector{w(Slice(casadi_int(std::get<0>(this->w_range)), casadi_int(std::get<1>(this->w_range))))});
         }
 
-        const MX PseudospectralSegment::get_initial_state_deviant()
+        MX PseudospectralSegment::get_initial_state_deviant() const
         {
             return this->dX0_var_vec.front();
         }
 
-        const MX PseudospectralSegment::get_initial_state()
+        MX PseudospectralSegment::get_initial_state() const
         {
             return this->X0_var_vec.front();
         }
 
-        const MX PseudospectralSegment::get_final_state_deviant()
+        MX PseudospectralSegment::get_final_state_deviant() const
         {
             return this->dX0_var_vec.back();
         }
 
-        const MX PseudospectralSegment::get_final_state()
+        MX PseudospectralSegment::get_final_state() const
         {
             return this->X0_var_vec.back();
         }
@@ -458,28 +458,28 @@ namespace galileo
             this->lbg_ubg_range = tuple_size_t(bg_size, lbg.size());
         }
 
-        void PseudospectralSegment::fill_w0(std::vector<double> &all_w0)
+        void PseudospectralSegment::fill_w0(std::vector<double> &all_w0) const
         {
             std::vector<double> element_access1 = this->w0.get_elements();
             all_w0.insert(all_w0.end(), element_access1.begin(), element_access1.end());
         }
 
-        const tuple_size_t PseudospectralSegment::get_range_idx_decision_variables()
+        tuple_size_t PseudospectralSegment::get_range_idx_decision_variables() const
         {
             return this->w_range;
         }
 
-        const tuple_size_t PseudospectralSegment::get_range_idx_constraint_expressions()
+        tuple_size_t PseudospectralSegment::get_range_idx_constraint_expressions() const
         {
             return this->g_range;
         }
 
-        const tuple_size_t PseudospectralSegment::get_range_idx_constraint_bounds()
+        tuple_size_t PseudospectralSegment::get_range_idx_constraint_bounds() const
         {
             return this->lbg_ubg_range;
         }
 
-        const tuple_size_t PseudospectralSegment::get_range_idx_decision_bounds()
+        tuple_size_t PseudospectralSegment::get_range_idx_decision_bounds() const
         {
             return this->lbw_ubw_range;
         }

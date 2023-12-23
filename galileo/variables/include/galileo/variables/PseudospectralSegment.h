@@ -44,7 +44,7 @@ namespace galileo
              * @param terms Terms at knot points to use for interpolation
              * @return const SX Resultant expression for the symbolic interpolated value
              */
-            const SX lagrange_interpolation(double t, const SXVector terms);
+            SX lagrange_interpolation(double t, const SXVector terms) const;
 
             /**
              * @brief Degree of the polynomial.
@@ -119,7 +119,7 @@ namespace galileo
              *
              * @param all_times
              */
-            void fill_times(std::vector<double> &all_times);
+            void fill_times(std::vector<double> &all_times) const;
 
             /**
              * @brief Create all the knot segments.
@@ -154,35 +154,35 @@ namespace galileo
              * @param w Decision variable vector
              * @return MX Solution values
              */
-            const MXVector extract_solution(MX &w);
+            MXVector extract_solution(MX &w) const;
 
             /**
              * @brief Get the initial state.
              *
              * @return MX The initial state
              */
-            const MX get_initial_state();
+            MX get_initial_state() const;
 
             /**
              * @brief Get the initial state deviant.
              *
              * @return MX The initial state deviant
              */
-            const MX get_initial_state_deviant();
+            MX get_initial_state_deviant() const;
 
             /**
              * @brief Get the final state deviant.
              *
              * @return MX The final state deviant
              */
-            const MX get_final_state_deviant();
+            MX get_final_state_deviant() const;
 
             /**
              * @brief Get the actual final state.
              *
              * @return MX The final state.
              */
-            const MX get_final_state();
+            MX get_final_state() const;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -214,35 +214,35 @@ namespace galileo
              *
              * @param w0 The vector to be filled with initial guess values.
              */
-            void fill_w0(std::vector<double> &w0);
+            void fill_w0(std::vector<double> &w0) const;
 
             /**
              * @brief Returns the starting and ending index in w.
              *
              * @return tuple_size_t The range of indices
              */
-            const tuple_size_t get_range_idx_decision_variables();
+            tuple_size_t get_range_idx_decision_variables() const;
 
             /**
              * @brief Returns the starting and ending index in g (call after evaluate_expression_graph!).
              *
              * @return tuple_size_t The range of indices
              */
-            const tuple_size_t get_range_idx_constraint_expressions();
+            tuple_size_t get_range_idx_constraint_expressions() const;
 
             /**
              * @brief Returns the starting and ending index in lbg/ubg.
              *
              * @return tuple_size_t The range of indices
              */
-            const tuple_size_t get_range_idx_constraint_bounds();
+            tuple_size_t get_range_idx_constraint_bounds() const;
 
             /**
              * @brief Returns the starting and ending index in lbw/ubw.
              *
              * @return tuple_size_t The range of indices
              */
-            const tuple_size_t get_range_idx_decision_bounds();
+            tuple_size_t get_range_idx_decision_bounds() const;
 
         private:
             /**
@@ -255,7 +255,7 @@ namespace galileo
              * @param vec The input vector of type MX.
              * @return The processed vector of type MX.
              */
-            const MX processVector(MXVector &vec);
+            MX processVector(MXVector &vec) const;
 
             /**
              * @brief Process the offset vector by removing the first element and concatenating the remaining elements horizontally.
@@ -263,7 +263,7 @@ namespace galileo
              * @param vec The input offset vector.
              * @return The processed offset vector.
              */
-            const MX processOffsetVector(MXVector &vec);
+            MX processOffsetVector(MXVector &vec) const;
 
             /**
              * @brief Actual initial state.
