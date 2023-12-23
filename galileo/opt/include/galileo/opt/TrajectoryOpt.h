@@ -1,12 +1,11 @@
 #pragma once
 
-#include "galileo/variables/PseudospectralSegment.h"
-#include "galileo/model/ContactSequence.h"
+#include "galileo/opt/PseudospectralSegment.h"
 #include "third-party/gnuplot-iostream/gnuplot-iostream.h"
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
         /**
          * @brief The trajectory optimization class. This class is responsible for

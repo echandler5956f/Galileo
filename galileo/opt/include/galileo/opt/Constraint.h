@@ -4,7 +4,7 @@
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
 
         /**

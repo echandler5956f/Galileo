@@ -1,8 +1,8 @@
-#include "galileo/variables/TrajectoryGeneration.h"
+#include "galileo/opt/TrajectoryGeneration.h"
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
 
         template <class Sym>

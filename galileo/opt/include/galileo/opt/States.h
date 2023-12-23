@@ -4,7 +4,7 @@
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
         /**
          * @brief Simple slicer class for getting state variables.

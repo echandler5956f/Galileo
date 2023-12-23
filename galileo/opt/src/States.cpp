@@ -1,8 +1,8 @@
-#include "galileo/variables/States.h"
+#include "galileo/opt/States.h"
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
         States::States(const int nq_, const int nv_)
         {

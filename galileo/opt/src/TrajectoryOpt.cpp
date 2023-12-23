@@ -1,8 +1,8 @@
-#include "galileo/variables/TrajectoryOpt.h"
+#include "galileo/opt/TrajectoryOpt.h"
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
         TrajectoryOpt::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<GeneralProblemData> problem)
         {
@@ -45,7 +45,7 @@ namespace galileo
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 20, 1. / 20, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 20, 10. / 20, this->state_indices, this->Fint);
                 ps->initialize_knot_segments(prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "galileo/variables/States.h"
-#include "galileo/variables/Constraint.h"
+#include "galileo/opt/States.h"
+#include "galileo/opt/Constraint.h"
 #include <vector>
 #include <string>
 #include <cassert>
@@ -11,7 +11,7 @@ using namespace casadi;
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
 
         using tuple_size_t = std::tuple<std::size_t, std::size_t>;

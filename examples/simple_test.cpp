@@ -1,5 +1,5 @@
 #include "galileo/model/LeggedBody.h"
-#include "galileo/variables/TrajectoryOpt.h"
+#include "galileo/opt/TrajectoryOpt.h"
 #include <Eigen/Dense>
 #include <boost/math/interpolators/barycentric_rational.hpp>
 #include "third-party/gnuplot-iostream/gnuplot-iostream.h"
@@ -9,7 +9,7 @@ using namespace galileo;
 int main()
 {
 
-    std::shared_ptr<variables::States> si = std::make_shared<variables::States>();
+    std::shared_ptr<opt::States> si = std::make_shared<opt::States>();
 
     // Declare model variables
     casadi::SX dt = SX::sym("dt", 1);
@@ -36,8 +36,8 @@ int main()
     // opts["ipopt.max_iter"] = 100;
     // opts["ipopt.print_level"] = 5;
     opts["ipopt.linear_solver"] = "ma97";
-    std::shared_ptr<variables::GeneralProblemData> problem = std::make_shared<variables::GeneralProblemData>(Fint, F, L, Phi);
-    variables::TrajectoryOpt traj(opts, si, problem);
+    std::shared_ptr<opt::GeneralProblemData> problem = std::make_shared<opt::GeneralProblemData>(Fint, F, L, Phi);
+    opt::TrajectoryOpt traj(opts, si, problem);
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1, 0) = 1;

@@ -1,10 +1,10 @@
-#include "galileo/variables/PseudospectralSegment.h"
+#include "galileo/opt/PseudospectralSegment.h"
 
 using namespace casadi;
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
         LagrangePolynomial::LagrangePolynomial(int d_, const std::string &scheme)
         {

@@ -2,8 +2,8 @@
 #include "galileo/model/ContactSequence.h"
 #include "galileo/model/EnvironmentSurfaces.h"
 
-#include "galileo/variables/States.h"
-#include "galileo/variables/TrajectoryGeneration.h"
+#include "galileo/opt/States.h"
+#include "galileo/opt/TrajectoryGeneration.h"
 
 #include <string>
 
@@ -41,14 +41,14 @@ int main()
     surfaces->push_back(environment::CreateInfiniteGround());
     std::cout << "Set the ground" << std::endl;
 
-    // variables::Trajectory traj;
+    // opt::Trajectory traj;
     // //  Initializes dynamics
     // traj.setModel(bot);
     
     
     // Target defines parameter for defining the cost
     // problemSetup defines parameters for setting up the problem, such as initial state
-    variables::States* state_definition = new variables::States(19,18);
+    opt::States* state_definition = new opt::States(19,18);
     Eigen::VectorXd target_state_vector;
     Eigen::VectorXd initial_state_vector;
 
@@ -78,9 +78,9 @@ int main()
     std::cout << "Set the contact sequence" << std::endl;
 
 
-    variables::Target<> target(target_state_vector, state_definition);
-    variables::InitialCondition<> initial_condition(initial_state_vector, state_definition, initial_mode);
-    variables::ProblemSetup<> problem_setup(initial_condition, contact_sequence);
+    opt::Target<> target(target_state_vector, state_definition);
+    opt::InitialCondition<> initial_condition(initial_state_vector, state_definition, initial_mode);
+    opt::ProblemSetup<> problem_setup(initial_condition, contact_sequence);
 
     std::cout << "Finished setting up the problem" << std::endl;
 

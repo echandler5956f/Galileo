@@ -1,11 +1,11 @@
 #pragma once
 
-#include "galileo/variables/States.h"
+#include "galileo/opt/States.h"
 #include "galileo/model/ContactSequence.h"
 
 namespace galileo
 {
-    namespace variables
+    namespace opt
     {
         /**
          * @brief 
@@ -134,7 +134,7 @@ namespace galileo
         //     contact::ContactSequence contact_sequence;
         //     // footstep trajectory parameters or evaluator
         //     std::vector<int> collocation_points_per_knot;
-        //     std::vector<std::shared_ptr<variables::ConstraintBuilder>> constraint_builders;
+        //     std::vector<std::shared_ptr<opt::ConstraintBuilder>> constraint_builders;
         // };
     }
 }

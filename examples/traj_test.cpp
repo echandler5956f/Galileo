@@ -1,5 +1,5 @@
 #include "galileo/model/LeggedBody.h"
-#include "galileo/variables/TrajectoryOpt.h"
+#include "galileo/opt/TrajectoryOpt.h"
 #include <string>
 
 #include <pinocchio/parsers/urdf.hpp>
@@ -188,7 +188,7 @@ int main()
     g(2) = 9.81;
     auto nq = model.nq;
     auto nv = model.nv;
-    std::shared_ptr<variables::States> si = std::make_shared<variables::States>(nq, nv);
+    std::shared_ptr<opt::States> si = std::make_shared<opt::States>(nq, nv);
 
     casadi::SX cx = casadi::SX::sym("x", si->nx);
     casadi::SX cdx = casadi::SX::sym("dx", si->ndx);
@@ -270,8 +270,8 @@ int main()
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 1;
     // opts["ipopt.print_level"] = 5;
-    std::shared_ptr<variables::GeneralProblemData> problem = std::make_shared<variables::GeneralProblemData>(Fint, F, L, Phi);
-    variables::TrajectoryOpt traj(opts, si, problem);
+    std::shared_ptr<opt::GeneralProblemData> problem = std::make_shared<opt::GeneralProblemData>(Fint, F, L, Phi);
+    opt::TrajectoryOpt traj(opts, si, problem);
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     int j = 0;

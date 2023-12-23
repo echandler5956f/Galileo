@@ -1,12 +1,12 @@
-#include "galileo/variables/Constraint.h"
+#include "galileo/opt/Constraint.h"
 #include "galileo/model/ContactSequence.h"
-#include "galileo/variables/States.h"
+#include "galileo/opt/States.h"
 
 namespace galileo
 {
     namespace model
     {
-        namespace legged
+        namespace constraints
         {
 
             struct FrictionConeProblemData
@@ -14,7 +14,7 @@ namespace galileo
 
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
-                std::shared_ptr<variables::States> states;
+                std::shared_ptr<opt::States> states;
                 std::shared_ptr<pinocchio::Model> model;
                 contact::RobotEndEffectors robot_end_effectors;
                 casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
