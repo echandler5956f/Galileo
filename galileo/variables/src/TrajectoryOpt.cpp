@@ -4,7 +4,7 @@ namespace galileo
 {
     namespace variables
     {
-        TrajectoryOpt::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem)
+        TrajectoryOpt::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<GeneralProblemData> problem)
         {
             this->opts = opts_;
             this->state_indices = state_indices_;

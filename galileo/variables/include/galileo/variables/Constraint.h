@@ -8,46 +8,48 @@ namespace galileo
     {
 
         /**
-         * @brief Problem data for the trajectory optimization problem.
+         * @brief Data necessary to build the problem or constraints.
+         * It is good practice to have a corresponding constraint specific 
+         * Problem Data for any data needed to build a constraint.
          * 
          */
-        struct ProblemData
+        struct GeneralProblemData
         {
             /**
              * @brief Construct a new Problem Data object.
              * 
              * @param Fint_ 
-             * @param F_
-             * @param L_ 
-             * @param Phi_ 
+             * @param F_ Dynamics of the system
+             * @param L_ Running cost
+             * @param Phi_ Terminal cost
              */
-            ProblemData(casadi::Function Fint_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
+            GeneralProblemData(casadi::Function Fint_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
             {
                 this->Fint = Fint_;
                 this->F = F_;
                 this->L = L_;
                 this->Phi = Phi_;
             }
-
+        
             /**
              * @brief 
              * 
              */
             casadi::Function Fint;
-
-
+        
+        
             /**
              * @brief 
              * 
              */
             casadi::Function F;
-
+        
             /**
              * @brief 
              * 
              */
             casadi::Function L;
-
+        
             /**
              * @brief 
              * 
@@ -56,7 +58,8 @@ namespace galileo
         };
 
         /**
-         * @brief 
+         * @brief Results that describe a "built" constraint. 
+         * This contains the constraint Function, Bounds, etcetera. 
          * 
          */
         struct ConstraintData
@@ -125,10 +128,12 @@ namespace galileo
             casadi::SX w;
         };
 
+
         /**
-         * @brief 
+         * @brief Extend this class to implement constraints.
          * 
          */
+        template <class ProblemData>
         class ConstraintBuilder
         {
             /**
@@ -162,7 +167,7 @@ namespace galileo
              * @param problem_data 
              * @param apply_at 
              */
-            virtual void CreateApplyAt(const ProblemData &problem_data, Eigen::VectorXi &apply_at) const;
+            virtual void CreateApplyAt(const ProblemData &problem_data, Eigen::VectorXi &apply_at) const = 0;
 
             /**
              * @brief Generate bounds for a vector of points
@@ -171,7 +176,7 @@ namespace galileo
              * @param upper_bound 
              * @param lower_bound 
              */
-            virtual void CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
+            virtual void CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
 
             /**
              * @brief Generate a function to evaluate each point
@@ -179,7 +184,7 @@ namespace galileo
              * @param problem_data 
              * @param G
              */
-            virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &G) const;
+            virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &G) const = 0;
         };
     };
 

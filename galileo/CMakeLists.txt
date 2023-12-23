@@ -1,2 +1,3 @@
 add_subdirectory(model)
 add_subdirectory(variables)
+add_subdirectory(legged_imp)

@@ -37,6 +37,16 @@ namespace galileo
             std::vector<environment::SurfaceID> contact_surfaces;
 
             /**
+             * @brief Get the surface ID for a given end effector.
+             *
+             * This function returns the surface ID for a given end effector.
+             *
+             * @param EndEffectorID The ID of the end effector.
+             * @return The surface ID for the given end effector.
+             */
+            environment::SurfaceID getSurfaceIDForEE(std::string EndEffectorID) const;
+
+            /**
              * @brief Makes the combination valid. If an EE is not in contact, it makes the corresponding contact surface NO_SURFACE.
              *
              * @param validity Error code

@@ -23,7 +23,7 @@ namespace galileo
              * @param state_indices_ Helper class to get the state indices
              * @param problem Problem data containing the objective function and dynamics
              */
-            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem);
+            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<GeneralProblemData> problem);
 
             /**
              * @brief Initialize the finite elements.

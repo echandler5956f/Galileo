@@ -37,6 +37,14 @@ namespace galileo
              *
              */
             Eigen::Vector2d polytope_local_chebyshev_center;
+
+            /**
+             * @brief Get a "rotation" matrix R such that R * unit_surface_normal_in_global_frame = z_hat
+             */
+            Eigen::Matrix<double, 3, 3> Rotation()
+            {
+                return Eigen::Matrix<double, 3, 3>::Identity();
+            }
         };
 
         /**
