@@ -115,6 +115,12 @@ namespace galileo
             void initialize_time_vector();
 
             /**
+             * @brief Initialize the vector of times which coincide to the decision variables U occur at.
+             *
+             */
+            void initialize_u_time_vector();
+
+            /**
              * @brief Fill all times with the time vector from this segment.
              *
              * @param all_times
@@ -135,9 +141,10 @@ namespace galileo
              * @param F Function for the system dynamics
              * @param L Integrated cost
              * @param G Vector of constraint data
-             * @param W Decision bound and initial guess data
+             * @param Wx Decision bound and initial guess data for the state
+             * @param Wu Decision bound and initial guess data for the input
              */
-            void initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> W);
+            void initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu);
 
             /**
              * @brief Evaluate the expressions with the actual decision variables.
@@ -437,10 +444,23 @@ namespace galileo
             int knot_num;
 
             /**
-             * @brief Vector of all times.
+             * @brief Vector of all times. Note that this coincides with the times for the decision variables of x.
              *
              */
             DM times;
+
+            /**
+             * @brief Vector of unique times, including terminal but not including initial.
+             * Used for bound constraint evaluation, so that we don't overconstrain variables which occur at the same time
+             * e.g, x0 and xf of adjacent segments
+             *
+             */
+            DM unique_times;
+            
+            /**
+             * @brief Vector of times for the decision variables of u.
+            */
+            DM u_times;
 
             /**
              * @brief Period of EACH KNOT SEGMENT within this pseudospectral segment.

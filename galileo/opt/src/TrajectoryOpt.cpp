@@ -39,9 +39,34 @@ namespace galileo
 
             /*Each phase should have a vector of constraint data*/
             std::size_t num_phases = 1;
-            std::vector<std::shared_ptr<ConstraintData>> G;
-            std::shared_ptr<DecisionData> W;
 
+
+            // Cheat vars just for testing the constraint framework
+            casadi::SX x = casadi::SX::sym("x", this->state_indices->nx);
+            casadi::SX u = casadi::SX::sym("u", this->state_indices->nu);
+            casadi::SX t = casadi::SX::sym("t");
+
+            std::vector<std::shared_ptr<ConstraintData>> G;
+            std::shared_ptr<ConstraintData> u_bound_constraint = std::make_shared<ConstraintData>();
+
+            // u_bound_constraint->global = true;
+            // u_bound_constraint->upper_bound = casadi::Function("u_ubound", {t}, {1.0});
+            // u_bound_constraint->lower_bound = casadi::Function("u_lbound", {t}, {-1.0});
+            // u_bound_constraint->G = casadi::Function("u_bound", {x, u}, {u});
+            // G.push_back(u_bound_constraint);
+
+            std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
+            Wu->upper_bound = casadi::Function("u_ubound", {t}, {1.0 * t + 0.5});
+            Wu->lower_bound = casadi::Function("u_lbound", {t}, {-1.0});
+            Wu->initial_guess = casadi::Function("u_guess", {t}, {0.0});
+            Wu->w = u;
+
+            std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
+            Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::vertcat({1.0, 1.0})});
+            Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.25, -1.0})});
+            Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::vertcat({0.0, 0.0})});
+            Wx->w = x;
+        
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
@@ -50,7 +75,7 @@ namespace galileo
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
                 /*TODO: Pass in W which holds the decision variable bounds and initial guess data*/
-                ps->initialize_expression_graph(this->F, this->L, G, W);
+                ps->initialize_expression_graph(this->F, this->L, G, Wx, Wu);
 
                 this->trajectory.push_back(ps);
                 ps->evaluate_expression_graph(this->J, this->w, this->g);
@@ -118,9 +143,9 @@ namespace galileo
             casadi::DMDict arg;
             arg["lbg"] = this->lbg;
             arg["ubg"] = this->ubg;
-            // arg["lbx"] = this->lbw;
-            // arg["ubx"] = this->ubw;
-            // arg["x0"] = this->w0;
+            arg["lbx"] = this->lbw;
+            arg["ubx"] = this->ubw;
+            arg["x0"] = this->w0;
             casadi::DMDict sol = this->solver(arg);
             this->w0 = sol["x"].get_elements();
             casadi::Dict stats = this->solver.stats();

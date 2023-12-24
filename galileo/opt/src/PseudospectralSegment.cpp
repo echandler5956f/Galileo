@@ -91,6 +91,7 @@ namespace galileo
             this->initialize_expression_variables(d);
 
             this->initialize_time_vector();
+            this->initialize_u_time_vector();
         }
 
         void PseudospectralSegment::initialize_expression_variables(int d)
@@ -98,8 +99,8 @@ namespace galileo
             this->dXc.clear();
             this->Uc.clear();
 
-            this->dX_poly = LagrangePolynomial(d, "radau");
-            this->U_poly = LagrangePolynomial(1, "radau");
+            this->dX_poly = LagrangePolynomial(d);
+            this->U_poly = LagrangePolynomial(1);
 
             for (int j = 0; j < this->dX_poly.d; ++j)
             {
@@ -117,9 +118,11 @@ namespace galileo
         void PseudospectralSegment::initialize_time_vector()
         {
             this->times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d + 1), 1);
+            this->unique_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d), 1);
             int i = 0;
+            int unique_i = 0;
             int j = 0;
-            double kh = 0;
+            double kh = 0.0;
             for (int k = 0; k < this->knot_num; ++k)
             {
                 kh = k * this->h;
@@ -128,6 +131,32 @@ namespace galileo
                 for (j = 0; j < this->dX_poly.d; ++j)
                 {
                     this->times(i, 0) = kh + this->dX_poly.tau_root[j + 1] * this->h;
+                    if (i > 0 && unique_i < this->unique_times.size1())
+                    {
+                        this->unique_times(unique_i, 0) = this->times(i, 0);
+                        ++unique_i;
+                    }
+                    ++i;
+                }
+            }
+        }
+
+        void PseudospectralSegment::initialize_u_time_vector()
+        {
+            this->u_times = casadi::DM::zeros(this->knot_num * (this->U_poly.d), 1);
+            int j = 0;
+            double kh = 0.0;
+            this->u_times(0, 0) = kh;
+            int i = 1;
+            for (int k = 0; k < this->knot_num; ++k)
+            {
+                kh = k * this->h;
+                for (j = 0; j < this->U_poly.d; ++j)
+                {
+                    if (i < this->u_times.size1())
+                        this->u_times(i, 0) = kh + this->U_poly.tau_root[j + 1] * this->h;
+                    else
+                        break;
                     ++i;
                 }
             }
@@ -169,7 +198,7 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> W)
+        void PseudospectralSegment::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu)
         {
             assert(F.n_in() == 2 && "F must have 2 inputs");
             assert(F.n_out() == 1 && "F must have 1 output");
@@ -213,6 +242,7 @@ namespace galileo
                 SX x_c = this->Fint(SXVector{this->X0, this->dXc[j - 1], dt_j}).at(0);
                 // SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j - 1], this->Uc);
                 SX u_c = this->Uc[0];
+
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
                 tmp_x.push_back(x_c);
@@ -259,7 +289,7 @@ namespace galileo
             // xf_constraint = external("xf_constraint");
 
             auto q_cost = Function("fxq", SXVector{this->Lc, this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
-                                        SXVector{this->Lc + Qf}, opts);
+                                   SXVector{this->Lc + Qf}, opts);
             // q_cost.generate("q_cost");
             // int flag3 = system("gcc -fPIC -shared -O3 q_cost.c -o q_cost.so");
             // casadi_assert(flag3==0, "Compilation failed");
@@ -274,13 +304,13 @@ namespace galileo
             this->plot_map_func = Function("plot_map",
                                            SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
                                            SXVector{horzcat(tmp_x), horzcat(u_at_c)})
-                                      .map(this->knot_num, "openmp");
+                                      .map(this->knot_num, "serial");
 
             long N = this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
                      this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0);
             auto tmp = N;
 
-            std::vector<tuple_size_t> ranges;
+            std::vector<tuple_size_t> ranges_G;
 
             /*Map the constraint to each collocation point, and then map the mapped constraint to each knot segment*/
             for (std::size_t i = 0; i < G.size(); ++i)
@@ -294,12 +324,12 @@ namespace galileo
 
                 if (g_data->global)
                 {
-                    SXVector tmp_map = g_data->G.map(this->dX_poly.d, "serial")(SXVector{vertcat(tmp_x), vertcat(u_at_c)});
                     auto tmap = Function("fg",
-                                         SXVector{this->X0, vertcat(tmp_dx), vertcat(this->Uc)},
-                                         SXVector{vertcat(tmp_map)});
+                                         SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
+                                         SXVector{vertcat(g_data->G.map(this->dX_poly.d, "serial")((SXVector{horzcat(x_at_c), horzcat(u_at_c)})))})
+                                    .map(this->knot_num, "serial");
                     this->general_constraint_maps.push_back(tmap);
-                    ranges.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
+                    ranges_G.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
                     N += tmap.size1_out(0) * tmap.size2_out(0);
                 }
                 else
@@ -320,24 +350,34 @@ namespace galileo
                 auto g_data = G[i];
                 if (g_data->global)
                 {
-                    this->general_lbg(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
-                        vertcat(g_data->lower_bound.map(this->knot_num, "serial")(this->times));
-                    this->general_ubg(Slice(casadi_int(std::get<0>(ranges[i])), casadi_int(std::get<1>(ranges[i])))) =
-                        vertcat(g_data->upper_bound.map(this->knot_num, "serial")(this->times));
+                    this->general_lbg(Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i])))) =
+                        vertcat(g_data->lower_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->unique_times));
+                    this->general_ubg(Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i])))) =
+                        vertcat(g_data->upper_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->unique_times));
                 }
                 else
                 {
                 }
             }
+            auto Ndx = this->st_m->ndx * (this->dX_poly.d + 1) * this->knot_num + this->st_m->ndx;
+            auto Nu = this->st_m->nu * this->U_poly.d * this->knot_num;
+            this->w0 = DM::zeros(Ndx + Nu, 1);
+            this->general_lbw = -DM::inf(Ndx + Nu, 1);
+            this->general_ubw = DM::inf(Ndx + Nu, 1);
 
-            // assert(W->initial_guess.n_in() == 1 && "W must have 1 inputs (time)");
-            // W->initial_guess.assert_size_in(0, 1, 1);
-            // W->initial_guess.assert_size_out(0, this->st_m->nx, 1);
-            // W->initial_guess.assert_size_out(1, this->st_m->nu, 1);
+            auto tmp_times = DM::zeros(this->times.size1() + 1, 1);
+            tmp_times(Slice(0, this->times.size1())) = this->times;
+            tmp_times(this->times.size1(), 0) = this->times(this->times.size1() - 1, 0);
 
-            // this->w0 = vertcat(W->initial_guess.map(this->knot_num, "serial")(this->times));
-            // this->general_lbw = vertcat(W->lower_bound.map(this->knot_num, "serial")(this->times));
-            // this->general_ubw = vertcat(W->upper_bound.map(this->knot_num, "serial")(this->times));
+            /*TODO: Transform initial guess for x to an initial guess for dx, using f_diff, the inverse of f_int*/
+            /*TODO: w is currently not ordered by time (not sure if it is better like this for sparsity)- so we need to collect the times of dX0 and then do this, and then collect the times of the dXc's and stack it*/
+            this->w0(Slice(0, Ndx)) = reshape(vertcat(Wx->initial_guess.map((this->dX_poly.d + 1) * this->knot_num + 1, "serial")(tmp_times)), Ndx, 1);
+            this->general_lbw(Slice(0, Ndx)) = reshape(vertcat(Wx->lower_bound.map((this->dX_poly.d + 1) * this->knot_num + 1, "serial")(tmp_times)), Ndx, 1);
+            this->general_ubw(Slice(0, Ndx)) = reshape(vertcat(Wx->upper_bound.map((this->dX_poly.d + 1) * this->knot_num + 1, "serial")(tmp_times)), Ndx, 1);
+
+            this->w0(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->initial_guess.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
+            this->general_lbw(Slice(Ndx, Ndx + Nu * this->st_m->nu)) = reshape(vertcat(Wu->lower_bound.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
+            this->general_ubw(Slice(Ndx, Ndx + Nu * this->st_m->nu)) = reshape(vertcat(Wu->upper_bound.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
         }
 
         MX PseudospectralSegment::processVector(MXVector &vec) const
@@ -397,8 +437,8 @@ namespace galileo
             /*where w of this segment starts*/
             std::size_t w_size = w.size();
             /*Use std::move to avoid copying the vectors. Reserve space for w in advance outside of PseudospectralSegment.*/
-            w.insert(w.end(), std::make_move_iterator(this->dXc_var_vec.begin()), std::make_move_iterator(this->dXc_var_vec.end()));
             w.insert(w.end(), std::make_move_iterator(this->dX0_var_vec.begin()), std::make_move_iterator(this->dX0_var_vec.end()));
+            w.insert(w.end(), std::make_move_iterator(this->dXc_var_vec.begin()), std::make_move_iterator(this->dXc_var_vec.end()));
             w.insert(w.end(), std::make_move_iterator(this->U_var_vec.begin()), std::make_move_iterator(this->U_var_vec.end()));
 
             this->w_range = tuple_size_t(w_size, std::accumulate(w.begin() + w_size, w.end(), 0, [](int sum, const MX &item)
