@@ -57,6 +57,7 @@ namespace galileo
             /*Validation of time varying bounds*/
             std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
             Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::vertcat({1.0, 1.0})});
+            // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-inf, -inf})});
             Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
             Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::vertcat({0.0, 0.0})});
             Wx->w = x;

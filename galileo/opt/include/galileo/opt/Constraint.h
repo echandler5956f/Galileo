@@ -18,7 +18,9 @@ namespace galileo
             /**
              * @brief Construct a new Problem Data object.
              * 
-             * @param Fint_ 
+             * @param Fint_ Continuous-time function. The decision variables are infinitesimal deviations from the initial state,
+                allowing for states to lie on a manifold. Fint is the function which maps these
+                deviations back to the actual state space
              * @param F_ Dynamics of the system
              * @param L_ Running cost
              * @param Phi_ Terminal cost
@@ -32,26 +34,28 @@ namespace galileo
             }
         
             /**
-             * @brief 
+             * @brief Continuous-time function. The decision variables are infinitesimal deviations from the initial state,
+                allowing for states to lie on a manifold. Fint is the function which maps these
+                deviations back to the actual state space.
              * 
              */
             casadi::Function Fint;
         
         
             /**
-             * @brief 
+             * @brief Continuous-time function. This function stores the system dynamics.
              * 
              */
             casadi::Function F;
         
             /**
-             * @brief 
+             * @brief The "running" or integrated cost function.
              * 
              */
             casadi::Function L;
         
             /**
-             * @brief 
+             * @brief The terminal cost function.
              * 
              */
             casadi::Function Phi;
@@ -66,38 +70,38 @@ namespace galileo
         {
 
             /**
-             * @brief If global is true, use a map to apply the constraints across all knot points AND collocation points, and do not check flags
+             * @brief If global is true, use a map to apply the constraints across all knot points AND collocation points, and do not check flags.
              * 
              */
             bool global;
 
             /**
-             * @brief If global is false, apply the constraints at these knot points (NOT collocation points) indices
+             * @brief If global is false, apply the constraints at these knot points (NOT collocation points) indices.
              * 
              */
             Eigen::VectorXi apply_at;
 
             /**
-             * @brief 
+             * @brief Upper bounds of the constraint function.
              * 
              */
             casadi::Function upper_bound;
 
             /**
-             * @brief 
+             * @brief Lower bounds of the constraint function.
              * 
              */
             casadi::Function lower_bound;
 
             /**
-             * @brief 
+             * @brief The constraint function.
              * 
              */
             casadi::Function G;
         };
 
         /**
-         * @brief 
+         * @brief Data for the decision variables.
          * 
          */
         struct DecisionData
@@ -149,10 +153,10 @@ namespace galileo
             virtual ~ConstraintBuilder() = default;
 
             /**
-             * @brief 
+             * @brief Build constraint data for a given problem data.
              * 
-             * @param problem_data 
-             * @param constraint_data 
+             * @param problem_data Problem specific data
+             * @param constraint_data Constraint specific data
              */
             void BuildConstraint(const ProblemData &problem_data, ConstraintData &constraint_data)
             {
@@ -164,25 +168,25 @@ namespace galileo
             /**
              * @brief Generate flags for each knot point
              * 
-             * @param problem_data 
-             * @param apply_at 
+             * @param problem_data Problem specific data
+             * @param apply_at What knot points (indices) to apply the constraint at
              */
             virtual void CreateApplyAt(const ProblemData &problem_data, Eigen::VectorXi &apply_at) const = 0;
 
             /**
              * @brief Generate bounds for a vector of points
              * 
-             * @param problem_data 
-             * @param upper_bound 
-             * @param lower_bound 
+             * @param problem_data Problem specific data 
+             * @param upper_bound Upper bound function to return
+             * @param lower_bound Lower bound function to return
              */
             virtual void CreateBounds(const ProblemData &problem_data, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
 
             /**
              * @brief Generate a function to evaluate each point
              * 
-             * @param problem_data 
-             * @param G
+             * @param problem_data Problem specific data
+             * @param G The constraint function to return
              */
             virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &G) const = 0;
         };

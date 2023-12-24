@@ -56,7 +56,7 @@ L = x1**2 + x2**2 + u**2
 f = ca.Function('f', [x, u], [xdot, L], ['x', 'u'], ['xdot', 'L'])
 
 # Control discretization
-N = 25  # Number of control intervals
+N = 20  # Number of control intervals
 h = T/N
 
 # Start with an empty NLP
