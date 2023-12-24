@@ -86,7 +86,7 @@ namespace galileo
             this->Fint = Fint_;
             this->h = h_;
             this->st_m = st_m_;
-            this->T = (this->knot_num + 1) * this->h;
+            this->T = (this->knot_num) * this->h;
 
             this->initialize_expression_variables(d);
 
@@ -118,7 +118,8 @@ namespace galileo
         void PseudospectralSegment::initialize_time_vector()
         {
             this->times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d + 1), 1);
-            this->unique_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d), 1);
+            this->collocation_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d), 1);
+            this->knot_times = casadi::DM::zeros(this->knot_num + 1, 1);
             int i = 0;
             int unique_i = 0;
             int j = 0;
@@ -127,18 +128,21 @@ namespace galileo
             {
                 kh = k * this->h;
                 this->times(i, 0) = kh;
+                this->knot_times(k, 0) = kh;
                 ++i;
                 for (j = 0; j < this->dX_poly.d; ++j)
                 {
                     this->times(i, 0) = kh + this->dX_poly.tau_root[j + 1] * this->h;
-                    if (i > 0 && unique_i < this->unique_times.size1())
+                    if (i > 0 && unique_i < this->collocation_times.size1())
                     {
-                        this->unique_times(unique_i, 0) = this->times(i, 0);
+                        this->collocation_times(unique_i, 0) = this->times(i, 0);
                         ++unique_i;
                     }
                     ++i;
                 }
             }
+            this->knot_times(this->knot_times.size1() - 2, 0) = this->T - this->h;
+            this->knot_times(this->knot_times.size1() - 1, 0) = this->T;
         }
 
         void PseudospectralSegment::initialize_u_time_vector()
@@ -351,29 +355,32 @@ namespace galileo
                 if (g_data->global)
                 {
                     this->general_lbg(Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i])))) =
-                        vertcat(g_data->lower_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->unique_times));
+                        vertcat(g_data->lower_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->collocation_times));
                     this->general_ubg(Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i])))) =
-                        vertcat(g_data->upper_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->unique_times));
+                        vertcat(g_data->upper_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->collocation_times));
                 }
                 else
                 {
                 }
             }
+
+            auto Ndxknot = this->st_m->ndx * (this->knot_num + 1);
             auto Ndx = this->st_m->ndx * (this->dX_poly.d + 1) * this->knot_num + this->st_m->ndx;
+            auto Ndxcol = Ndx - Ndxknot;
+
             auto Nu = this->st_m->nu * this->U_poly.d * this->knot_num;
             this->w0 = DM::zeros(Ndx + Nu, 1);
             this->general_lbw = -DM::inf(Ndx + Nu, 1);
             this->general_ubw = DM::inf(Ndx + Nu, 1);
 
-            auto tmp_times = DM::zeros(this->times.size1() + 1, 1);
-            tmp_times(Slice(0, this->times.size1())) = this->times;
-            tmp_times(this->times.size1(), 0) = this->times(this->times.size1() - 1, 0);
-
             /*TODO: Transform initial guess for x to an initial guess for dx, using f_diff, the inverse of f_int*/
-            /*TODO: w is currently not ordered by time (not sure if it is better like this for sparsity)- so we need to collect the times of dX0 and then do this, and then collect the times of the dXc's and stack it*/
-            this->w0(Slice(0, Ndx)) = reshape(vertcat(Wx->initial_guess.map((this->dX_poly.d + 1) * this->knot_num + 1, "serial")(tmp_times)), Ndx, 1);
-            this->general_lbw(Slice(0, Ndx)) = reshape(vertcat(Wx->lower_bound.map((this->dX_poly.d + 1) * this->knot_num + 1, "serial")(tmp_times)), Ndx, 1);
-            this->general_ubw(Slice(0, Ndx)) = reshape(vertcat(Wx->upper_bound.map((this->dX_poly.d + 1) * this->knot_num + 1, "serial")(tmp_times)), Ndx, 1);
+            this->w0(Slice(0, Ndxknot)) = reshape(vertcat(Wx->initial_guess.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
+            this->general_lbw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
+            this->general_ubw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
+
+            this->w0(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->initial_guess.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
+            this->general_lbw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
+            this->general_ubw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
 
             this->w0(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->initial_guess.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
             this->general_lbw(Slice(Ndx, Ndx + Nu * this->st_m->nu)) = reshape(vertcat(Wu->lower_bound.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);

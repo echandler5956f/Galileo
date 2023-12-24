@@ -444,7 +444,7 @@ namespace galileo
             int knot_num;
 
             /**
-             * @brief Vector of all times. Note that this coincides with the times for the decision variables of x.
+             * @brief Vector of all times including knot points. Note that this coincides with the times for the decision variables of x.
              *
              */
             DM times;
@@ -455,7 +455,12 @@ namespace galileo
              * e.g, x0 and xf of adjacent segments
              *
              */
-            DM unique_times;
+            DM collocation_times;
+
+            /**
+             * @brief Vector of times for the knot points.
+            */
+            DM knot_times;
             
             /**
              * @brief Vector of times for the decision variables of u.

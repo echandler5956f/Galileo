@@ -40,7 +40,6 @@ namespace galileo
             /*Each phase should have a vector of constraint data*/
             std::size_t num_phases = 1;
 
-
             // Cheat vars just for testing the constraint framework
             casadi::SX x = casadi::SX::sym("x", this->state_indices->nx);
             casadi::SX u = casadi::SX::sym("u", this->state_indices->nu);
@@ -55,18 +54,19 @@ namespace galileo
             // u_bound_constraint->G = casadi::Function("u_bound", {x, u}, {u});
             // G.push_back(u_bound_constraint);
 
+            /*Validation of time varying bounds*/
+            std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
+            Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::vertcat({1.0, 1.0})});
+            Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
+            Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::vertcat({0.0, 0.0})});
+            Wx->w = x;
+
             std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
-            Wu->upper_bound = casadi::Function("u_ubound", {t}, {1.0 * t + 0.5});
+            Wu->upper_bound = casadi::Function("u_ubound", {t}, {1.0});
             Wu->lower_bound = casadi::Function("u_lbound", {t}, {-1.0});
             Wu->initial_guess = casadi::Function("u_guess", {t}, {0.0});
             Wu->w = u;
 
-            std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
-            Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::vertcat({1.0, 1.0})});
-            Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.25, -1.0})});
-            Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::vertcat({0.0, 0.0})});
-            Wx->w = x;
-        
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
