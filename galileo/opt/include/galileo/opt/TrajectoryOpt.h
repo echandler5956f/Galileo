@@ -60,6 +60,12 @@ namespace galileo
             casadi::Function Fint;
 
             /**
+             * @brief Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
+             *
+             */
+            casadi::Function Fdif;
+
+            /**
              * @brief Continuous-time function. This function stores the system dynamics.
              *
              */

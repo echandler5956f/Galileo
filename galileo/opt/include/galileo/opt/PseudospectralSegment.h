@@ -98,8 +98,9 @@ namespace galileo
              * @param h_ Period of each knot segment
              * @param st_m_ Pointer to the state indices helper
              * @param Fint_ Integrator function
+             * @param Fdif_ Difference function
              */
-            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_);
+            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -388,6 +389,12 @@ namespace galileo
              *
              */
             Function Fint;
+
+            /**
+             * @brief Difference function.
+             *
+             */
+            Function Fdif;
 
             /**
              * @brief Collocation states used to build the expression graphs.

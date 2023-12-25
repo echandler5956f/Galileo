@@ -10,6 +10,7 @@ namespace galileo
             this->state_indices = state_indices_;
 
             this->Fint = problem->Fint;
+            this->Fdif = problem->Fdif;
             this->F = problem->F;
             this->L = problem->L;
             this->Phi = problem->Phi;
@@ -57,8 +58,8 @@ namespace galileo
             /*Validation of time varying bounds*/
             std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
             Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::vertcat({1.0, 1.0})});
-            // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-inf, -inf})});
-            Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
+            Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-inf, -inf})});
+            // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
             Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::vertcat({0.0, 0.0})});
             Wx->w = x;
 
@@ -71,7 +72,7 @@ namespace galileo
             printf("Starting initialization\n");
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 20, 10. / 20, this->state_indices, this->Fint);
+                ps = std::make_shared<PseudospectralSegment>(d, 20, 10. / 20, this->state_indices, this->Fint, this->Fdif);
                 ps->initialize_knot_segments(prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/

@@ -70,20 +70,28 @@ namespace galileo
             return result;
         }
 
-        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_)
+        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_)
         {
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
             assert(h_ > 0 && "h must be a positive duration");
             assert(Fint_.n_in() == 3 && "Fint must have 3 inputs");
             assert(Fint_.n_out() == 1 && "Fint must have 1 output");
+            assert(Fdif_.n_in() == 3 && "Fdif must have 3 inputs");
+            assert(Fdif_.n_out() == 1 && "Fdif must have 1 output");
 
             Fint_.assert_size_in(0, st_m_->nx, 1);
             Fint_.assert_size_in(1, st_m_->ndx, 1);
             Fint_.assert_size_in(2, 1, 1);
             Fint_.assert_size_out(0, st_m_->nx, 1);
 
+            Fdif_.assert_size_in(0, st_m_->nx, 1);
+            Fdif_.assert_size_in(1, st_m_->nx, 1);
+            Fdif_.assert_size_in(2, 1, 1);
+            Fdif_.assert_size_out(0, st_m_->ndx, 1);
+
             this->knot_num = knot_num_;
             this->Fint = Fint_;
+            this->Fdif = Fdif_;
             this->h = h_;
             this->st_m = st_m_;
             this->T = (this->knot_num) * this->h;
@@ -373,11 +381,21 @@ namespace galileo
             this->general_lbw = -DM::inf(Ndx + Nu, 1);
             this->general_ubw = DM::inf(Ndx + Nu, 1);
 
-            /*TODO: Transform initial guess for x to an initial guess for dx, using f_diff, the inverse of f_int*/
-            this->w0(Slice(0, Ndxknot)) = reshape(vertcat(Wx->initial_guess.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
+            /*Transform initial guess for x to an initial guess for dx, using f_dif, the inverse of f_int*/
+
+            /*TODO: This initialization procedure is not quite right for multi-phase optimization, because x0_init could be symbolic (final state of the previous phase). 
+            We should instead relae the initial guess to the global time*/
+            casadi::MX xg_sym = casadi::MX::sym("x2", this->st_m->nx, 1);
+
+            auto xg = vertcat(Wx->initial_guess.map(this->knot_num + 1, "serial")(this->knot_times));
+            Function xg_func = Function("xg_fun", MXVector{xg_sym}, MXVector{this->Fdif(MXVector{this->x0_init, xg_sym, 1.0}).at(0)})
+                                   .map(this->knot_num + 1, "serial");
+            this->w0(Slice(0, Ndxknot)) = reshape(xg_func(DMVector{xg}).at(0), Ndxknot, 1);
             this->general_lbw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
             this->general_ubw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
 
+            /*TODO: Figure out collocation guesses. The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), xc_k = fint(x_k, dxc_k), or
+            xc_k = fint(fint(x0_init, dx_k), dxc_k). Thus, dxc_k = fdif(fint(x0_init, xc_k)).*/
             this->w0(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->initial_guess.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
             this->general_lbw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
             this->general_ubw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);

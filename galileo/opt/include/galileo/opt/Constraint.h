@@ -21,13 +21,15 @@ namespace galileo
              * @param Fint_ Continuous-time function. The decision variables are infinitesimal deviations from the initial state,
                 allowing for states to lie on a manifold. Fint is the function which maps these
                 deviations back to the actual state space
+             * @param Fdif_ Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
              * @param F_ Dynamics of the system
              * @param L_ Running cost
              * @param Phi_ Terminal cost
              */
-            GeneralProblemData(casadi::Function Fint_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
+            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdif_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
             {
                 this->Fint = Fint_;
+                this->Fdif = Fdif_;
                 this->F = F_;
                 this->L = L_;
                 this->Phi = Phi_;
@@ -40,7 +42,12 @@ namespace galileo
              * 
              */
             casadi::Function Fint;
-        
+
+            /**
+             * @brief Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
+             * 
+             */
+            casadi::Function Fdif;
         
             /**
              * @brief Continuous-time function. This function stores the system dynamics.

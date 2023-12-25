@@ -24,8 +24,12 @@ int main()
     // Objective term
     casadi::SX l = pow(x(0), 2) + pow(x(1), 2) + pow(u, 2);
 
-    // Continuous time dynamics
+    casadi::SX x1 = SX::sym("x1", 2);
+    casadi::SX x2 = SX::sym("x2", 2);
+
+    // Continuous time dynamics (all state variables are Euclidean so we do not need to worry about these manifold operators)
     casadi::Function Fint("Fint", {x, dx, dt}, {dx});
+    casadi::Function Fdif("Fdif", {x1, x2, dt}, {x2});
     casadi::Function F("F", {x, u}, {xdot});
     casadi::Function L("L", {x, u}, {l});
     casadi::Function Phi("Phi", {x}, {0});
@@ -36,7 +40,7 @@ int main()
     // opts["ipopt.max_iter"] = 100;
     // opts["ipopt.print_level"] = 5;
     opts["ipopt.linear_solver"] = "ma97";
-    std::shared_ptr<opt::GeneralProblemData> problem = std::make_shared<opt::GeneralProblemData>(Fint, F, L, Phi);
+    std::shared_ptr<opt::GeneralProblemData> problem = std::make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
     opt::TrajectoryOpt traj(opts, si, problem);
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
