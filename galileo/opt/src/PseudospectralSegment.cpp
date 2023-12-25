@@ -318,8 +318,8 @@ namespace galileo
                                            SXVector{horzcat(tmp_x), horzcat(u_at_c)})
                                       .map(this->knot_num, "serial");
 
-            long N = this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
-                     this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0);
+            casadi_int N = this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
+                           this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0);
             auto tmp = N;
 
             std::vector<tuple_size_t> ranges_G;
@@ -354,17 +354,17 @@ namespace galileo
 
             this->general_lbg.resize(N, 1);
             this->general_ubg.resize(N, 1);
-            this->general_lbg(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
-            this->general_ubg(Slice(0, casadi_int(tmp))) = DM::zeros(tmp, 1);
+            this->general_lbg(Slice(0, tmp)) = DM::zeros(tmp, 1);
+            this->general_ubg(Slice(0, tmp)) = DM::zeros(tmp, 1);
 
-            for (std::size_t i = 0; i < G.size(); ++i)
+            for (casadi_int i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
                 if (g_data->global)
                 {
-                    this->general_lbg(Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i])))) =
+                    this->general_lbg(Slice(std::get<0>(ranges_G[i])), std::get<1>(ranges_G[i])) =
                         vertcat(g_data->lower_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->collocation_times));
-                    this->general_ubg(Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i])))) =
+                    this->general_ubg(Slice(std::get<0>(ranges_G[i])), std::get<1>(ranges_G[i])) =
                         vertcat(g_data->upper_bound.map(this->knot_num * (this->dX_poly.d), "serial")(this->collocation_times));
                 }
                 else
@@ -383,20 +383,31 @@ namespace galileo
 
             /*Transform initial guess for x to an initial guess for dx, using f_dif, the inverse of f_int*/
 
-            /*TODO: This initialization procedure is not quite right for multi-phase optimization, because x0_init could be symbolic (final state of the previous phase). 
+            /*TODO: This initialization procedure is not quite right for multi-phase optimization, because x0_init could be symbolic (final state of the previous phase).
             We should instead relae the initial guess to the global time*/
-            casadi::MX xg_sym = casadi::MX::sym("x2", this->st_m->nx, 1);
+            MX xkg_sym = casadi::MX::sym("xkg", this->st_m->nx, 1);
+            MX xckg_sym = casadi::MX::sym("Xckg", this->st_m->nx * this->dX_poly.d, 1);
 
             auto xg = vertcat(Wx->initial_guess.map(this->knot_num + 1, "serial")(this->knot_times));
-            Function xg_func = Function("xg_fun", MXVector{xg_sym}, MXVector{this->Fdif(MXVector{this->x0_init, xg_sym, 1.0}).at(0)})
-                                   .map(this->knot_num + 1, "serial");
-            this->w0(Slice(0, Ndxknot)) = reshape(xg_func(DMVector{xg}).at(0), Ndxknot, 1);
+            Function dxg_func = Function("xg_fun", MXVector{xkg_sym}, MXVector{this->Fdif(MXVector{this->x0_init, xkg_sym, 1.0}).at(0)})
+                                    .map(this->knot_num + 1, "serial");
+            this->w0(Slice(0, Ndxknot)) = reshape(dxg_func(DMVector{xg}).at(0), Ndxknot, 1);
             this->general_lbw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
             this->general_ubw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
 
-            /*TODO: Figure out collocation guesses. The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), xc_k = fint(x_k, dxc_k), or
-            xc_k = fint(fint(x0_init, dx_k), dxc_k). Thus, dxc_k = fdif(fint(x0_init, xc_k)).*/
-            this->w0(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->initial_guess.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
+            /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
+            Thus, dxc_k = fdif(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
+            auto xc_g = vertcat(Wx->initial_guess.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times));
+            for (casadi_int i = 0; i < this->knot_num; ++i)
+            {
+                auto xk = xg(Slice(i * this->st_m->nx, (i + 1) * this->st_m->nx));
+                auto xck = xc_g(Slice(i * this->st_m->nx * this->dX_poly.d, (i + 1) * this->st_m->nx * this->dX_poly.d));
+                for (casadi_int j = 0; j < this->dX_poly.d; ++j)
+                {
+                    this->w0(Slice(Ndxknot + i * this->st_m->ndx * this->dX_poly.d + j * this->st_m->ndx, Ndxknot + i * this->st_m->ndx * this->dX_poly.d + (j + 1) * this->st_m->ndx)) =
+                        reshape(this->Fdif(DMVector{xk, xck(Slice(j * this->st_m->nx, (j + 1) * this->st_m->nx)), this->h}).at(0), this->st_m->ndx, 1);
+                }
+            }
             this->general_lbw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
             this->general_ubw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
 

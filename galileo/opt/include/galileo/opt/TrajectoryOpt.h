@@ -2,6 +2,7 @@
 
 #include "galileo/opt/PseudospectralSegment.h"
 #include "third-party/gnuplot-iostream/gnuplot-iostream.h"
+#include <chrono>
 
 namespace galileo
 {

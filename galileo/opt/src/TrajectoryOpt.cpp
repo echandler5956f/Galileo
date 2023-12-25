@@ -70,6 +70,7 @@ namespace galileo
             Wu->w = u;
 
             printf("Starting initialization\n");
+            auto start_time = std::chrono::high_resolution_clock::now();
             for (std::size_t i = 0; i < num_phases; ++i)
             {
                 ps = std::make_shared<PseudospectralSegment>(d, 20, 10. / 20, this->state_indices, this->Fint, this->Fdif);
@@ -115,6 +116,9 @@ namespace galileo
                 }
             }
             printf("Finished initialization.\n");
+            auto end_time = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end_time - start_time;
+            std::cout << "Elapsed time for initialization: " << elapsed.count() << std::endl;
         }
 
         casadi::MXVector TrajectoryOpt::optimize()
