@@ -54,7 +54,9 @@ int main()
     auto sol = traj.optimize();
 
     /*TODO: Make a function to do automate the plotting within the actual library. Allow the user to include plotting functionality as a cmake option*/
-    std::vector<double> times = traj.get_all_times();
+    std::cout << "Here" << std::endl;
+    std::vector<double> times = traj.get_global_times();
+    std::cout << "Here" << std::endl;
     std::vector<double> u_times;
     for (int i = 0; i < times.size(); ++i)
     {

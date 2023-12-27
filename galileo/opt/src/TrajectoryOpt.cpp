@@ -29,7 +29,7 @@ namespace galileo
             this->w0.clear();
             this->J = 0;
 
-            this->all_times.clear();
+            this->global_times = nullptr;
 
             casadi::MX prev_final_state = X0;
             casadi::MX prev_final_state_deviant;
@@ -73,8 +73,8 @@ namespace galileo
             auto start_time = std::chrono::high_resolution_clock::now();
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 20, 10. / 20, this->state_indices, this->Fint, this->Fdif);
-                ps->initialize_knot_segments(prev_final_state);
+                ps = std::make_shared<PseudospectralSegment>(d, 20, 10. / 20, this->global_times, this->state_indices, this->Fint, this->Fdif);
+                ps->initialize_knot_segments(X0, prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
                 /*TODO: Pass in W which holds the decision variable bounds and initial guess data*/
@@ -86,7 +86,7 @@ namespace galileo
                 ps->fill_lbg_ubg(this->lbg, this->ubg);
                 ps->fill_lbw_ubw(this->lbw, this->ubw);
                 ps->fill_w0(this->w0);
-                ps->fill_times(this->all_times);
+                this->global_times = ps->get_global_times();
 
                 /*Initial state constraint*/
                 if (i == 0)
@@ -165,9 +165,9 @@ namespace galileo
             return this->trajectory[0]->extract_solution(tmp);
         }
 
-        std::vector<double> TrajectoryOpt::get_all_times() const
+        std::vector<double> TrajectoryOpt::get_global_times() const
         {
-            return this->all_times;
+            return (*this->global_times).get_elements();
         }
     }
 }

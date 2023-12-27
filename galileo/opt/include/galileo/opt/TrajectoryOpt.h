@@ -42,8 +42,8 @@ namespace galileo
 
             /**
              * @brief Get the times where the decision variables are evaluated.
-            */
-            std::vector<double> get_all_times() const;
+             */
+            std::vector<double> get_global_times() const;
 
         private:
             /**
@@ -146,7 +146,7 @@ namespace galileo
 
             /**
              * @brief Initial guess for the decision variables.
-            */
+             */
             std::vector<double> w0;
 
             /**
@@ -159,7 +159,7 @@ namespace galileo
              * @brief Vector of all times where decision variables are evaluated.
              *
              */
-            std::vector<double> all_times;
+            std::shared_ptr<casadi::DM> global_times;
 
             /**
              * @brief Vector of plottable states

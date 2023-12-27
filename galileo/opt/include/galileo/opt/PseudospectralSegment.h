@@ -96,11 +96,12 @@ namespace galileo
              * @param d Polynomial degree
              * @param knot_num_ Number of knots in the segment
              * @param h_ Period of each knot segment
+             * @param global_times_ Vector of glbal times
              * @param st_m_ Pointer to the state indices helper
              * @param Fint_ Integrator function
              * @param Fdif_ Difference function
              */
-            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_);
+            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -110,10 +111,10 @@ namespace galileo
             void initialize_expression_variables(int d);
 
             /**
-             * @brief Initialize the vector of all times which constraints are evaluated at.
+             * @brief Initialize the vector of local times which constraints are evaluated at.
              *
              */
-            void initialize_time_vector();
+            void initialize_local_time_vector();
 
             /**
              * @brief Initialize the vector of times which coincide to the decision variables U occur at.
@@ -122,19 +123,13 @@ namespace galileo
             void initialize_u_time_vector();
 
             /**
-             * @brief Fill all times with the time vector from this segment.
-             *
-             * @param all_times
-             */
-            void fill_times(std::vector<double> &all_times) const;
-
-            /**
              * @brief Create all the knot segments.
              *
-             * @param x0 Starting state to integrate from. Can be a constant
+             * @param x0_global Global starting state to integrate from (used for initial guess)
+             * @param x0_local Local starting state to integrate from
              *
              */
-            void initialize_knot_segments(MX x0);
+            void initialize_knot_segments(DM x0_global, MX x0_local);
 
             /**
              * @brief Build the function graph.
@@ -191,6 +186,13 @@ namespace galileo
              * @return MX The final state.
              */
             MX get_final_state() const;
+
+            /**
+             * @brief Get the global times vector.
+             *
+             * @return std::shared_ptr<casadi::DM> The global times vector
+             */
+            std::shared_ptr<casadi::DM> get_global_times() const;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -274,9 +276,16 @@ namespace galileo
             MX processOffsetVector(MXVector &vec) const;
 
             /**
-             * @brief Actual initial state.
+             * @brief Local initial state.
+             *
              */
-            MX x0_init;
+            MX x0_local;
+
+            /**
+             * @brief Global initial state.
+             *
+             */
+            DM x0_global;
 
             /**
              * @brief Collocation state decision variables.
@@ -451,27 +460,37 @@ namespace galileo
             int knot_num;
 
             /**
-             * @brief Vector of all times including knot points. Note that this coincides with the times for the decision variables of x.
+             * @brief Vector of global times including knot points.
              *
              */
-            DM times;
+            std::shared_ptr<DM> global_times;
 
             /**
-             * @brief Vector of unique times, including terminal but not including initial.
+             * @brief Vector of local times including knot points. Note that this coincides with the times for the decision variables of x.
+             *
+             */
+            DM local_times;
+
+            /**
+             * @brief Vector of unique times for this segment, including terminal but not including initial.
              * Used for bound constraint evaluation, so that we don't overconstrain variables which occur at the same time
              * e.g, x0 and xf of adjacent segments
+             *
+             * In the frame of the global times (NOT the local times)
              *
              */
             DM collocation_times;
 
             /**
-             * @brief Vector of times for the knot points.
-            */
+             * @brief Vector of times for the knot points for this segment.
+             *
+             * In the frame of the global times (NOT the local times)
+             */
             DM knot_times;
-            
+
             /**
              * @brief Vector of times for the decision variables of u.
-            */
+             */
             DM u_times;
 
             /**

@@ -70,7 +70,7 @@ namespace galileo
             return result;
         }
 
-        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_)
+        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_)
         {
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
             assert(h_ > 0 && "h must be a positive duration");
@@ -90,15 +90,16 @@ namespace galileo
             Fdif_.assert_size_out(0, st_m_->ndx, 1);
 
             this->knot_num = knot_num_;
+            this->h = h_;
+            this->global_times = global_times_;
+            this->st_m = st_m_;
             this->Fint = Fint_;
             this->Fdif = Fdif_;
-            this->h = h_;
-            this->st_m = st_m_;
             this->T = (this->knot_num) * this->h;
 
             this->initialize_expression_variables(d);
 
-            this->initialize_time_vector();
+            this->initialize_local_time_vector();
             this->initialize_u_time_vector();
         }
 
@@ -123,9 +124,9 @@ namespace galileo
             this->Lc = SX::sym("Lc", 1, 1);
         }
 
-        void PseudospectralSegment::initialize_time_vector()
+        void PseudospectralSegment::initialize_local_time_vector()
         {
-            this->times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d + 1), 1);
+            this->local_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d + 1), 1);
             this->collocation_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d), 1);
             this->knot_times = casadi::DM::zeros(this->knot_num + 1, 1);
             int i = 0;
@@ -135,15 +136,15 @@ namespace galileo
             for (int k = 0; k < this->knot_num; ++k)
             {
                 kh = k * this->h;
-                this->times(i, 0) = kh;
+                this->local_times(i, 0) = kh;
                 this->knot_times(k, 0) = kh;
                 ++i;
                 for (j = 0; j < this->dX_poly.d; ++j)
                 {
-                    this->times(i, 0) = kh + this->dX_poly.tau_root[j + 1] * this->h;
+                    this->local_times(i, 0) = kh + this->dX_poly.tau_root[j + 1] * this->h;
                     if (i > 0 && unique_i < this->collocation_times.size1())
                     {
-                        this->collocation_times(unique_i, 0) = this->times(i, 0);
+                        this->collocation_times(unique_i, 0) = this->local_times(i, 0);
                         ++unique_i;
                     }
                     ++i;
@@ -151,6 +152,20 @@ namespace galileo
             }
             this->knot_times(this->knot_times.size1() - 2, 0) = this->T - this->h;
             this->knot_times(this->knot_times.size1() - 1, 0) = this->T;
+
+            double start_time = 0.0;
+            if (global_times != nullptr)
+            {
+                start_time = (*this->global_times)(global_times->size1() - 1, 0).get_elements()[0];
+                auto tmp = this->local_times + start_time;
+                this->global_times = std::make_shared<DM>(vertcat(*this->global_times, tmp));
+            }
+            else
+            {
+                this->global_times = std::make_shared<DM>(this->local_times);
+            }
+            this->collocation_times += start_time;
+            this->knot_times += start_time;
         }
 
         void PseudospectralSegment::initialize_u_time_vector()
@@ -174,22 +189,11 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::fill_times(std::vector<double> &all_times) const
+        void PseudospectralSegment::initialize_knot_segments(DM x0_global_, MX x0_local_)
         {
-            double start_time = 0.0;
-            if (all_times.size() != 0)
-            {
-                start_time = all_times.back();
-            }
-            auto tmp = this->times + start_time;
-            std::vector<double> element_access1 = tmp.get_elements();
-            all_times.insert(all_times.end(), element_access1.begin(), element_access1.end());
-        }
-
-        void PseudospectralSegment::initialize_knot_segments(MX x0)
-        {
-            this->x0_init = x0;
-            assert(this->x0_init.size1() == this->st_m->nx && this->x0_init.size2() == 1 && "x0 must be a column vector of size nx");
+            this->x0_global = x0_global_;
+            this->x0_local = x0_local_;
+            assert(this->x0_local.size1() == this->st_m->nx && this->x0_local.size2() == 1 && "x0 must be a column vector of size nx");
 
             this->dXc_var_vec.clear();
             this->U_var_vec.clear();
@@ -206,7 +210,7 @@ namespace galileo
             for (int k = 0; k < this->knot_num + 1; ++k)
             {
                 this->dX0_var_vec.push_back(MX::sym("dX0_" + std::to_string(k), this->st_m->ndx, 1));
-                this->X0_var_vec.push_back(this->Fint(MXVector{this->x0_init, this->dX0_var_vec[k], 1.0}).at(0));
+                this->X0_var_vec.push_back(this->Fint(MXVector{this->x0_local, this->dX0_var_vec[k], 1.0}).at(0));
             }
         }
 
@@ -384,12 +388,12 @@ namespace galileo
             /*Transform initial guess for x to an initial guess for dx, using f_dif, the inverse of f_int*/
 
             /*TODO: This initialization procedure is not quite right for multi-phase optimization, because x0_init could be symbolic (final state of the previous phase).
-            We should instead relae the initial guess to the global time*/
+            We should instead relate the initial guess to the global time*/
             MX xkg_sym = casadi::MX::sym("xkg", this->st_m->nx, 1);
             MX xckg_sym = casadi::MX::sym("Xckg", this->st_m->nx * this->dX_poly.d, 1);
 
             auto xg = vertcat(Wx->initial_guess.map(this->knot_num + 1, "serial")(this->knot_times));
-            Function dxg_func = Function("xg_fun", MXVector{xkg_sym}, MXVector{this->Fdif(MXVector{this->x0_init, xkg_sym, 1.0}).at(0)})
+            Function dxg_func = Function("xg_fun", MXVector{xkg_sym}, MXVector{this->Fdif(MXVector{this->x0_global, xkg_sym, 1.0}).at(0)})
                                     .map(this->knot_num + 1, "serial");
             this->w0(Slice(0, Ndxknot)) = reshape(dxg_func(DMVector{xg}).at(0), Ndxknot, 1);
             this->general_lbw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
@@ -507,6 +511,11 @@ namespace galileo
         MX PseudospectralSegment::get_final_state() const
         {
             return this->X0_var_vec.back();
+        }
+
+        std::shared_ptr<casadi::DM> PseudospectralSegment::get_global_times() const
+        {
+            return this->global_times;
         }
 
         void PseudospectralSegment::fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw)
