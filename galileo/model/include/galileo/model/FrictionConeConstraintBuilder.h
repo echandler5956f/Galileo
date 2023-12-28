@@ -71,7 +71,8 @@ namespace galileo
                  * @brief Generate flags for each knot point. We set it to all ones, applicable at each knot.
                  *
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @param apply_at
+                 * @param knot_index the index of the knot point
+                 * @param apply_at a vector of flags, one for each collocation point in the knot segment
                  */
                 void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const
                 {
@@ -85,8 +86,9 @@ namespace galileo
                  * For both approximations, each value is less than 0, with no lower bound.
                  *
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @param upper_bound
-                 * @param lower_bound
+                 * @param knot_index the index of the knot point
+                 * @param upper_bound Lower bound of the constraint at each point
+                 * @param lower_bound Upper bound of the constraint at each point
                  */
                 void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
 
@@ -94,7 +96,8 @@ namespace galileo
                  * @brief Generate a function to evaluate each point
                  *
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @param G
+                 * @param knot_index the index of the knot point
+                 * @param G A function that evaluates the constraint at each point
                  */
                 void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
 

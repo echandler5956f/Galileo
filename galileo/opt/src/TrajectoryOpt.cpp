@@ -35,11 +35,13 @@ namespace galileo
             casadi::MX prev_final_state_deviant;
             casadi::MX curr_initial_state_deviant;
 
-            std::vector<double> equality_back(this->state_indices->nx, 0.0);
             std::shared_ptr<PseudospectralSegment> ps;
 
             /*Each phase should have a vector of constraint data*/
             std::size_t num_phases = 1;
+
+            /*DUMMY DATA FOR TESTING*/
+            std::vector<double> equality_back(this->state_indices->nx, 0.0);
 
             // Cheat vars just for testing the constraint framework
             casadi::SX x = casadi::SX::sym("x", this->state_indices->nx);
@@ -68,6 +70,8 @@ namespace galileo
             Wu->lower_bound = casadi::Function("u_lbound", {t}, {-1.0});
             Wu->initial_guess = casadi::Function("u_guess", {t}, {0.0});
             Wu->w = u;
+
+            /*END OF DUMMY DATA*/
 
             printf("Starting initialization\n");
             auto start_time = std::chrono::high_resolution_clock::now();

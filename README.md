@@ -1,5 +1,5 @@
 # Galileo
-*A light-weight and extensible C++ library for Guass-Legendre Pseudospectral Collocation of Switched Systems using Casadi and Pinocchio.*
+*A light-weight and extensible C++ library for Guass-Legendre Pseudospectral Collocation of Switched Systems using CasADi and Pinocchio.*
 
 <img src="https://i.imgur.com/VQJ3ZNe.png"/>
 
@@ -10,7 +10,7 @@ Named after the famous scientist who posed one variation of the Brachistochrone 
 
 Features:  
 
-:heavy_check_mark: Intuitive and efficient formulation of variables, cost and constraints using [casadi].   
+:heavy_check_mark: Intuitive and efficient formulation of variables, cost and constraints using [CasADi].   
 
 :heavy_check_mark: Solver interface enables using the high-performance solvers [Ipopt] and [SNOPT].  
 
@@ -34,32 +34,108 @@ Features:
 
 ## Install
 
+The following Linux installation instructions are provided for your convenience:
+
 ### From source with [CMake]
 
 1. Install Galileo's mandatory dependencies:
-   * [casadi]
-   * [Ipopt]
+   * [CasADi]
    * [pinocchio]
    * [Eigen]
    * [Boost]
 
 2. Install Galileo's optional dependencies
    * [SNOPT]
+   * [HSL]
    * [OpenMP]
    * [gnuplot]
 
-### Gnuplot Simple Install
+### CasADi Source Install
+First, gather the dependencies listed here:
+https://github.com/casadi/casadi/wiki/InstallationLinux
+
+Then, clone the repo and make a build folder with
+```bash
+git clone https://github.com/casadi/casadi.git && cd casadi && mkdir build && cd build
+```
+
+Now, run
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release -DWITH_BUILD_IPOPT=ON -DWITH_IPOPT=ON -DWITH_MUMPS=ON -DWITH_BUILD_MUMPS=ON  ..
+```
+If you have an [HSL] license (highly recommended, as these solvers tend to speed up convergence by ~2x for our problems, and academics can acquire one for free!), you should manually build the [ThirdParty-HSL] interface and then add the following CasADi flag:
+
+```bash
+ -DWITH_HSL=ON
+ ```
+
+ If you want to compile [CasADi] with [OpenMP] (recomended), you can add
+ ```bash
+ -DWITH_OPENMP=ON
+ ```
+
+ Similarly, you can add the optional [SNOPT] interface with
+ ```bash
+ -DWITH_SNOPT=ON
+ ```
+
+ Now, build [CasADi] from source:
+ ```bash
+ make
+ sudo make install
+ ```
+
+### Pinocchio Source Install
+
+First, gather the dependencies listed here:
+https://stack-of-tasks.github.io/pinocchio/download.html
+
+Clone the repo and its submodules:
+```bash
+git clone --recursive https://github.com/stack-of-tasks/pinocchio
+```
+
+Make a build directory
+```bash
+cd pinocchio && mkdir build && cd build
+```
+
+Run cmake with [CasADi] support 
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_WITH_CASADI_SUPPORT=ON ..
+```
+
+and then build and install with
+```bash
+make -j4
+sudo make install
+```
+
+### Gnuplot Optional Install
+Gnuplot is our plotting library of choice. Installation is very straightforward from the package manager with:
 ```bash
 sudo apt-get update
 sudo apt-get install gnuplot
 ```
 
-Once you have the required dependencies, you can install the library with
+### Galileo Source Install
+
+Once you have the required dependencies for Galileo, clone the repo
 ```bash
-mkdir build && cd build && cmake .. && make && sudo make install
+git clone https://github.com/echandler5956f/Galileo.git
 ```
 
-Optionally, you can add the `-DBUILD_WITH_OPENMP=OFF` flag to disable using [OpenMP] for parallel evaluation of the constraint maps.
+create a build directory
+```bash
+cd Galileo && mkdir build && cd build
+```
+
+and finally, build and install Galileo with
+```bash
+ cmake -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install
+```
+
+Optionally, you can add the `-DBUILD_WITH_OPENMP=ON` flag to enable using [OpenMP] for parallel evaluation of the constraint maps (highly recommended). Note that you must have enabled the OpenMP interface when installing [CasADi] for this to work.
 
 To uninstall the library, simply run
 ```bash
@@ -69,7 +145,7 @@ from within the build directory.
 
 ## Run
 
-We created a `test-installs` folder with some simple scripts to test your `casadi` + `pinocchio` install. Be sure to take a look if you are running into trouble. To test the actual library, please refer to the `examples` folder. If you have already built the repo from source, you can test it by running
+We created a `test-installs` folder with some simple scripts to test your [CasADi] + [pinocchio] install. Be sure to take a look if you are running into trouble. To test the actual library, please refer to the `examples` folder. If you have already built the repo from source, you can test it by running
 
 ```bash
 build/examples/simple_test
@@ -91,7 +167,7 @@ Run
 ```bash
 doxygen
 ```
-in the main directory, and then
+in the main directory, and then open the `index.html` file in the `docs` folder. If you are using WSL like me, you can run
 ```bash
 cd docs/html && explorer.exe index.html
 ```
@@ -130,7 +206,7 @@ Coming soon (ICRA 2025?).
 <!-- - Dheeraj Bhogisetty -->
 <!-- - Nhi Nguyen -->
 
-[casadi]: https://github.com/casadi/casadi
+[CasADi]: https://github.com/casadi/casadi
 [pinocchio]: https://github.com/stack-of-tasks/pinocchio
 [CMake]: https://cmake.org/cmake/help/v3.0
 [ROS]: http://www.ros.org
@@ -143,3 +219,5 @@ Coming soon (ICRA 2025?).
 [Boost]: https://www.boost.org
 [gnuplot]: https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/
 [OpenMP]: https://www.openmp.org/
+[HSL]: https://www.hsl.rl.ac.uk/
+[ThirdParty-HSL]: https://github.com/coin-or-tools/ThirdParty-HSL

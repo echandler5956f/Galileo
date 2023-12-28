@@ -6,7 +6,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
 project(Galileo)
 
-option(BUILD_WITH_OPENMP "Build with OpenMP" ON)
+option(BUILD_WITH_OPENMP "Build with OpenMP" OFF)
 
 find_package(casadi REQUIRED)
 find_package(pinocchio REQUIRED)
