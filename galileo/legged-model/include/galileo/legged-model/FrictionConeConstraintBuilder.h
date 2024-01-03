@@ -55,6 +55,7 @@ namespace galileo
             public:
                 FrictionConeConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
+            private:
                 /**
                  *
                  * @brief Generate flags for each knot point. We set it to all ones, applicable at each knot.
@@ -90,12 +91,12 @@ namespace galileo
                  */
                 void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
 
-            private: /**
-                      * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
-                      *
-                      * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                      * @return uint
-                      */
+                /**
+                 * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
+                 *
+                 * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
+                 * @return uint
+                 */
                 uint getNumConstraintPerEEPerState(const ProblemData &problem_data) const;
 
                 /**
@@ -108,7 +109,7 @@ namespace galileo
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current knot
                  */
-                const contact::ContactMode getModeAtKnot(const ProblemData &problem_data, int knot_index) const;
+                const contact::ContactMode &getModeAtKnot(const ProblemData &problem_data, int knot_index) const;
 
                 /**
                  * @brief getContactSurfaceRotationAtMode gets a rotation matrix describing the normal to the contact surface at the current knot.
@@ -219,12 +220,14 @@ namespace galileo
                 auto evaluated_vector = casadi::SX::mtimes(tmp1, u);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
+                    //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
                     G = casadi::Function("G" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{evaluated_vector});
                 }
                 else
                 {
+                    //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
                     //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
