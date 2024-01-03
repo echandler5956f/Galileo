@@ -5,12 +5,13 @@ namespace galileo
     namespace contact
     {
 
+        const environment::SurfaceID &ContactMode::getSurfaceID(const std::string &ee_name)
+        {
+            const auto &map_element = combination_definition.find(ee_name);
 
-        environment::SurfaceID ContactMode::getSurfaceIDForEE(std::string EndEffectorID) const {
-            const auto& map_element = combination_definition.find(EndEffectorID);
-
-            if(map_element == combination_definition.end()){
-                throw std::runtime_error(std::string("'End Effector " + EndEffectorID + " not defined in contact mode!'"));
+            if (map_element == combination_definition.end())
+            {
+                throw std::runtime_error(std::string("'End Effector " + ee_name + " not defined in contact mode!'"));
             }
 
             uint index = std::distance(combination_definition.begin(), map_element);

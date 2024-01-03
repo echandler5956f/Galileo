@@ -31,6 +31,43 @@ namespace galileo
             ContactCombination combination_definition;
 
             /**
+             * @brief Gets the contact combination for a given end effector.
+             *
+             * @param ee The end effector to get the contact combination for.
+             */
+            bool &operator[](const EndEffector &ee)
+            {
+                return combination_definition[ee.frame_name];
+            }
+
+            /**
+             * @brief Gets the contact combination for a given end effector.
+             *
+             * @param ee_name The name of the end effector to get the contact combination for.
+             */
+            bool &operator[](const std::string &ee_name)
+            {
+                return combination_definition[ee_name];
+            }
+
+            /**
+             * @brief Gets the contact surface for a given end effector in this mode.
+             *
+             * @param ee_name The end effector to get the contact surface for.
+             */
+            const environment::SurfaceID &getSurfaceID(const std::string &ee_name);
+
+            /**
+             * @brief Gets the contact surface for a given end effector in this mode.
+             *
+             * @param ee The end effector to get the contact surface for.
+             */
+            const environment::SurfaceID &getSurfaceID(const EndEffector &ee)
+            {
+                return getSurfaceID(ee.frame_name);
+            }
+
+            /**
              * @brief Gets which surfaces the EEs are in contact with.
              *
              */

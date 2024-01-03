@@ -66,6 +66,7 @@ namespace galileo
             public:
                 FrictionConeConstraintBuilder() : ConstraintBuilder() {}
 
+            private:
                 /**
                  *
                  * @brief Generate flags for each knot point. We set it to all ones, applicable at each knot.
@@ -98,11 +99,11 @@ namespace galileo
                  */
                 void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
 
-            private:  /**
+                /**
                  * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
                  *
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @return uint 
+                 * @return uint
                  */
                 uint getNumConstraintPerEEPerState(const ProblemData &problem_data) const;
 
@@ -110,26 +111,26 @@ namespace galileo
                  * @brief Get the Casadi::Function object, G, to be applied to the end effector given by "EndEffectorID" at a collocation point.
                  * For a Second Order Constraint, for instance, this is a function that returns 11 value, the result of the lorentz cone constraint.
                  * function = g( state ) @ EndEffectorID
-                */
+                 */
                 void CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
 
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current knot
-                */
+                 */
                 const contact::ContactMode &getModeAtKnot(const ProblemData &problem_data, int knot_index);
 
                 /**
                  * @brief getContactSurfaceRotationAtMode gets a rotation matrix describing the normal to the contact surface at the current knot.
                  * If the End Effector is in contact with a surface, the result is a rotation describing the surface noraml, else it is a matrix of zeros.
-                */
+                 */
                 Eigen::Matrix<double, 3, 3> getContactSurfaceRotationAtMode(const std::string &EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode);
 
                 /**
-                 * @brief Each approximated cone constraint can be represented as an operation on a transformed "ground reaction force". 
-                *           For a First order approximation, the constraint is of the form A_first_order * rotated_ground_reation_force <= 0.
-                *           For a second order approximation, this is of the form LorentzConeConstraint(A_second_order * rotated_ground_reation_force) <= 0
-                *           This function returns "A". 
-                */
+                 * @brief Each approximated cone constraint can be represented as an operation on a transformed "ground reaction force".
+                 *           For a First order approximation, the constraint is of the form A_first_order * rotated_ground_reation_force <= 0.
+                 *           For a second order approximation, this is of the form LorentzConeConstraint(A_second_order * rotated_ground_reation_force) <= 0
+                 *           This function returns "A".
+                 */
                 Eigen::MatrixXd getConeConstraintApproximation(const ProblemData &problem_data);
             };
 
@@ -159,9 +160,9 @@ namespace galileo
             void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, casadi::Function &G) const
             {
                 // CREATE CASADI MAP FROM EACH END EFFECTOR
-                //CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
-                // Possibly, this would mean creating a map. 
-                // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment. 
+                // CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
+                // Possibly, this would mean creating a map.
+                // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
             }
 
             template <class ProblemData>
@@ -206,11 +207,13 @@ namespace galileo
 
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
+                    //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
                 }
                 else
                 {
+                    //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
                     //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
@@ -236,7 +239,7 @@ namespace galileo
             {
                 assert(problem_data.environment_surfaces != nullptr);
 
-                contact::SurfaceID contact_surface_id = mode.getSurfaceIDForEE(EndEffectorID);
+                contact::SurfaceID contact_surface_id = mode.getSurfaceID(EndEffectorID);
 
                 if (contact_surface_id == contact::NO_SURFACE)
                 {
