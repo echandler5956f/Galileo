@@ -245,24 +245,24 @@ namespace galileo
             tmp_x.push_back(this->X0);
             tmp_dx.push_back(this->dX0);
 
-            for (int j = 1; j < this->dX_poly.d + 1; ++j)
+            for (int j = 0; j < this->dX_poly.d; ++j)
             {
-                double dt_j = (this->dX_poly.tau_root[j] - this->dX_poly.tau_root[j - 1]) * this->h;
+                double dt_j = (this->dX_poly.tau_root[j + 1] - this->dX_poly.tau_root[j]) * this->h;
                 /*Expression for the state derivative at the collocation point*/
-                SX dxp = this->dX_poly.C[0][j] * this->dX0;
+                SX dxp = this->dX_poly.C[0][j + 1] * this->dX0;
                 for (int r = 0; r < this->dX_poly.d; ++r)
                 {
-                    dxp += this->dX_poly.C[r + 1][j] * this->dXc[r];
+                    dxp += this->dX_poly.C[r + 1][j + 1] * this->dXc[r];
                 }
-                /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j-1] if the states are already Euclidean*/
-                SX x_c = this->Fint(SXVector{this->X0, this->dXc[j - 1], dt_j}).at(0);
-                // SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j - 1], this->Uc);
+                /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j] if the states are already Euclidean*/
+                SX x_c = this->Fint(SXVector{this->X0, this->dXc[j], dt_j}).at(0);
+                // SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j], this->Uc);
                 SX u_c = this->Uc[0];
 
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
                 tmp_x.push_back(x_c);
-                tmp_dx.push_back(this->dXc[j - 1]);
+                tmp_dx.push_back(this->dXc[j]);
 
                 /*Append collocation equations*/
                 eq.push_back(this->h * F(SXVector{x_c, u_c}).at(0) - dxp);
@@ -270,10 +270,10 @@ namespace galileo
                 /*Add cost contribution*/
                 SXVector L_out = L(SXVector{x_c, u_c});
                 /*This is fine as long as the cost is not related to the Lie Group elements. See the state integrator and dX for clarity*/
-                Qf += this->dX_poly.B[j] * L_out.at(0) * this->h;
-                // Qf += this->U_poly.B(j) * L_out.at(1) * this->h;
+                Qf += this->dX_poly.B[j + 1] * L_out.at(0) * this->h;
+                // Qf += this->U_poly.B(j + 1) * L_out.at(1) * this->h;
 
-                dXf += this->dX_poly.D[j] * this->dXc[j - 1];
+                dXf += this->dX_poly.D[j + 1] * this->dXc[j];
             }
 
             casadi::Dict opts;

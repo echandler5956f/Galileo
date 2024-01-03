@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 3.10.2)
-project(test_env)
+cmake_minimum_required(VERSION 3.13)
+set(CMAKE_CXX_STANDARD 17)
+
+project (test_env)
+
+set(CMAKE_CXX_FLAGS "-O3")
 
 find_package(casadi)
 find_package(pinocchio)
@@ -20,10 +24,6 @@ target_link_libraries(casadi_demo2 casadi OpenMP::OpenMP_CXX pinocchio Eigen3::E
 # add_executable(full_demo full_demo.cpp)
 # target_link_libraries(full_demo casadi pinocchio Eigen3::Eigen Boost::unit_test_framework)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17 -O3")
 
-install(TARGETS casadi_demo RUNTIME DESTINATION . LIBRARY DESTINATION .)
-
-install(TARGETS casadi_demo2 RUNTIME DESTINATION . LIBRARY DESTINATION .)
-
-# install(TARGETS casadi_demo3 RUNTIME DESTINATION . LIBRARY DESTINATION .)
+add_executable(quat_test quat_test.cpp)
+target_link_libraries(quat_test casadi pinocchio Eigen3::Eigen)
