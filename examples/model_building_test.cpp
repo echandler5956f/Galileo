@@ -3,7 +3,6 @@
 #include "galileo/model/EnvironmentSurfaces.h"
 
 #include "galileo/opt/States.h"
-#include "galileo/opt/TrajectoryGeneration.h"
 
 #include <string>
 
@@ -11,7 +10,7 @@
 
 using namespace galileo;
 
-const std::string huron_location = "resources/urdf/huron_cheat.urdf";
+const std::string huron_location = "../resources/urdf/huron_cheat.urdf";
 const int num_ees = 2;
 const std::string end_effector_names[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
 
@@ -78,9 +77,9 @@ int main()
     std::cout << "Set the contact sequence" << std::endl;
 
 
-    opt::Target<> target(target_state_vector, state_definition);
-    opt::InitialCondition<> initial_condition(initial_state_vector, state_definition, initial_mode);
-    opt::ProblemSetup<> problem_setup(initial_condition, contact_sequence);
+    // opt::Target<> target(target_state_vector, state_definition);
+    // opt::InitialCondition<> initial_condition(initial_state_vector, state_definition, initial_mode);
+    // opt::ProblemSetup<> problem_setup(initial_condition, contact_sequence);
 
     std::cout << "Finished setting up the problem" << std::endl;
 
@@ -88,7 +87,7 @@ int main()
     // //  Check the contact combinations in these phases.
     contact::ContactSequence::Phase phase_0; 
     contact::ContactSequence::CONTACT_SEQUENCE_ERROR error_status_0;
-    problem_setup.contact_sequence->getPhaseAtTime(0, phase_0, error_status_0);
+    contact_sequence->getPhaseAtTime(0, phase_0, error_status_0);
     
     std::cout << "phase 0 time -- " << phase_0.time_value << std::endl;
 
@@ -101,7 +100,7 @@ int main()
     std::cout << std::endl;
 
     contact::ContactSequence::Phase phase_1; 
-    problem_setup.contact_sequence->getPhaseAtTime(phase_0.time_value + 0.01, phase_1, error_status_0);
+    contact_sequence->getPhaseAtTime(phase_0.time_value + 0.01, phase_1, error_status_0);
         
     std::cout << "phase 1 time -- " << phase_1.time_value << std::endl;
 
@@ -115,7 +114,7 @@ int main()
 
 
     contact::ContactSequence::Phase phase_2; 
-    problem_setup.contact_sequence->getPhaseAtTime(phase_0.time_value + phase_1.time_value + 0.01, phase_2, error_status_0);
+    contact_sequence->getPhaseAtTime(phase_0.time_value + phase_1.time_value + 0.01, phase_2, error_status_0);
         
     std::cout << "phase 2 time -- " << phase_2.time_value << std::endl;
 
