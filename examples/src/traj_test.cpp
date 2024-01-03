@@ -62,43 +62,11 @@ int main()
     SX cq_result(model.nq, 1);
     pinocchio::casadi::copy(q_result, cq_result);
 
-    // ConfigVector q0test(model.nq);
-    // q0test[0] = 0;
-    // q0test[1] = 0;
-    // q0test[2] = 1.627;
-    // q0test[3] = 0;
-    // q0test[4] = 0;
-    // q0test[5] = 0;
-    // q0test[6] = 1;
-
-    // TangentVector dqtest(model.nv);
-    // dqtest[0] = 0;
-    // dqtest[1] = 0;
-    // dqtest[2] = 0;
-    // dqtest[3] = 0;
-    // dqtest[4] = 0;
-    // dqtest[5] = 0;
-
-    // auto q_res_test = pinocchio::integrate(model, q0test, dqtest);
-    // cout << "cpp integrate: \n"
-    //      << q_res_test << endl;
-    // ConfigVectorAD pq0res(model.nq);
-    // pq0res[0] = 0.06342760080100329;
-    // pq0res[1] = 0.27635775159811415;
-    // pq0res[2] = 1.9207733728707947;
-    // pq0res[3] = -0.05961344771568522;
-    // pq0res[4] = -0.624812847137685;
-    // pq0res[5] = 0.29887279867696365;
-    // pq0res[6] = 0.7188394765969299;
-    // cout << "python integrate: \n"
-    //      << pq0res << endl;
-
     Function Fint("Fint",
                   {cx, cdx, cdt},
                   {vertcat(ch_d,
                            cdh_d,
-                            cq_result, // returns different expression than python version, NO idea why
-                        //    custom_fint(cx, cdx, cdt),
+                           cq_result, // returns different expression than python version, NO idea why
                            cv_d)});
 
     auto ch2 = si->get_ch(cx2);
@@ -148,14 +116,10 @@ int main()
                  {1e2 * SX::sumsqr(cqj - cq0(Slice(7, nq)))});
 
     Dict opts;
-    // opts["ipopt.warm_start_init_point"] = "yes";
-    // opts["ipopt.warm_start_same_structure"] = "yes";
-    // opts["ipopt.print_timing_statistics"] = "yes";
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 1;
-    // opts["ipopt.print_level"] = 5;
     shared_ptr<opt::GeneralProblemData> problem = make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
     opt::TrajectoryOpt traj(opts, si, problem);
 
@@ -166,8 +130,6 @@ int main()
         X0(i) = q0_vec[j];
         ++j;
     }
-
-    cout << "X0: " << X0 << endl;
 
     traj.init_finite_elements(1, X0);
 
