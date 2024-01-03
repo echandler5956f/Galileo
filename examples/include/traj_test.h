@@ -19,9 +19,11 @@
 #include <pinocchio/algorithm/centroidal-derivatives.hpp>
 
 using namespace galileo;
+using namespace casadi;
+using namespace std;
 
 typedef double Scalar;
-typedef casadi::SX ADScalar;
+typedef SX ADScalar;
 
 typedef pinocchio::ModelTpl<Scalar> Model;
 typedef Model::Data Data;
@@ -35,7 +37,7 @@ typedef Model::TangentVectorType TangentVector;
 typedef ADModel::ConfigVectorType ConfigVectorAD;
 typedef ADModel::TangentVectorType TangentVectorAD;
 
-const std::string huron_location = "../resources/urdf/huron_cheat.urdf";
+const string huron_location = "../resources/urdf/huron_cheat.urdf";
 
 /*So, for some reason, pinocchio's integrate function returns a slightly different SX matrix than than the python version.
 When I actually evaluate the function though, it seems to return the correct result for both versions.
@@ -163,145 +165,4 @@ SX custom_fint(SX x, SX dx, SX dt)
          (x_28 + (dx_27 * dt)),
          (x_29 + (dx_28 * dt)),
          (x_30 + (dx_29 * dt))});
-}
-
-int main()
-{
-    double q0[] = {
-        0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
-        0.0000, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000};
-
-    Eigen::Map<ConfigVector> q0_vec(q0, 19);
-
-    Model model;
-    pinocchio::urdf::buildModel(huron_location, model);
-    Data data(model);
-
-    pinocchio::computeTotalMass(model, data);
-    pinocchio::framesForwardKinematics(model, data, q0_vec);
-
-    ADModel cmodel = model.cast<ADScalar>();
-    ADData cdata(cmodel);
-
-    auto mass = data.mass[0];
-    auto g = casadi::SX::zeros(3, 1);
-    g(2) = 9.81;
-    auto nq = model.nq;
-    auto nv = model.nv;
-    std::shared_ptr<opt::States> si = std::make_shared<opt::States>(nq, nv);
-
-    casadi::SX cx = casadi::SX::sym("x", si->nx);
-    casadi::SX cdx = casadi::SX::sym("dx", si->ndx);
-    casadi::SX cu = casadi::SX::sym("u", si->nu);
-    casadi::SX cdt = casadi::SX::sym("dt");
-
-    auto ch = si->get_ch(cx);
-    auto ch_d = si->get_ch_d(cdx);
-    auto cdh = si->get_cdh(cx);
-    auto cdh_d = si->get_cdh_d(cdx);
-    auto cq = si->get_q(cx);
-    auto cq_d = si->get_q_d(cdx);
-    auto cqj = si->get_qj(cx);
-    auto cv = si->get_v(cx);
-    auto cv_d = si->get_v_d(cdx);
-    auto cvj = si->get_vj(cx);
-    auto cf = si->get_f(cu);
-    auto ctau = si->get_tau(cu);
-    auto cvju = si->get_vju(cu);
-
-    ConfigVectorAD q_AD(model.nq);
-    TangentVectorAD v_AD(model.nv);
-    TangentVectorAD q_d_AD(model.nv);
-
-    q_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq).data(), model.nq, 1);
-    v_AD = Eigen::Map<TangentVectorAD>(static_cast<std::vector<ADScalar>>(cv).data(), model.nv, 1);
-    q_d_AD = Eigen::Map<TangentVectorAD>(static_cast<std::vector<ADScalar>>(cq_d).data(), model.nv, 1);
-
-    pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
-    pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
-    pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
-    pinocchio::updateFramePlacements(cmodel, cdata);
-
-    ConfigVectorAD q_result = pinocchio::integrate(cmodel, q_AD, q_d_AD * cdt);
-    casadi::SX cq_result(model.nq, 1);
-    pinocchio::casadi::copy(q_result, cq_result);
-
-    casadi::Function Fint("Fint",
-                          {cx, cdx, cdt},
-                          {vertcat(ch_d,
-                                   cdh_d,
-                                   //    cq_result, // returns different expression than python version, NO idea why
-                                   custom_fint(cx, cdx, cdt),
-                                   cv_d)});
-
-    casadi::SX cq2 = casadi::SX::sym("q2", model.nq);
-    ConfigVectorAD q2_AD(model.nq);
-    q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq2).data(), model.nq, 1);
-
-    ConfigVectorAD v_result = pinocchio::difference(cmodel, q_AD, q2_AD);
-    casadi::SX cv_result(model.nv, 1);
-    pinocchio::casadi::copy(v_result, cv_result);
-
-    casadi::Function Fdif("Fdif",
-                          {cx, cdx, cdt},
-                          {vertcat(ch_d,
-                                   cdh_d,
-                                   cv_result / cdt,
-                                   cv_d)});
-
-    auto Ag = cdata.Ag;
-    casadi::SX cAg(Ag.rows(), Ag.cols());
-    pinocchio::casadi::copy(Ag, cAg);
-
-    casadi::Function F("F",
-                       {cx, cu},
-                       {vertcat(cdh,
-                                (cf - mass * g) / mass,
-                                ctau / mass,
-                                cv,
-                                casadi::SX::mtimes(casadi::SX::inv(cAg(casadi::Slice(0, 6), casadi::Slice(0, 6))), (mass * ch - casadi::SX::mtimes(cAg(casadi::Slice(0, 6), casadi::Slice(6, int(Ag.cols()))), cvju))),
-                                cvju)});
-
-    casadi::SX cq0(model.nq);
-    pinocchio::casadi::copy(q0_vec, cq0);
-
-    casadi::Function L("L",
-                       {cx, cu},
-                       {1e-3 * casadi::SX::sumsqr(cvju) +
-                        1e-4 * casadi::SX::sumsqr(cf) +
-                        1e-4 * casadi::SX::sumsqr(ctau) +
-                        1e1 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
-
-    casadi::Function Phi("Phi",
-                         {cx},
-                         {1e2 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
-
-    casadi::Dict opts;
-    // opts["ipopt.warm_start_init_point"] = "yes";
-    // opts["ipopt.warm_start_same_structure"] = "yes";
-    // opts["ipopt.print_timing_statistics"] = "yes";
-    opts["ipopt.linear_solver"] = "ma97";
-    opts["ipopt.ma97_order"] = "metis";
-    opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 1;
-    // opts["ipopt.print_level"] = 5;
-    std::shared_ptr<opt::GeneralProblemData> problem = std::make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
-    opt::TrajectoryOpt traj(opts, si, problem);
-
-    casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
-    int j = 0;
-    for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
-    {
-        X0(i) = q0_vec[j];
-        ++j;
-    }
-
-    std::cout << "X0: " << X0 << std::endl;
-
-    traj.init_finite_elements(1, X0);
-
-    auto sol = traj.optimize();
-    std::cout << sol << std::endl;
-
-    return 0;
 }

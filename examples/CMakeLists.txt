@@ -5,9 +5,9 @@ project (examples)
 
 set(CMAKE_CXX_FLAGS "-O3")
 
-add_executable(simple_test simple_test.cpp)
-add_executable(model_building_test model_building_test.cpp)
-add_executable(traj_test traj_test.cpp)
+add_executable(simple_test src/simple_test.cpp)
+add_executable(model_building_test src/model_building_test.cpp)
+add_executable(traj_test src/traj_test.cpp)
 
 target_link_libraries(simple_test
     PUBLIC
@@ -22,4 +22,9 @@ target_link_libraries(model_building_test
 target_link_libraries(traj_test 
     PUBLIC
     galileo
+)
+
+target_include_directories(traj_test
+    PRIVATE 
+    ${PROJECT_SOURCE_DIR}/include
 )

@@ -59,17 +59,17 @@ namespace galileo
 
             /*Validation of time varying bounds*/
             std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
-            Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::vertcat({1.0, 1.0})});
-            Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-inf, -inf})});
-            // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
-            Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::vertcat({0.0, 0.0})});
-            Wx->w = x;
+            // Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::ones(this->state_indices->ndx, 1)});
+            // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::ones(this->state_indices->ndx, 1) * -inf});
+            // // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
+            // Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::zeros(this->state_indices->nx, 1)});
+            // Wx->w = x;
 
             std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
-            Wu->upper_bound = casadi::Function("u_ubound", {t}, {1.0});
-            Wu->lower_bound = casadi::Function("u_lbound", {t}, {-1.0});
-            Wu->initial_guess = casadi::Function("u_guess", {t}, {0.0});
-            Wu->w = u;
+            // Wu->upper_bound = casadi::Function("u_ubound", {t}, {casadi::SX::ones(this->state_indices->nu, 1)});
+            // Wu->lower_bound = casadi::Function("u_lbound", {t}, {-casadi::SX::ones(this->state_indices->nu, 1)});
+            // Wu->initial_guess = casadi::Function("u_guess", {t}, {casadi::SX::zeros(this->state_indices->nu, 1)});
+            // Wu->w = u;
 
             /*END OF DUMMY DATA*/
 
@@ -77,12 +77,13 @@ namespace galileo
             auto start_time = std::chrono::high_resolution_clock::now();
             for (std::size_t i = 0; i < num_phases; ++i)
             {
-                ps = std::make_shared<PseudospectralSegment>(d, 20, 10. / 20, this->global_times, this->state_indices, this->Fint, this->Fdif);
+                ps = std::make_shared<PseudospectralSegment>(d, 20, 1. / 20, this->global_times, this->state_indices, this->Fint, this->Fdif);
                 ps->initialize_knot_segments(X0, prev_final_state);
 
                 /*TODO: Fill with user defined functions, and handle global/phase-dependent/time-varying constraints*/
                 /*TODO: Pass in W which holds the decision variable bounds and initial guess data*/
                 ps->initialize_expression_graph(this->F, this->L, G, Wx, Wu);
+                std::cout << "Finished initializing expression graph" << std::endl;
 
                 this->trajectory.push_back(ps);
                 ps->evaluate_expression_graph(this->J, this->w, this->g);

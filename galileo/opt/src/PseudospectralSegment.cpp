@@ -387,37 +387,48 @@ namespace galileo
 
             /*Transform initial guess for x to an initial guess for dx, using f_dif, the inverse of f_int*/
 
-            /*TODO: This initialization procedure is not quite right for multi-phase optimization, because x0_init could be symbolic (final state of the previous phase).
-            We should instead relate the initial guess to the global time*/
             MX xkg_sym = casadi::MX::sym("xkg", this->st_m->nx, 1);
             MX xckg_sym = casadi::MX::sym("Xckg", this->st_m->nx * this->dX_poly.d, 1);
 
-            auto xg = vertcat(Wx->initial_guess.map(this->knot_num + 1, "serial")(this->knot_times));
-            Function dxg_func = Function("xg_fun", MXVector{xkg_sym}, MXVector{this->Fdif(MXVector{this->x0_global, xkg_sym, 1.0}).at(0)})
-                                    .map(this->knot_num + 1, "serial");
-            this->w0(Slice(0, Ndxknot)) = reshape(dxg_func(DMVector{xg}).at(0), Ndxknot, 1);
-            this->general_lbw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
-            this->general_ubw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
-
-            /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
-            Thus, dxc_k = fdif(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
-            auto xc_g = vertcat(Wx->initial_guess.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times));
-            for (casadi_int i = 0; i < this->knot_num; ++i)
+            if (!Wx->initial_guess.is_null())
             {
-                auto xk = xg(Slice(i * this->st_m->nx, (i + 1) * this->st_m->nx));
-                auto xck = xc_g(Slice(i * this->st_m->nx * this->dX_poly.d, (i + 1) * this->st_m->nx * this->dX_poly.d));
-                for (casadi_int j = 0; j < this->dX_poly.d; ++j)
+                auto xg = vertcat(Wx->initial_guess.map(this->knot_num + 1, "serial")(this->knot_times));
+                Function dxg_func = Function("xg_fun", MXVector{xkg_sym}, MXVector{this->Fdif(MXVector{this->x0_global, xkg_sym, 1.0}).at(0)})
+                                        .map(this->knot_num + 1, "serial");
+                this->w0(Slice(0, Ndxknot)) = reshape(dxg_func(DMVector{xg}).at(0), Ndxknot, 1);
+                /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
+                Thus, dxc_k = fdif(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
+                auto xc_g = vertcat(Wx->initial_guess.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times));
+                for (casadi_int i = 0; i < this->knot_num; ++i)
                 {
-                    this->w0(Slice(Ndxknot + i * this->st_m->ndx * this->dX_poly.d + j * this->st_m->ndx, Ndxknot + i * this->st_m->ndx * this->dX_poly.d + (j + 1) * this->st_m->ndx)) =
-                        reshape(this->Fdif(DMVector{xk, xck(Slice(j * this->st_m->nx, (j + 1) * this->st_m->nx)), this->h}).at(0), this->st_m->ndx, 1);
+                    auto xk = xg(Slice(i * this->st_m->nx, (i + 1) * this->st_m->nx));
+                    auto xck = xc_g(Slice(i * this->st_m->nx * this->dX_poly.d, (i + 1) * this->st_m->nx * this->dX_poly.d));
+                    for (casadi_int j = 0; j < this->dX_poly.d; ++j)
+                    {
+                        this->w0(Slice(Ndxknot + i * this->st_m->ndx * this->dX_poly.d + j * this->st_m->ndx, Ndxknot + i * this->st_m->ndx * this->dX_poly.d + (j + 1) * this->st_m->ndx)) =
+                            reshape(this->Fdif(DMVector{xk, xck(Slice(j * this->st_m->nx, (j + 1) * this->st_m->nx)), this->h}).at(0), this->st_m->ndx, 1);
+                    }
                 }
             }
-            this->general_lbw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
-            this->general_ubw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
 
-            this->w0(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->initial_guess.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
-            this->general_lbw(Slice(Ndx, Ndx + Nu * this->st_m->nu)) = reshape(vertcat(Wu->lower_bound.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
-            this->general_ubw(Slice(Ndx, Ndx + Nu * this->st_m->nu)) = reshape(vertcat(Wu->upper_bound.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
+            if (!Wx->lower_bound.is_null() && !Wx->upper_bound.is_null())
+            {
+                this->general_lbw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
+                this->general_ubw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(this->knot_num + 1, "serial")(this->knot_times)), Ndxknot, 1);
+                this->general_lbw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
+                this->general_ubw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((this->dX_poly.d) * this->knot_num, "serial")(this->collocation_times)), Ndxcol, 1);
+            }
+
+            if (!Wu->initial_guess.is_null())
+            {
+                this->w0(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->initial_guess.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
+            }
+
+            if (!Wu->lower_bound.is_null() && !Wu->upper_bound.is_null())
+            {
+                this->general_lbw(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->lower_bound.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
+                this->general_ubw(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->upper_bound.map(this->U_poly.d * this->knot_num, "serial")(this->u_times)), Nu, 1);
+            }
         }
 
         MX PseudospectralSegment::processVector(MXVector &vec) const
