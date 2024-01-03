@@ -348,11 +348,25 @@ class CentroidalTrajOpt:
             ["x", "u", "vju"],
             ["L"],
         )
-        # print ("cq: ", s.cq)
-        # print("cv: ", s.cv)
-        # print("cq_d: ", s.cq_d)
-        # print("integrate: ", cpin.integrate(s.cmodel, s.cq, s.cq_d * s.cdt))
-        # print("F: ", s.xdot.sx_out(0))
+        # # print ("cq: ", s.cq)
+        # # print("cv: ", s.cv)
+        # # print("cq_d: ", s.cq_d)
+        # # print("integrate: ", cpin.integrate(s.cmodel, s.cq, s.cq_d * s.cdt))
+        # # print("F: ", s.xdot.sx_out(0))
+        # q1 = np.zeros(s.nq)
+        # q1[:7] = np.array([0,0,1.0627,0,0,0,1.])
+        # # q1 = pin.randomConfiguration(s.model, -np.ones(s.nq), np.ones(s.nq))
+        # # q1 = pin.normalize(s.model, q1)
+        # # q1[7:] = np.zeros(s.nq - 7)
+        # dq1 = np.zeros(s.nv)
+        # # dq1 = 2. * np.random.rand(s.nv) - 1.
+        # dq1[:6] = np.array([0,0,0,0,0,0])
+        # # dq1[6:] = np.zeros(s.nv - 6)
+
+        # print("q0test[0] =  ", q1[0], "; q0test[1] = ", q1[1], "; q0test[2] = ", q1[2], "; q0test[3] = ", q1[3], "; q0test[4] = ", q1[4], "; q0test[5] = ", q1[5], "; q0test[6] = ", q1[6], ";")
+        # print("dqtest[0] =  ", dq1[0], "; dqtest[1] = ", dq1[1], "; dqtest[2] = ", dq1[2], "; dqtest[3] = ", dq1[3], "; dqtest[4] = ", dq1[4], "; dqtest[5] = ", dq1[5], ";")
+        # inttmp = pin.integrate(s.model, q1, dq1)
+        # print("pq0res[0] = ", inttmp[0], "; pq0res[1] = ", inttmp[1], "; pq0res[2] = ", inttmp[2], "; pq0res[3] = ", inttmp[3], "; pq0res[4] = ", inttmp[4], "; pq0res[5] = ", inttmp[5], "; pq0res[6] = ", inttmp[6], ";")
 
         # Error in contact position
         s.dpcontacts = {}
@@ -723,10 +737,10 @@ robot.q0 = np.array(
         0,
         0,
         1.0627,
-        0,
-        0,
-        0,
         1,
+        0,
+        0,
+        0,
         0.0000,
         0.0000,
         -0.3207,

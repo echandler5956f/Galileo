@@ -63,6 +63,17 @@ namespace galileo
             // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::ones(this->state_indices->ndx, 1) * -inf});
             // // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
             // Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::zeros(this->state_indices->nx, 1)});
+            using namespace casadi;
+            // auto xguess = SX::zeros(this->state_indices->nx, 1);
+            // xguess(Slice(this->state_indices->nh + this->state_indices->ndh, this->state_indices->nh + this->state_indices->ndh + this->state_indices->nq)) = SX::vertcat({0, 0, 1.0627, 0, 0, 0, 1,
+            //                                            0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000,
+            //                                            0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000});
+            //  xguess(Slice(this->state_indices->nh + this->state_indices->ndh + this->state_indices->nq, this->state_indices->nx)) = SX::ones(this->state_indices->nx - this->state_indices->nh - this->state_indices->ndh - this->state_indices->nq, 1);
+            // auto xguess = SX::ones(this->state_indices->nx, 1);
+            // xguess(Slice(this->state_indices->nh + this->state_indices->ndh, this->state_indices->nh + this->state_indices->ndh + 7)) = SX::vertcat({0, 0, 1.0627, 1, 0, 0, 0});
+            // xguess(Slice(this->state_indices->nh + this->state_indices->ndh + 7, this->state_indices->nx)) = SX::ones(this->state_indices->nx - this->state_indices->nh - this->state_indices->ndh - 7, 1);
+
+            // Wx->initial_guess = casadi::Function("x_guess", {t}, {xguess});
             // Wx->w = x;
 
             std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();

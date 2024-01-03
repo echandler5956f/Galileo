@@ -3,7 +3,7 @@
 int main()
 {
     double q0[] = {
-        0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
+        0, 0, 1.0627, 1, 0, 0, 0, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
         0.0000, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000};
 
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
@@ -62,12 +62,43 @@ int main()
     SX cq_result(model.nq, 1);
     pinocchio::casadi::copy(q_result, cq_result);
 
+    // ConfigVector q0test(model.nq);
+    // q0test[0] = 0;
+    // q0test[1] = 0;
+    // q0test[2] = 1.627;
+    // q0test[3] = 0;
+    // q0test[4] = 0;
+    // q0test[5] = 0;
+    // q0test[6] = 1;
+
+    // TangentVector dqtest(model.nv);
+    // dqtest[0] = 0;
+    // dqtest[1] = 0;
+    // dqtest[2] = 0;
+    // dqtest[3] = 0;
+    // dqtest[4] = 0;
+    // dqtest[5] = 0;
+
+    // auto q_res_test = pinocchio::integrate(model, q0test, dqtest);
+    // cout << "cpp integrate: \n"
+    //      << q_res_test << endl;
+    // ConfigVectorAD pq0res(model.nq);
+    // pq0res[0] = 0.06342760080100329;
+    // pq0res[1] = 0.27635775159811415;
+    // pq0res[2] = 1.9207733728707947;
+    // pq0res[3] = -0.05961344771568522;
+    // pq0res[4] = -0.624812847137685;
+    // pq0res[5] = 0.29887279867696365;
+    // pq0res[6] = 0.7188394765969299;
+    // cout << "python integrate: \n"
+    //      << pq0res << endl;
+
     Function Fint("Fint",
                   {cx, cdx, cdt},
                   {vertcat(ch_d,
                            cdh_d,
-                           //    cq_result, // returns different expression than python version, NO idea why
-                           custom_fint(cx, cdx, cdt),
+                            cq_result, // returns different expression than python version, NO idea why
+                        //    custom_fint(cx, cdx, cdt),
                            cv_d)});
 
     auto ch2 = si->get_ch(cx2);

@@ -2,6 +2,33 @@
 
 using namespace casadi;
 
+//quat = [qr qx qy qz]
+SX quat_assign_if_negative(SX R, int i)
+{
+    auto quat = SX::zeros(4);
+    auto j = (i + 1) % 3;
+    auto k = (j + 1) % 3;
+    auto t = sqrt(R(i,i) - R(j,j) - R(k,k) + 1.0);
+    quat(i) = t / 2.0;
+    t = 0.5 / t;
+    quat(0) = (R(k,j) - R(j,k)) * t;
+    quat(j) = (R(j,i) + R(i,j)) * t;
+    quat(k) = (R(k,i) + R(i,k)) * t;
+    return quat;
+}
+
+SX quat_assign_if_positive(SX R, SX t)
+{
+    auto quat = SX::zeros(4);
+    auto t2 = sqrt(t + 1.0);
+    quat(0) = t2 / 2.0;
+    t2 = 0.5 / t2;
+    quat(1) = (R(2,1) - R(1,2)) * t2;
+    quat(2) = (R(0,2) - R(2,0)) * t2;
+    quat(3) = (R(1,0) - R(0,1)) * t2;
+    return quat;
+}
+
 SX lie_group_int(SX x, SX dx, SX dt)
 {
     std::cout << "Running lie_group_int" << std::endl;
@@ -72,60 +99,9 @@ SX lie_group_int(SX x, SX dx, SX dt)
     auto pos_res = M1(Slice(0, 3), Slice(3, 4));
 
     auto tr = trace(R1);
-    auto qt = sqrt(1 + tr);
-    auto qr = qt / 2;
-    auto qv = ((1 / 2) / mtimes(qt, inv_skew(R1 - transpose(R1))));
-
-    auto f_00 = vertcat(qr, qv);
-
-    qt = sqrt(1 + R1(0, 0) - R1(1, 1) - R1(2, 2));
-    auto qx = qt / 2;
-    auto qy = ((1 / 2) / qt) * (R1(1, 0) + R1(0, 1));
-    auto qz = ((1 / 2) / qt) * (R1(2, 0) + R1(0, 2));
-    qr = ((1 / 2) / qt) * (R1(2, 1) - R1(1, 2));
-
-    auto f_01 = vertcat(qr, qx, qy, qz);
-
-    qt = sqrt(1 + R1(1, 1) - R1(2, 2) - R1(0, 0));
-    qy = qt / 2;
-    qx = ((1 / 2) / qt) * (R1(0, 1) + R1(1, 0));
-    qz = ((1 / 2) / qt) * (R1(2, 1) + R1(1, 2));
-    qr = ((1 / 2) / qt) * (R1(0, 2) - R1(2, 0));
-
-    auto f_10 = vertcat(qr, qx, qy, qz);
-
-    qt = sqrt(1 + R1(2, 2) - R1(0, 0) - R1(1, 1));
-    qz = qt / 2;
-    qx = ((1 / 2) / qt) * (R1(0, 2) + R1(2, 0));
-    qy = ((1 / 2) / qt) * (R1(1, 2) + R1(2, 1));
-    qr = ((1 / 2) / qt) * (R1(1, 0) - R1(0, 1));
-
-    auto f_11 = vertcat(qr, qx, qy, qz);
-
-    std::cout << "f_00: " << f_00.size() << std::endl;
-    std::cout << "f_01: " << f_01.size() << std::endl;
-    std::cout << "f_10: " << f_10.size() << std::endl;
-    std::cout << "f_11: " << f_11.size() << std::endl;
-
-    // auto index_sym = SX::sym("index_sym");
-    // auto f_cond = conditional(index_sym, SXVector{f_00, f_01, f_10, f_11}, SX(0));
-    // auto s1 = tr > 0;
-    // auto s2 = (R1(0, 0) >= R1(1, 1)) * (R1(0, 0) >= R1(2, 2));
-    // auto s3 = (R1(1, 1) > R1(0, 0)) * (R1(1, 1) >= R1(2, 2));
-    // auto s4 = (R1(2, 2) > R1(0, 0)) * (R1(2, 2) > R1(1, 1));
-    // auto index_s = -1 + s1 +
-    //                2 * (!s1) * s2 +
-    //                3 * (!s1) * (!s2) * s3 +
-    //                4 * (!s1) * (!s2) * (!s3) * s4;
-
-    // auto quat_res = f_cond(index_s);
-    // auto quat_res = if_else(tr > 0,
-    //                         f_00,
-    //                         if_else(R(0, 0) >= R(1, 1) && R(0, 0) >= R(2, 2), f_01,
-    //                                 if_else(R(1, 1) > R(0, 0) && R(1, 1) >= R(2, 2), f_10,
-    //                                         if_else(R(2, 2) > R(0, 0) && R(2, 2) > R(1, 1), f_11, SX(0)))));
-
-    auto quat_res = f_00;
+    auto quat_res = if_else(tr > 0,
+                            quat_assign_if_positive(R1, tr),
+                            SX::vertcat({0.25, 0.25, 0.25, 0.25}));
 
     auto dot_product = dot(quat_res, quat);
     for (int i = 0; i < 4; ++i)
@@ -133,9 +109,9 @@ SX lie_group_int(SX x, SX dx, SX dt)
         quat_res(i) = if_else(dot_product < 0, -quat_res(i), quat_res(i));
     }
 
-    auto N2 = pow(quat_res(0), 2) + pow(quat_res(1), 2) + pow(quat_res(2), 2) + pow(quat_res(3), 2);
-    auto alpha = (SX(3) - N2) / SX(2);
-    quat_res *= alpha;
+    // auto N2 = pow(quat_res(0), 2) + pow(quat_res(1), 2) + pow(quat_res(2), 2) + pow(quat_res(3), 2);
+    // auto alpha = (SX(3) - N2) / SX(2);
+    // quat_res *= alpha;
 
     return vertcat(pos_res, quat_res);
 }
