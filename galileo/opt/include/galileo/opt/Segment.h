@@ -16,6 +16,7 @@ namespace galileo
 
         using tuple_size_t = std::tuple<std::size_t, std::size_t>;
 
+        template <class ProblemData>
         class Segment
         {
         public:

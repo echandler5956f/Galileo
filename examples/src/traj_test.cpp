@@ -122,7 +122,7 @@ int main()
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 1;
     shared_ptr<opt::GeneralProblemData> problem = make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
-    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment> traj(opts, si, problem);
+    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment<opt::GeneralProblemData>> traj(opts, si, problem);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;
