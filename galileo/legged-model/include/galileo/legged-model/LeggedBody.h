@@ -1,13 +1,13 @@
 #pragma once
 
-#include "galileo/model/EndEffector.h"
+#include "galileo/legged-model/EndEffector.h"
 #include <pinocchio/multibody/model.hpp>
 #include <vector>
 #include <bitset>
 
 namespace galileo
 {
-    namespace model
+    namespace legged
     {
         /**
          * @brief A class for holding the robot model.

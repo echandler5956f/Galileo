@@ -70,7 +70,7 @@ namespace galileo
             return result;
         }
 
-        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_)
+        PseudospectralSegment::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_, DM x0_global_, MX x0_local_, Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu, MX &J0, MXVector &w, MXVector &g)
         {
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
             assert(h_ > 0 && "h must be a positive duration");
@@ -101,6 +101,9 @@ namespace galileo
 
             this->initialize_local_time_vector();
             this->initialize_u_time_vector();
+            this->initialize_knot_segments(x0_global_, x0_local_);
+            this->initialize_expression_graph(F, L, G, Wx, Wu);
+            this->evaluate_expression_graph(J0, w, g);
         }
 
         void PseudospectralSegment::initialize_expression_variables(int d)
@@ -317,10 +320,10 @@ namespace galileo
             this->xf_constraint_map = xf_constraint.map(this->knot_num, "openmp");
             this->q_cost_fold = q_cost.fold(this->knot_num);
 
-            this->plot_map_func = Function("plot_map",
-                                           SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
-                                           SXVector{horzcat(tmp_x), horzcat(u_at_c)})
-                                      .map(this->knot_num, "serial");
+            this->sol_map_func = Function("sol_map",
+                                          SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
+                                          SXVector{horzcat(tmp_x), horzcat(u_at_c)})
+                                     .map(this->knot_num, "serial");
 
             casadi_int N = this->collocation_constraint_map.size1_out(0) * this->collocation_constraint_map.size2_out(0) +
                            this->xf_constraint_map.size1_out(0) * this->xf_constraint_map.size2_out(0);
@@ -458,9 +461,9 @@ namespace galileo
             MX xs_offset = this->processOffsetVector(this->X0_var_vec);
             MX dxs_offset = this->processOffsetVector(this->dX0_var_vec);
 
-            MXVector plotmap_restult = this->plot_map_func(MXVector{xs, dxcs, dxs, us});
-            MX all_xs = plotmap_restult.at(0);
-            MX all_us = plotmap_restult.at(1);
+            MXVector solmap_restult = this->sol_map_func(MXVector{xs, dxcs, dxs, us});
+            MX all_xs = solmap_restult.at(0);
+            MX all_us = solmap_restult.at(1);
 
             /*This section cannot get much faster, it is bounded by the time to evaluate the constraint*/
             MX col_con_mat = this->collocation_constraint_map(MXVector{xs, dxcs, dxs, us}).at(0);

@@ -1,8 +1,8 @@
-#include "galileo/model/LeggedBody.h"
+#include "galileo/legged-model/LeggedBody.h"
 
 namespace galileo
 {
-    namespace model
+    namespace legged
     {
         // Provide the string IDs that correspond to the pinocchio end effector frames.
         void LeggedBody::setEndEffectors(const std::vector<std::string> &ee_names)

@@ -1,20 +1,21 @@
-#include "galileo/model/LeggedBody.h"
-#include "galileo/model/ContactSequence.h"
-#include "galileo/model/EnvironmentSurfaces.h"
+#include "galileo/legged-model/LeggedBody.h"
+#include "galileo/legged-model/ContactSequence.h"
+#include "galileo/legged-model/EnvironmentSurfaces.h"
 
-#include "galileo/opt/States.h"
+#include "galileo/legged-model/LeggedRobotStates.h"
 
 #include <string>
 
 #include <pinocchio/parsers/urdf.hpp>
 
 using namespace galileo;
+using namespace legged;
 
 const std::string huron_location = "../resources/urdf/huron_cheat.urdf";
 const int num_ees = 2;
 const std::string end_effector_names[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
 
-void defineRobot(model::LeggedBody &bot)
+void defineRobot(legged::LeggedBody &bot)
 {
     std::vector<std::string> ee_name_vect;
     ee_name_vect.resize(num_ees);
@@ -31,7 +32,7 @@ void defineRobot(model::LeggedBody &bot)
 
 int main()
 {
-    model::LeggedBody bot;
+    legged::LeggedBody bot;
     defineRobot(bot);
     std::cout << "Set the robot" << std::endl;
 
@@ -44,10 +45,9 @@ int main()
     // //  Initializes dynamics
     // traj.setModel(bot);
     
-    
     // Target defines parameter for defining the cost
     // problemSetup defines parameters for setting up the problem, such as initial state
-    opt::States* state_definition = new opt::States(19,18);
+    std::shared_ptr<opt::LeggedRobotStates> si = std::make_shared<opt::LeggedRobotStates>(std::vector<int>{bot.nq, bot.nv});
     Eigen::VectorXd target_state_vector;
     Eigen::VectorXd initial_state_vector;
 

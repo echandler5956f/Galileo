@@ -1,10 +1,10 @@
 #include "galileo/opt/Constraint.h"
-#include "galileo/model/ContactSequence.h"
-#include "galileo/opt/States.h"
+#include "galileo/legged-model/ContactSequence.h"
+#include "galileo/legged-model/LeggedRobotStates.h"
 
 namespace galileo
 {
-    namespace model
+    namespace legged
     {
         namespace constraints
         {
@@ -14,7 +14,7 @@ namespace galileo
 
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
-                std::shared_ptr<opt::States> states;
+                std::shared_ptr<opt::LeggedRobotStates> states;
                 std::shared_ptr<pinocchio::Model> model;
                 contact::RobotEndEffectors robot_end_effectors;
                 casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
@@ -101,38 +101,38 @@ namespace galileo
                  */
                 void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
 
-            private:  /**
-                 * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
-                 *
-                 * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @return uint 
-                 */
+            private: /**
+                      * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
+                      *
+                      * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
+                      * @return uint
+                      */
                 uint getNumConstraintPerEEPerState(const ProblemData &problem_data) const;
 
                 /**
                  * @brief Get the Casadi::Function object, G, to be applied to the end effector given by "EndEffectorID" at a collocation point.
                  * For a Second Order Constraint, for instance, this is a function that returns 11 value, the result of the lorentz cone constraint.
                  * function = g( state ) @ EndEffectorID
-                */
+                 */
                 void CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
 
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current knot
-                */
+                 */
                 const contact::ContactMode &getModeAtKnot(const ProblemData &problem_data, int knot_index);
 
                 /**
                  * @brief getContactSurfaceRotationAtMode gets a rotation matrix describing the normal to the contact surface at the current knot.
                  * If the End Effector is in contact with a surface, the result is a rotation describing the surface noraml, else it is a matrix of zeros.
-                */
+                 */
                 Eigen::Matrix<double, 3, 3> getContactSurfaceRotationAtMode(const std::string &EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode);
 
                 /**
-                 * @brief Each approximated cone constraint can be represented as an operation on a transformed "ground reaction force". 
-                *           For a First order approximation, the constraint is of the form A_first_order * rotated_ground_reation_force <= 0.
-                *           For a second order approximation, this is of the form LorentzConeConstraint(A_second_order * rotated_ground_reation_force) <= 0
-                *           This function returns "A". 
-                */
+                 * @brief Each approximated cone constraint can be represented as an operation on a transformed "ground reaction force".
+                 *           For a First order approximation, the constraint is of the form A_first_order * rotated_ground_reation_force <= 0.
+                 *           For a second order approximation, this is of the form LorentzConeConstraint(A_second_order * rotated_ground_reation_force) <= 0
+                 *           This function returns "A".
+                 */
                 Eigen::MatrixXd getConeConstraintApproximation(const ProblemData &problem_data);
             };
 
@@ -162,9 +162,9 @@ namespace galileo
             void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
             {
                 // CREATE CASADI MAP FROM EACH END EFFECTOR
-                //CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
-                // Possibly, this would mean creating a map. 
-                // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment. 
+                // CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
+                // Possibly, this would mean creating a map.
+                // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
             }
 
             template <class ProblemData>

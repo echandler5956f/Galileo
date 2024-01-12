@@ -1,11 +1,6 @@
 #pragma once
 
-#include "galileo/opt/States.h"
-#include "galileo/opt/Constraint.h"
-#include <vector>
-#include <string>
-#include <cassert>
-#include <memory>
+#include "galileo/opt/Segment.h"
 
 using namespace casadi;
 
@@ -13,8 +8,6 @@ namespace galileo
 {
     namespace opt
     {
-
-        using tuple_size_t = std::tuple<std::size_t, std::size_t>;
 
         /**
          * @brief Helper class for storing polynomial information.
@@ -81,15 +74,9 @@ namespace galileo
          * @brief PseudospectalSegment class.
          *
          */
-        class PseudospectralSegment
+        class PseudospectralSegment : public Segment
         {
         public:
-            /**
-             * @brief Construct a new Pseudospectral Segment object.
-             *
-             */
-            PseudospectralSegment(){};
-
             /**
              * @brief Construct a new Pseudospectral Segment object.
              *
@@ -101,7 +88,7 @@ namespace galileo
              * @param Fint_ Integrator function
              * @param Fdif_ Difference function
              */
-            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_);
+            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_, DM x0_global_, MX x0_local_, Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu, MX &J0, MXVector &w, MXVector &g);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -151,48 +138,48 @@ namespace galileo
              */
             void evaluate_expression_graph(MX &J0, MXVector &w, MXVector &g);
 
-            /**
+             /**
              * @brief Extract the solution from the decision variable vector.
              *
              * @param w Decision variable vector
              * @return MX Solution values
              */
-            MXVector extract_solution(MX &w) const;
+             MXVector extract_solution(MX &w) const ;
 
             /**
              * @brief Get the initial state.
              *
              * @return MX The initial state
              */
-            MX get_initial_state() const;
+             MX get_initial_state() const ;
 
             /**
              * @brief Get the initial state deviant.
              *
              * @return MX The initial state deviant
              */
-            MX get_initial_state_deviant() const;
+             MX get_initial_state_deviant() const ;
 
             /**
              * @brief Get the final state deviant.
              *
              * @return MX The final state deviant
              */
-            MX get_final_state_deviant() const;
+             MX get_final_state_deviant() const ;
 
             /**
              * @brief Get the actual final state.
              *
              * @return MX The final state.
              */
-            MX get_final_state() const;
+             MX get_final_state() const ;
 
             /**
              * @brief Get the global times vector.
              *
              * @return std::shared_ptr<casadi::DM> The global times vector
              */
-            std::shared_ptr<casadi::DM> get_global_times() const;
+             std::shared_ptr<casadi::DM> get_global_times() const ;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -203,7 +190,7 @@ namespace galileo
              * @param lbw The vector to be filled with lower bound values on decision variables.
              * @param ubw The vector to be filled with upper bound values on decision variables.
              */
-            void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw);
+             void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw) ;
 
             /**
              * @brief Fills the lower bounds on general constraints (lbg) and upper bounds on general constraints (ubg) vectors with values.
@@ -214,7 +201,7 @@ namespace galileo
              * @param lbg The vector to be filled with general lower bound values.
              * @param ubg The vector to be filled with general upper bound values.
              */
-            void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg);
+             void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg) ;
 
             /**
              * @brief Fills the initial guess vector (w0) with values.
@@ -224,35 +211,35 @@ namespace galileo
              *
              * @param w0 The vector to be filled with initial guess values.
              */
-            void fill_w0(std::vector<double> &w0) const;
+             void fill_w0(std::vector<double> &w0) const ;
 
             /**
              * @brief Returns the starting and ending index in w.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_decision_variables() const;
+             tuple_size_t get_range_idx_decision_variables() const ;
 
             /**
              * @brief Returns the starting and ending index in g (call after evaluate_expression_graph!).
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_constraint_expressions() const;
+             tuple_size_t get_range_idx_constraint_expressions() const ;
 
             /**
              * @brief Returns the starting and ending index in lbg/ubg.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_constraint_bounds() const;
+             tuple_size_t get_range_idx_constraint_bounds() const ;
 
             /**
              * @brief Returns the starting and ending index in lbw/ubw.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_decision_bounds() const;
+             tuple_size_t get_range_idx_decision_bounds() const ;
 
         private:
             /**
@@ -274,18 +261,6 @@ namespace galileo
              * @return The processed offset vector.
              */
             MX processOffsetVector(MXVector &vec) const;
-
-            /**
-             * @brief Local initial state.
-             *
-             */
-            MX x0_local;
-
-            /**
-             * @brief Global initial state.
-             *
-             */
-            DM x0_global;
 
             /**
              * @brief Collocation state decision variables.
@@ -326,10 +301,10 @@ namespace galileo
             MXVector X0_var_vec;
 
             /**
-             * @brief Function map for converting solution to plottable results.
+             * @brief Function map for extracting the solution from the ocp solution vector.
              *
              */
-            Function plot_map_func;
+            Function sol_map_func;
 
             /**
              * @brief Solution function.
@@ -492,42 +467,6 @@ namespace galileo
              * @brief Vector of times for the decision variables of u.
              */
             DM u_times;
-
-            /**
-             * @brief Period of EACH KNOT SEGMENT within this pseudospectral segment.
-             *
-             */
-            double h;
-
-            /**
-             * @brief Total period (helper variable calculated from h and knot_num).
-             *
-             */
-            double T;
-
-            /**
-             * @brief Starting and ending index of the decision variables in w corresponding to this segment.
-             *
-             */
-            tuple_size_t w_range;
-
-            /**
-             * @brief Starting and ending index of the constraint expressions in g corresponding to this segment.
-             *
-             */
-            tuple_size_t g_range;
-
-            /**
-             * @brief Starting and ending index of the bounds in lbg/ubg corresponding to this segment.
-             *
-             */
-            tuple_size_t lbg_ubg_range;
-
-            /**
-             * @brief Starting and ending index of the bounds in lbw/ubw corresponding to this segment.
-             *
-             */
-            tuple_size_t lbw_ubw_range;
         };
     }
 }

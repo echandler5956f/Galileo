@@ -3,7 +3,7 @@
 int main()
 {
     double q0[] = {
-        0, 0, 1.0627, 1, 0, 0, 0, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
+        0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
         0.0000, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000};
 
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
@@ -23,7 +23,7 @@ int main()
     g(2) = 9.81;
     auto nq = model.nq;
     auto nv = model.nv;
-    shared_ptr<opt::States> si = make_shared<opt::States>(nq, nv);
+    shared_ptr<opt::LeggedRobotStates> si = make_shared<opt::LeggedRobotStates>(std::vector<int>{nq, nv});
 
     SX cx = SX::sym("x", si->nx);
     SX cx2 = SX::sym("x2", si->nx);
@@ -64,10 +64,11 @@ int main()
 
     Function Fint("Fint",
                   {cx, cdx, cdt},
-                  {vertcat(ch_d,
-                           cdh_d,
-                           cq_result, // returns different expression than python version, NO idea why
-                           cv_d)});
+                  {vertcat(ch + ch_d,
+                           cdh + cdh_d,
+                           // cq_result, // returns different expression than python version, NO idea why
+                           custom_fint(cx, cdx, cdt),
+                           cv + cv_d)});
 
     auto ch2 = si->get_ch(cx2);
     auto cdh2 = si->get_cdh(cx2);
@@ -121,7 +122,7 @@ int main()
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 1;
     shared_ptr<opt::GeneralProblemData> problem = make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
-    opt::TrajectoryOpt traj(opts, si, problem);
+    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment> traj(opts, si, problem);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;
