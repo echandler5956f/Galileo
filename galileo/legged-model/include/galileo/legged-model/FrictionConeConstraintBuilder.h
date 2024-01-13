@@ -17,9 +17,6 @@ namespace galileo
                 std::shared_ptr<opt::LeggedRobotStates> states;
                 std::shared_ptr<pinocchio::Model> model;
                 contact::RobotEndEffectors robot_end_effectors;
-                casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
-                casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
-                casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
                 int num_knots;
 
                 float mu;
@@ -154,7 +151,6 @@ namespace galileo
 
                 upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.t}, casadi::SXVector{upper_bound_casadi});
                 lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.t}, casadi::SXVector{lower_bound_casadi});
-                // @TODO create a casadi::Function to return vectors
             }
 
             template <class ProblemData>
@@ -164,6 +160,20 @@ namespace galileo
                 // CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
                 // Possibly, this would mean creating a map.
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
+
+                casadi::SXVector G_vec;
+                casadi::SXVector u_vec;
+                for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
+                {
+                    casadi::Function G_end_effector;
+                    CreateSingleEndEffectorFunction(end_effector.first, problem_data, knot_index, G_end_effector);
+                    if (G_end_effector.sx_out() != casadi::SX(0))
+                    {
+                        G_vec.push_back(G_end_effector);
+                        u_vec.push_back(G_end_effector.sx_in(1));
+                    }
+                }
+                G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.states.x, casadi::SX::vertcat(u_vec)}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
             }
 
             template <class ProblemData>
@@ -191,7 +201,7 @@ namespace galileo
                 {
                     // SET ALL ZEROS CASADI FUNCTION
                     //  Function = Eigen::MatrixXd::Zero(num_contraint_per_ee_per_point, 3) * GRF
-                    G = casadi::Function("G", casadi::SXVector{problem_data.x, problem_data.u}, casadi::SXVector{casadi::SX::zeros(num_contraint_per_ee_per_point, 3)});
+                    G = casadi::Function("G" + EndEffectorID, casadi::SXVector{casadi::SX("x", problem_data.states.nx), casadi::SX("u", problem_data.states.nu)}, casadi::SXVector{casadi::SX(0)});
                     return;
                 }
 
@@ -205,17 +215,24 @@ namespace galileo
 
                 casadi::SX tmp1 = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
                 pinocchio::casadi::copy(rotated_cone_constraint, tmp1);
+                bool dof6 = problem_data.robot_end_effectors[EndEffectorID]->is_6d;
 
+                // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
+                auto x = casadi::SX("x", problem_data.states.nx);
+                auto u = casadi::SX("Grf" + EndEffectorID, dof6 ? 6 : 3);
+                auto evaluated_vector = casadi::SX::mtimes(tmp1, u);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
+                    G = casadi::Function("G" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{evaluated_vector});
                 }
                 else
                 {
                     // SET CASADI FUNCTION
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
                     //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
+                    G = casadi::Function("G" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)))});
                 }
             }
 
