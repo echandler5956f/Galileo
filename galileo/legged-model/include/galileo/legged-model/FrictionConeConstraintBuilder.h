@@ -21,7 +21,6 @@ namespace galileo
                 casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
                 casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
                 int num_knots;
-                int collocation_points_per_knot;
 
                 float mu;
 
@@ -60,7 +59,7 @@ namespace galileo
              * @tparam ProblemData must contain an instance of "FrictionConeProblemData" named "friction_cone_problem_data"
              */
             template <class ProblemData>
-            class FrictionConeConstraintBuilder : Constraint<ProblemData>
+            class FrictionConeConstraintBuilder : opt::ConstraintBuilder<ProblemData>
             {
 
             public:
@@ -76,7 +75,7 @@ namespace galileo
                  */
                 void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const
                 {
-                    uint num_points = problem_data.friction_cone_problem_data.collocation_points_per_knot;
+                    uint num_points = problem_data.friction_cone_problem_data.num_knots;
                     apply_at = Eigen::VectorXi::Constant(num_points, 1);
                 }
 
@@ -139,7 +138,7 @@ namespace galileo
             template <class ProblemData>
             void FrictionConeConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
             {
-                uint num_points = problem_data.friction_cone_problem_data.collocation_points_per_knot;
+                uint num_points = problem_data.friction_cone_problem_data.num_knots;
 
                 uint num_constraints = num_points * getNumConstraintPerEEPerState(problem_data);
 

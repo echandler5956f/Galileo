@@ -197,5 +197,4 @@ namespace galileo
             virtual void CreateFunction(const ProblemData &problem_data, casadi::Function &G) const = 0;
         };
     };
-
 };

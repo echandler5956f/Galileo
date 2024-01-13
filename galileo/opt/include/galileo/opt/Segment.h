@@ -16,7 +16,6 @@ namespace galileo
 
         using tuple_size_t = std::tuple<std::size_t, std::size_t>;
 
-        template <class ProblemData>
         class Segment
         {
         public:
@@ -35,7 +34,7 @@ namespace galileo
              *
              * @return MX The initial state
              */
-           virtual  MX get_initial_state() const = 0;
+            virtual MX get_initial_state() const = 0;
 
             /**
              * @brief Get the initial state deviant.
@@ -49,7 +48,7 @@ namespace galileo
              *
              * @return MX The final state deviant
              */
-           virtual  MX get_final_state_deviant() const = 0;
+            virtual MX get_final_state_deviant() const = 0;
 
             /**
              * @brief Get the actual final state.

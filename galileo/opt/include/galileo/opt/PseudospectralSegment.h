@@ -74,22 +74,29 @@ namespace galileo
          * @brief PseudospectalSegment class.
          *
          */
-        template <class ProblemData>
-        class PseudospectralSegment : public Segment<ProblemData>
+        class PseudospectralSegment : public Segment
         {
         public:
             /**
              * @brief Construct a new Pseudospectral Segment object.
              *
+             * @param problem Pointer to the problem data
              * @param d Polynomial degree
              * @param knot_num_ Number of knots in the segment
              * @param h_ Period of each knot segment
              * @param global_times_ Vector of glbal times
              * @param st_m_ Pointer to the state indices helper
-             * @param Fint_ Integrator function
-             * @param Fdif_ Difference function
+             * @param x0_global_ Global starting state to integrate from (used for initial guess)
+             * @param x0_local_ Local starting state to integrate from
+             * @param G Vector of constraint data
+             * @param Wx Decision bound and initial guess data for the state
+             * @param Wu Decision bound and initial guess data for the input
+             * @param J0 Accumulated cost so far
+             * @param w Decision variable vector to fill
+             * @param g Constraint vector to fill
+             *
              */
-            PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_, DM x0_global_, MX x0_local_, Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu, MX &J0, MXVector &w, MXVector &g);
+            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, DM x0_global_, MX x0_local_, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu, MX &J0, MXVector &w, MXVector &g);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -534,9 +541,13 @@ namespace galileo
             return result;
         }
 
-        template <class ProblemData>
-        PseudospectralSegment<ProblemData>::PseudospectralSegment(int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, Function &Fint_, Function &Fdif_, DM x0_global_, MX x0_local_, Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu, MX &J0, MXVector &w, MXVector &g)
+        PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, int d, int knot_num_, double h_, std::shared_ptr<casadi::DM> global_times_, std::shared_ptr<States> st_m_, DM x0_global_, MX x0_local_, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu, MX &J0, MXVector &w, MXVector &g)
         {
+            auto Fint_ = problem->Fint;
+            auto Fdif_ = problem->Fdif;
+            auto F = problem->F;
+            auto L = problem->L;
+
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
             assert(h_ > 0 && "h must be a positive duration");
             assert(Fint_.n_in() == 3 && "Fint must have 3 inputs");
@@ -571,8 +582,7 @@ namespace galileo
             this->evaluate_expression_graph(J0, w, g);
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::initialize_expression_variables(int d)
+        void PseudospectralSegment::initialize_expression_variables(int d)
         {
             this->dXc.clear();
             this->Uc.clear();
@@ -593,8 +603,7 @@ namespace galileo
             this->Lc = SX::sym("Lc", 1, 1);
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::initialize_local_time_vector()
+        void PseudospectralSegment::initialize_local_time_vector()
         {
             this->local_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d + 1), 1);
             this->collocation_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d), 1);
@@ -638,8 +647,7 @@ namespace galileo
             this->knot_times += start_time;
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::initialize_u_time_vector()
+        void PseudospectralSegment::initialize_u_time_vector()
         {
             this->u_times = casadi::DM::zeros(this->knot_num * (this->U_poly.d), 1);
             int j = 0;
@@ -660,8 +668,7 @@ namespace galileo
             }
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::initialize_knot_segments(DM x0_global_, MX x0_local_)
+        void PseudospectralSegment::initialize_knot_segments(DM x0_global_, MX x0_local_)
         {
             this->x0_global = x0_global_;
             this->x0_local = x0_local_;
@@ -686,8 +693,7 @@ namespace galileo
             }
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu)
+        void PseudospectralSegment::initialize_expression_graph(Function &F, Function &L, std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu)
         {
             assert(F.n_in() == 2 && "F must have 2 inputs");
             assert(F.n_out() == 1 && "F must have 1 output");
@@ -904,24 +910,21 @@ namespace galileo
             }
         }
 
-        template <class ProblemData>
-        MX PseudospectralSegment<ProblemData>::processVector(MXVector &vec) const
+        MX PseudospectralSegment::processVector(MXVector &vec) const
         {
             MXVector temp = vec;
             temp.pop_back();
             return horzcat(temp);
         }
 
-        template <class ProblemData>
-        MX PseudospectralSegment<ProblemData>::processOffsetVector(MXVector &vec) const
+        MX PseudospectralSegment::processOffsetVector(MXVector &vec) const
         {
             MXVector temp = vec;
             temp.erase(temp.begin());
             return horzcat(temp);
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::evaluate_expression_graph(MX &J0, MXVector &w, MXVector &g)
+        void PseudospectralSegment::evaluate_expression_graph(MX &J0, MXVector &w, MXVector &g)
         {
             assert(J0.size1() == 1 && J0.size2() == 1 && "J0 must be a scalar");
 
@@ -975,44 +978,37 @@ namespace galileo
                                           MXVector({all_xs, all_us}));
         }
 
-        template <class ProblemData>
-        MXVector PseudospectralSegment<ProblemData>::extract_solution(MX &w) const
+        MXVector PseudospectralSegment::extract_solution(MX &w) const
         {
             return this->get_sol_func(MXVector{w(Slice(casadi_int(std::get<0>(this->w_range)), casadi_int(std::get<1>(this->w_range))))});
         }
 
-        template <class ProblemData>
-        MX PseudospectralSegment<ProblemData>::get_initial_state_deviant() const
+        MX PseudospectralSegment::get_initial_state_deviant() const
         {
             return this->dX0_var_vec.front();
         }
 
-        template <class ProblemData>
-        MX PseudospectralSegment<ProblemData>::get_initial_state() const
+        MX PseudospectralSegment::get_initial_state() const
         {
             return this->X0_var_vec.front();
         }
 
-        template <class ProblemData>
-        MX PseudospectralSegment<ProblemData>::get_final_state_deviant() const
+        MX PseudospectralSegment::get_final_state_deviant() const
         {
             return this->dX0_var_vec.back();
         }
 
-        template <class ProblemData>
-        MX PseudospectralSegment<ProblemData>::get_final_state() const
+        MX PseudospectralSegment::get_final_state() const
         {
             return this->X0_var_vec.back();
         }
 
-        template <class ProblemData>
-        std::shared_ptr<casadi::DM> PseudospectralSegment<ProblemData>::get_global_times() const
+        std::shared_ptr<casadi::DM> PseudospectralSegment::get_global_times() const
         {
             return this->global_times;
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw)
+        void PseudospectralSegment::fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw)
         {
             /*where lb/ub of this segment starts*/
             auto bw_size = lbw.size();
@@ -1024,8 +1020,7 @@ namespace galileo
             this->lbw_ubw_range = tuple_size_t(bw_size, lbw.size());
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg)
+        void PseudospectralSegment::fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg)
         {
             /*where lb/ub of this segment starts*/
             auto bg_size = lbg.size();
@@ -1038,33 +1033,28 @@ namespace galileo
             this->lbg_ubg_range = tuple_size_t(bg_size, lbg.size());
         }
 
-        template <class ProblemData>
-        void PseudospectralSegment<ProblemData>::fill_w0(std::vector<double> &all_w0) const
+        void PseudospectralSegment::fill_w0(std::vector<double> &all_w0) const
         {
             std::vector<double> element_access1 = this->w0.get_elements();
             all_w0.insert(all_w0.end(), element_access1.begin(), element_access1.end());
         }
 
-        template <class ProblemData>
-        tuple_size_t PseudospectralSegment<ProblemData>::get_range_idx_decision_variables() const
+        tuple_size_t PseudospectralSegment::get_range_idx_decision_variables() const
         {
             return this->w_range;
         }
 
-        template <class ProblemData>
-        tuple_size_t PseudospectralSegment<ProblemData>::get_range_idx_constraint_expressions() const
+        tuple_size_t PseudospectralSegment::get_range_idx_constraint_expressions() const
         {
             return this->g_range;
         }
 
-        template <class ProblemData>
-        tuple_size_t PseudospectralSegment<ProblemData>::get_range_idx_constraint_bounds() const
+        tuple_size_t PseudospectralSegment::get_range_idx_constraint_bounds() const
         {
             return this->lbg_ubg_range;
         }
 
-        template <class ProblemData>
-        tuple_size_t PseudospectralSegment<ProblemData>::get_range_idx_decision_bounds() const
+        tuple_size_t PseudospectralSegment::get_range_idx_decision_bounds() const
         {
             return this->lbw_ubw_range;
         }

@@ -42,7 +42,7 @@ int main()
     // opts["ipopt.print_level"] = 5;
     opts["ipopt.linear_solver"] = "ma97";
     std::shared_ptr<opt::GeneralProblemData> problem = std::make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
-    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment<opt::GeneralProblemData>> traj(opts, si, problem);
+    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment> traj(opts, si, problem);
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1, 0) = 1;

@@ -121,8 +121,27 @@ int main()
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 1;
+    /*
+    class LeggedRobotProblemData
+    this.GeneralProblemData
+    std::vector<ProblemDatas*> problem_data_vec = {this.FrictionConeProblemData, this.ContactProblemData}
+
+    traj_opt(LeggedRobotProblemData, std::vector<ConstraintBuilder> = {this.FrictionConeConstraintBuilder, this.ContactConstraintBuilder})
+
+    in traj_opt:
+    Gvec = {}
+    i = 0
+    for (auto &builder : builders)
+    {
+        builder->build_constraints(problem_data_vec[i]);
+        Gvec.insert(builder->get_g());
+        ++i
+    }
+    
+    */
+
     shared_ptr<opt::GeneralProblemData> problem = make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
-    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment<opt::GeneralProblemData>> traj(opts, si, problem);
+    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment> traj(opts, si, problem);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;

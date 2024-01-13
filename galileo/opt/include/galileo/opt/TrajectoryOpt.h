@@ -22,9 +22,9 @@ namespace galileo
              *
              * @param opts_ Options to pass to the solver
              * @param state_indices_ Helper class to get the state indices
-             * @param problem Problem data containing the objective function and dynamics
+             * @param problem_ Problem data containing the objective function and dynamics
              */
-            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem);
+            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_);
 
             /**
              * @brief Initialize the finite elements.
@@ -54,36 +54,10 @@ namespace galileo
             std::vector<std::shared_ptr<SegmentType>> trajectory;
 
             /**
-             * @brief Continuous-time function. The decision variables are infinitesimal deviations from the initial state,
-                allowing for states to lie on a manifold. Fint is the function which maps these
-                deviations back to the actual state space.
+             * @brief Problem data containing the objective function and dynamics.
              *
              */
-            casadi::Function Fint;
-
-            /**
-             * @brief Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
-             *
-             */
-            casadi::Function Fdif;
-
-            /**
-             * @brief Continuous-time function. This function stores the system dynamics.
-             *
-             */
-            casadi::Function F;
-
-            /**
-             * @brief The "running" or integrated cost function.
-             *
-             */
-            casadi::Function L;
-
-            /**
-             * @brief The terminal cost function.
-             *
-             */
-            casadi::Function Phi;
+            std::shared_ptr<ProblemData> problem;
 
             /**
              * @brief Casadi solver options.
@@ -102,12 +76,6 @@ namespace galileo
              *
              */
             std::shared_ptr<States> state_indices;
-
-            /**
-             * @brief Fixed time horizon of the entire trajectory.
-             *
-             */
-            double T;
 
             /**
              * @brief Vector of all decision variables.
@@ -163,24 +131,13 @@ namespace galileo
             std::shared_ptr<casadi::DM> global_times;
         };
 
-        /**
-         * @brief Construct a new Trajectory Opt object.
-         *
-         * @param opts_ Options to pass to the solver
-         * @param state_indices_ Helper class to get the state indices
-         * @param problem Problem data containing the objective function and dynamics
-         */
         template <class ProblemData, class SegmentType>
-        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem)
+        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_)
         {
             this->opts = opts_;
             this->state_indices = state_indices_;
 
-            this->Fint = problem->Fint;
-            this->Fdif = problem->Fdif;
-            this->F = problem->F;
-            this->L = problem->L;
-            this->Phi = problem->Phi;
+            this->problem = problem_;
         }
 
         template <class ProblemData, class SegmentType>
@@ -243,10 +200,12 @@ namespace galileo
 
             printf("Starting initialization\n");
             auto start_time = std::chrono::high_resolution_clock::now();
+            Function Phi = this->problem->Phi;
+
             for (std::size_t i = 0; i < num_phases; ++i)
             {
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
-                segment = std::make_shared<SegmentType>(d, 20, 1. / 20, this->global_times, this->state_indices, this->Fint, this->Fdif, X0, prev_final_state, this->F, this->L, G, Wx, Wu, this->J, this->w, this->g);
+                segment = std::make_shared<SegmentType>(this->problem, d, 20, 1. / 20, this->global_times, this->state_indices, X0, prev_final_state, G, Wx, Wu, this->J, this->w, this->g);
 
                 this->trajectory.push_back(segment);
 
@@ -279,7 +238,7 @@ namespace galileo
                 /*Terminal cost*/
                 if (i == num_phases - 1 && i != 0)
                 {
-                    this->J += this->Phi(casadi::MXVector{prev_final_state}).at(0);
+                    this->J += Phi(casadi::MXVector{prev_final_state}).at(0);
                 }
             }
             printf("Finished initialization.\n");
