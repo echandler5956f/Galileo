@@ -3,12 +3,10 @@
 #include "galileo/opt/PseudospectralSegment.h"
 #include "galileo/legged-model/LeggedRobotProblemData.h"
 
-#include <pinocchio/parsers/urdf.hpp>
 #include <Eigen/Dense>
 
 #include <pinocchio/autodiff/casadi.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
-
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/frames.hpp>
@@ -39,6 +37,9 @@ typedef ADModel::ConfigVectorType ConfigVectorAD;
 typedef ADModel::TangentVectorType TangentVectorAD;
 
 const string huron_location = "../resources/urdf/huron_cheat.urdf";
+
+const int num_ees = 2;
+const std::string end_effector_names[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
 
 /*So, for some reason, pinocchio's integrate function returns a slightly different SX matrix than than the python version.
 When I actually evaluate the function though, it seems to return the correct result for both versions.

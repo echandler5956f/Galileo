@@ -8,9 +8,26 @@ int main()
 
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
 
-    Model model;
-    pinocchio::urdf::buildModel(huron_location, model);
+    legged::LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
+
+    Model model = bot.model;
     Data data(model);
+
+    std::cout << "Set the robot" << std::endl;
+
+    // Create environment Surfaces
+    std::shared_ptr<legged::environment::EnvironmentSurfaces> surfaces = std::make_shared<legged::environment::EnvironmentSurfaces>();
+    surfaces->push_back(legged::environment::CreateInfiniteGround());
+
+    std::cout << "Set the ground" << std::endl;
+
+    std::shared_ptr<galileo::legged::contact::ContactSequence> contact_sequence = make_shared<legged::contact::ContactSequence>(num_ees);
+
+    legged::contact::ContactMode initial_mode;
+    initial_mode.combination_definition = bot.getContactCombination(0b11);
+    initial_mode.contact_surfaces = {0, 0};
+
+    contact_sequence->addPhase(initial_mode, 100, 0.2);
 
     pinocchio::computeTotalMass(model, data);
     pinocchio::framesForwardKinematics(model, data, q0_vec);
@@ -121,24 +138,7 @@ int main()
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 1;
-    /*
-    class LeggedRobotProblemData
-    this.GeneralProblemData
-    std::vector<ProblemDatas*> problem_data_vec = {this.FrictionConeProblemData, this.ContactProblemData}
 
-    traj_opt(LeggedRobotProblemData, std::vector<ConstraintBuilder> = {this.FrictionConeConstraintBuilder, this.ContactConstraintBuilder})
-
-    in traj_opt:
-    Gvec = {}
-    i = 0
-    for (auto &builder : builders)
-    {
-        builder->build_constraints(problem_data_vec[i]);
-        Gvec.insert(builder->get_g());
-        ++i
-    }
-
-    */
     using namespace opt;
     using namespace legged;
     using namespace constraints;
@@ -148,6 +148,12 @@ int main()
     shared_ptr<GeneralProblemData> problem = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
 
     legged_problem_data->gp_data = problem;
+    legged_problem_data->states = si;
+    legged_problem_data->model = make_shared<Model>(model);
+    legged_problem_data->robot_end_effectors = bot.getEndEffectors();
+    legged_problem_data->contact_sequence = contact_sequence;
+    legged_problem_data->environment_surfaces = surfaces;
+    legged_problem_data->num_knots = 20;
 
     shared_ptr<ConstraintData> friction_constraint_data = make_shared<ConstraintData>();
     shared_ptr<FrictionConeProblemData> friction_problem_data = make_shared<FrictionConeProblemData>();
@@ -156,7 +162,7 @@ int main()
         std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
     vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_builder};
-    TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(opts, si, legged_problem_data, builders);
+    TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;

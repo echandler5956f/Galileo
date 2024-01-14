@@ -15,25 +15,9 @@ const std::string huron_location = "../resources/urdf/huron_cheat.urdf";
 const int num_ees = 2;
 const std::string end_effector_names[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
 
-void defineRobot(legged::LeggedBody &bot)
-{
-    std::vector<std::string> ee_name_vect;
-    ee_name_vect.resize(num_ees);
-    for (int i = 0; i < num_ees; ++i)
-    {
-        ee_name_vect[i] = end_effector_names[i];
-    }
-    pinocchio::urdf::buildModel(huron_location, bot);
-    std::cout << "Built model" << std::endl;
-    bot.setEndEffectors(ee_name_vect);
-    std::cout << "Set the end effectors" << std::endl;
-    bot.GenerateContactCombination();
-}
-
 int main()
 {
-    legged::LeggedBody bot;
-    defineRobot(bot);
+    legged::LeggedBody<double> bot(huron_location, num_ees, end_effector_names);
     std::cout << "Set the robot" << std::endl;
 
     // Create environment Surfaces
@@ -47,7 +31,7 @@ int main()
 
     // Target defines parameter for defining the cost
     // problemSetup defines parameters for setting up the problem, such as initial state
-    std::shared_ptr<opt::LeggedRobotStates> si = std::make_shared<opt::LeggedRobotStates>(std::vector<int>{bot.nq, bot.nv});
+    std::shared_ptr<opt::LeggedRobotStates> si = std::make_shared<opt::LeggedRobotStates>(std::vector<int>{bot.model.nq, bot.model.nv});
     Eigen::VectorXd target_state_vector;
     Eigen::VectorXd initial_state_vector;
 

@@ -20,12 +20,11 @@ namespace galileo
             /**
              * @brief Construct a new Trajectory Opt object.
              *
-             * @param opts_ Options to pass to the solver
-             * @param state_indices_ Helper class to get the state indices
              * @param problem_ Problem data containing the objective function and dynamics
              * @param builders Constraint builders used to build the constraints
+             * @param opts_ Options to pass to the solver
              */
-            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders);
+            TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders, casadi::Dict opts_);
 
             /**
              * @brief Initialize the finite elements.
@@ -133,12 +132,11 @@ namespace galileo
         };
 
         template <class ProblemData, class SegmentType>
-        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders)
+        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders, casadi::Dict opts_)
         {
-            this->opts = opts_;
-            this->state_indices = state_indices_;
-
             this->gp_data = problem_->gp_data;
+            this->state_indices = problem_->states;
+            this->opts = opts_;
         }
 
         template <class ProblemData, class SegmentType>

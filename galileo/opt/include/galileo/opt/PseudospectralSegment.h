@@ -756,20 +756,22 @@ namespace galileo
             }
 
             casadi::Dict opts;
+            // // opts["cse"] = true;
             // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-O3";
+            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
             // opts["jit_options.compiler"] = "gcc";
+            // // opts["jit_options.temp_suffix"] = false;
             // opts["compiler"] = "shell";
 
             auto collocation_constraint = Function("feq",
                                                    SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
                                                    SXVector{vertcat(eq)}, opts);
-            // collocation_constraint_original.generate("feq");
+            // collocation_constraint.generate("feq");
             // int flag1 = system("gcc -fPIC -shared -O3 feq.c -o feq.so");
             // casadi_assert(flag1==0, "Compilation failed");
-            // auto collocation_constraint = external("feq");
+            // auto collocation_constraint_new = external("feq");
 
-            // auto collocation_constraint_adj1 = collocation_constraint_original.reverse(1);
+            // auto collocation_constraint_adj1 = collocation_constraint.reverse(1);
             // collocation_constraint_adj1.generate("adj1_feq");
             // int flag2 = system("gcc -fPIC -shared -O3 adj1_feq.c -o adj1_feq.so");
             // casadi_assert(flag2==0, "Compilation failed");
@@ -778,17 +780,17 @@ namespace galileo
             auto xf_constraint = Function("fxf",
                                           SXVector{this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
                                           SXVector{dXf}, opts);
-            // xf_constraint.generate("xf_constraint");
-            // int flag2 = system("gcc -fPIC -shared -O3 xf_constraint.c -o xf_constraint.so");
+            // xf_constraint.generate("fxf");
+            // int flag2 = system("gcc -fPIC -shared -O3 fxf.c -o fxf.so");
             // casadi_assert(flag2==0, "Compilation failed");
-            // xf_constraint = external("xf_constraint");
+            // xf_constraint = external("fxf");
 
             auto q_cost = Function("fxq", SXVector{this->Lc, this->X0, vertcat(this->dXc), this->dX0, vertcat(this->Uc)},
                                    SXVector{this->Lc + Qf}, opts);
-            // q_cost.generate("q_cost");
-            // int flag3 = system("gcc -fPIC -shared -O3 q_cost.c -o q_cost.so");
+            // q_cost.generate("fxq");
+            // int flag3 = system("gcc -fPIC -shared -O3 fxq.c -o fxq.so");
             // casadi_assert(flag3==0, "Compilation failed");
-            // q_cost = external("q_cost");
+            // q_cost = external("fxq");
 
             /*Implicit discrete-time equations*/
             this->collocation_constraint_map = collocation_constraint.map(this->knot_num, "openmp");
@@ -971,7 +973,7 @@ namespace galileo
             w.insert(w.end(), std::make_move_iterator(this->dXc_var_vec.begin()), std::make_move_iterator(this->dXc_var_vec.end()));
             w.insert(w.end(), std::make_move_iterator(this->U_var_vec.begin()), std::make_move_iterator(this->U_var_vec.end()));
 
-            this->w_range = tuple_size_t(w_size, std::accumulate(w.begin() + w_size, w.end(), 0, [](int sum, const MX &item)
+            this->w_range = tuple_size_t(w_size, std::accumulate(w.begin() + w_size, w.end(), 0.0, [](int sum, const MX &item)
                                                                  { return sum + item.size1() * item.size2(); }));
             this->get_sol_func = Function("func",
                                           MXVector({vertcat(MXVector(w.begin() + w_size, w.begin() + w.size()))}),

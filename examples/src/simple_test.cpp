@@ -49,7 +49,7 @@ int main()
     // opts["ipopt.max_iter"] = 100;
     // opts["ipopt.print_level"] = 5;
     opts["ipopt.linear_solver"] = "ma97";
-    opt::TrajectoryOpt<SimpleProblemData, opt::PseudospectralSegment> traj(opts, si, problem, builders);
+    opt::TrajectoryOpt<SimpleProblemData, opt::PseudospectralSegment> traj(problem, builders, opts);
 
     // casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     // X0(1, 0) = 1;
