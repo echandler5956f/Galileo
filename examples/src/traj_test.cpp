@@ -156,8 +156,7 @@ int main()
         std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
     vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_builder};
-
-    TrajectoryOpt<GeneralProblemData, PseudospectralSegment> traj(opts, si, problem);
+    TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(opts, si, legged_problem_data, builders);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;

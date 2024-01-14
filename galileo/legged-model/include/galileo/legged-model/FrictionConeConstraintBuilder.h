@@ -12,9 +12,6 @@ namespace galileo
             struct FrictionConeProblemData
             {
 
-                std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
-                std::shared_ptr<contact::ContactSequence> contact_sequence;
-
                 float mu;
 
                 enum ApproximationOrder
@@ -35,6 +32,9 @@ namespace galileo
                 std::shared_ptr<opt::LeggedRobotStates> states;
                 std::shared_ptr<pinocchio::Model> model;
                 contact::RobotEndEffectors robot_end_effectors;
+                std::shared_ptr<contact::ContactSequence> contact_sequence;
+                std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
+
                 int num_knots;
             };
 
@@ -106,12 +106,12 @@ namespace galileo
                  */
                 void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
 
-            public: /**
-                     * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
-                     *
-                     * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                     * @return uint
-                     */
+            private: /**
+                      * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
+                      *
+                      * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
+                      * @return uint
+                      */
                 uint getNumConstraintPerEEPerState(const ProblemData &problem_data) const;
 
                 /**
@@ -251,11 +251,11 @@ namespace galileo
             template <class ProblemData>
             const contact::ContactMode FrictionConeConstraintBuilder<ProblemData>::getModeAtKnot(const ProblemData &problem_data, int knot_index) const
             {
-                assert(problem_data.friction_cone_problem_data.contact_sequence != nullptr);
+                assert(problem_data.contact_sequence != nullptr);
 
                 contact::ContactSequence::Phase phase;
                 contact::ContactSequence::CONTACT_SEQUENCE_ERROR status;
-                problem_data.friction_cone_problem_data.contact_sequence->getPhaseAtKnot(knot_index, phase, status);
+                problem_data.contact_sequence->getPhaseAtKnot(knot_index, phase, status);
 
                 assert(status == contact::ContactSequence::CONTACT_SEQUENCE_ERROR::OK);
 
@@ -265,9 +265,9 @@ namespace galileo
             template <class ProblemData>
             Eigen::Matrix<double, 3, 3> FrictionConeConstraintBuilder<ProblemData>::getContactSurfaceRotationAtMode(const std::string &EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode) const
             {
-                assert(problem_data.friction_cone_problem_data.environment_surfaces != nullptr);
+                assert(problem_data.environment_surfaces != nullptr);
 
-                environment::SurfaceID contact_surface_id = mode.getSurfaceIDForEE(EndEffectorID);
+                environment::SurfaceID contact_surface_id = mode.getSurfaceID(EndEffectorID);
 
                 if (contact_surface_id == environment::NO_SURFACE)
                 {
@@ -275,7 +275,7 @@ namespace galileo
                     return Eigen::Matrix<double, 3, 3>::Zero();
                 }
 
-                return (*problem_data.friction_cone_problem_data.environment_surfaces)[contact_surface_id].Rotation();
+                return (*problem_data.environment_surfaces)[contact_surface_id].Rotation();
             }
 
             template <class ProblemData>

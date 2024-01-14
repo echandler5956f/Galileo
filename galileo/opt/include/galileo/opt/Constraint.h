@@ -165,7 +165,7 @@ namespace galileo
              * @param knot_index index to build constraint data for
              * @param constraint_data Constraint specific data
              */
-            void BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data)
+            virtual void BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data)
             {
                 CreateApplyAt(problem_data, knot_index, constraint_data.apply_at);
                 CreateBounds(problem_data, knot_index, constraint_data.upper_bound, constraint_data.lower_bound);

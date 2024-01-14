@@ -23,8 +23,9 @@ namespace galileo
              * @param opts_ Options to pass to the solver
              * @param state_indices_ Helper class to get the state indices
              * @param problem_ Problem data containing the objective function and dynamics
+             * @param builders Constraint builders used to build the constraints
              */
-            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_);
+            TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders);
 
             /**
              * @brief Initialize the finite elements.
@@ -57,7 +58,7 @@ namespace galileo
              * @brief Problem data containing the objective function and dynamics.
              *
              */
-            std::shared_ptr<ProblemData> problem;
+            std::shared_ptr<GeneralProblemData> gp_data;
 
             /**
              * @brief Casadi solver options.
@@ -132,12 +133,12 @@ namespace galileo
         };
 
         template <class ProblemData, class SegmentType>
-        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_)
+        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(casadi::Dict opts_, std::shared_ptr<States> state_indices_, std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders)
         {
             this->opts = opts_;
             this->state_indices = state_indices_;
 
-            this->problem = problem_;
+            this->gp_data = problem_->gp_data;
         }
 
         template <class ProblemData, class SegmentType>
@@ -200,12 +201,12 @@ namespace galileo
 
             printf("Starting initialization\n");
             auto start_time = std::chrono::high_resolution_clock::now();
-            Function Phi = this->problem->Phi;
+            Function Phi = this->gp_data->Phi;
 
             for (std::size_t i = 0; i < num_phases; ++i)
             {
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
-                segment = std::make_shared<SegmentType>(this->problem, d, 20, 1. / 20, this->global_times, this->state_indices, X0, prev_final_state, G, Wx, Wu, this->J, this->w, this->g);
+                segment = std::make_shared<SegmentType>(this->gp_data, d, 20, 1. / 20, this->global_times, this->state_indices, X0, prev_final_state, G, Wx, Wu, this->J, this->w, this->g);
 
                 this->trajectory.push_back(segment);
 

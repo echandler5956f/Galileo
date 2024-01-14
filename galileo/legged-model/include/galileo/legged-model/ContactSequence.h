@@ -33,20 +33,47 @@ namespace galileo
                 ContactCombination combination_definition;
 
                 /**
+                 * @brief Gets the contact combination for a given end effector.
+                 *
+                 * @param ee The end effector to get the contact combination for.
+                 */
+                bool &operator[](const EndEffector &ee)
+                {
+                    return combination_definition[ee.frame_name];
+                }
+
+                /**
+                 * @brief Gets the contact combination for a given end effector.
+                 *
+                 * @param ee_name The name of the end effector to get the contact combination for.
+                 */
+                bool &operator[](const std::string &ee_name)
+                {
+                    return combination_definition[ee_name];
+                }
+
+                /**
+                 * @brief Gets the contact surface for a given end effector in this mode.
+                 *
+                 * @param ee_name The end effector to get the contact surface for.
+                 */
+                const environment::SurfaceID &getSurfaceID(const std::string &ee_name) const;
+
+                /**
+                 * @brief Gets the contact surface for a given end effector in this mode.
+                 *
+                 * @param ee The end effector to get the contact surface for.
+                 */
+                const environment::SurfaceID &getSurfaceID(const EndEffector &ee) const
+                {
+                    return getSurfaceID(ee.frame_name);
+                }
+
+                /**
                  * @brief Gets which surfaces the EEs are in contact with.
                  *
                  */
                 std::vector<environment::SurfaceID> contact_surfaces;
-
-                /**
-                 * @brief Get the surface ID for a given end effector.
-                 *
-                 * This function returns the surface ID for a given end effector.
-                 *
-                 * @param EndEffectorID The ID of the end effector.
-                 * @return The surface ID for the given end effector.
-                 */
-                environment::SurfaceID getSurfaceIDForEE(std::string EndEffectorID) const;
 
                 /**
                  * @brief Makes the combination valid. If an EE is not in contact, it makes the corresponding contact surface NO_SURFACE.

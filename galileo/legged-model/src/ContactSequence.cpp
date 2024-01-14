@@ -6,13 +6,13 @@ namespace galileo
     {
         namespace contact
         {
-            environment::SurfaceID ContactMode::getSurfaceIDForEE(std::string EndEffectorID) const
+            const environment::SurfaceID &ContactMode::getSurfaceID(const std::string &ee_name) const
             {
-                const auto &map_element = combination_definition.find(EndEffectorID);
+                const auto &map_element = combination_definition.find(ee_name);
 
                 if (map_element == combination_definition.end())
                 {
-                    throw std::runtime_error(std::string("'End Effector " + EndEffectorID + " not defined in contact mode!'"));
+                    throw std::runtime_error(std::string("'End Effector " + ee_name + " not defined in contact mode!'"));
                 }
 
                 uint index = std::distance(combination_definition.begin(), map_element);
@@ -103,6 +103,7 @@ namespace galileo
                         return i;
                     }
                 }
+                return -1;
             }
 
             int ContactSequence::getPhaseIndexAtKnot(int knot_idx, CONTACT_SEQUENCE_ERROR &error_status) const
@@ -122,6 +123,7 @@ namespace galileo
                         return i;
                     }
                 }
+                return -1;
             }
 
             void ContactSequence::getPhaseAtTime(double t, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const
@@ -147,6 +149,5 @@ namespace galileo
             }
 
         }
-
     }
 }
