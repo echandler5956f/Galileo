@@ -1,11 +1,4 @@
-#include "galileo/opt/TrajectoryOpt.h"
-#include "galileo/opt/PseudospectralSegment.h"
-#include <Eigen/Dense>
-#include <boost/math/interpolators/barycentric_rational.hpp>
-#include "third-party/gnuplot-iostream/gnuplot-iostream.h"
-#include "galileo/opt/BasicStates.h"
-
-using namespace galileo;
+#include "simple_test.h"
 
 int main()
 {
@@ -35,14 +28,28 @@ int main()
     casadi::Function L("L", {x, u}, {l});
     casadi::Function Phi("Phi", {x}, {0});
 
-    // casadi::Dict opts;
-    // /*DO NOT USE EXPAND OR IT WILL UNROLL ALL THE MAPS AND FOLDS*/
-    // // opts["ipopt.tol"] = 1e-5;
-    // // opts["ipopt.max_iter"] = 100;
-    // // opts["ipopt.print_level"] = 5;
-    // opts["ipopt.linear_solver"] = "ma97";
-    // std::shared_ptr<opt::GeneralProblemData> problem = std::make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
-    // opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment> traj(opts, si, problem);
+    std::shared_ptr<opt::GeneralProblemData> gp_data = std::make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
+    std::shared_ptr<SimpleProblemData> problem = std::make_shared<SimpleProblemData>();
+    problem->gp_data = gp_data;
+    problem->x = x;
+    problem->u = u;
+    problem->states = si;
+    problem->num_knots = 20;
+    std::shared_ptr<opt::ConstraintData> constraint_data = std::make_shared<opt::ConstraintData>();
+    std::shared_ptr<RosenbrockProblemData> rosenbrock_problem_data = std::make_shared<RosenbrockProblemData>();
+
+    std::shared_ptr<opt::ConstraintBuilder<SimpleProblemData>> rosenbrock_builder =
+        std::make_shared<RosenbrockConstraintBuilder<SimpleProblemData>>();
+
+    std::vector<std::shared_ptr<opt::ConstraintBuilder<SimpleProblemData>>> builders = {rosenbrock_builder};
+
+    casadi::Dict opts;
+    /*DO NOT USE EXPAND OR IT WILL UNROLL ALL THE MAPS AND FOLDS*/
+    // opts["ipopt.tol"] = 1e-5;
+    // opts["ipopt.max_iter"] = 100;
+    // opts["ipopt.print_level"] = 5;
+    opts["ipopt.linear_solver"] = "ma97";
+    opt::TrajectoryOpt<SimpleProblemData, opt::PseudospectralSegment> traj(opts, si, problem, builders);
 
     // casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     // X0(1, 0) = 1;

@@ -24,6 +24,11 @@ target_link_libraries(traj_test
     galileo
 )
 
+target_include_directories(simple_test
+    PRIVATE 
+    ${PROJECT_SOURCE_DIR}/include
+)
+
 target_include_directories(traj_test
     PRIVATE 
     ${PROJECT_SOURCE_DIR}/include

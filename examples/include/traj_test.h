@@ -1,10 +1,7 @@
 #include "galileo/legged-model/LeggedBody.h"
-#include "galileo/legged-model/LeggedRobotStates.h"
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/opt/PseudospectralSegment.h"
-#include "galileo/opt/Constraint.h"
-#include "galileo/legged-model/FrictionConeConstraintBuilder.h"
-#include <string>
+#include "galileo/legged-model/LeggedRobotProblemData.h"
 
 #include <pinocchio/parsers/urdf.hpp>
 #include <Eigen/Dense>
