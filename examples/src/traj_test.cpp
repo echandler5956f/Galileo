@@ -137,11 +137,27 @@ int main()
         Gvec.insert(builder->get_g());
         ++i
     }
-    
-    */
 
-    shared_ptr<opt::GeneralProblemData> problem = make_shared<opt::GeneralProblemData>(Fint, Fdif, F, L, Phi);
-    opt::TrajectoryOpt<opt::GeneralProblemData, opt::PseudospectralSegment> traj(opts, si, problem);
+    */
+    using namespace opt;
+    using namespace legged;
+    using namespace constraints;
+
+    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>();
+
+    shared_ptr<GeneralProblemData> problem = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
+
+    legged_problem_data->gp_data = problem;
+
+    shared_ptr<ConstraintData> friction_constraint_data = make_shared<ConstraintData>();
+    shared_ptr<FrictionConeProblemData> friction_problem_data = make_shared<FrictionConeProblemData>();
+
+    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_builder =
+        std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
+
+    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_builder};
+
+    TrajectoryOpt<GeneralProblemData, PseudospectralSegment> traj(opts, si, problem);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;
