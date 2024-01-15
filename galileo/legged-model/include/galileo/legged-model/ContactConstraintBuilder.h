@@ -37,9 +37,9 @@ namespace galileo
 
                     for (auto ee : problem_data.robot_end_effectors)
                     {
-                        if (mode[ee])
+                        if (mode[(*ee.second)])
                         {
-                            environment::SurfaceID surface = mode.getSurfaceID(ee);
+                            environment::SurfaceID surface = mode.getSurfaceID((*ee.second));
 
                             auto surface_data = (*problem_data.environment_surfaces)[surface];
 
@@ -49,6 +49,8 @@ namespace galileo
                             double height = surface_data.height;
 
                             // @todo(ethan) : add the constraints (height = ee_position.bottom(1)) & (A * ee_position.top(2) - b) <= 0 to the constraint data
+
+                            // Function FX(x, end_effector)
                         }
                     }
                 }
