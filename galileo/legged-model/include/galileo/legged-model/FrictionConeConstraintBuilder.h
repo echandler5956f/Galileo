@@ -11,6 +11,8 @@ namespace galileo
 
             struct FrictionConeProblemData
             {
+                std::shared_ptr<pinocchio::Model> model;
+                RobotEndEffectors robot_end_effectors;
 
                 float mu;
 
@@ -38,7 +40,7 @@ namespace galileo
              *      LorentzConeConstraint ( [0   1   0] * Rotation * GRF )
              *                              [1   0   0]
              *
-             *      or      [0   0  mu] * Rotation * GRF
+             *      or     [0   0  mu] * Rotation * GRF
              *               - 2norm(   [0   1   0] * Rotation * GRF  )  => 0
              *                          [1   0   0]
              *
@@ -200,7 +202,7 @@ namespace galileo
                 {
                     // SET ALL ZEROS CASADI FUNCTION
                     //  Function = Eigen::MatrixXd::Zero(num_contraint_per_ee_per_point, 3) * GRF
-                    G = casadi::Function("G" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{casadi::SX(0)});
+                    G = casadi::Function("FrictionCone_" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{casadi::SX(0)});
                     return;
                 }
 
@@ -212,12 +214,12 @@ namespace galileo
 
                 FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.approximation_order;
 
-                casadi::SX tmp1 = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
-                pinocchio::casadi::copy(rotated_cone_constraint, tmp1);
+                casadi::SX symbolic_rotated_cone_constraint = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
+                pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
 
                 // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
 
-                auto evaluated_vector = casadi::SX::mtimes(tmp1, u);
+                auto evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
                     //@todo (ethan)

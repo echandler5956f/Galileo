@@ -35,6 +35,11 @@ namespace galileo
                 {
                     auto mode = getModeAtKnot(problem_data, knot_index);
 
+                    std::SXVector G_vec;
+                    std::SXVector upper_bound_vec;
+                    std::SXVector lower_bound_vec;
+                    std::SXVector sx_foot_placement;
+
                     for (auto ee : problem_data.robot_end_effectors)
                     {
                         if (mode[(*ee.second)])
@@ -45,14 +50,59 @@ namespace galileo
 
                             Eigen::MatrixXd A = surface_data.A;
                             Eigen::VectorXd b = surface_data.b;
+                            Eigen::VectorXd lower_bound_region_constraint = Eigen::VectorXd::Constant(b.rows(), -std::numeric_limits<double>::infinity());
 
                             double height = surface_data.height;
 
-                            // @todo(ethan) : add the constraints (height = ee_position.bottom(1)) & (A * ee_position.top(2) - b) <= 0 to the constraint data
+                            //@todo (akshay) : change this to data on num_DOF instead.
+                            bool dof6 = (*ee.second)->is_6d;
+                            auto foot_pos = casadi::SX::sym("foot_pos", dof6 ? 6 : 3);
 
-                            // Function FX(x, end_effector)
+                            casadi::SX symbolic_A = casadi::SX(casadi::Sparsity::dense(A.rows(), 1));
+
+                            pinocchio::casadi::copy(A, symbolic_A);
+                            auto evaluated_vector = casadi::SX::mtimes(symbolic_A, foot_pos(casadi::Slice(1, 2)));
+
+                            casadi::Function
+                                G_ee_region = casadi::Function("ContactRegionConstraint_" + (*ee.second)->frame_name,
+                                                               casadi::SXVector{foot_pos},
+                                                               casadi::SXVector{evaluated_vector});
+                            casadi::Function
+                                G_ee_height = casadi::Function("ContactHeightConstraint_" + (*ee.second)->frame_name,
+                                                               casadi::SXVector{foot_pos},
+                                                               casadi::SXVector{foot_pos(0)});
+
+                            casadi::Function G_ee = casadi::Function("G_ee_foot_pos_" + (*ee.second)->frame_name,
+                                                                     casadi::SXVector{foot_pos},
+                                                                     casadi::SXVector{casadi::SX::vertcat(G_ee_region, G_ee_height)});
+
+                            casadi::SX symbolic_b = casadi::SX(b.rows(), 1);
+                            casadi::SX symbolic_lower_bound_region_constraint = casadi::SX(lower_bound_region_constraint.rows(), 1);
+                            pinocchio::casadi::copy(b, symbolic_b);
+                            pinoccio::casadi::copy(lower_bound_region_constraint, symbolic_lower_bound_region_constraint);
+                            casadi::SX symbolic_height = height;
+                            casadi::SX upper_bound = casadi::SX::vertcat(symbolic_b, symbolic_height);
+                            casadi::SX lower_bound = casadi::SX::vertcat(symbolic_lower_bound_region_constraint, symbolic_height);
+
+                            G_vec.push_back(G_ee);
+                            lower_bound_vec.push_back(lower_bound);
+                            upper_bound_vec.push_back(upper_bound);
+
+                            sx_foot_placement.push_back(foot_pos);
                         }
                     }
+
+                    constraint_data.G = casadi::Function("G_Contact",
+                                                         casadi::SXVector{casadi::SX::vertcat(sx_foot_placement)},
+                                                         casadi::SXVector{casadi::SX::vertcat(G_vec)});
+
+                    constraint_data.lower_bound = casadi::Function("lower_bound_Contact",
+                                                                   casadi::SXVector{},
+                                                                   casadi::SXVector{casadi::SX::vertcat(lower_bound_vec)});
+
+                    constraint_data.lower_bound = casadi::Function("upper_bound_Contact",
+                                                                   casadi::SXVector{},
+                                                                   casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
                 }
 
             private:
