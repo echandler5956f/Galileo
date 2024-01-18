@@ -57,8 +57,8 @@ namespace galileo
                             double height = surface_data.height;
 
                             //@todo (akshay) : change this to data on num_DOF instead.
-                            bool dof6 = (*ee.second)->is_6d;
-                            auto foot_pos = casadi::SX::sym("foot_pos", dof6 ? 6 : 3);
+
+                            auto foot_pos = casadi::SX::sym("foot_pos", 6);
 
                             casadi::SX symbolic_A = casadi::SX(casadi::Sparsity::dense(A.rows(), 1));
 

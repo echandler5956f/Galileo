@@ -186,6 +186,13 @@ namespace galileo
                 void getPhaseAtTime(double t, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const;
 
                 /**
+                 * @brief Get the time at a given phase index.
+                 *
+                 * This function retrieves the time at a specified phase index.
+                 */
+                void getTimeAtPhase(int phase_idx, double &t, CONTACT_SEQUENCE_ERROR &error_status) const;
+
+                /**
                  * @brief Get the phase at a specific knot index.
                  *
                  * This function retrieves the phase at the specified knot index.
@@ -202,6 +209,14 @@ namespace galileo
                  * @return The number of phases.
                  */
                 int num_phases() const { return phase_sequence_.size(); }
+
+                const double &dt() { return dt_; }
+
+                const int &total_knots() { return total_knots_; }
+
+                const int &num_end_effectors() { return num_end_effectors_; }
+
+                const std::vector<Phase> &phase_sequence() { return phase_sequence_; }
 
                 /**
                  * @brief A vector of Phase objects.

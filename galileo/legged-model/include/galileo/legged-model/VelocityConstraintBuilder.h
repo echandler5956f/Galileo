@@ -3,6 +3,42 @@
 #include "galileo/legged-model/LeggedRobotStates.h"
 #include "galileo/legged-model/FootstepTrajectoryGenerator.h"
 
+namespace
+{
+    casadi::Function createFootstepHeightFunction(casadi::SX &t, const FootstepDefinition &FS_def)
+    {
+        casadi::MX x0(2);
+        x0(0) = casadi::ifelse(t < 0.5, FS_def.h_start, FS_def.h_max);
+        x0(1) = 0;
+        casadi::MX xf(2);
+        xf(0) = casadi::ifelse(t >= 0.5, FS_def.h_end, FS_def.h_max);
+        xf(1) = 0;
+
+        casadi::MX H0(2, 2);
+        H0(0, 0) = 2 * pow(t, 3) - 3 * pow(t, 2) + 1;
+        H0(0, 1) = pow(t, 3) - 2 * pow(t, 2) + t;
+        H0(1, 0) = 6 * pow(t, 2) - 6 * t;
+        H0(1, 1) = 3 * pow(t, 2) - 4 * t + 1;
+
+        casadi::MX Hf(2, 2);
+        Hf(0, 0) = -2 * pow(t, 3) + 3 * pow(t, 2);
+        Hf(0, 1) = pow(t, 3) - pow(t, 2);
+        Hf(1, 0) = -6 * pow(t, 2) + 6 * t;
+        Hf(1, 1) = 3 * pow(t, 2) - 2 * t;
+
+        casadi::Function footstep_height_function = casadi::Function("footstep_z_function", {t}, {H0 * x0 + Hf * xf});
+
+        return footstep_height_function;
+    }
+
+    struct FootstepDefinition
+    {
+        double h_start;
+        double h_end;
+        double h_max;
+    };
+
+}
 namespace galileo
 {
     namespace legged
@@ -26,7 +62,6 @@ namespace galileo
                 int num_knots;
                 int collocation_points_per_knot; // TODO get rid of this
 
-                std::shared_ptr<FootstepTrajectoryGenerator> footstep_trajectory_generator;
                 double max_footstep_offset_height;
                 double corrector_kp;
                 double following_leeway = 0;
@@ -52,170 +87,94 @@ namespace galileo
                     apply_at = Eigen::VectorXi::Constant(num_points, 1);
                 }
 
-                /**
-                 * @brief Generate bounds for a vector of points.
-                 *
-                 * For both approximations, each value is less than 0, with no lower bound.
-                 *t each knot.
-                 *
-                 * @param problem_data MUST CONTAIN AN INSTANCE OF "VelocityConstraintProblemData" NAMED "velocity_constraint_problem_data"
-                 * @param upper_bound
-                 * @param lower_bound
-                 */
-                void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const override;
-
-                /**
-                 * @brief Generate a function to evaluate each point
-                 *
-                 * t each knot.
-                 *
-                 * @param problem_data MUST CONTAIN AN INSTANCE OF "VelocityConstraintProblemData" NAMED "velocity_constraint_problem_data"
-                 * @param G
-                 */
-                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
-
-            private:
-                /**
-                 * @brief Get the mode at a given knot index.
-                 *
-                 * @param problem_data
-                 * @param knot_index
-                 * @return ContactMode
-                 */
-                const contact::ContactMode &getModeAtKnot(const ProblemData &problem_data, int knot_index) const;
-
-                /**
-                 * @brief Get the desired EE velocity for all collocation points in a knot.
-                 */
-                std::vector<Eigen::Vector2d> getDesiredEEHeightState(const ProblemData &problem_data, std::shared_ptr<contact::EndEffector> ee, int contact_broken_index, int contact_made_index);
-
-                int getNumberOfConstraintsPerEE(const ProblemData &problem_data) const
-                {
-                    // Assuming ONE constraint on velocity per collocation point. If there are constraints on all three dimensions, then this needs to be changed.
-                    return problem_data.collocation_points_per_knot;
-                }
+                void BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data) const override;
             };
 
             template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
+            void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data) const
             {
-                auto mode = getModeAtKnot(problem_data, knot_index);
+                casadi::Function G;
+                casadi::Function upper_bound;
+                casadi::Function lower_bound;
+
+                std::vector<casadi::Function> G_vec;
+                std::vector<casadi::Function> upper_bound_vec;
+                std::vector<casadi::Function> lower_bound_vec;
+
+                CreateApplyAt(problem_data, knot_index, constraint_data.apply_at);
+
+                casadi::SX t("t", 1);
+
+                ContactSequence::CONTACT_SEQUENCE_ERROR error;
+
+                int phase_index_at_knot = problem_data.contact_sequence->getPhaseIndexAtKnot(knot_index, error);
+                auto mode = problem_data.contact_sequence->getPhase(phase_index_at_knot).mode;
 
                 for (int ee_index = 0; ee_index < problem_data.robot_end_effectors.size(); ee_index++)
                 {
                     auto ee = (problem_data.robot_end_effectors[ee_index].second);
                     if (!mode[*ee])
                     {
+                        double liftoff_time = 0;
+                        double touchdown_time = problem_data.contact_sequence->dt();
                         // When did the EE break contact?
-                        int contact_broken_index = 0;
-                        int contact_made_index = problem_data.num_knots - 1;
-                        for (int i = knot_index; i > 0; i--)
+                        for (int i = phase_index_at_knot; i >= 0; i--)
                         {
-                            if ((getModeAtKnot(problem_data, i)[*ee]))
+                            // If the ee is in contact, we have found the phase where liftoff occurred.
+                            if (problem_data.contact_sequence->getPhase(i).mode[*ee])
                             {
-                                contact_broken_index = i + 1;
+                                int liftoff_index = i + 1;
+                                problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
                                 break;
                             }
                         }
 
-                        // When will the EE make contact again?
-                        for (int i = knot_index; i < problem_data.num_knots; i++)
+                        for (int i = phase_index_at_knot; i < problem_data.contact_sequence->numPhases() - 1; i++)
                         {
-                            if ((getModeAtKnot(problem_data, i)[*ee]))
+                            // If the ee is in contact, we have found the phase where touchdown occurred.
+                            if (problem_data.contact_sequence->getPhase(i).mode[*ee])
                             {
-                                contact_made_index = i - 1;
+                                int touchdown_index = i;
+                                problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
                                 break;
+                                // if touchdown is not found, we will assume that the ee is in contact at the end of the horizon.
+                                //  This is an odd and limiting assumption. Better behavior should be created.
                             }
                         }
+                        // Add a baumgarte corrector height_velocity = (kp * (position(x) - desired_position) + desired_velocity)
+
+                        // velocity_z - kp * (position_z(state)) = desired_velocity_z - kp * desired_position_z
+
+                        // velocity_z - kp * (position_z(state)) < desired_velocity_z - kp * desired_position_z + leeway
+                        // velocity_z - kp * (position_z(state)) > desired_velocity_z - kp * desired_position_z - leeway
+
+                        casadi::Function t_in_range = casadi::Function("t_in_range", {t}, {(t - liftoff_time) / (touchdown_time - liftoff_time)});
+
+                        auto footstep_height_function = createFootstepHeightFunction(t_in_range, problem_data.footstep_trajectory_generator->getFootstepDefinition(*ee));
+                        casadi::Function desired_height = footstep_height_function[0];
+                        casadi::Function desired_velocity = footstep_height_function[1];
+
+                        casadi::Function vel_bound = desired_velocity - problem_data.corrector_kp * desired_height;
+
+                        lower_bound_vec.push_back(vel_bound - problem_data.following_leeway);
+                        upper_bound_vec.push_back(vel_bound + problem_data.following_leeway);
+
+                        // casadi::SX foot_pos = ;
+                        // casadi::SX foot_vel = ;
                     }
-
-                    std::vector<Eigen::Vector2d> desired_ee_height_state = getDesiredEEHeightState(problem_data, ee, contact_broken_index, contact_made_index);
-
-                    // Add a baumgarte corrector height_velocity = (kp * (position(x) - desired_position) + desired_velocity)
-                }
-            }
-
-            template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
-            {
-                int num_constraints_per_ee = getNumberOfConstraintsPerEE(problem_data);
-                int num_constraints = num_constraints_per_ee * problem_data.robot_end_effectors.size();
-
-                casadi::SX upper_bound_sx(num_constraints);
-                casadi::SX lower_bound_sx(num_constraints);
-
-                upper_bound_sx = casadi::SX::zeros(num_constraints);
-                lower_bound_sx = casadi::SX::zeros(num_constraints);
-
-                for (int ee_index = 0; ee_index < problem_data.robot_end_effectors.size(); ee_index++)
-                {
-                    auto ee = (problem_data.robot_end_effectors[ee_index].second);
-                    if (!mode[*ee])
+                    else
                     {
-                        // We add some leeway. The velocity can be slightly above or below the desired velocity. If this is used, then there should be a constraint on the initial and final height _position_.
+                        // add velocity = 0 as a constraint
+                        lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                        upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
 
-                        // End Effector i has constraints (ee_index * num_constraints_per_ee)
-                        int ee_constraint_index_start = ee_index * num_constraints_per_ee;
-                        int ee_constraint_index_end = ee_constraint_index_start + num_constraints_per_ee;
-
-                        // upper_bound_sx.block(ee_constraint_index_start, ee_constraint_index_end) = zeros(num_constraints_per_ee) + problem_data.following_leeway;
-                        // upper_bound_sx.block(ee_constraint_index_start, ee_constraint_index_end) = zeros(num_constraints_per_ee) - problem_data.following_leeway;
+                        // casadi::SX foot_vel = ;
                     }
                 }
 
-                upper_bound = casadi::Function("upper_bound", {problem_data.x, problem_data.u, problem_data.t}, {upper_bound_sx});
-                lower_bound = casadi::Function("lower_bound", {problem_data.x, problem_data.u, problem_data.t}, {lower_bound_sx});
-            }
-
-            template <class ProblemData>
-            std::vector<Eigen::Vector2d> VelocityConstraintBuilder<ProblemData>::getDesiredEEHeightState(const ProblemData &problem_data, std::shared_ptr<contact::EndEffector> ee, int contact_broken_index, int contact_made_index)
-            {
-                // How many collocation points are there between the contact breaking and making?
-                int broken_contact_span =
-                    (contact_made_index - contact_broken_index) * problem_data.collocation_points_per_knot;
-
-                // How many collocation points are there between the current knot and the contact breaking?
-                int broken_to_current_span =
-                    (knot_index - contact_broken_index) * problem_data.collocation_points_per_knot;
-
-                FootstepTrajectoryGenerator::FootstepDefinition fs_def;
-
-                // The liftoff and touchdown surfaces for the end effector
-                environment::SurfaceID pre_surface_id = getModeAtKnot(problem_data, contact_broken_index).getSurfaceID(ee);
-                environment::SurfaceID post_surface_id = getModeAtKnot(problem_data, contact_made_index).getSurfaceID(ee);
-
-                // The liftoff and touchdown heights for the end effector
-                if (pre_surface_id == environment::NO_SURFACE)
-                {
-                    // Need to define behavior for this case.
-                    fs_def.h_start = 0;
-                }
-                else
-                {
-                    fs_def.h_start = (*problem_data.environment_surfaces)[pre_surface_id].height;
-                }
-
-                if (post_surface_id == environment::NO_SURFACE)
-                {
-                    // Need to define behavior for this case.
-                    fs_def.h_end = 0;
-                }
-                else
-                {
-                    fs_def.h_end = (*problem_data.environment_surfaces)[post_surface_id].height;
-                }
-
-                fs_def.h_max = problem_data.max_footstep_offset_height + std::min(fs_def.h_start, fs_def.h_end);
-
-                asset(fs_def.h_max > std::max(fs_def.h_start, fs_def.h_end));
-
-                std::vector<Eigen::Vector2d> desired_ee_height_state(broken_contact_span);
-                for (int i = 0; i < broken_contact_span; i++)
-                {
-                    desired_ee_height_state[i] = problem_data.footstep_trajectory_generator->calcFootstepZ(broken_to_current_span + i, broken_contact_span, fs_def);
-                }
-
-                return desired_ee_height_state;
+                constraint_data.G = G;
+                constraint_data.upper_bound = upper_bound;
+                constraint_data.lower_bound = lower_bound;
             }
 
         }
