@@ -1,15 +1,14 @@
 #include "galileo/opt/Constraint.h"
 #include "galileo/legged-model/ContactSequence.h"
 #include "galileo/legged-model/LeggedRobotStates.h"
+#include "galileo/legged-model/FootstepTrajectoryGenerator.h"
 
 namespace galileo
 {
     namespace legged
     {
-
         namespace constraints
         {
-
             struct VelocityConstraintProblemData
             {
 
@@ -98,7 +97,7 @@ namespace galileo
             };
 
             template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
+            void VelocityConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
             {
                 auto mode = getModeAtKnot(problem_data, knot_index);
 
