@@ -36,6 +36,7 @@ namespace galileo
                     ee_name_vect[i] = end_effector_names[i];
                 }
                 pinocchio::urdf::buildModel(location, this->model);
+                this->data = pinocchio::DataTpl<Scalar>(this->model);
                 this->setEndEffectors(ee_name_vect);
                 this->GenerateContactCombination();
             }
@@ -123,6 +124,12 @@ namespace galileo
              *
              */
             pinocchio::ModelTpl<Scalar> model;
+
+            /**
+             * @brief The robot data.
+             *
+             */
+            pinocchio::DataTpl<Scalar> data;
 
         private:
             /**

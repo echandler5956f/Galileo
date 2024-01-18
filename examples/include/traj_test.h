@@ -21,21 +21,6 @@ using namespace galileo;
 using namespace casadi;
 using namespace std;
 
-typedef double Scalar;
-typedef SX ADScalar;
-
-typedef pinocchio::ModelTpl<Scalar> Model;
-typedef Model::Data Data;
-
-typedef pinocchio::ModelTpl<ADScalar> ADModel;
-typedef ADModel::Data ADData;
-
-typedef Model::ConfigVectorType ConfigVector;
-typedef Model::TangentVectorType TangentVector;
-
-typedef ADModel::ConfigVectorType ConfigVectorAD;
-typedef ADModel::TangentVectorType TangentVectorAD;
-
 const string huron_location = "../resources/urdf/huron_cheat.urdf";
 
 const int num_ees = 2;

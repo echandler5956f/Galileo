@@ -1,35 +1,37 @@
-#include "galileo/variables/Constraint.h"
-#include "galileo/model/ContactSequence.h"
-#include "galileo/variables/States.h"
+#include "galileo/opt/Constraint.h"
+#include "galileo/legged-model/ContactSequence.h"
+#include "galileo/legged-model/LeggedRobotStates.h"
 
 namespace galileo
 {
-    namespace model
+    namespace legged
     {
-        namespace legged
+        namespace constraints
         {
-
             struct ContactConstraintProblemData
             {
 
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
-                std::shared_ptr<variables::States> states;
-                std::shared_ptr<pinocchio::Model> model;
-                RobotEndEffectors robot_end_effectors;
+                std::shared_ptr<opt::States> states;
+                std::shared_ptr<opt::Model> model;
+                std::shared_ptr<opt::Data> data;
+                std::shared_ptr<opt::ADModel> ad_model;
+                std::shared_ptr<opt::ADData> ad_data;
+                contact::RobotEndEffectors robot_end_effectors;
                 casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
                 casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
                 casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
                 int num_knots;
-                int collocation_points_per_knot;
+                int collocation_points_per_knot; // TODO get rid of this
             };
 
             template <class ProblemData>
-            class ContactConstraintProblemData : Constraint<ProblemData>
+            class ContactConstraintBuilder : Constraint<ProblemData>
             {
 
             public:
-                ContactConstraintProblemData() : ConstraintBuilder() {}
+                ContactConstraintBuilder() : ConstraintBuilder() {}
 
                 void BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data)
                 {
@@ -126,7 +128,7 @@ namespace galileo
             };
 
             template <class ProblemData>
-            const contact::ContactMode &FrictionConeConstraintBuilder<ProblemData>::getModeAtKnot(const ProblemData &problem_data, int knot_index)
+            const contact::ContactMode &ContactConstraintBuilder<ProblemData>::getModeAtKnot(const ProblemData &problem_data, int knot_index)
             {
                 assert(problem_data.contact_sequence != nullptr);
 

@@ -256,5 +256,20 @@ namespace galileo
                                       { return std::make_unique<LeggedRobotStates>(nq_nv); });
             return true;
         }();
+
+        typedef double Scalar;
+        typedef SX ADScalar;
+
+        typedef pinocchio::ModelTpl<Scalar> Model;
+        typedef Model::Data Data;
+
+        typedef pinocchio::ModelTpl<ADScalar> ADModel;
+        typedef ADModel::Data ADData;
+
+        typedef Model::ConfigVectorType ConfigVector;
+        typedef Model::TangentVectorType TangentVector;
+
+        typedef ADModel::ConfigVectorType ConfigVectorAD;
+        typedef ADModel::TangentVectorType TangentVectorAD;
     }
 }
