@@ -93,10 +93,6 @@ namespace galileo
             template <class ProblemData>
             void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data) const
             {
-                casadi::Function G;
-                casadi::Function upper_bound;
-                casadi::Function lower_bound;
-
                 std::vector<casadi::Function> G_vec;
                 std::vector<casadi::Function> upper_bound_vec;
                 std::vector<casadi::Function> lower_bound_vec;
@@ -156,25 +152,32 @@ namespace galileo
 
                         casadi::Function vel_bound = desired_velocity - problem_data.corrector_kp * desired_height;
 
+                        auto &frame_omf_data = problem_data.velocity_constraint_problem_data->ad_data->oMf[ee->frame_id];
+
+                        casadi::Function foot_pos = frame_omf_data.translation();
+                        casadi::Function foot_vel = frame_omf_data.velocity().linear();
+
+                        casadi::Function vel_constraint_G = foot_vel - problem_data.corrector_kp * foot_pos;
+
+                        G_vec.push_back(vel_constraint_G);
                         lower_bound_vec.push_back(vel_bound - problem_data.following_leeway);
                         upper_bound_vec.push_back(vel_bound + problem_data.following_leeway);
-
-                        // casadi::SX foot_pos = ;
-                        // casadi::SX foot_vel = ;
                     }
                     else
                     {
                         // add velocity = 0 as a constraint
+
+                        casadi::SX foot_vel = frame_omf_data.velocity().linear();
+
+                        G_vec.push_back(vel_constraint_G);
                         lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
                         upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
-
-                        // casadi::SX foot_vel = ;
                     }
                 }
 
-                constraint_data.G = G;
-                constraint_data.upper_bound = upper_bound;
-                constraint_data.lower_bound = lower_bound;
+                constraint_data.G = vertcat(G_vec);
+                constraint_data.upper_bound = vertcat(upper_bound_vec);
+                constraint_data.lower_bound = vertcat(lower_bound_vec);
             }
 
         }
