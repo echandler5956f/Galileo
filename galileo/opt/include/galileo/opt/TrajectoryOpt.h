@@ -227,17 +227,17 @@ namespace galileo
 
             /*Validation of time varying bounds*/
             std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
-            // Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::ones(this->state_indices->ndx, 1) * inf});
-            // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::ones(this->state_indices->ndx, 1) * -inf});
-            // // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
-            // Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::zeros(this->state_indices->nx, 1)});
-            // Wx->w = x;
+            Wx->upper_bound = casadi::Function("x_ubound", {t}, {casadi::SX::ones(this->state_indices->ndx, 1) * inf});
+            Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::ones(this->state_indices->ndx, 1) * -inf});
+            // Wx->lower_bound = casadi::Function("x_lbound", {t}, {casadi::SX::vertcat({-0.07 * (t - 1.0) * (t - 1.0) - 0.25, -1.0})});
+            Wx->initial_guess = casadi::Function("x_guess", {t}, {casadi::SX::zeros(this->state_indices->nx, 1)});
+            Wx->w = x;
 
             std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
-            // Wu->upper_bound = casadi::Function("u_ubound", {t}, {casadi::SX::ones(this->state_indices->nu, 1)});
-            // Wu->lower_bound = casadi::Function("u_lbound", {t}, {-casadi::SX::ones(this->state_indices->nu, 1)});
-            // Wu->initial_guess = casadi::Function("u_guess", {t}, {casadi::SX::zeros(this->state_indices->nu, 1)});
-            // Wu->w = u;
+            Wu->upper_bound = casadi::Function("u_ubound", {t}, {20. * casadi::SX::ones(this->state_indices->nu, 1)});
+            Wu->lower_bound = casadi::Function("u_lbound", {t}, {-20. * casadi::SX::ones(this->state_indices->nu, 1)});
+            Wu->initial_guess = casadi::Function("u_guess", {t}, {casadi::SX::zeros(this->state_indices->nu, 1)});
+            Wu->w = u;
 
             /*END OF DUMMY DATA*/
 
@@ -246,7 +246,7 @@ namespace galileo
             for (std::size_t i = 0; i < num_phases; ++i)
             {
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
-                segment = std::make_shared<SegmentType>(d, 20, 1. / 20, this->global_times, this->state_indices, this->Fint, this->Fdif, X0, prev_final_state, this->F, this->L, G, Wx, Wu, this->J, this->w, this->g);
+                segment = std::make_shared<SegmentType>(d, 100, 5. / 100, this->global_times, this->state_indices, this->Fint, this->Fdif, X0, prev_final_state, this->F, this->L, G, Wx, Wu, this->J, this->w, this->g);
 
                 this->trajectory.push_back(segment);
 

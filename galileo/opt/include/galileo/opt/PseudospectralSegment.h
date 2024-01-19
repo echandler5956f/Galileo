@@ -578,7 +578,7 @@ namespace galileo
             this->Uc.clear();
 
             this->dX_poly = LagrangePolynomial(d);
-            this->U_poly = LagrangePolynomial(1);
+            this->U_poly = LagrangePolynomial(d - 1);
 
             for (int j = 0; j < this->dX_poly.d; ++j)
             {
@@ -729,8 +729,8 @@ namespace galileo
                 }
                 /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j] if the states are already Euclidean*/
                 SX x_c = this->Fint(SXVector{this->X0, this->dXc[j], dt_j}).at(0);
-                // SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j], this->Uc);
-                SX u_c = this->Uc[0];
+                SX u_c = this->U_poly.lagrange_interpolation(this->dX_poly.tau_root[j], this->Uc);
+                // SX u_c = this->Uc[0];
 
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
