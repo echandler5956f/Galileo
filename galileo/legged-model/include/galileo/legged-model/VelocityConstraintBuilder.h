@@ -7,20 +7,20 @@ namespace
 {
     casadi::Function createFootstepHeightFunction(casadi::SX &t, const FootstepDefinition &FS_def)
     {
-        casadi::MX x0(2);
-        x0(0) = casadi::ifelse(t < 0.5, FS_def.h_start, FS_def.h_max);
+        casadi::SX x0(2);
+        x0(0) = if_else(t < 0.5, SX(FS_def.h_start), SX(FS_def.h_max));
         x0(1) = 0;
-        casadi::MX xf(2);
-        xf(0) = casadi::ifelse(t >= 0.5, FS_def.h_end, FS_def.h_max);
+        casadi::SX xf(2);
+        xf(0) = if_else(t >= 0.5, FS_def.h_end, FS_def.h_max);
         xf(1) = 0;
 
-        casadi::MX H0(2, 2);
+        casadi::SX H0(2, 2);
         H0(0, 0) = 2 * pow(t, 3) - 3 * pow(t, 2) + 1;
         H0(0, 1) = pow(t, 3) - 2 * pow(t, 2) + t;
         H0(1, 0) = 6 * pow(t, 2) - 6 * t;
         H0(1, 1) = 3 * pow(t, 2) - 4 * t + 1;
 
-        casadi::MX Hf(2, 2);
+        casadi::SX Hf(2, 2);
         Hf(0, 0) = -2 * pow(t, 3) + 3 * pow(t, 2);
         Hf(0, 1) = pow(t, 3) - pow(t, 2);
         Hf(1, 0) = -6 * pow(t, 2) + 6 * t;
@@ -68,7 +68,7 @@ namespace galileo
             };
 
             template <class ProblemData>
-            class VelocityConstraintBuilder : Constraint<ProblemData>
+            class VelocityConstraintBuilder : gallileo::variables::ConstraintBuilder<ProblemData>
             {
 
             public:
@@ -87,11 +87,11 @@ namespace galileo
                     apply_at = Eigen::VectorXi::Constant(num_points, 1);
                 }
 
-                void BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data) const override;
+                void BuildConstraint(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data) const override;
             };
 
             template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data) const
+            void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data) const
             {
                 std::vector<casadi::Function> G_vec;
                 std::vector<casadi::Function> upper_bound_vec;
@@ -99,7 +99,7 @@ namespace galileo
 
                 CreateApplyAt(problem_data, knot_index, constraint_data.apply_at);
 
-                casadi::SX t("t", 1);
+                auto t = casadi::SX::sym("t", 1);
 
                 ContactSequence::CONTACT_SEQUENCE_ERROR error;
 
@@ -146,7 +146,7 @@ namespace galileo
 
                         casadi::Function t_in_range = casadi::Function("t_in_range", {t}, {(t - liftoff_time) / (touchdown_time - liftoff_time)});
 
-                        auto footstep_height_function = createFootstepHeightFunction(t_in_range, problem_data.footstep_trajectory_generator->getFootstepDefinition(*ee));
+                        auto footstep_height_function = createFootstepHeightFunction(t_in_range(problem_data.velocity_constraint_problem_data.t).at(0), problem_data.footstep_trajectory_generator->getFootstepDefinition(*ee));
                         casadi::Function desired_height = footstep_height_function[0];
                         casadi::Function desired_velocity = footstep_height_function[1];
 
@@ -155,7 +155,11 @@ namespace galileo
                         auto &frame_omf_data = problem_data.velocity_constraint_problem_data->ad_data->oMf[ee->frame_id];
 
                         casadi::Function foot_pos = frame_omf_data.translation();
-                        casadi::Function foot_vel = frame_omf_data.velocity().linear();
+                        casadi::Function foot_vel = pinocchio::getFrameVelocity(problem_data.velocity_constraint_problem_data->ad_model->model,
+                                                                                problem_data.velocity_constraint_problem_data->ad_data,
+                                                                                ee->frame_id,
+                                                                                pinocchio::LOCAL)
+                                                        .linear();
 
                         casadi::Function vel_constraint_G = foot_vel - problem_data.corrector_kp * foot_pos;
 
@@ -166,10 +170,13 @@ namespace galileo
                     else
                     {
                         // add velocity = 0 as a constraint
+                        casadi::Function foot_vel = pinocchio::getFrameVelocity(problem_data.velocity_constraint_problem_data->ad_model->model,
+                                                                                problem_data.velocity_constraint_problem_data->ad_data,
+                                                                                ee->frame_id,
+                                                                                pinocchio::LOCAL)
+                                                        .linear();
 
-                        casadi::SX foot_vel = frame_omf_data.velocity().linear();
-
-                        G_vec.push_back(vel_constraint_G);
+                        G_vec.push_back(foot_vel);
                         lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
                         upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
                     }

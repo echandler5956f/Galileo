@@ -58,7 +58,10 @@ namespace galileo
 
                             //@todo (akshay) : change this to data on num_DOF instead.
 
-                            auto foot_pos = casadi::SX::sym("foot_pos", 6);
+                            // auto foot_pos = casadi::SX::sym("foot_pos", 6);
+                            auto &frame_omf_data = problem_data.contact_constraint_problem_data->ad_data->oMf[ee->frame_id];
+
+                            casadi::Function foot_pos = cframe_omf_data.translation();
 
                             casadi::SX symbolic_A = casadi::SX(casadi::Sparsity::dense(A.rows(), 1));
 
