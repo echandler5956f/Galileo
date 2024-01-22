@@ -35,9 +35,10 @@ namespace galileo
              *
              * @param t Time to interpolate at
              * @param terms Terms at knot points to use for interpolation
-             * @return const SX Resultant expression for the symbolic interpolated value
+             * @return const Scalar Resultant expression for the symbolic interpolated value
              */
-            SX lagrange_interpolation(double t, const SXVector terms) const;
+            template <class Scalar>
+            Scalar lagrange_interpolation(double t, const std::vector<Scalar> terms) const;
 
             /**
              * @brief Degree of the polynomial.
@@ -514,7 +515,8 @@ namespace galileo
             }
         }
 
-        SX LagrangePolynomial::lagrange_interpolation(double t, const SXVector terms) const
+        template <class Scalar>
+        Scalar LagrangePolynomial::lagrange_interpolation(double t, const std::vector<Scalar> terms) const
         {
             assert((t >= 0.0) && (t <= 1.0) && "t must be in the range [0,1]");
 

@@ -234,10 +234,10 @@ namespace galileo
             Wx->w = x;
 
             std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
-            Wu->upper_bound = casadi::Function("u_ubound", {t}, {20. * casadi::SX::ones(this->state_indices->nu, 1)});
-            Wu->lower_bound = casadi::Function("u_lbound", {t}, {-20. * casadi::SX::ones(this->state_indices->nu, 1)});
-            Wu->initial_guess = casadi::Function("u_guess", {t}, {casadi::SX::zeros(this->state_indices->nu, 1)});
-            Wu->w = u;
+            // Wu->upper_bound = casadi::Function("u_ubound", {t}, {20. * casadi::SX::ones(this->state_indices->nu, 1)});
+            // Wu->lower_bound = casadi::Function("u_lbound", {t}, {-20. * casadi::SX::ones(this->state_indices->nu, 1)});
+            // Wu->initial_guess = casadi::Function("u_guess", {t}, {casadi::SX::zeros(this->state_indices->nu, 1)});
+            // Wu->w = u;
 
             /*END OF DUMMY DATA*/
 
@@ -246,7 +246,7 @@ namespace galileo
             for (std::size_t i = 0; i < num_phases; ++i)
             {
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
-                segment = std::make_shared<SegmentType>(d, 100, 5. / 100, this->global_times, this->state_indices, this->Fint, this->Fdif, X0, prev_final_state, this->F, this->L, G, Wx, Wu, this->J, this->w, this->g);
+                segment = std::make_shared<SegmentType>(d, 20, 5. / 20, this->global_times, this->state_indices, this->Fint, this->Fdif, X0, prev_final_state, this->F, this->L, G, Wx, Wu, this->J, this->w, this->g);
 
                 this->trajectory.push_back(segment);
 
@@ -277,10 +277,10 @@ namespace galileo
                 prev_final_state_deviant = segment->get_final_state_deviant();
 
                 /*Terminal cost*/
-                if (i == num_phases - 1 && i != 0)
-                {
+                // if (i == num_phases - 1 && i != 0)
+                // {
                     this->J += this->Phi(casadi::MXVector{prev_final_state}).at(0);
-                }
+                // }
             }
             printf("Finished initialization.\n");
             auto end_time = std::chrono::high_resolution_clock::now();

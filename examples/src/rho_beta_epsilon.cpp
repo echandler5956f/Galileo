@@ -37,7 +37,7 @@ int main()
     casadi::SX xdot = mtimes(A, x) + mtimes(B, u);
 
     // Objective term
-    casadi::SX l = sumsqr(x - vertcat(SXVector{0., 5., 0., 0.})) + 1e-1 * sumsqr(u);
+    casadi::SX l = sumsqr(x - vertcat(SXVector{1., 2., 0., 0.})) + 1e-3 * sumsqr(u);
 
     casadi::SX x1 = SX::sym("x1", 4);
     casadi::SX x2 = SX::sym("x2", 4);
@@ -47,7 +47,7 @@ int main()
     casadi::Function Fdif("Fdif", {x1, x2, dt}, {x2});
     casadi::Function F("F", {x, u}, {xdot});
     casadi::Function L("L", {x, u}, {l});
-    casadi::Function Phi("Phi", {x}, {0});
+    casadi::Function Phi("Phi", {x}, {1e8 * sumsqr(x - vertcat(SXVector{1., 2., 0., 0.}))});
 
     casadi::Dict opts;
     /*DO NOT USE EXPAND OR IT WILL UNROLL ALL THE MAPS AND FOLDS*/
@@ -62,7 +62,7 @@ int main()
     X0(0, 0) = 0.1;
     X0(1, 0) = 3.0;
     int d = 3;
-    int N = 100;
+    int N = 20;
     double T = 5.0;
     double h = T / N;
 
@@ -111,12 +111,12 @@ int main()
     gp << "set title 'Solution Plot'\n";
 
     // Plot the data
-    gp << "plot '-' with linespoints linestyle 1 title 'x1', '-' with linespoints linestyle 2 title 'x2', '-' with linespoints linestyle 3 title 'x1_dot', '-' with linespoints linestyle 4 title 'x2_dot', '-' with linespoints linestyle 5 title 'u1', '-' with linespoints linestyle 6 title 'u2' \n";
-    // gp << "plot '-' with linespoints linestyle 1 title 'x1', '-' with linespoints linestyle 2 title 'x2', '-' with linespoints linestyle 3 title 'u1', '-' with linespoints linestyle 4 title 'u2' \n";
+    // gp << "plot '-' with linespoints linestyle 1 title 'x1', '-' with linespoints linestyle 2 title 'x2', '-' with linespoints linestyle 3 title 'x1_dot', '-' with linespoints linestyle 4 title 'x2_dot', '-' with linespoints linestyle 5 title 'u1', '-' with linespoints linestyle 6 title 'u2' \n";
+    gp << "plot '-' with linespoints linestyle 1 title 'x1', '-' with linespoints linestyle 2 title 'x2', '-' with linespoints linestyle 3 title 'u1', '-' with linespoints linestyle 4 title 'u2' \n";
     gp.send1d(std::make_tuple(times, x1_all_sol));
     gp.send1d(std::make_tuple(times, x2_all_sol));
-    gp.send1d(std::make_tuple(times, x3_all_sol));
-    gp.send1d(std::make_tuple(times, x4_all_sol));
+    // gp.send1d(std::make_tuple(times, x3_all_sol));
+    // gp.send1d(std::make_tuple(times, x4_all_sol));
     gp.send1d(std::make_tuple(u_times, u1_all_sol));
     gp.send1d(std::make_tuple(u_times, u2_all_sol));
 
@@ -127,11 +127,11 @@ int main()
     std::cout << "Final value of u1: " << u1_all_sol[u1_all_sol.size()-1] << std::endl;
     std::cout << "Final value of u2: " << u1_all_sol[u1_all_sol.size()-1] << std::endl;
 
-    // // Something is buggy with this interpolation. Do not trust it too much
+    // Eigen::MatrixXd times_mat = Eigen::Map<Eigen::MatrixXd>(times.data(), d + 1, N);
     // Eigen::MatrixXd xall_opt1 = Eigen::Map<Eigen::MatrixXd>(x1_all_sol.data(), d + 1, N);
     // Eigen::MatrixXd xall_opt2 = Eigen::Map<Eigen::MatrixXd>(x2_all_sol.data(), d + 1, N);
-    // Eigen::MatrixXd u1all_opt = Eigen::Map<Eigen::MatrixXd>(u1_all_sol.data(), d, N);
-    // Eigen::MatrixXd u2all_opt = Eigen::Map<Eigen::MatrixXd>(u2_all_sol.data(), d, N);
+    // Eigen::MatrixXd uall_opt1 = Eigen::Map<Eigen::MatrixXd>(u1_all_sol.data(), d, N);
+    // Eigen::MatrixXd uall_opt2 = Eigen::Map<Eigen::MatrixXd>(u2_all_sol.data(), d, N);
 
     // std::vector<boost::math::barycentric_rational<double>> interpolators_x1;
     // std::vector<boost::math::barycentric_rational<double>> interpolators_x2;
@@ -139,16 +139,15 @@ int main()
     // std::vector<boost::math::barycentric_rational<double>> interpolators_u2;
     // for (int k = 0; k < N; ++k)
     // {
-    //     Eigen::VectorXd t_segment = Eigen::VectorXd::LinSpaced(d + 1, k * h, (k + 1) * h);
+    //     Eigen::VectorXd t_segment = times_mat.col(k);
     //     Eigen::VectorXd x1_segment = xall_opt1.col(k);
     //     Eigen::VectorXd x2_segment = xall_opt2.col(k);
-    //     Eigen::VectorXd u1_segment = u1all_opt.col(k);
-    //     Eigen::VectorXd u2_segment = u2all_opt.col(k);
-
+    //     Eigen::VectorXd u1_segment = uall_opt1.col(k);
+    //     Eigen::VectorXd u2_segment = uall_opt2.col(k);
     //     interpolators_x1.push_back(boost::math::barycentric_rational<double>(t_segment.data(), x1_segment.data(), d + 1));
     //     interpolators_x2.push_back(boost::math::barycentric_rational<double>(t_segment.data(), x2_segment.data(), d + 1));
-    //     interpolators_u1.push_back(boost::math::barycentric_rational<double>(t_segment.data(), u1_segment.data(), d));
-    //     interpolators_u2.push_back(boost::math::barycentric_rational<double>(t_segment.data(), u2_segment.data(), d));
+    //     // interpolators_u1.push_back(boost::math::barycentric_rational<double>(t_segment.data(), u1_segment.data(), d + 1));
+    //     // interpolators_u2.push_back(boost::math::barycentric_rational<double>(t_segment.data(), u2_segment.data(), d + 1));
     // }
 
     // Eigen::VectorXd t_dense = Eigen::VectorXd::LinSpaced(2 * N * (d + 1), 0, T);
@@ -162,8 +161,8 @@ int main()
     //     Eigen::VectorXd t_segment = t_dense.segment(k * (2 * (d + 1)), 2 * (d + 1));
     //     x_interp_values_x1.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_x1[k]);
     //     x_interp_values_x2.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_x2[k]);
-    //     x_interp_values_u1.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_u1[k]);
-    //     x_interp_values_u2.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_u2[k]);
+    //     // x_interp_values_u1.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_u1[k]);
+    //     // x_interp_values_u2.segment(k * (2 * (d + 1)), 2 * (d + 1)) = t_segment.unaryExpr(interpolators_u2[k]);  
     // }
 
     // t_dense = Eigen::VectorXd::LinSpaced(2 * N * (d + 1) + N, 0, T);
@@ -172,9 +171,12 @@ int main()
     // std::cout << x_interp_values_x1.size() << std::endl;
     // std::cout << x_interp_values_x2.size() << std::endl;
 
-    // gp.send1d(std::make_tuple(t_dense, x_interp_values_x1));
-    // gp.send1d(std::make_tuple(t_dense, x_interp_values_x2));
-    // gp.send1d(std::make_tuple(t_dense, x_interp_values_u1));
-    // gp.send1d(std::make_tuple(t_dense, x_interp_values_u2));
+    // // gp.send1d(std::make_tuple(t_dense, x_interp_values_x1));
+    // // gp.send1d(std::make_tuple(t_dense, x_interp_values_x2));
+    // // // gp.send1d(std::make_tuple(t_dense, x_interp_values_u1));
+    // // // gp.send1d(std::make_tuple(t_dense, x_interp_values_u2));
+    // // gp.send1d(std::make_tuple(u_times, u1_all_sol));
+    // // gp.send1d(std::make_tuple(u_times, u2_all_sol));
+
     return 0;
 }
