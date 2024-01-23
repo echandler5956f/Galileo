@@ -142,26 +142,23 @@ int main()
     using namespace opt;
     using namespace legged;
     using namespace constraints;
+    pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> t = cdata.oMf[1];
 
-    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>();
+    shared_ptr<GeneralProblemData> gp_data = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
 
-    shared_ptr<GeneralProblemData> problem = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
-
-    legged_problem_data->gp_data = problem;
-    legged_problem_data->states = si;
-    legged_problem_data->model = make_shared<Model>(model);
-    legged_problem_data->robot_end_effectors = bot.getEndEffectors();
-    legged_problem_data->contact_sequence = contact_sequence;
-    legged_problem_data->environment_surfaces = surfaces;
-    legged_problem_data->num_knots = 20;
-
-    shared_ptr<ConstraintData> friction_constraint_data = make_shared<ConstraintData>();
-    shared_ptr<FrictionConeProblemData> friction_problem_data = make_shared<FrictionConeProblemData>();
-
-    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_builder =
+    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
         std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
-    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_builder};
+    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
+        std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
+
+    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
+        std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
+
+    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
+
+    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, model, data, cmodel, cdata, bot.getEndEffectors(), cx, cu, cdt, 20);
+
     TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
 
     DM X0 = DM::zeros(si->nx, 1);

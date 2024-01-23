@@ -1,39 +1,44 @@
-#include "galileo/variables/Constraint.h"
-#include "galileo/model/ContactSequence.h"
-#include "galileo/variables/States.h"
+#include "galileo/opt/Constraint.h"
+#include "galileo/legged-model/ContactSequence.h"
+#include "galileo/legged-model/LeggedRobotStates.h"
 
 namespace galileo
 {
-    namespace model
+    namespace legged
     {
-        namespace legged
+        namespace constraints
         {
-
             struct ContactConstraintProblemData
             {
-
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
-                std::shared_ptr<variables::States> states;
-                std::shared_ptr<pinocchio::Model> model;
-                RobotEndEffectors robot_end_effectors;
+                std::shared_ptr<opt::States> states;
+                std::shared_ptr<opt::Model> model;
+                std::shared_ptr<opt::Data> data;
+                std::shared_ptr<opt::ADModel> ad_model;
+                std::shared_ptr<opt::ADData> ad_data;
+                contact::RobotEndEffectors robot_end_effectors;
                 casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
                 casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
                 casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
                 int num_knots;
-                int collocation_points_per_knot;
             };
 
             template <class ProblemData>
-            class ContactConstraintProblemData : Constraint<ProblemData>
+            class ContactConstraintBuilder : public opt::ConstraintBuilder<ProblemData>
             {
 
             public:
-                ContactConstraintProblemData() : ConstraintBuilder() {}
+                ContactConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
-                void BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data)
+                void CreateFunction(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data)
                 {
                     auto mode = getModeAtKnot(problem_data, knot_index);
+
+                    casadi::SXVector G_vec;
+                    casadi::SXVector upper_bound_vec;
+                    casadi::SXVector lower_bound_vec;
+                    casadi::SXVector sx_foot_placement;
 
                     for (auto ee : problem_data.robot_end_effectors)
                     {
@@ -45,14 +50,55 @@ namespace galileo
 
                             Eigen::MatrixXd A = surface_data.A;
                             Eigen::VectorXd b = surface_data.b;
+                            Eigen::VectorXd lower_bound_region_constraint = Eigen::VectorXd::Constant(b.rows(), -std::numeric_limits<double>::infinity());
 
                             double height = surface_data.height;
 
-                            // @todo(ethan) : add the constraints (height = ee_position.bottom(1)) & (A * ee_position.top(2) - b) <= 0 to the constraint data
+                            //@todo (akshay) : change this to data on num_DOF instead.
 
-                            // Function FX(x, end_effector)
+                            // auto foot_pos = casadi::SX::sym("foot_pos", 6);
+                            pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data->ad_data.oMf[ee->frame_id];
+
+                            auto foot_pos = frame_omf_data.translation();
+
+                            SX cfootpos(3, 1);
+                            pinocchio::casadi::copy(foot_pos, cfootpos);
+
+                            casadi::SX symbolic_A = casadi::SX(casadi::Sparsity::dense(A.rows(), 1));
+
+                            pinocchio::casadi::copy(A, symbolic_A);
+                            auto evaluated_vector = casadi::SX::mtimes(symbolic_A, cfootpos(casadi::Slice(1, 2)));
+
+                            casadi::Function G_ee = casadi::Function("G_ee_foot_pos_" + (*ee.second)->frame_name,
+                                                                     casadi::SXVector{cfootpos},
+                                                                     casadi::SXVector{casadi::SX::vertcat({evaluated_vector, cfootpos(0)})});
+
+                            casadi::SX symbolic_b = casadi::SX(b.rows(), 1);
+                            casadi::SX symbolic_lower_bound_region_constraint = casadi::SX(lower_bound_region_constraint.rows(), 1);
+                            pinocchio::casadi::copy(b, symbolic_b);
+                            pinocchio::casadi::copy(lower_bound_region_constraint, symbolic_lower_bound_region_constraint);
+                            casadi::SX symbolic_height = height;
+                            casadi::SX upper_bound = casadi::SX::vertcat({symbolic_b, symbolic_height});
+                            casadi::SX lower_bound = casadi::SX::vertcat({symbolic_lower_bound_region_constraint, symbolic_height});
+
+                            G_vec.push_back(G_ee);
+                            lower_bound_vec.push_back(lower_bound);
+                            upper_bound_vec.push_back(upper_bound);
+
+                            sx_foot_placement.push_back(cfootpos);
                         }
                     }
+
+                    constraint_data.G = casadi::Function("G_Contact",
+                                                         casadi::SXVector{problem_data.contact_constraint_problem_data.x, casadi::SX::vertcat(u_vec)}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
+
+                    constraint_data.lower_bound = casadi::Function("lower_bound_Contact",
+                                                                   casadi::SXVector{},
+                                                                   casadi::SXVector{casadi::SX::vertcat(lower_bound_vec)});
+
+                    constraint_data.lower_bound = casadi::Function("upper_bound_Contact",
+                                                                   casadi::SXVector{},
+                                                                   casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
                 }
 
             private:
@@ -65,7 +111,7 @@ namespace galileo
                  */
                 void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const override
                 {
-                    uint num_points = problem_data.contact_constraint_problem_data.collocation_points_per_knot;
+                    uint num_points = problem_data.contact_constraint_problem_data.num_knots;
                     apply_at = Eigen::VectorXi::Constant(num_points, 1);
                 }
 
@@ -76,7 +122,7 @@ namespace galileo
             };
 
             template <class ProblemData>
-            const contact::ContactMode &FrictionConeConstraintBuilder<ProblemData>::getModeAtKnot(const ProblemData &problem_data, int knot_index)
+            const contact::ContactMode &ContactConstraintBuilder<ProblemData>::getModeAtKnot(const ProblemData &problem_data, int knot_index)
             {
                 assert(problem_data.contact_sequence != nullptr);
 
