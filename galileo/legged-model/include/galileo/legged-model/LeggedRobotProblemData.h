@@ -67,7 +67,6 @@ namespace galileo
                     this->velocity_constraint_problem_data.t = t;
                     this->velocity_constraint_problem_data.num_knots = num_knots;
                 }
-                ~LeggedRobotProblemData();
                 std::shared_ptr<opt::GeneralProblemData> gp_data;
                 std::shared_ptr<opt::States> states;
                 FrictionConeProblemData friction_cone_problem_data;

@@ -52,6 +52,16 @@ namespace galileo
                     return combination_definition[ee_name];
                 }
 
+                const bool &at(const EndEffector &ee) const
+                {
+                    return combination_definition.at(ee.frame_name);
+                }
+
+                const bool &at(const std::string &ee_name) const
+                {
+                    return combination_definition.at(ee_name);
+                }
+
                 /**
                  * @brief Gets the contact surface for a given end effector in this mode.
                  *

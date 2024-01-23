@@ -40,13 +40,13 @@ namespace galileo
                     casadi::SXVector lower_bound_vec;
                     casadi::SXVector sx_foot_placement;
 
-                    for (auto ee : problem_data.robot_end_effectors)
+                    for (auto ee : problem_data.contact_constraint_problem_data.robot_end_effectors)
                     {
                         if (mode[(*ee.second)])
                         {
                             environment::SurfaceID surface = mode.getSurfaceID((*ee.second));
 
-                            auto surface_data = (*problem_data.environment_surfaces)[surface];
+                            auto surface_data = (*problem_data.contact_constraint_problem_data.environment_surfaces)[surface];
 
                             Eigen::MatrixXd A = surface_data.A;
                             Eigen::VectorXd b = surface_data.b;
@@ -57,7 +57,7 @@ namespace galileo
                             //@todo (akshay) : change this to data on num_DOF instead.
 
                             // auto foot_pos = casadi::SX::sym("foot_pos", 6);
-                            pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data->ad_data.oMf[ee->frame_id];
+                            pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.second->frame_id];
 
                             auto foot_pos = frame_omf_data.translation();
 
@@ -111,6 +111,10 @@ namespace galileo
                 {
                     uint num_points = problem_data.contact_constraint_problem_data.num_knots;
                     apply_at = Eigen::VectorXi::Constant(num_points, 1);
+                }
+
+                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
+                {
                 }
 
                 void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const

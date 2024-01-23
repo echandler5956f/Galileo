@@ -11,7 +11,7 @@ int main()
     legged::LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
 
     Model model = bot.model;
-    Data data = bot.data;
+    Data data = Data(model);
 
     std::cout << "Set the robot" << std::endl;
 
@@ -141,7 +141,6 @@ int main()
 
     using namespace legged;
     using namespace constraints;
-    pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> t = cdata.oMf[1];
 
     shared_ptr<GeneralProblemData> gp_data = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
 
@@ -156,7 +155,7 @@ int main()
 
     vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
 
-    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, &model, &data, &cmodel, &cdata, bot.getEndEffectors(), cx, cu, cdt, 20);
+    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<Model>(model), make_shared<Data>(data), make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), bot.getEndEffectors(), cx, cu, cdt, 20);
 
     TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
 

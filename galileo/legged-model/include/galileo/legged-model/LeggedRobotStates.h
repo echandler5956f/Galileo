@@ -258,7 +258,7 @@ namespace galileo
         }();
 
         typedef double Scalar;
-        typedef SX ADScalar;
+        typedef casadi::SX ADScalar;
 
         typedef pinocchio::ModelTpl<Scalar> Model;
         typedef Model::Data Data;
