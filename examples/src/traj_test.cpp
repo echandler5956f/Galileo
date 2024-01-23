@@ -139,7 +139,6 @@ int main()
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 1;
 
-    using namespace opt;
     using namespace legged;
     using namespace constraints;
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> t = cdata.oMf[1];
@@ -157,7 +156,7 @@ int main()
 
     vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
 
-    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, model, data, cmodel, cdata, bot.getEndEffectors(), cx, cu, cdt, 20);
+    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, &model, &data, &cmodel, &cdata, bot.getEndEffectors(), cx, cu, cdt, 20);
 
     TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
 

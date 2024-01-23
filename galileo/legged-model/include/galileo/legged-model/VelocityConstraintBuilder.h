@@ -101,8 +101,8 @@ namespace galileo
 
                 ContactSequence::CONTACT_SEQUENCE_ERROR error;
 
-                int phase_index_at_knot = problem_data.contact_sequence->getPhaseIndexAtKnot(knot_index, error);
-                auto mode = problem_data.contact_sequence->getPhase(phase_index_at_knot).mode;
+                int phase_index_at_knot = problem_data.velocity_constraint_problem_data.contact_sequence->getPhaseIndexAtKnot(knot_index, error);
+                auto mode = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(phase_index_at_knot).mode;
 
                 for (int ee_index = 0; ee_index < problem_data.robot_end_effectors.size(); ee_index++)
                 {
@@ -110,26 +110,26 @@ namespace galileo
                     if (!mode[*ee])
                     {
                         double liftoff_time = 0;
-                        double touchdown_time = problem_data.contact_sequence->dt();
+                        double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->dt();
                         // When did the EE break contact?
                         for (int i = phase_index_at_knot; i >= 0; i--)
                         {
                             // If the ee is in contact, we have found the phase where liftoff occurred.
-                            if (problem_data.contact_sequence->getPhase(i).mode[*ee])
+                            if (problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode[*ee])
                             {
                                 int liftoff_index = i + 1;
-                                problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
+                                problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
                                 break;
                             }
                         }
 
-                        for (int i = phase_index_at_knot; i < problem_data.contact_sequence->numPhases() - 1; i++)
+                        for (int i = phase_index_at_knot; i < problem_data.velocity_constraint_problem_data.contact_sequence->numPhases() - 1; i++)
                         {
                             // If the ee is in contact, we have found the phase where touchdown occurred.
-                            if (problem_data.contact_sequence->getPhase(i).mode[*ee])
+                            if (problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode[*ee])
                             {
                                 int touchdown_index = i;
-                                problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
+                                problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
                                 break;
                                 // if touchdown is not found, we will assume that the ee is in contact at the end of the horizon.
                                 //  This is an odd and limiting assumption. Better behavior should be created.
@@ -150,7 +150,7 @@ namespace galileo
 
                         casadi::Function vel_bound = desired_velocity - problem_data.velocity_constraint_problem_data.corrector_kp * desired_height;
 
-                        auto &frame_omf_data = problem_data.velocity_constraint_problem_data->ad_data.oMf[ee->frame_id];
+                        auto frame_omf_data = problem_data.velocity_constraint_problem_data->ad_data.oMf[ee->frame_id];
 
                         casadi::Function foot_pos = frame_omf_data.translation();
                         casadi::Function foot_vel = pinocchio::getFrameVelocity(problem_data.velocity_constraint_problem_data->ad_model,

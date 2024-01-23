@@ -2,6 +2,7 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/opt/PseudospectralSegment.h"
 #include "galileo/legged-model/LeggedRobotProblemData.h"
+#include "galileo/legged-model/LeggedRobotStates.h"
 
 #include <Eigen/Dense>
 
@@ -18,6 +19,7 @@
 #include <pinocchio/algorithm/centroidal-derivatives.hpp>
 
 using namespace galileo;
+using namespace opt;
 using namespace casadi;
 using namespace std;
 

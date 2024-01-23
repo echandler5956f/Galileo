@@ -26,6 +26,7 @@ namespace galileo
                                        int num_knots)
                 {
                     this->gp_data = gp_data;
+                    this->states = states;
 
                     this->friction_cone_problem_data.environment_surfaces = environment_surfaces;
                     this->friction_cone_problem_data.contact_sequence = contact_sequence;
@@ -68,6 +69,7 @@ namespace galileo
                 }
                 ~LeggedRobotProblemData();
                 std::shared_ptr<opt::GeneralProblemData> gp_data;
+                std::shared_ptr<opt::States> states;
                 FrictionConeProblemData friction_cone_problem_data;
                 ContactConstraintProblemData contact_constraint_problem_data;
                 VelocityConstraintProblemData velocity_constraint_problem_data;
