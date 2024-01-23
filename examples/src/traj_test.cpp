@@ -11,7 +11,7 @@ int main()
     legged::LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
 
     Model model = bot.model;
-    Data data(model);
+    Data data = bot.data;
 
     std::cout << "Set the robot" << std::endl;
 
