@@ -162,43 +162,33 @@ namespace galileo
              * @brief Build constraint data for a given problem data.
              *
              * @param problem_data Problem specific data
-             * @param knot_index index to build constraint data for
+             * @param phase_index index to build constraint data for
              * @param constraint_data Constraint specific data
              */
-            virtual void BuildConstraint(const ProblemData &problem_data, int knot_index, ConstraintData &constraint_data)
+            virtual void BuildConstraint(const ProblemData &problem_data, int phase_index, ConstraintData &constraint_data)
             {
-                CreateApplyAt(problem_data, knot_index, constraint_data.apply_at);
-                CreateBounds(problem_data, knot_index, constraint_data.upper_bound, constraint_data.lower_bound);
-                CreateFunction(problem_data, knot_index, constraint_data.G);
+                CreateBounds(problem_data, phase_index, constraint_data.upper_bound, constraint_data.lower_bound);
+                CreateFunction(problem_data, phase_index, constraint_data.G);
             }
-
-            /**
-             * @brief Generate flags for each knot point
-             *
-             * @param problem_data Problem specific data
-             * @param knot_index index to build constraint data for
-             * @param apply_at What knot points (indices) to apply the constraint at
-             */
-            virtual void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const = 0;
 
             /**
              * @brief Generate bounds for a vector of points
              *
              * @param problem_data Problem specific data
-             * @param knot_index index to build constraint data for
+             * @param phase_index index to build constraint data for
              * @param upper_bound Upper bound function to return
              * @param lower_bound Lower bound function to return
              */
-            virtual void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
+            virtual void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
 
             /**
              * @brief Generate a function to evaluate each point
              *
              * @param problem_data Problem specific data
-             * @param knot_index index to build constraint data for
+             * @param phase_index index to build constraint data for
              * @param G The constraint function to return
              */
-            virtual void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const = 0;
+            virtual void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const = 0;
         };
     };
 };

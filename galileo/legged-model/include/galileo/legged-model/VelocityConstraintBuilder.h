@@ -68,35 +68,19 @@ namespace galileo
             public:
                 VelocityConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
-                /**
-                 *
-                 * @brief Generate flags for each knot point. We set it to all ones, applicable at each knot.
-                 *
-                 * @param problem_data MUST CONTAIN AN INSTANCE OF "VelocityConstraintProblemData" NAMED "velocity_constraint_problem_data"
-                 * @param apply_at
-                 */
-                void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const;
+                void BuildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data);
 
-                void BuildConstraint(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data);
-
-                void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
+                void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
                 {
                 }
 
-                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
+                void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
                 {
                 }
             };
 
             template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const
-            {
-                uint num_points = problem_data.friction_cone_problem_data.num_knots;
-                apply_at = Eigen::VectorXi::Constant(num_points, 1);
-            }
-
-            template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data)
+            void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
             {
                 casadi::SXVector G_vec;
                 casadi::SXVector upper_bound_vec;
@@ -106,8 +90,7 @@ namespace galileo
 
                 contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
 
-                int phase_index_at_knot = problem_data.velocity_constraint_problem_data.contact_sequence->getPhaseIndexAtKnot(knot_index, error);
-                contact::ContactMode mode = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(phase_index_at_knot).mode;
+                contact::ContactMode mode = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(phase_index).mode;
 
                 for (auto ee : problem_data.velocity_constraint_problem_data.robot_end_effectors)
                 {
@@ -120,7 +103,7 @@ namespace galileo
                         footstep_definition.h_end = 0;
 
                         // When did the EE break contact?
-                        for (int i = phase_index_at_knot; i >= 0; i--)
+                        for (int i = phase_index; i >= 0; i--)
                         {
                             contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
                             // If the ee is in contact, we have found the phase where liftoff occurred.
@@ -134,7 +117,7 @@ namespace galileo
                             }
                         }
 
-                        for (int i = phase_index_at_knot; i < problem_data.velocity_constraint_problem_data.contact_sequence->num_phases() - 1; i++)
+                        for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->num_phases() - 1; i++)
                         {
                             // If the ee is in contact, we have found the phase where touchdown occurred.
                             if (problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.at(*ee.second))

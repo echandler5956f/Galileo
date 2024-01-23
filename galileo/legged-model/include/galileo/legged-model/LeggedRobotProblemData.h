@@ -40,6 +40,8 @@ namespace galileo
                     this->friction_cone_problem_data.u = u;
                     this->friction_cone_problem_data.t = t;
                     this->friction_cone_problem_data.num_knots = num_knots;
+                    this->friction_cone_problem_data.mu = 0.7;
+                    this->friction_cone_problem_data.approximation_order = FrictionConeProblemData::ApproximationOrder::FIRST_ORDER;
 
                     this->contact_constraint_problem_data.environment_surfaces = environment_surfaces;
                     this->contact_constraint_problem_data.contact_sequence = contact_sequence;
@@ -66,6 +68,7 @@ namespace galileo
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
                     this->velocity_constraint_problem_data.num_knots = num_knots;
+                    this->velocity_constraint_problem_data.max_footstep_offset_height = 0.1;
                 }
                 std::shared_ptr<opt::GeneralProblemData> gp_data;
                 std::shared_ptr<opt::States> states;

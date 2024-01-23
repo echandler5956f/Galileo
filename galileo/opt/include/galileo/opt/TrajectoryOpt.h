@@ -54,10 +54,22 @@ namespace galileo
             std::vector<std::shared_ptr<SegmentType>> trajectory;
 
             /**
+             * @brief Problem data containing constraints problem data.
+             *
+             */
+            std::shared_ptr<ProblemData> problem;
+
+            /**
              * @brief Problem data containing the objective function and dynamics.
              *
              */
             std::shared_ptr<GeneralProblemData> gp_data;
+
+            /**
+             * @brief Constraint builders used to build the constraints.
+             *
+             */
+            std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders;
 
             /**
              * @brief Casadi solver options.
@@ -132,9 +144,11 @@ namespace galileo
         };
 
         template <class ProblemData, class SegmentType>
-        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders, casadi::Dict opts_)
+        TrajectoryOpt<ProblemData, SegmentType>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_)
         {
+            this->problem = problem_;
             this->gp_data = problem_->gp_data;
+            this->builders = builders_;
             this->state_indices = problem_->states;
             this->opts = opts_;
         }
@@ -235,7 +249,7 @@ namespace galileo
                 prev_final_state_deviant = segment->get_final_state_deviant();
 
                 /*Terminal cost*/
-                if (i == num_phases - 1 && i != 0)
+                if (i == num_phases - 1)
                 {
                     this->J += Phi(casadi::MXVector{prev_final_state}).at(0);
                 }

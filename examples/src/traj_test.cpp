@@ -157,6 +157,15 @@ int main()
 
     shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<Model>(model), make_shared<Data>(data), make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), bot.getEndEffectors(), cx, cu, cdt, 20);
 
+    std::vector<opt::ConstraintData> constraint_datas;
+    for (auto builder : builders)
+    {
+        std::cout << "Building constraint" << std::endl;
+        opt::ConstraintData some_data;
+        builder->BuildConstraint(*legged_problem_data, 0, some_data);
+        constraint_datas.push_back(some_data);
+    }
+
     TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
 
     DM X0 = DM::zeros(si->nx, 1);

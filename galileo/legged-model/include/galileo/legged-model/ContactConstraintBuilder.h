@@ -31,9 +31,9 @@ namespace galileo
             public:
                 ContactConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
-                void BuildConstraint(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data)
+                void BuildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
                 {
-                    auto mode = getModeAtKnot(problem_data, knot_index);
+                    auto mode = getModeAtPhase(problem_data, phase_index);
 
                     casadi::SXVector G_vec;
                     casadi::SXVector upper_bound_vec;
@@ -96,49 +96,29 @@ namespace galileo
                                                                    casadi::SXVector{problem_data.contact_constraint_problem_data.t},
                                                                    casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
 
-                    CreateApplyAt(problem_data, knot_index, constraint_data.apply_at);
                 }
 
             private:
-                /**
-                 *
-                 * @brief Generate flags for each knot point. We set it to all ones, applicable at each knot.
-                 *
-                 * @param problem_data MUST CONTAIN AN INSTANCE OF "ContactConstraintProblemData" NAMED "contact_constraint_problem_data"
-                 * @param apply_at
-                 */
-                void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const
-                {
-                    uint num_points = problem_data.contact_constraint_problem_data.num_knots;
-                    apply_at = Eigen::VectorXi::Constant(num_points, 1);
-                }
 
-                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
+                void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
                 {
                 }
 
-                void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
+                void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
                 {
                 }
 
                 /**
-                 * @brief getModeAtKnot gets the contact mode at the current knot
+                 * @brief getModeAtKnot gets the contact mode at the current phase
                  */
-                const contact::ContactMode &getModeAtKnot(const ProblemData &problem_data, int knot_index);
+                const contact::ContactMode &getModeAtPhase(const ProblemData &problem_data, int phase_index);
             };
 
             template <class ProblemData>
-            const contact::ContactMode &ContactConstraintBuilder<ProblemData>::getModeAtKnot(const ProblemData &problem_data, int knot_index)
+            const contact::ContactMode &ContactConstraintBuilder<ProblemData>::getModeAtPhase(const ProblemData &problem_data, int phase_index)
             {
                 assert(problem_data.contact_constraint_problem_data.contact_sequence != nullptr);
-
-                contact::ContactSequence::Phase phase;
-                contact::ContactSequence::CONTACT_SEQUENCE_ERROR status;
-                problem_data.contact_constraint_problem_data.contact_sequence->getPhaseAtKnot(knot_index, phase, status);
-
-                assert(status == contact::ContactSequence::CONTACT_SEQUENCE_ERROR::OK);
-
-                return phase.mode;
+                return problem_data.contact_constraint_problem_data.contact_sequence->getPhase(phase_index).mode;
             }
         }
     }
