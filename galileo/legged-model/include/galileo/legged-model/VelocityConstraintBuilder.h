@@ -111,6 +111,10 @@ namespace galileo
                     {
                         double liftoff_time = 0;
                         double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->dt();
+                        FootstepDefinition footstep_definition;
+                        footstep_definition.h_start = 0;
+                        footstep_definition.h_end = 0;
+
                         // When did the EE break contact?
                         for (int i = phase_index_at_knot; i >= 0; i--)
                         {
@@ -119,6 +123,7 @@ namespace galileo
                             {
                                 int liftoff_index = i + 1;
                                 problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
+                                footstep_definition.h_start = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).contact_surfaces[*ee].height;
                                 break;
                             }
                         }
@@ -130,11 +135,15 @@ namespace galileo
                             {
                                 int touchdown_index = i;
                                 problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
+                                footstep_definition.h_end = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).contact_surfaces[*ee].height;
                                 break;
                                 // if touchdown is not found, we will assume that the ee is in contact at the end of the horizon.
                                 //  This is an odd and limiting assumption. Better behavior should be created.
                             }
                         }
+
+                        footstep_definition.h_max = std::max(footstep_definition.h_start, footstep_definition.h_end) + problem_data.velocity_constraint_problem_data.max_footstep_offset_height;
+
                         // Add a baumgarte corrector height_velocity = (kp * (position(x) - desired_position) + desired_velocity)
 
                         // velocity_z - kp * (position_z(state)) = desired_velocity_z - kp * desired_position_z
@@ -144,7 +153,7 @@ namespace galileo
 
                         casadi::Function t_in_range = casadi::Function("t_in_range", {t}, {(t - liftoff_time) / (touchdown_time - liftoff_time)});
 
-                        auto footstep_height_function = createFootstepHeightFunction(t_in_range(problem_data.velocity_constraint_problem_data.t).at(0), problem_data.footstep_trajectory_generator->getFootstepDefinition(*ee));
+                        auto footstep_height_function = createFootstepHeightFunction(t_in_range(problem_data.velocity_constraint_problem_data.t).at(0), footstep_definition);
                         casadi::Function desired_height = footstep_height_function[0];
                         casadi::Function desired_velocity = footstep_height_function[1];
 
