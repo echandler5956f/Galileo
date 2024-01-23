@@ -2,48 +2,45 @@
 #include "galileo/legged-model/ContactSequence.h"
 #include "galileo/legged-model/LeggedRobotStates.h"
 
-namespace
-{
-    casadi::Function createFootstepHeightFunction(casadi::SX &t, const FootstepDefinition &FS_def)
-    {
-        casadi::SX x0(2);
-        x0(0) = if_else(t < 0.5, casadi::SX(FS_def.h_start), casadi::SX(FS_def.h_max));
-        x0(1) = 0;
-        casadi::SX xf(2);
-        xf(0) = if_else(t >= 0.5, FS_def.h_end, FS_def.h_max);
-        xf(1) = 0;
-
-        casadi::SX H0(2, 2);
-        H0(0, 0) = 2 * pow(t, 3) - 3 * pow(t, 2) + 1;
-        H0(0, 1) = pow(t, 3) - 2 * pow(t, 2) + t;
-        H0(1, 0) = 6 * pow(t, 2) - 6 * t;
-        H0(1, 1) = 3 * pow(t, 2) - 4 * t + 1;
-
-        casadi::SX Hf(2, 2);
-        Hf(0, 0) = -2 * pow(t, 3) + 3 * pow(t, 2);
-        Hf(0, 1) = pow(t, 3) - pow(t, 2);
-        Hf(1, 0) = -6 * pow(t, 2) + 6 * t;
-        Hf(1, 1) = 3 * pow(t, 2) - 2 * t;
-
-        casadi::Function footstep_height_function = casadi::Function("footstep_z_function", {t}, {H0 * x0 + Hf * xf});
-
-        return footstep_height_function;
-    }
-
-    struct FootstepDefinition
-    {
-        double h_start;
-        double h_end;
-        double h_max;
-    };
-
-}
 namespace galileo
 {
     namespace legged
     {
         namespace constraints
         {
+            casadi::Function createFootstepHeightFunction(casadi::SX &t, const FootstepDefinition &FS_def)
+            {
+                casadi::SX x0(2);
+                x0(0) = if_else(t < 0.5, casadi::SX(FS_def.h_start), casadi::SX(FS_def.h_max));
+                x0(1) = 0;
+                casadi::SX xf(2);
+                xf(0) = if_else(t >= 0.5, FS_def.h_end, FS_def.h_max);
+                xf(1) = 0;
+
+                casadi::SX H0(2, 2);
+                H0(0, 0) = 2 * pow(t, 3) - 3 * pow(t, 2) + 1;
+                H0(0, 1) = pow(t, 3) - 2 * pow(t, 2) + t;
+                H0(1, 0) = 6 * pow(t, 2) - 6 * t;
+                H0(1, 1) = 3 * pow(t, 2) - 4 * t + 1;
+
+                casadi::SX Hf(2, 2);
+                Hf(0, 0) = -2 * pow(t, 3) + 3 * pow(t, 2);
+                Hf(0, 1) = pow(t, 3) - pow(t, 2);
+                Hf(1, 0) = -6 * pow(t, 2) + 6 * t;
+                Hf(1, 1) = 3 * pow(t, 2) - 2 * t;
+
+                casadi::Function footstep_height_function = casadi::Function("footstep_z_function", {t}, {H0 * x0 + Hf * xf});
+
+                return footstep_height_function;
+            }
+
+            struct FootstepDefinition
+            {
+                double h_start;
+                double h_end;
+                double h_max;
+            };
+
             struct VelocityConstraintProblemData
             {
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
@@ -54,9 +51,9 @@ namespace galileo
                 std::shared_ptr<opt::ADModel> ad_model;
                 std::shared_ptr<opt::ADData> ad_data;
                 contact::RobotEndEffectors robot_end_effectors;
-                casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
-                casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
-                casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
+                casadi::SX x;
+                casadi::SX u;
+                casadi::SX t;
                 int num_knots;
 
                 double max_footstep_offset_height;
@@ -78,9 +75,10 @@ namespace galileo
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "VelocityConstraintProblemData" NAMED "velocity_constraint_problem_data"
                  * @param apply_at
                  */
-                void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const override;
+                void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const;
 
-                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const override;
+                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
+
             };
 
             template <class ProblemData>
@@ -144,6 +142,12 @@ namespace galileo
 
                         casadi::Function t_in_range = casadi::Function("t_in_range", {t}, {(t - liftoff_time) / (touchdown_time - liftoff_time)});
 
+                        environment::SurfaceID surface = mode.getSurfaceID((*ee.second));
+
+                        auto surface_data = (*problem_data.environment_surfaces)[surface];
+                        
+                        FootstepDefinition FS_def;
+                        FS_def.h_start = surface_data.origin_z_offset;
                         auto footstep_height_function = createFootstepHeightFunction(t_in_range(problem_data.velocity_constraint_problem_data.t).at(0), problem_data.footstep_trajectory_generator->getFootstepDefinition(*ee));
                         casadi::Function desired_height = footstep_height_function[0];
                         casadi::Function desired_velocity = footstep_height_function[1];

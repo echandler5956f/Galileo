@@ -19,9 +19,9 @@ namespace galileo
                 std::shared_ptr<opt::ADModel> ad_model;
                 std::shared_ptr<opt::ADData> ad_data;
                 contact::RobotEndEffectors robot_end_effectors;
-                casadi::SX x; // this needs to be initialized to casadi::SX::sym("x", states->nx) somewhere
-                casadi::SX u; // this needs to be initialized to casadi::SX::sym("u", states->nu) somewhere
-                casadi::SX t; // this needs to be initialized to casadi::SX::sym("t") somewhere
+                casadi::SX x;
+                casadi::SX u;
+                casadi::SX t;
                 int num_knots;
 
                 float mu;
@@ -112,7 +112,7 @@ namespace galileo
                 uint getNumConstraintPerEEPerState(const ProblemData &problem_data) const;
 
                 /**
-                 * @brief Get the Casadi::Function object, G, to be applied to the end effector given by "EndEffectorID" at a collocation point.
+                 * @brief Get the Casadi::Function object, G, to be applied to the end effector given by "EndEffectorID" at a knot point.
                  * For a Second Order Constraint, for instance, this is a function that returns 11 value, the result of the lorentz cone constraint.
                  * function = g( state ) @ EndEffectorID
                  */
@@ -185,7 +185,7 @@ namespace galileo
             template <class ProblemData>
             uint FrictionConeConstraintBuilder<ProblemData>::getNumConstraintPerEEPerState(const ProblemData &problem_data) const
             {
-                FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.friction_cone_problem_data.approximation_order;
+                FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.approximation_order;
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::SECOND_ORDER)
                 {
                     return 1;
@@ -222,7 +222,7 @@ namespace galileo
 
                 Eigen::MatrixXd rotated_cone_constraint = cone_constraint_approximation * rotation;
 
-                FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.friction_cone_problem_data.approximation_order;
+                FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.approximation_order;
 
                 casadi::SX symbolic_rotated_cone_constraint = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
                 pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
@@ -281,9 +281,9 @@ namespace galileo
             Eigen::MatrixXd FrictionConeConstraintBuilder<ProblemData>::getConeConstraintApproximation(const ProblemData &problem_data) const
             {
                 Eigen::MatrixXd cone_constraint_approximation(getNumConstraintPerEEPerState(problem_data), 3);
-                FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.friction_cone_problem_data.approximation_order;
+                FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.approximation_order;
 
-                float mu = problem_data.friction_cone_problem_data.friction_cone_problem_data.mu;
+                float mu = problem_data.friction_cone_problem_data.mu;
                 assert(mu >= 0);
 
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
