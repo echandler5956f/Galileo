@@ -90,7 +90,7 @@ namespace galileo
 
                     constraint_data.lower_bound = casadi::Function("lower_bound_Contact",
                                                                    casadi::SXVector{problem_data.contact_constraint_problem_data.t},
-                                                                   casadi::SXVector{casadi::SX::ertcat(lower_bound_vec)});
+                                                                   casadi::SXVector{casadi::SX::vertcat(lower_bound_vec)});
 
                     constraint_data.lower_bound = casadi::Function("upper_bound_Contact",
                                                                    casadi::SXVector{problem_data.contact_constraint_problem_data.t},

@@ -8,6 +8,14 @@ namespace galileo
     {
         namespace constraints
         {
+
+            struct FootstepDefinition
+            {
+                double h_start;
+                double h_end;
+                double h_max;
+            };
+            
             casadi::Function createFootstepHeightFunction(casadi::SX &t, const FootstepDefinition &FS_def)
             {
                 casadi::SX x0(2);
@@ -33,13 +41,6 @@ namespace galileo
 
                 return footstep_height_function;
             }
-
-            struct FootstepDefinition
-            {
-                double h_start;
-                double h_end;
-                double h_max;
-            };
 
             struct VelocityConstraintProblemData
             {
@@ -77,8 +78,7 @@ namespace galileo
                  */
                 void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const;
 
-                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
-
+                void BuildConstraint(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data);
             };
 
             template <class ProblemData>
@@ -89,7 +89,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
+            void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int knot_index, opt::ConstraintData &constraint_data)
             {
                 casadi::SXVector G_vec;
                 casadi::SXVector upper_bound_vec;
@@ -97,7 +97,7 @@ namespace galileo
 
                 auto t = casadi::SX::sym("t", 1);
 
-                ContactSequence::CONTACT_SEQUENCE_ERROR error;
+                contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
 
                 int phase_index_at_knot = problem_data.velocity_constraint_problem_data.contact_sequence->getPhaseIndexAtKnot(knot_index, error);
                 auto mode = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(phase_index_at_knot).mode;
@@ -151,7 +151,7 @@ namespace galileo
 
                         casadi::Function t_in_range = casadi::Function("t_in_range", {t}, {(t - liftoff_time) / (touchdown_time - liftoff_time)});
 
-                        auto footstep_height_function = createFootstepHeightFunction(t_in_range(problem_data.velocity_constraint_problem_data.t).at(0), footstep_definition);
+                        casadi::Function footstep_height_function = createFootstepHeightFunction(t_in_range(problem_data.velocity_constraint_problem_data.t).at(0), footstep_definition);
                         casadi::Function desired_height = footstep_height_function[0];
                         casadi::Function desired_velocity = footstep_height_function[1];
 
