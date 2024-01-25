@@ -68,7 +68,6 @@ namespace galileo
                 FrictionConeConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
             private:
-
                 /**
                  * @brief Generate bounds for a vector of points.
                  *
@@ -108,7 +107,7 @@ namespace galileo
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current phase
                  */
-                const contact::ContactMode &getModeAtPhase(const ProblemData &problem_data, int phase_index) const;
+                const contact::ContactMode getModeAtPhase(const ProblemData &problem_data, int phase_index) const;
 
                 /**
                  * @brief getContactSurfaceRotationAtMode gets a rotation matrix describing the normal to the contact surface at the current knot.
@@ -153,14 +152,13 @@ namespace galileo
                 // CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
                 // Possibly, this would mean creating a map.
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
-
                 casadi::SXVector G_vec;
                 casadi::SXVector u_vec;
                 for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
                     casadi::Function G_end_effector;
                     CreateSingleEndEffectorFunction(end_effector.first, problem_data, phase_index, G_end_effector);
-                    if (G_end_effector.sx_out().at(1).is_zero())
+                    if (G_end_effector.sx_out().at(0).is_zero())
                     {
                         G_vec.push_back(G_end_effector.sx_out().at(0));
                         u_vec.push_back(G_end_effector.sx_in(1));
@@ -215,7 +213,6 @@ namespace galileo
                 pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
 
                 // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
-
                 auto evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
@@ -235,7 +232,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            const contact::ContactMode &FrictionConeConstraintBuilder<ProblemData>::getModeAtPhase(const ProblemData &problem_data, int phase_index) const
+            const contact::ContactMode FrictionConeConstraintBuilder<ProblemData>::getModeAtPhase(const ProblemData &problem_data, int phase_index) const
             {
                 assert(problem_data.friction_cone_problem_data.contact_sequence != nullptr);
                 return problem_data.friction_cone_problem_data.contact_sequence->getPhase(phase_index).mode;

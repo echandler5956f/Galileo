@@ -163,6 +163,7 @@ int main()
         std::cout << "Building constraint" << std::endl;
         opt::ConstraintData some_data;
         builder->BuildConstraint(*legged_problem_data, 0, some_data);
+        std::cout << "Built constraint" << std::endl;
         constraint_datas.push_back(some_data);
     }
 

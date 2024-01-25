@@ -111,11 +111,11 @@ namespace galileo
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current phase
                  */
-                const contact::ContactMode &getModeAtPhase(const ProblemData &problem_data, int phase_index);
+                const contact::ContactMode getModeAtPhase(const ProblemData &problem_data, int phase_index);
             };
 
             template <class ProblemData>
-            const contact::ContactMode &ContactConstraintBuilder<ProblemData>::getModeAtPhase(const ProblemData &problem_data, int phase_index)
+            const contact::ContactMode ContactConstraintBuilder<ProblemData>::getModeAtPhase(const ProblemData &problem_data, int phase_index)
             {
                 assert(problem_data.contact_constraint_problem_data.contact_sequence != nullptr);
                 return problem_data.contact_constraint_problem_data.contact_sequence->getPhase(phase_index).mode;

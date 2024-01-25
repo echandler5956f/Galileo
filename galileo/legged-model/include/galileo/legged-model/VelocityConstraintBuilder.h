@@ -131,7 +131,6 @@ namespace galileo
                                 //  This is an odd and limiting assumption. Better behavior should be created.
                             }
                         }
-
                         footstep_definition.h_max = std::max(footstep_definition.h_start, footstep_definition.h_end) + problem_data.velocity_constraint_problem_data.max_footstep_offset_height;
 
                         // Add a baumgarte corrector height_velocity = (kp * (position(x) - desired_position) + desired_velocity)
@@ -154,11 +153,11 @@ namespace galileo
                         casadi::SX cfoot_pos = casadi::SX(casadi::Sparsity::dense(foot_pos.rows(), 1));
                         pinocchio::casadi::copy(foot_pos, cfoot_pos);
 
-                        Eigen::VectorBlock<Eigen::Matrix<galileo::opt::ADScalar, 6, 1, 0>, 3> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
-                                                                                                                                     *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                                                                                     ee.second->frame_id,
-                                                                                                                                     pinocchio::LOCAL)
-                                                                                                             .linear();
+                        auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
+                                                                    *(problem_data.velocity_constraint_problem_data.ad_data),
+                                                                    ee.second->frame_id,
+                                                                    pinocchio::LOCAL)
+                                            .toVector();
 
                         casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
                         pinocchio::casadi::copy(foot_vel, cfoot_vel);
@@ -172,11 +171,11 @@ namespace galileo
                     else
                     {
                         // add velocity = 0 as a constraint
-                        Eigen::VectorBlock<Eigen::Matrix<galileo::opt::ADScalar, 6, 1, 0>, 3> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
-                                                                                                                                     *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                                                                                     ee.second->frame_id,
-                                                                                                                                     pinocchio::LOCAL)
-                                                                                                             .linear();
+                        auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
+                                                                    *(problem_data.velocity_constraint_problem_data.ad_data),
+                                                                    ee.second->frame_id,
+                                                                    pinocchio::LOCAL)
+                                            .toVector();
 
                         casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
                         pinocchio::casadi::copy(foot_vel, cfoot_vel);
@@ -186,7 +185,6 @@ namespace galileo
                         upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
                     }
                 }
-
                 // replace u with an SX vector the size of (sum dof of ee in contact during this knot index)
                 constraint_data.G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, problem_data.friction_cone_problem_data.u}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
