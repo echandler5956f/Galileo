@@ -1,6 +1,9 @@
 #pragma once
 #include "galileo/opt/States.h"
 
+using namespace casadi;
+using namespace std;
+
 namespace galileo
 {
     namespace opt
@@ -17,7 +20,7 @@ namespace galileo
              *
              * @param args The number of position and velocity variables.
              */
-            BasicStates(std::vector<int> args)
+            BasicStates(vector<int> args)
             {
                 this->nx = args[0];
                 this->ndx = args[0];

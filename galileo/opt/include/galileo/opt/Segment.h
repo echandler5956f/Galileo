@@ -2,19 +2,17 @@
 
 #include "galileo/opt/States.h"
 #include "galileo/opt/Constraint.h"
-#include <vector>
-#include <string>
 #include <cassert>
-#include <memory>
 
 using namespace casadi;
+using namespace std;
 
 namespace galileo
 {
     namespace opt
     {
 
-        using tuple_size_t = std::tuple<std::size_t, std::size_t>;
+        using tuple_size_t = tuple<size_t, size_t>;
 
         class Segment
         {
@@ -73,7 +71,7 @@ namespace galileo
              * @param lbw The vector to be filled with lower bound values on decision variables.
              * @param ubw The vector to be filled with upper bound values on decision variables.
              */
-            virtual void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw) = 0;
+            virtual void fill_lbw_ubw(vector<double> &lbw, vector<double> &ubw) = 0;
 
             /**
              * @brief Fills the lower bounds on general constraints (lbg) and upper bounds on general constraints (ubg) vectors with values.
@@ -84,7 +82,7 @@ namespace galileo
              * @param lbg The vector to be filled with general lower bound values.
              * @param ubg The vector to be filled with general upper bound values.
              */
-            virtual void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg) = 0;
+            virtual void fill_lbg_ubg(vector<double> &lbg, vector<double> &ubg) = 0;
 
             /**
              * @brief Fills the initial guess vector (w0) with values.
@@ -94,7 +92,7 @@ namespace galileo
              *
              * @param w0 The vector to be filled with initial guess values.
              */
-            virtual void fill_w0(std::vector<double> &w0) const = 0;
+            virtual void fill_w0(vector<double> &w0) const = 0;
 
             /**
              * @brief Returns the starting and ending index in w.
@@ -123,6 +121,17 @@ namespace galileo
              * @return tuple_size_t The range of indices
              */
             virtual tuple_size_t get_range_idx_decision_bounds() const = 0;
+
+            using FactoryFunction = function<unique_ptr<Segment>(vector<int>)>;
+
+            static void registerSegmentType(const string &type, FactoryFunction function)
+            {
+                getFactories()[type] = function;
+            }
+            static unique_ptr<Segment> create(const string &type, vector<int> args)
+            {
+                return getFactories()[type](args);
+            }
 
         public:
             /**
@@ -172,6 +181,13 @@ namespace galileo
              *
              */
             tuple_size_t lbw_ubw_range;
+
+
+            static map<string, FactoryFunction> &getFactories()
+            {
+                static map<string, FactoryFunction> factories;
+                return factories;
+            }
         };
     }
 }

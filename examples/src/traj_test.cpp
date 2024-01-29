@@ -179,7 +179,7 @@ int main(int argc, char **argv)
     //     constraint_datas.push_back(some_data);
     // }
 
-    TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
+    TrajectoryOpt<LeggedRobotProblemData> traj(legged_problem_data, builders, opts);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;
