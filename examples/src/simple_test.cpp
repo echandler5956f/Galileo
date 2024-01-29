@@ -6,11 +6,11 @@ int main()
     std::shared_ptr<opt::BasicStates> si = std::make_shared<opt::BasicStates>(std::vector<int>{2, 1});
 
     // Declare model variables
-    casadi::SX dt = SX::sym("dt", 1);
-    casadi::SX dx = SX::sym("dx", 2);
+    casadi::SX dt = casadi::SX::sym("dt", 1);
+    casadi::SX dx = casadi::SX::sym("dx", 2);
 
-    casadi::SX x = SX::sym("x", 2);
-    casadi::SX u = SX::sym("u");
+    casadi::SX x = casadi::SX::sym("x", 2);
+    casadi::SX u = casadi::SX::sym("u");
 
     // Model equations
     casadi::SX xdot = vertcat((1 - pow(x(1), 2)) * x(0) - x(1) + u, x(0));
@@ -18,8 +18,8 @@ int main()
     // Objective term
     casadi::SX l = pow(x(0), 2) + pow(x(1), 2) + pow(u, 2);
 
-    casadi::SX x1 = SX::sym("x1", 2);
-    casadi::SX x2 = SX::sym("x2", 2);
+    casadi::SX x1 = casadi::SX::sym("x1", 2);
+    casadi::SX x2 = casadi::SX::sym("x2", 2);
 
     // Continuous time dynamics (all state variables are Euclidean so we do not need to worry about these manifold operators)
     casadi::Function Fint("Fint", {x, dx, dt}, {dx});
@@ -49,7 +49,7 @@ int main()
     // opts["ipopt.max_iter"] = 100;
     // opts["ipopt.print_level"] = 5;
     opts["ipopt.linear_solver"] = "ma97";
-    opt::TrajectoryOpt<SimpleProblemData, opt::PseudospectralSegment> traj(problem, builders, opts);
+    opt::TrajectoryOpt<SimpleProblemData> traj(problem, builders, opts);
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1, 0) = 1;

@@ -59,7 +59,7 @@ namespace galileo
 
                             auto foot_pos = frame_omf_data.translation();
 
-                            SX cfootpos = casadi::SX::sym("foot_pos", 3);
+                            casadi::SX cfootpos = casadi::SX::sym("foot_pos", 3);
                             pinocchio::casadi::copy(foot_pos, cfootpos);
 
                             casadi::SX symbolic_A = casadi::SX(casadi::Sparsity::dense(A.rows(), 1));

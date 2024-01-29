@@ -192,11 +192,11 @@ int main(int argc, char **argv)
     traj.init_finite_elements(1, X0);
 
     MXVector sol = traj.optimize();
-    cout << sol << endl;
+    std::cout << sol << std::endl;
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0, 1.0);
     Eigen::MatrixXd new_sol = traj.get_solution(new_times);
-    cout << new_sol << endl;
+    std::cout << new_sol << std::endl;
 
     return 0;
 }

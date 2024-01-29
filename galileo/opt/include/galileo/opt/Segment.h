@@ -4,15 +4,12 @@
 #include "galileo/opt/Constraint.h"
 #include <cassert>
 
-using namespace casadi;
-using namespace std;
-
 namespace galileo
 {
     namespace opt
     {
 
-        using tuple_size_t = tuple<size_t, size_t>;
+        using tuple_size_t = std::tuple<size_t, size_t>;
 
         class Segment
         {
@@ -23,37 +20,37 @@ namespace galileo
              * @brief Extract the solution from the decision variable vector.
              *
              * @param w Decision variable vector
-             * @return MX Solution values
+             * @return casadi::MX Solution values
              */
-            virtual MXVector extract_solution(MX &w) const = 0;
+            virtual casadi::MXVector extract_solution(casadi::MX &w) const = 0;
 
             /**
              * @brief Get the initial state.
              *
-             * @return MX The initial state
+             * @return casadi::MX The initial state
              */
-            virtual MX get_initial_state() const = 0;
+            virtual casadi::MX get_initial_state() const = 0;
 
             /**
              * @brief Get the initial state deviant.
              *
-             * @return MX The initial state deviant
+             * @return casadi::MX The initial state deviant
              */
-            virtual MX get_initial_state_deviant() const = 0;
+            virtual casadi::MX get_initial_state_deviant() const = 0;
 
             /**
              * @brief Get the final state deviant.
              *
-             * @return MX The final state deviant
+             * @return casadi::MX The final state deviant
              */
-            virtual MX get_final_state_deviant() const = 0;
+            virtual casadi::MX get_final_state_deviant() const = 0;
 
             /**
              * @brief Get the actual final state.
              *
-             * @return MX The final state.
+             * @return casadi::MX The final state.
              */
-            virtual MX get_final_state() const = 0;
+            virtual casadi::MX get_final_state() const = 0;
 
             /**
              * @brief Get the local times vector.
@@ -61,6 +58,40 @@ namespace galileo
              * @return casadi::DM The local times vector
              */
             virtual casadi::DM get_local_times() const = 0;
+
+            /**
+             * @brief Initialize the vector of local times which constraints are evaluated at.
+             *
+             * @param global_times Vector of global times
+             */
+            virtual void initialize_local_time_vector(std::shared_ptr<casadi::DM> global_times) = 0;
+
+            /**
+             * @brief Create all the knot segments.
+             *
+             * @param x0_global Global starting state to integrate from (used for initial guess)
+             * @param x0_local Local starting state to integrate from
+             *
+             */
+            virtual void initialize_knot_segments(casadi::DM x0_global, casadi::MX x0_local) = 0;
+
+            /**
+             * @brief Build the function graph.
+             *
+             * @param G Vector of constraint data
+             * @param Wx Decision bound and initial guess data for the state
+             * @param Wu Decision bound and initial guess data for the input
+             */
+            virtual void initialize_expression_graph(std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu) = 0;
+
+            /**
+             * @brief Evaluate the expressions with the actual decision variables.
+             *
+             * @param J0 Accumulated cost so far
+             * @param w Decision variable vector to fill
+             * @param g Constraint vector to fill
+             */
+            virtual void evaluate_expression_graph(casadi::MX &J0, casadi::MXVector &w, casadi::MXVector &g) = 0;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -71,7 +102,7 @@ namespace galileo
              * @param lbw The vector to be filled with lower bound values on decision variables.
              * @param ubw The vector to be filled with upper bound values on decision variables.
              */
-            virtual void fill_lbw_ubw(vector<double> &lbw, vector<double> &ubw) = 0;
+            virtual void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw) = 0;
 
             /**
              * @brief Fills the lower bounds on general constraints (lbg) and upper bounds on general constraints (ubg) vectors with values.
@@ -82,7 +113,7 @@ namespace galileo
              * @param lbg The vector to be filled with general lower bound values.
              * @param ubg The vector to be filled with general upper bound values.
              */
-            virtual void fill_lbg_ubg(vector<double> &lbg, vector<double> &ubg) = 0;
+            virtual void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg) = 0;
 
             /**
              * @brief Fills the initial guess vector (w0) with values.
@@ -92,7 +123,7 @@ namespace galileo
              *
              * @param w0 The vector to be filled with initial guess values.
              */
-            virtual void fill_w0(vector<double> &w0) const = 0;
+            virtual void fill_w0(std::vector<double> &w0) const = 0;
 
             /**
              * @brief Returns the starting and ending index in w.
@@ -122,29 +153,18 @@ namespace galileo
              */
             virtual tuple_size_t get_range_idx_decision_bounds() const = 0;
 
-            using FactoryFunction = function<unique_ptr<Segment>(vector<int>)>;
-
-            static void registerSegmentType(const string &type, FactoryFunction function)
-            {
-                getFactories()[type] = function;
-            }
-            static unique_ptr<Segment> create(const string &type, vector<int> args)
-            {
-                return getFactories()[type](args);
-            }
-
         public:
             /**
              * @brief Local initial state.
              *
              */
-            MX x0_local;
+            casadi::MX x0_local;
 
             /**
              * @brief Global initial state.
              *
              */
-            DM x0_global;
+            casadi::DM x0_global;
 
             /**
              * @brief Period of EACH KNOT SEGMENT within this pseudospectral segment.
@@ -181,13 +201,6 @@ namespace galileo
              *
              */
             tuple_size_t lbw_ubw_range;
-
-
-            static map<string, FactoryFunction> &getFactories()
-            {
-                static map<string, FactoryFunction> factories;
-                return factories;
-            }
         };
     }
 }

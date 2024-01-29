@@ -2,8 +2,6 @@
 
 #include <pinocchio/autodiff/casadi.hpp>
 
-using namespace casadi;
-
 namespace galileo
 {
     namespace opt
@@ -27,7 +25,7 @@ namespace galileo
              * @param L_ Running cost
              * @param Phi_ Terminal cost
              */
-            GeneralProblemData(Function Fint_, Function Fdif_, Function F_, Function L_, Function Phi_)
+            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdif_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
             {
                 this->Fint = Fint_;
                 this->Fdif = Fdif_;
@@ -42,31 +40,31 @@ namespace galileo
                 deviations back to the actual state space.
              *
              */
-            Function Fint;
+            casadi::Function Fint;
 
             /**
              * @brief Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
              *
              */
-            Function Fdif;
+            casadi::Function Fdif;
 
             /**
              * @brief Continuous-time function. This function stores the system dynamics.
              *
              */
-            Function F;
+            casadi::Function F;
 
             /**
              * @brief The "running" or integrated cost function.
              *
              */
-            Function L;
+            casadi::Function L;
 
             /**
              * @brief The terminal cost function.
              *
              */
-            Function Phi;
+            casadi::Function Phi;
         };
 
         /**
@@ -93,19 +91,19 @@ namespace galileo
              * @brief Upper bounds of the constraint function.
              *
              */
-            Function upper_bound;
+            casadi::Function upper_bound;
 
             /**
              * @brief Lower bounds of the constraint function.
              *
              */
-            Function lower_bound;
+            casadi::Function lower_bound;
 
             /**
              * @brief The constraint function.
              *
              */
-            Function G;
+            casadi::Function G;
         };
 
         /**
@@ -119,25 +117,25 @@ namespace galileo
              * @brief Upper bound on decision variables.
              *
              */
-            Function upper_bound;
+            casadi::Function upper_bound;
 
             /**
              * @brief Lower bound on decision variables.
              *
              */
-            Function lower_bound;
+            casadi::Function lower_bound;
 
             /**
              * @brief Initial guess function for state and input as a function of time. Note that an inverse law for Fint will be used to generate the initial guess for the states.
              *
              */
-            Function initial_guess;
+            casadi::Function initial_guess;
 
             /**
              * @brief Decision variables at one knot or collocation point (x, u)
              *
              */
-            SX w;
+            casadi::SX w;
         };
 
         /**
@@ -181,7 +179,7 @@ namespace galileo
              * @param upper_bound Upper bound function to return
              * @param lower_bound Lower bound function to return
              */
-            virtual void CreateBounds(const ProblemData &problem_data, int phase_index, Function &upper_bound, Function &lower_bound) const = 0;
+            virtual void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
 
             /**
              * @brief Generate a function to evaluate each point
@@ -190,7 +188,7 @@ namespace galileo
              * @param phase_index index to build constraint data for
              * @param G The constraint function to return
              */
-            virtual void CreateFunction(const ProblemData &problem_data, int phase_index, Function &G) const = 0;
+            virtual void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const = 0;
         };
     };
 };

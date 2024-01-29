@@ -2,9 +2,6 @@
 
 #include "galileo/opt/Segment.h"
 
-using namespace casadi;
-using namespace std;
-
 namespace galileo
 {
     namespace opt
@@ -29,17 +26,17 @@ namespace galileo
              * @param d_ Degree of the polynomial
              * @param scheme Collocation scheme: "radau" or "legendre"
              */
-            LagrangePolynomial(int d_, const string &scheme = "radau");
+            LagrangePolynomial(int d_, const std::string &scheme = "radau");
 
             /**
              * @brief Perform symbolic Lagrange Interpolation, which, given a time from the Lagrange time scale, interpolates terms to find the value at time t.
              *
              * @param t Time to interpolate at
              * @param terms Terms at knot points to use for interpolation
-             * @return const SX Resultant expression for the symbolic interpolated value
+             * @return const casadi::SX Resultant expression for the symbolic interpolated value
              */
             template <typename Scalar>
-            Scalar lagrange_interpolation(double t, const vector<Scalar> terms) const;
+            Scalar lagrange_interpolation(double t, const std::vector<Scalar> terms) const;
 
             /**
              * @brief Degree of the polynomial.
@@ -51,25 +48,25 @@ namespace galileo
              * @brief The roots of the polynomial.
              *
              */
-            vector<double> tau_root;
+            std::vector<double> tau_root;
 
             /**
              * @brief Quadrature coefficients.
              *
              */
-            vector<double> B;
+            std::vector<double> B;
 
             /**
              * @brief Collocation coeffficients.
              *
              */
-            vector<vector<double>> C;
+            std::vector<std::vector<double>> C;
 
             /**
              * @brief Continuity coefficients.
              *
              */
-            vector<double> D;
+            std::vector<double> D;
         };
 
         /**
@@ -89,7 +86,7 @@ namespace galileo
              * @param h_ Period of each knot segment
              *
              */
-            PseudospectralSegment(shared_ptr<GeneralProblemData> problem, shared_ptr<States> st_m_, int d, int knot_num_, double h_);
+            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -103,7 +100,7 @@ namespace galileo
              *
              * @param global_times Vector of global times
              */
-            void initialize_local_time_vector(shared_ptr<DM> global_times);
+            void initialize_local_time_vector(std::shared_ptr<casadi::DM> global_times);
 
             /**
              * @brief Initialize the vector of times which coincide to the decision variables U occur at.
@@ -118,7 +115,7 @@ namespace galileo
              * @param x0_local Local starting state to integrate from
              *
              */
-            void initialize_knot_segments(DM x0_global, MX x0_local);
+            void initialize_knot_segments(casadi::DM x0_global, casadi::MX x0_local);
 
             /**
              * @brief Build the function graph.
@@ -127,7 +124,7 @@ namespace galileo
              * @param Wx Decision bound and initial guess data for the state
              * @param Wu Decision bound and initial guess data for the input
              */
-            void initialize_expression_graph(vector<shared_ptr<ConstraintData>> G, shared_ptr<DecisionData> Wx, shared_ptr<DecisionData> Wu);
+            void initialize_expression_graph(std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu);
 
             /**
              * @brief Evaluate the expressions with the actual decision variables.
@@ -136,50 +133,50 @@ namespace galileo
              * @param w Decision variable vector to fill
              * @param g Constraint vector to fill
              */
-            void evaluate_expression_graph(MX &J0, MXVector &w, MXVector &g);
+            void evaluate_expression_graph(casadi::MX &J0, casadi::MXVector &w, casadi::MXVector &g);
 
             /**
              * @brief Extract the solution from the decision variable vector.
              *
              * @param w Decision variable vector
-             * @return MX Solution values
+             * @return casadi::MX Solution values
              */
-            MXVector extract_solution(MX &w) const;
+            casadi::MXVector extract_solution(casadi::MX &w) const;
 
             /**
              * @brief Get the initial state.
              *
-             * @return MX The initial state
+             * @return casadi::MX The initial state
              */
-            MX get_initial_state() const;
+            casadi::MX get_initial_state() const;
 
             /**
              * @brief Get the initial state deviant.
              *
-             * @return MX The initial state deviant
+             * @return casadi::MX The initial state deviant
              */
-            MX get_initial_state_deviant() const;
+            casadi::MX get_initial_state_deviant() const;
 
             /**
              * @brief Get the final state deviant.
              *
-             * @return MX The final state deviant
+             * @return casadi::MX The final state deviant
              */
-            MX get_final_state_deviant() const;
+            casadi::MX get_final_state_deviant() const;
 
             /**
              * @brief Get the actual final state.
              *
-             * @return MX The final state.
+             * @return casadi::MX The final state.
              */
-            MX get_final_state() const;
+            casadi::MX get_final_state() const;
 
             /**
              * @brief Get the local times vector.
              *
-             * @return DM The local times vector
+             * @return casadi::DM The local times vector
              */
-            DM get_local_times() const;
+            casadi::DM get_local_times() const;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -190,7 +187,7 @@ namespace galileo
              * @param lbw The vector to be filled with lower bound values on decision variables.
              * @param ubw The vector to be filled with upper bound values on decision variables.
              */
-            void fill_lbw_ubw(vector<double> &lbw, vector<double> &ubw);
+            void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw);
 
             /**
              * @brief Fills the lower bounds on general constraints (lbg) and upper bounds on general constraints (ubg) vectors with values.
@@ -201,7 +198,7 @@ namespace galileo
              * @param lbg The vector to be filled with general lower bound values.
              * @param ubg The vector to be filled with general upper bound values.
              */
-            void fill_lbg_ubg(vector<double> &lbg, vector<double> &ubg);
+            void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg);
 
             /**
              * @brief Fills the initial guess vector (w0) with values.
@@ -211,7 +208,7 @@ namespace galileo
              *
              * @param w0 The vector to be filled with initial guess values.
              */
-            void fill_w0(vector<double> &w0) const;
+            void fill_w0(std::vector<double> &w0) const;
 
             /**
              * @brief Returns the starting and ending index in w.
@@ -257,14 +254,14 @@ namespace galileo
             /**
              * @brief Helper function to process a vector of type MX.
              *
-             * This function takes a vector of type MX and performs some processing on it.
+             * This function takes a vector of type casadi::MX and performs some processing on it.
              * It creates a temporary vector by copying the input vector and removing the last element.
              * The modified vector is then returned.
              *
-             * @param vec The input vector of type MX.
-             * @return The processed vector of type MX.
+             * @param vec The input vector of type casadi::MX.
+             * @return The processed vector of type casadi::MX.
              */
-            MX processVector(MXVector &vec) const;
+            casadi::MX processVector(casadi::MXVector &vec) const;
 
             /**
              * @brief Process the offset vector by removing the first element and concatenating the remaining elements horizontally.
@@ -272,19 +269,19 @@ namespace galileo
              * @param vec The input offset vector.
              * @return The processed offset vector.
              */
-            MX processOffsetVector(MXVector &vec) const;
+            casadi::MX processOffsetVector(casadi::MXVector &vec) const;
 
             /**
              * @brief Collocation state decision variables.
              *
              */
-            MXVector dXc_var_vec;
+            casadi::MXVector dXc_var_vec;
 
             /**
              * @brief Collocation input decision variables.
              *
              */
-            MXVector U_var_vec;
+            casadi::MXVector U_var_vec;
 
             /**
              * @brief Collocation input decision expressions at the state collocation points.
@@ -292,37 +289,37 @@ namespace galileo
              * Decision variables of control and state are potentially approximated by different degree polynomials.
              *
              */
-            SXVector U_at_c_vec;
+            casadi::SXVector U_at_c_vec;
 
             /**
              * @brief Collocation state decision expressions at the collocation points.
              *
              */
-            SXVector x_at_c_vec;
+            casadi::SXVector x_at_c_vec;
 
             /**
              * @brief Knot point deviants state decision variables.
              *
              */
-            MXVector dX0_var_vec;
+            casadi::MXVector dX0_var_vec;
 
             /**
              * @brief Knot point state expressions (integral functions of the deviants).
              *
              */
-            MXVector X0_var_vec;
+            casadi::MXVector X0_var_vec;
 
             /**
-             * @brief Function map for extracting the solution from the ocp solution vector.
+             * @brief casadi::Function map for extracting the solution from the ocp solution vector.
              *
              */
-            Function sol_map_func;
+            casadi::Function sol_map_func;
 
             /**
              * @brief Solution function.
              *
              */
-            Function get_sol_func;
+            casadi::Function get_sol_func;
 
             /**
              * @brief Implicit discrete-time function map. This function map returns the vector of collocation equations
@@ -330,115 +327,115 @@ namespace galileo
                 dynamics.
              *
              */
-            Function collocation_constraint_map;
+            casadi::Function collocation_constraint_map;
 
             /**
              * @brief Implicit discrete-time function map. The map which matches the approximated final state expression with the initial
                 state of the next segment.
              *
              */
-            Function xf_constraint_map;
+            casadi::Function xf_constraint_map;
 
             /**
              * @brief Implicit discrete-time function map. The accumulated cost across all the knot segments found using quadrature rules.
              *
              */
-            Function q_cost_fold;
+            casadi::Function q_cost_fold;
 
             /**
              * @brief User defined constraints, which are functions with certain bounds associated with them.
              *
              */
-            vector<Function> general_constraint_maps;
+            std::vector<casadi::Function> general_constraint_maps;
 
             /**
              * @brief Lower bounds associated with the general constraint maps.
              *
              */
-            DM general_lbg;
+            casadi::DM general_lbg;
 
             /**
              * @brief Upper bounds associated with the general constraint maps.
              *
              */
-            DM general_ubg;
+            casadi::DM general_ubg;
 
             /**
              * @brief Lower bounds associated with the decision variable constraint maps.
              *
              */
-            DM general_lbw;
+            casadi::DM general_lbw;
 
             /**
              * @brief Upper bounds associated with the decision variable constraint maps.
              *
              */
-            DM general_ubw;
+            casadi::DM general_ubw;
 
             /**
              * @brief Initial guess for associated with this segment
              */
-            DM w0;
+            casadi::DM w0;
 
             /**
              * @brief Integrator function.
              *
              */
-            Function Fint;
+            casadi::Function Fint;
 
             /**
              * @brief Difference function.
              *
              */
-            Function Fdif;
+            casadi::Function Fdif;
 
             /**
              * @brief Dynamics function.
              *
              */
-            Function F;
+            casadi::Function F;
 
             /**
              * @brief Cost function.
              *
              */
-            Function L;
+            casadi::Function L;
 
             /**
              * @brief Collocation states used to build the expression graphs.
              *
              */
-            SXVector dXc;
+            casadi::SXVector dXc;
 
             /**
              * @brief Collocation inputs used to build the expression graphs.
              *
              */
-            SXVector Uc;
+            casadi::SXVector Uc;
 
             /**
              * @brief Knot states deviants used to build the expression graphs.
              *
              */
-            SX dX0;
+            casadi::SX dX0;
 
             /**
              * @brief Knot states used to build the expression graphs.
              *
              */
-            SX X0;
+            casadi::SX X0;
 
             /**
              * @brief Accumulator expression used to build the expression graphs.
              *
              */
-            SX Lc;
+            casadi::SX Lc;
 
             /**
              * @brief Helper for indexing the state variables.
              *
              */
-            shared_ptr<States> st_m;
+            std::shared_ptr<States> st_m;
 
             /**
              * @brief Number of knot segments.
@@ -450,7 +447,7 @@ namespace galileo
              * @brief Vector of local times including knot points. Note that this coincides with the times for the decision variables of x.
              *
              */
-            DM local_times;
+            casadi::DM local_times;
 
             /**
              * @brief Vector of unique times for this segment, including terminal but not including initial.
@@ -460,26 +457,26 @@ namespace galileo
              * In the frame of the global times (NOT the local times)
              *
              */
-            DM collocation_times;
+            casadi::DM collocation_times;
 
             /**
              * @brief Vector of times for the knot points for this segment.
              *
              * In the frame of the global times (NOT the local times)
              */
-            DM knot_times;
+            casadi::DM knot_times;
 
             /**
              * @brief Vector of times for the decision variables of u.
              */
-            DM u_times;
+            casadi::DM u_times;
         };
 
-        LagrangePolynomial::LagrangePolynomial(int d_, const string &scheme)
+        LagrangePolynomial::LagrangePolynomial(int d_, const std::string &scheme)
         {
             d = d_;
             /*Choose collocation points*/
-            tau_root = collocation_points(d, scheme);
+            tau_root = casadi::collocation_points(d, scheme);
             tau_root.insert(tau_root.begin(), 0);
 
             /*Coefficients of the quadrature function*/
@@ -497,30 +494,30 @@ namespace galileo
             for (int j = 0; j < d + 1; ++j)
             {
                 /*Construct Lagrange polynomials to get the polynomial basis at the collocation point*/
-                Polynomial p = 1;
+                casadi::Polynomial p = 1;
                 for (int r = 0; r < d + 1; ++r)
                 {
                     if (r != j)
                     {
-                        p *= Polynomial(-tau_root[r], 1) / (tau_root[j] - tau_root[r]);
+                        p *= casadi::Polynomial(-tau_root[r], 1) / (tau_root[j] - tau_root[r]);
                     }
                 }
                 /*Evaluate the polynomial at the final time to get the coefficients of the continuity equation*/
                 D[j] = p(1.0);
 
                 /*Evaluate the time derivative of the polynomial at all collocation points to get the coefficients of the continuity equation*/
-                Polynomial dp = p.derivative();
+                casadi::Polynomial dp = p.derivative();
                 for (int r = 0; r < d + 1; ++r)
                 {
                     C[j][r] = dp(tau_root[r]);
                 }
-                Polynomial pint = p.anti_derivative();
+                casadi::Polynomial pint = p.anti_derivative();
                 B[j] = pint(1.0);
             }
         }
 
         template <typename Scalar>
-        Scalar LagrangePolynomial::lagrange_interpolation(double t, const vector<Scalar> terms) const
+        Scalar LagrangePolynomial::lagrange_interpolation(double t, const std::vector<Scalar> terms) const
         {
             assert((t >= 0.0) && (t <= 1.0) && "t must be in the range [0,1]");
 
@@ -540,7 +537,7 @@ namespace galileo
             return result;
         }
 
-        PseudospectralSegment::PseudospectralSegment(shared_ptr<GeneralProblemData> problem, shared_ptr<States> st_m_, int d, int knot_num_, double h_)
+        PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_)
         {
             auto Fint_ = problem->Fint;
             auto Fdif_ = problem->Fdif;
@@ -586,22 +583,22 @@ namespace galileo
 
             for (int j = 0; j < dX_poly.d; ++j)
             {
-                dXc.push_back(SX::sym("dXc_" + to_string(j), st_m->ndx, 1));
+                dXc.push_back(casadi::SX::sym("dXc_" + std::to_string(j), st_m->ndx, 1));
                 if (j < U_poly.d)
                 {
-                    Uc.push_back(SX::sym("Uc_" + to_string(j), st_m->nu, 1));
+                    Uc.push_back(casadi::SX::sym("Uc_" + std::to_string(j), st_m->nu, 1));
                 }
             }
-            dX0 = SX::sym("dX0", st_m->ndx, 1);
-            X0 = SX::sym("X0", st_m->nx, 1);
-            Lc = SX::sym("Lc", 1, 1);
+            dX0 = casadi::SX::sym("dX0", st_m->ndx, 1);
+            X0 = casadi::SX::sym("X0", st_m->nx, 1);
+            Lc = casadi::SX::sym("Lc", 1, 1);
         }
 
-        void PseudospectralSegment::initialize_local_time_vector(shared_ptr<DM> global_times)
+        void PseudospectralSegment::initialize_local_time_vector(std::shared_ptr<casadi::DM> global_times)
         {
-            local_times = DM::zeros(knot_num * (dX_poly.d + 1), 1);
-            collocation_times = DM::zeros(knot_num * (dX_poly.d), 1);
-            knot_times = DM::zeros(knot_num + 1, 1);
+            local_times = casadi::DM::zeros(knot_num * (dX_poly.d + 1), 1);
+            collocation_times = casadi::DM::zeros(knot_num * (dX_poly.d), 1);
+            knot_times = casadi::DM::zeros(knot_num + 1, 1);
             int i = 0;
             int unique_i = 0;
             int j = 0;
@@ -631,11 +628,11 @@ namespace galileo
             {
                 start_time = (*global_times)(global_times->size1() - 1, 0).get_elements()[0];
                 local_times += start_time;
-                global_times = make_shared<DM>(vertcat(*global_times, local_times));
+                global_times = std::make_shared<casadi::DM>(vertcat(*global_times, local_times));
             }
             else
             {
-                global_times = make_shared<DM>(local_times);
+                global_times = std::make_shared<casadi::DM>(local_times);
             }
             collocation_times += start_time;
             knot_times += start_time;
@@ -644,7 +641,7 @@ namespace galileo
 
         void PseudospectralSegment::initialize_u_time_vector()
         {
-            u_times = DM::zeros(knot_num * (U_poly.d), 1);
+            u_times = casadi::DM::zeros(knot_num * (U_poly.d), 1);
             int j = 0;
             double kh = 0.0;
             u_times(0, 0) = kh;
@@ -663,11 +660,11 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::initialize_knot_segments(DM x0_global_, MX x0_local_)
+        void PseudospectralSegment::initialize_knot_segments(casadi::DM x0_global_, casadi::MX x0_local_)
         {
             x0_global = x0_global_;
             x0_local = x0_local_;
-            assert(x0_local.size1() == st_m->nx && x0_local.size2() == 1 && "x0 must be a column vector of size nx");
+            assert(x0_local.size1() == st_m->nx && x0_local.size2() == 1 && "x0 must be a column std::vector of size nx");
 
             dXc_var_vec.clear();
             U_var_vec.clear();
@@ -677,18 +674,18 @@ namespace galileo
             x_at_c_vec.clear();
             for (int k = 0; k < knot_num; ++k)
             {
-                dXc_var_vec.push_back(MX::sym("dXc_" + to_string(k), st_m->ndx * dX_poly.d, 1));
-                U_var_vec.push_back(MX::sym("U_" + to_string(k), st_m->nu * U_poly.d, 1));
+                dXc_var_vec.push_back(casadi::MX::sym("dXc_" + std::to_string(k), st_m->ndx * dX_poly.d, 1));
+                U_var_vec.push_back(casadi::MX::sym("U_" + std::to_string(k), st_m->nu * U_poly.d, 1));
             }
 
             for (int k = 0; k < knot_num + 1; ++k)
             {
-                dX0_var_vec.push_back(MX::sym("dX0_" + to_string(k), st_m->ndx, 1));
-                X0_var_vec.push_back(Fint(MXVector{x0_local, dX0_var_vec[k], 1.0}).at(0));
+                dX0_var_vec.push_back(casadi::MX::sym("dX0_" + std::to_string(k), st_m->ndx, 1));
+                X0_var_vec.push_back(Fint(casadi::MXVector{x0_local, dX0_var_vec[k], 1.0}).at(0));
             }
         }
 
-        void PseudospectralSegment::initialize_expression_graph(vector<shared_ptr<ConstraintData>> G, shared_ptr<DecisionData> Wx, shared_ptr<DecisionData> Wu)
+        void PseudospectralSegment::initialize_expression_graph(std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu)
         {
             assert(F.n_in() == 2 && "F must have 2 inputs");
             assert(F.n_out() == 1 && "F must have 1 output");
@@ -705,17 +702,17 @@ namespace galileo
             L.assert_size_out(0, 1, 1);
 
             /*Collocation equations*/
-            SXVector eq;
+            casadi::SXVector eq;
             /*State at the end of the collocation interval*/
-            SX dXf = dX_poly.D[0] * dX0;
+            casadi::SX dXf = dX_poly.D[0] * dX0;
             /*Cost at the end of the collocation interval*/
-            SX Qf = 0;
+            casadi::SX Qf = 0;
             /*Actual state at collocation points*/
-            SXVector x_at_c;
+            casadi::SXVector x_at_c;
             /*U interpolated at the dx polynomial collocation points*/
-            SXVector u_at_c;
-            SXVector tmp_x;
-            SXVector tmp_dx;
+            casadi::SXVector u_at_c;
+            casadi::SXVector tmp_x;
+            casadi::SXVector tmp_dx;
             tmp_x.push_back(X0);
             tmp_dx.push_back(dX0);
 
@@ -723,15 +720,15 @@ namespace galileo
             {
                 double dt_j = (dX_poly.tau_root[j + 1] - dX_poly.tau_root[j]) * h;
                 /*Expression for the state derivative at the collocation point*/
-                SX dxp = dX_poly.C[0][j + 1] * dX0;
+                casadi::SX dxp = dX_poly.C[0][j + 1] * dX0;
                 for (int r = 0; r < dX_poly.d; ++r)
                 {
                     dxp += dX_poly.C[r + 1][j + 1] * dXc[r];
                 }
                 /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j] if the states are already Euclidean*/
-                SX x_c = Fint(SXVector{X0, dXc[j], dt_j}).at(0);
-                // SX u_c = U_poly.lagrange_interpolation(dX_poly.tau_root[j], Uc);
-                SX u_c = Uc[0];
+                casadi::SX x_c = Fint(casadi::SXVector{X0, dXc[j], dt_j}).at(0);
+                // casadi::SX u_c = U_poly.lagrange_interpolation(dX_poly.tau_root[j], Uc);
+                casadi::SX u_c = Uc[0];
 
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
@@ -739,10 +736,10 @@ namespace galileo
                 tmp_dx.push_back(dXc[j]);
 
                 /*Append collocation equations*/
-                eq.push_back(h * F(SXVector{x_c, u_c}).at(0) - dxp);
+                eq.push_back(h * F(casadi::SXVector{x_c, u_c}).at(0) - dxp);
 
                 /*Add cost contribution*/
-                SXVector L_out = L(SXVector{x_c, u_c});
+                casadi::SXVector L_out = L(casadi::SXVector{x_c, u_c});
                 /*This is fine as long as the cost is not related to the Lie Group elements. See the state integrator and dX for clarity*/
                 Qf += dX_poly.B[j + 1] * L_out.at(0) * h;
                 // Qf += U_poly.B(j + 1) * L_out.at(1) * h;
@@ -750,7 +747,7 @@ namespace galileo
                 dXf += dX_poly.D[j + 1] * dXc[j];
             }
 
-            Dict opts;
+            casadi::Dict opts;
             // // opts["cse"] = true;
             // opts["jit"] = true;
             // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
@@ -758,9 +755,9 @@ namespace galileo
             // // opts["jit_options.temp_suffix"] = false;
             // opts["compiler"] = "shell";
 
-            auto collocation_constraint = Function("feq",
-                                                   SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
-                                                   SXVector{vertcat(eq)}, opts);
+            auto collocation_constraint = casadi::Function("feq",
+                                                   casadi::SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
+                                                   casadi::SXVector{vertcat(eq)}, opts);
             // collocation_constraint.generate("feq");
             // int flag1 = system("gcc -fPIC -shared -O3 feq.c -o feq.so");
             // casadi_assert(flag1==0, "Compilation failed");
@@ -772,16 +769,16 @@ namespace galileo
             // casadi_assert(flag2==0, "Compilation failed");
             // auto collocation_constraint_adj = external("adj1_feq");
 
-            auto xf_constraint = Function("fxf",
-                                          SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
-                                          SXVector{dXf}, opts);
+            auto xf_constraint = casadi::Function("fxf",
+                                          casadi::SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
+                                          casadi::SXVector{dXf}, opts);
             // xf_constraint.generate("fxf");
             // int flag2 = system("gcc -fPIC -shared -O3 fxf.c -o fxf.so");
             // casadi_assert(flag2==0, "Compilation failed");
             // xf_constraint = external("fxf");
 
-            auto q_cost = Function("fxq", SXVector{Lc, X0, vertcat(dXc), dX0, vertcat(Uc)},
-                                   SXVector{Lc + Qf}, opts);
+            auto q_cost = casadi::Function("fxq", casadi::SXVector{Lc, X0, vertcat(dXc), dX0, vertcat(Uc)},
+                                   casadi::SXVector{Lc + Qf}, opts);
             // q_cost.generate("fxq");
             // int flag3 = system("gcc -fPIC -shared -O3 fxq.c -o fxq.so");
             // casadi_assert(flag3==0, "Compilation failed");
@@ -793,16 +790,16 @@ namespace galileo
             xf_constraint_map = xf_constraint.map(knot_num, "openmp");
             q_cost_fold = q_cost.fold(knot_num);
 
-            sol_map_func = Function("sol_map",
-                                    SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
-                                    SXVector{horzcat(tmp_x), horzcat(u_at_c)})
+            sol_map_func = casadi::Function("sol_map",
+                                    casadi::SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
+                                    casadi::SXVector{horzcat(tmp_x), horzcat(u_at_c)})
                                .map(knot_num, "serial");
 
             casadi_int N = collocation_constraint_map.size1_out(0) * collocation_constraint_map.size2_out(0) +
                            xf_constraint_map.size1_out(0) * xf_constraint_map.size2_out(0);
             auto tmp = N;
 
-            vector<tuple_size_t> ranges_G;
+            std::vector<tuple_size_t> ranges_G;
 
             /*Map the constraint to each collocation point, and then map the mapped constraint to each knot segment*/
             for (size_t i = 0; i < G.size(); ++i)
@@ -814,9 +811,9 @@ namespace galileo
                 g_data->G.assert_size_in(1, st_m->nu, 1);
                 /*TODO: Add assertions to check the bounds functions here!!!*/
 
-                auto tmap = Function("fg",
-                                     SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
-                                     SXVector{vertcat(g_data->G.map(dX_poly.d, "serial")((SXVector{horzcat(x_at_c), horzcat(u_at_c)})))})
+                auto tmap = casadi::Function("fg",
+                                     casadi::SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
+                                     casadi::SXVector{vertcat(g_data->G.map(dX_poly.d, "serial")((casadi::SXVector{horzcat(x_at_c), horzcat(u_at_c)})))})
                                 .map(knot_num, "serial");
                 general_constraint_maps.push_back(tmap);
                 ranges_G.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
@@ -825,15 +822,15 @@ namespace galileo
 
             general_lbg.resize(N, 1);
             general_ubg.resize(N, 1);
-            general_lbg(Slice(0, tmp)) = DM::zeros(tmp, 1);
-            general_ubg(Slice(0, tmp)) = DM::zeros(tmp, 1);
+            general_lbg(casadi::Slice(0, tmp)) = casadi::DM::zeros(tmp, 1);
+            general_ubg(casadi::Slice(0, tmp)) = casadi::DM::zeros(tmp, 1);
 
             for (casadi_int i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
-                general_lbg(Slice(get<0>(ranges_G[i])), get<1>(ranges_G[i])) =
+                general_lbg(casadi::Slice(std::get<0>(ranges_G[i])), std::get<1>(ranges_G[i])) =
                     vertcat(g_data->lower_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times));
-                general_ubg(Slice(get<0>(ranges_G[i])), get<1>(ranges_G[i])) =
+                general_ubg(casadi::Slice(std::get<0>(ranges_G[i])), std::get<1>(ranges_G[i])) =
                     vertcat(g_data->upper_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times));
             }
 
@@ -842,90 +839,90 @@ namespace galileo
             auto Ndxcol = Ndx - Ndxknot;
 
             auto Nu = st_m->nu * U_poly.d * knot_num;
-            w0 = DM::zeros(Ndx + Nu, 1);
-            general_lbw = -DM::inf(Ndx + Nu, 1);
-            general_ubw = DM::inf(Ndx + Nu, 1);
+            w0 = casadi::DM::zeros(Ndx + Nu, 1);
+            general_lbw = -casadi::DM::inf(Ndx + Nu, 1);
+            general_ubw = casadi::DM::inf(Ndx + Nu, 1);
 
             /*Transform initial guess for x to an initial guess for dx, using f_dif, the inverse of f_int*/
 
-            MX xkg_sym = MX::sym("xkg", st_m->nx, 1);
-            MX xckg_sym = MX::sym("Xckg", st_m->nx * dX_poly.d, 1);
+            casadi::MX xkg_sym = casadi::MX::sym("xkg", st_m->nx, 1);
+            casadi::MX xckg_sym = casadi::MX::sym("Xckg", st_m->nx * dX_poly.d, 1);
 
             if (!Wx->initial_guess.is_null())
             {
                 auto xg = vertcat(Wx->initial_guess.map(knot_num + 1, "serial")(knot_times));
-                Function dxg_func = Function("xg_fun", MXVector{xkg_sym}, MXVector{Fdif(MXVector{x0_global, xkg_sym, 1.0}).at(0)})
+                casadi::Function dxg_func = casadi::Function("xg_fun", casadi::MXVector{xkg_sym}, casadi::MXVector{Fdif(casadi::MXVector{x0_global, xkg_sym, 1.0}).at(0)})
                                         .map(knot_num + 1, "serial");
-                w0(Slice(0, Ndxknot)) = reshape(dxg_func(DMVector{xg}).at(0), Ndxknot, 1);
+                w0(casadi::Slice(0, Ndxknot)) = reshape(dxg_func(casadi::DMVector{xg}).at(0), Ndxknot, 1);
                 /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
                 Thus, dxc_k = fdif(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
                 auto xc_g = vertcat(Wx->initial_guess.map((dX_poly.d) * knot_num, "serial")(collocation_times));
                 for (casadi_int i = 0; i < knot_num; ++i)
                 {
-                    auto xk = xg(Slice(i * st_m->nx, (i + 1) * st_m->nx));
-                    auto xck = xc_g(Slice(i * st_m->nx * dX_poly.d, (i + 1) * st_m->nx * dX_poly.d));
+                    auto xk = xg(casadi::Slice(i * st_m->nx, (i + 1) * st_m->nx));
+                    auto xck = xc_g(casadi::Slice(i * st_m->nx * dX_poly.d, (i + 1) * st_m->nx * dX_poly.d));
                     for (casadi_int j = 0; j < dX_poly.d; ++j)
                     {
-                        w0(Slice(Ndxknot + i * st_m->ndx * dX_poly.d + j * st_m->ndx, Ndxknot + i * st_m->ndx * dX_poly.d + (j + 1) * st_m->ndx)) =
-                            reshape(Fdif(DMVector{xk, xck(Slice(j * st_m->nx, (j + 1) * st_m->nx)), h}).at(0), st_m->ndx, 1);
+                        w0(casadi::Slice(Ndxknot + i * st_m->ndx * dX_poly.d + j * st_m->ndx, Ndxknot + i * st_m->ndx * dX_poly.d + (j + 1) * st_m->ndx)) =
+                            reshape(Fdif(casadi::DMVector{xk, xck(casadi::Slice(j * st_m->nx, (j + 1) * st_m->nx)), h}).at(0), st_m->ndx, 1);
                     }
                 }
             }
 
             if (!Wx->lower_bound.is_null() && !Wx->upper_bound.is_null())
             {
-                general_lbw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
-                general_ubw(Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
-                general_lbw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
-                general_ubw(Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
+                general_lbw(casadi::Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
+                general_ubw(casadi::Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
+                general_lbw(casadi::Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
+                general_ubw(casadi::Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
             }
 
             if (!Wu->initial_guess.is_null())
             {
-                w0(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->initial_guess.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
+                w0(casadi::Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->initial_guess.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
             }
 
             if (!Wu->lower_bound.is_null() && !Wu->upper_bound.is_null())
             {
-                general_lbw(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->lower_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
-                general_ubw(Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->upper_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
+                general_lbw(casadi::Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->lower_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
+                general_ubw(casadi::Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->upper_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
             }
         }
 
-        MX PseudospectralSegment::processVector(MXVector &vec) const
+        casadi::MX PseudospectralSegment::processVector(casadi::MXVector &vec) const
         {
-            MXVector temp = vec;
+            casadi::MXVector temp = vec;
             temp.pop_back();
             return horzcat(temp);
         }
 
-        MX PseudospectralSegment::processOffsetVector(MXVector &vec) const
+        casadi::MX PseudospectralSegment::processOffsetVector(casadi::MXVector &vec) const
         {
-            MXVector temp = vec;
+            casadi::MXVector temp = vec;
             temp.erase(temp.begin());
             return horzcat(temp);
         }
 
-        void PseudospectralSegment::evaluate_expression_graph(MX &J0, MXVector &w, MXVector &g)
+        void PseudospectralSegment::evaluate_expression_graph(casadi::MX &J0, casadi::MXVector &w, casadi::MXVector &g)
         {
             assert(J0.size1() == 1 && J0.size2() == 1 && "J0 must be a scalar");
 
-            MXVector result;
+            casadi::MXVector result;
 
-            MX xs = processVector(X0_var_vec);
-            MX dxs = processVector(dX0_var_vec);
-            MX dxcs = horzcat(dXc_var_vec);
-            MX us = horzcat(U_var_vec);
-            MX xs_offset = processOffsetVector(X0_var_vec);
-            MX dxs_offset = processOffsetVector(dX0_var_vec);
+            casadi::MX xs = processVector(X0_var_vec);
+            casadi::MX dxs = processVector(dX0_var_vec);
+            casadi::MX dxcs = horzcat(dXc_var_vec);
+            casadi::MX us = horzcat(U_var_vec);
+            casadi::MX xs_offset = processOffsetVector(X0_var_vec);
+            casadi::MX dxs_offset = processOffsetVector(dX0_var_vec);
 
-            MXVector solmap_restult = sol_map_func(MXVector{xs, dxcs, dxs, us});
-            MX all_xs = solmap_restult.at(0);
-            MX all_us = solmap_restult.at(1);
+            casadi::MXVector solmap_restult = sol_map_func(casadi::MXVector{xs, dxcs, dxs, us});
+            casadi::MX all_xs = solmap_restult.at(0);
+            casadi::MX all_us = solmap_restult.at(1);
 
             /*This section cannot get much faster, it is bounded by the time to evaluate the constraint*/
-            MX col_con_mat = collocation_constraint_map(MXVector{xs, dxcs, dxs, us}).at(0);
-            MX xf_con_mat = xf_constraint_map(MXVector{xs, dxcs, dxs, us}).at(0);
+            casadi::MX col_con_mat = collocation_constraint_map(casadi::MXVector{xs, dxcs, dxs, us}).at(0);
+            casadi::MX xf_con_mat = xf_constraint_map(casadi::MXVector{xs, dxcs, dxs, us}).at(0);
             dxs_offset = reshape(dxs_offset, dxs_offset.size1() * dxs_offset.size2(), 1);
 
             result.push_back(reshape(col_con_mat, col_con_mat.size1() * col_con_mat.size2(), 1));
@@ -934,11 +931,11 @@ namespace galileo
 
             for (size_t i = 0; i < general_constraint_maps.size(); ++i)
             {
-                MX g_con_mat = general_constraint_maps[i](MXVector{xs, dxcs, dxs, us}).at(0);
+                casadi::MX g_con_mat = general_constraint_maps[i](casadi::MXVector{xs, dxcs, dxs, us}).at(0);
                 result.push_back(reshape(g_con_mat, g_con_mat.size1() * g_con_mat.size2(), 1));
             }
 
-            MX cost = q_cost_fold(MXVector{J0, xs, dxcs, dxs, us}).at(0);
+            casadi::MX cost = q_cost_fold(casadi::MXVector{J0, xs, dxcs, dxs, us}).at(0);
             J0 = cost;
             /*where g of this segment starts*/
             size_t g_size = g.size();
@@ -953,61 +950,61 @@ namespace galileo
             w.insert(w.end(), make_move_iterator(dXc_var_vec.begin()), make_move_iterator(dXc_var_vec.end()));
             w.insert(w.end(), make_move_iterator(U_var_vec.begin()), make_move_iterator(U_var_vec.end()));
 
-            w_range = tuple_size_t(w_size, accumulate(w.begin() + w_size, w.end(), 0.0, [](int sum, const MX &item)
+            w_range = tuple_size_t(w_size, accumulate(w.begin() + w_size, w.end(), 0.0, [](int sum, const casadi::MX &item)
                                                       { return sum + item.size1() * item.size2(); }));
-            get_sol_func = Function("func",
-                                    MXVector({vertcat(MXVector(w.begin() + w_size, w.begin() + w.size()))}),
-                                    MXVector({all_xs, all_us}));
+            get_sol_func = casadi::Function("func",
+                                    casadi::MXVector({vertcat(casadi::MXVector(w.begin() + w_size, w.begin() + w.size()))}),
+                                    casadi::MXVector({all_xs, all_us}));
         }
 
-        MXVector PseudospectralSegment::extract_solution(MX &w) const
+        casadi::MXVector PseudospectralSegment::extract_solution(casadi::MX &w) const
         {
-            return get_sol_func(MXVector{w(Slice(casadi_int(get<0>(w_range)), casadi_int(get<1>(w_range))))});
+            return get_sol_func(casadi::MXVector{w(casadi::Slice(casadi_int(std::get<0>(w_range)), casadi_int(std::get<1>(w_range))))});
         }
 
-        MX PseudospectralSegment::get_initial_state_deviant() const
+        casadi::MX PseudospectralSegment::get_initial_state_deviant() const
         {
             return dX0_var_vec.front();
         }
 
-        MX PseudospectralSegment::get_initial_state() const
+        casadi::MX PseudospectralSegment::get_initial_state() const
         {
             return X0_var_vec.front();
         }
 
-        MX PseudospectralSegment::get_final_state_deviant() const
+        casadi::MX PseudospectralSegment::get_final_state_deviant() const
         {
             return dX0_var_vec.back();
         }
 
-        MX PseudospectralSegment::get_final_state() const
+        casadi::MX PseudospectralSegment::get_final_state() const
         {
             return X0_var_vec.back();
         }
 
-        DM PseudospectralSegment::get_local_times() const
+        casadi::DM PseudospectralSegment::get_local_times() const
         {
             return local_times;
         }
 
-        void PseudospectralSegment::fill_lbw_ubw(vector<double> &lbw, vector<double> &ubw)
+        void PseudospectralSegment::fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw)
         {
             /*where lb/ub of this segment starts*/
             auto bw_size = lbw.size();
-            vector<double> element_access1 = general_lbw.get_elements();
-            vector<double> element_access2 = general_ubw.get_elements();
+            std::vector<double> element_access1 = general_lbw.get_elements();
+            std::vector<double> element_access2 = general_ubw.get_elements();
 
             lbw.insert(lbw.end(), element_access1.begin(), element_access1.end());
             ubw.insert(ubw.end(), element_access2.begin(), element_access2.end());
             lbw_ubw_range = tuple_size_t(bw_size, lbw.size());
         }
 
-        void PseudospectralSegment::fill_lbg_ubg(vector<double> &lbg, vector<double> &ubg)
+        void PseudospectralSegment::fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg)
         {
             /*where lb/ub of this segment starts*/
             auto bg_size = lbg.size();
-            vector<double> element_access1 = general_lbg.get_elements();
-            vector<double> element_access2 = general_ubg.get_elements();
+            std::vector<double> element_access1 = general_lbg.get_elements();
+            std::vector<double> element_access2 = general_ubg.get_elements();
 
             lbg.insert(lbg.end(), element_access1.begin(), element_access1.end());
             ubg.insert(ubg.end(), element_access2.begin(), element_access2.end());
@@ -1015,9 +1012,9 @@ namespace galileo
             lbg_ubg_range = tuple_size_t(bg_size, lbg.size());
         }
 
-        void PseudospectralSegment::fill_w0(vector<double> &all_w0) const
+        void PseudospectralSegment::fill_w0(std::vector<double> &all_w0) const
         {
-            vector<double> element_access1 = w0.get_elements();
+            std::vector<double> element_access1 = w0.get_elements();
             all_w0.insert(all_w0.end(), element_access1.begin(), element_access1.end());
         }
 

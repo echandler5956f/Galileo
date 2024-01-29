@@ -5,8 +5,6 @@
 #include <functional>
 #include <vector>
 
-using namespace std;
-
 namespace galileo
 {
     namespace opt
@@ -38,21 +36,21 @@ namespace galileo
              */
             int nu;
 
-            using FactoryFunction = function<unique_ptr<States>(vector<int>)>;
+            using FactoryFunction = std::function<std::unique_ptr<States>(std::vector<int>)>;
 
-            static void registerRobotType(const string &type, FactoryFunction function)
+            static void registerRobotType(const std::string &type, FactoryFunction function)
             {
                 getFactories()[type] = function;
             }
-            static unique_ptr<States> create(const string &type, vector<int> args)
+            static std::unique_ptr<States> create(const std::string &type, std::vector<int> args)
             {
                 return getFactories()[type](args);
             }
 
         private:
-            static map<string, FactoryFunction> &getFactories()
+            static std::map<std::string, FactoryFunction> &getFactories()
             {
-                static map<string, FactoryFunction> factories;
+                static std::map<std::string, FactoryFunction> factories;
                 return factories;
             }
         };
