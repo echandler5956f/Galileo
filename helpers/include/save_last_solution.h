@@ -5,14 +5,14 @@
 
 
 /**
- * @brief Saves the last solution as a CSV to a file in the form "t,x1,x2...,xn" where each row corresponds to a unique time step
+ * @brief Saves the last solution to a file text in the form "t,x1,x2...,xn" where each row corresponds to a unique time step
  * 
  * @param last_solution The last solution from the solver
  * @param folder_location The location of the folder to save the file to
 */
 void save_last_solution_to_file(casadi::MXVector& last_solution, std::string folder_location){
     std::ofstream file;
-    file.open(folder_location + "/last_solution.csv");
+    file.open(folder_location + "/last_solution.txt");
 
     std::vector<double> times = traj.get_global_times();
 

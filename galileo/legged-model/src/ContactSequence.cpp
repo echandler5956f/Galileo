@@ -56,109 +56,20 @@ namespace galileo
                 validity = ContactMode::ContactModeValidity::VALID;
             }
 
-            int ContactSequence::addPhase(const ContactMode &mode, int knot_points, double dt)
+        int ContactSequence::addPhase(const ContactMode &mode, int knot_points, double dt)
+        {
+            auto validity_mode = mode;
+            ContactMode::ContactModeValidity validity;
+
+            validity_mode.MakeValid(validity);
+
+            if (validity != ContactMode::VALID)
             {
-                // assert that contacts.size() == num_end_effectors_
-                Phase new_phase;
-                GlobalPhaseOffset new_phase_offset;
-                new_phase.mode = mode;
-                ContactMode::ContactModeValidity validity;
-
-                new_phase.mode.MakeValid(validity);
-
-                if (validity != ContactMode::VALID)
-                {
-                    throw std::runtime_error(std::string("'Contact is not valid!'"));
-                }
-
-                new_phase.knot_points = knot_points;
-                new_phase.time_value = dt;
-
-                new_phase_offset.t0_offset = dt_;
-                new_phase_offset.knot0_offset = total_knots_;
-
-                phase_sequence_.push_back(new_phase);
-                phase_offset_.push_back(new_phase_offset);
-                dt_ += dt;
-                total_knots_ += knot_points;
-
-                return phase_sequence_.size() - 1;
+                throw std::runtime_error(std::string("'Contact is not valid!'"));
             }
-
-            int ContactSequence::getPhaseIndexAtTime(double t, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-
-                if ((t < 0) || (t > dt_))
-                {
-                    error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
-                    return -1;
-                }
-
-                for (int i = num_phases() - 1; i > 0; i--)
-                {
-                    bool is_in_phase_i = (t >= phase_offset_[i].t0_offset);
-                    if (is_in_phase_i)
-                    {
-                        error_status = CONTACT_SEQUENCE_ERROR::OK;
-                        return i;
-                    }
-                }
-                return -1;
-            }
-
-            int ContactSequence::getPhaseIndexAtKnot(int knot_idx, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                if ((knot_idx < 0) || (knot_idx >= total_knots_))
-                {
-                    error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
-                    return -1;
-                }
-
-                for (int i = num_phases() - 1; i > 0; i--)
-                {
-                    bool is_in_phase_i = (knot_idx >= phase_offset_[i].knot0_offset);
-                    if (is_in_phase_i)
-                    {
-                        error_status = CONTACT_SEQUENCE_ERROR::OK;
-                        return i;
-                    }
-                }
-                return -1;
-            }
-
-            void ContactSequence::getPhaseAtTime(double t, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                int phase_index = getPhaseIndexAtTime(t, error_status);
-                if (error_status != CONTACT_SEQUENCE_ERROR::OK)
-                {
-                    return;
-                }
-
-                phase = phase_sequence_[phase_index];
-            }
-
-            void ContactSequence::getTimeAtPhase(int phase_idx, double &t, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                if ((phase_idx < 0) || (phase_idx >= num_phases()))
-                {
-                    error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
-                    return;
-                }
-
-                t = phase_offset_[phase_idx].t0_offset;
-                error_status = CONTACT_SEQUENCE_ERROR::OK;
-            }
-
-            void ContactSequence::getPhaseAtKnot(int knot_idx, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                int phase_index = getPhaseIndexAtKnot(knot_idx, error_status);
-                if (error_status != CONTACT_SEQUENCE_ERROR::OK)
-                {
-                    return;
-                }
-
-                phase = phase_sequence_[phase_index];
-            }
+            
+            PhaseSequence<ContactMode>::addPhase(validity_mode, knot_points, dt);
+        }
 
         }
     }
