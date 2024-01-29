@@ -58,11 +58,11 @@ namespace galileo
             virtual MX get_final_state() const = 0;
 
             /**
-             * @brief Get the global times vector.
+             * @brief Get the local times vector.
              *
-             * @return std::shared_ptr<casadi::DM> The global times vector
+             * @return casadi::DM The local times vector
              */
-            virtual std::shared_ptr<casadi::DM> get_global_times() const = 0;
+            virtual casadi::DM get_local_times() const = 0;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.

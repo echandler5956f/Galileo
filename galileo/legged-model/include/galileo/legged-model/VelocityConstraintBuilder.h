@@ -46,8 +46,6 @@ namespace galileo
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
                 std::shared_ptr<opt::States> states;
-                std::shared_ptr<opt::Model> model;
-                std::shared_ptr<opt::Data> data;
                 std::shared_ptr<opt::ADModel> ad_model;
                 std::shared_ptr<opt::ADData> ad_data;
                 contact::RobotEndEffectors robot_end_effectors;

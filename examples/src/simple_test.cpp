@@ -51,15 +51,15 @@ int main()
     opts["ipopt.linear_solver"] = "ma97";
     opt::TrajectoryOpt<SimpleProblemData, opt::PseudospectralSegment> traj(problem, builders, opts);
 
-    // casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
-    // X0(1, 0) = 1;
-    // int d = 3;
-    // int N = 20;
-    // double T = 10.0;
-    // double h = T / N;
+    casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
+    X0(1, 0) = 1;
+    int d = 3;
+    int N = 20;
+    double T = 10.0;
+    double h = T / N;
 
-    // traj.init_finite_elements(d, X0);
-    // auto sol = traj.optimize();
+    traj.init_finite_elements(d, X0);
+    auto sol = traj.optimize();
 
     // /*TODO: Make a function to do automate the plotting within the actual library. Allow the user to include plotting functionality as a cmake option*/
     // std::cout << "Here" << std::endl;
@@ -68,7 +68,7 @@ int main()
     // std::vector<double> u_times;
     // for (int i = 0; i < times.size(); ++i)
     // {
-    //     if (i % (d + 1) != d) // Skip every dth element
+    //     if (i % (d + 1) != d) // Skip every dth element, because u does not include knot points
     //     {
     //         u_times.push_back(times[i]);
     //     }

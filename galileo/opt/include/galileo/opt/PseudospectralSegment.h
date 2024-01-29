@@ -37,7 +37,8 @@ namespace galileo
              * @param terms Terms at knot points to use for interpolation
              * @return const SX Resultant expression for the symbolic interpolated value
              */
-            SX lagrange_interpolation(double t, const SXVector terms) const;
+            template <typename Scalar>
+            Scalar lagrange_interpolation(double t, const std::vector<Scalar> terms) const;
 
             /**
              * @brief Degree of the polynomial.
@@ -108,8 +109,9 @@ namespace galileo
             /**
              * @brief Initialize the vector of local times which constraints are evaluated at.
              *
+             * @param global_times Vector of global times
              */
-            void initialize_local_time_vector();
+            void initialize_local_time_vector(std::shared_ptr<casadi::DM> global_times);
 
             /**
              * @brief Initialize the vector of times which coincide to the decision variables U occur at.
@@ -183,11 +185,11 @@ namespace galileo
             MX get_final_state() const;
 
             /**
-             * @brief Get the global times vector.
+             * @brief Get the local times vector.
              *
-             * @return std::shared_ptr<casadi::DM> The global times vector
+             * @return casadi::DM The local times vector
              */
-            std::shared_ptr<casadi::DM> get_global_times() const;
+            casadi::DM get_local_times() const;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
@@ -248,6 +250,18 @@ namespace galileo
              * @return tuple_size_t The range of indices
              */
             tuple_size_t get_range_idx_decision_bounds() const;
+
+            /**
+             * @brief Input polynomial. Helper object to store polynomial information for the input.
+             *
+             */
+            LagrangePolynomial U_poly;
+
+            /**
+             * @brief State polynomial. Helper object to store polynomial information for the state.
+             *
+             */
+            LagrangePolynomial dX_poly;
 
         private:
             /**
@@ -419,18 +433,6 @@ namespace galileo
             SX Lc;
 
             /**
-             * @brief Input polynomial. Helper object to store polynomial information for the input.
-             *
-             */
-            LagrangePolynomial U_poly;
-
-            /**
-             * @brief State polynomial. Helper object to store polynomial information for the state.
-             *
-             */
-            LagrangePolynomial dX_poly;
-
-            /**
              * @brief Helper for indexing the state variables.
              *
              */
@@ -441,12 +443,6 @@ namespace galileo
              *
              */
             int knot_num;
-
-            /**
-             * @brief Vector of global times including knot points.
-             *
-             */
-            std::shared_ptr<DM> global_times;
 
             /**
              * @brief Vector of local times including knot points. Note that this coincides with the times for the decision variables of x.
@@ -521,14 +517,15 @@ namespace galileo
             }
         }
 
-        SX LagrangePolynomial::lagrange_interpolation(double t, const SXVector terms) const
+        template <typename Scalar>
+        Scalar LagrangePolynomial::lagrange_interpolation(double t, const std::vector<Scalar> terms) const
         {
             assert((t >= 0.0) && (t <= 1.0) && "t must be in the range [0,1]");
 
-            SX result = 0;
+            Scalar result = 0;
             for (int j = 0; j < this->d; ++j)
             {
-                SX term = terms[j];
+                Scalar term = terms[j];
                 for (int r = 0; r < this->d + 1; ++r)
                 {
                     if (r != j)
@@ -567,7 +564,6 @@ namespace galileo
 
             this->knot_num = knot_num_;
             this->h = h_;
-            this->global_times = global_times_;
             this->st_m = st_m_;
             this->Fint = Fint_;
             this->Fdif = Fdif_;
@@ -575,7 +571,7 @@ namespace galileo
 
             this->initialize_expression_variables(d);
 
-            this->initialize_local_time_vector();
+            this->initialize_local_time_vector(global_times_);
             this->initialize_u_time_vector();
             this->initialize_knot_segments(x0_global_, x0_local_);
             this->initialize_expression_graph(F, L, G, Wx, Wu);
@@ -603,7 +599,7 @@ namespace galileo
             this->Lc = SX::sym("Lc", 1, 1);
         }
 
-        void PseudospectralSegment::initialize_local_time_vector()
+        void PseudospectralSegment::initialize_local_time_vector(std::shared_ptr<casadi::DM> global_times)
         {
             this->local_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d + 1), 1);
             this->collocation_times = casadi::DM::zeros(this->knot_num * (this->dX_poly.d), 1);
@@ -635,13 +631,13 @@ namespace galileo
             double start_time = 0.0;
             if (global_times != nullptr)
             {
-                start_time = (*this->global_times)(global_times->size1() - 1, 0).get_elements()[0];
-                auto tmp = this->local_times + start_time;
-                this->global_times = std::make_shared<DM>(vertcat(*this->global_times, tmp));
+                start_time = (*global_times)(global_times->size1() - 1, 0).get_elements()[0];
+                this->local_times += start_time;
+                global_times = std::make_shared<DM>(vertcat(*global_times, this->local_times));
             }
             else
             {
-                this->global_times = std::make_shared<DM>(this->local_times);
+                global_times = std::make_shared<DM>(this->local_times);
             }
             this->collocation_times += start_time;
             this->knot_times += start_time;
@@ -1005,9 +1001,9 @@ namespace galileo
             return this->X0_var_vec.back();
         }
 
-        std::shared_ptr<casadi::DM> PseudospectralSegment::get_global_times() const
+        casadi::DM PseudospectralSegment::get_local_times() const
         {
-            return this->global_times;
+            return this->local_times;
         }
 
         void PseudospectralSegment::fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw)

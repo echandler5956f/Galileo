@@ -1,8 +1,9 @@
 #pragma once
 
-#include "galileo/opt/Segment.h"
 #include "third-party/gnuplot-iostream/gnuplot-iostream.h"
 #include <chrono>
+#include "galileo/opt/PseudospectralSegment.h"
+#include <Eigen/Dense>
 
 namespace galileo
 {
@@ -46,12 +47,27 @@ namespace galileo
              */
             std::vector<double> get_global_times() const;
 
+            /**
+             * @brief Get the solution at the specified times. Times should be monotonically increasing, but do not have to be evenly spaced.
+             * The solution is interpolated between the finite elements. The times should be bounded by the times given to the optimization problem.
+             *
+             * @param times The times to evaluate the solution at
+             * @return Eigen::MatrixXd The solution at the specified times
+             */
+            Eigen::MatrixXd get_solution(Eigen::VectorXd &times) const;
+
         private:
             /**
              * @brief A Trajectory is made up of segments of finite elements.
              *
              */
             std::vector<std::shared_ptr<SegmentType>> trajectory;
+
+            /**
+             * @brief The solution vector.
+             *
+             */
+            casadi::MXVector sol;
 
             /**
              * @brief Problem data containing constraints problem data.
@@ -225,7 +241,6 @@ namespace galileo
                 segment->fill_lbg_ubg(this->lbg, this->ubg);
                 segment->fill_lbw_ubw(this->lbw, this->ubw);
                 segment->fill_w0(this->w0);
-                this->global_times = segment->get_global_times();
 
                 /*Initial state constraint*/
                 if (i == 0)
@@ -302,7 +317,50 @@ namespace galileo
 
             std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
             std::cout << "Total seconds from Ipopt w/o function: " << time_just_ipopt << std::endl;
-            return this->trajectory[0]->extract_solution(tmp);
+            this->sol = this->trajectory[0]->extract_solution(tmp);
+            return this->sol;
+        }
+
+        template <class ProblemData, class SegmentType>
+        Eigen::MatrixXd TrajectoryOpt<ProblemData, SegmentType>::get_solution(Eigen::VectorXd &times) const
+        {
+            /*TODO: Only implemented for pseudospectral segments (and not very well), use visitor pattern if we want to use other types of segments*/
+            int i = 0;
+            auto solx = this->sol[0];
+            int d = 0;
+            Eigen::MatrixXd result(this->state_indices->nx, times.size());
+
+            for (std::shared_ptr<SegmentType> seg : this->trajectory)
+            {
+                std::shared_ptr<PseudospectralSegment> pseg = std::dynamic_pointer_cast<PseudospectralSegment>(seg);
+                auto l_times = pseg->get_local_times();
+                double start_time = l_times(0);
+                double end_time = l_times(l_times.size1() - 1);
+
+                /*Get the segment of times that is greater than start time and less than or equal to end time*/
+                auto start_it = std::lower_bound(times.data(), times.data() + times.size(), start_time);
+                auto end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
+                Eigen::VectorXd segment_times(end_it - start_it);
+                std::copy(start_it, end_it, segment_times.data());
+                DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(d, d + pseg->dX_poly.d)));
+                DMVector solx_segment_vec;
+                for (int i = 0; i < solx_segment.size2(); ++i)
+                {
+                    solx_segment_vec.push_back(solx_segment(casadi::Slice(0, solx_segment.rows()), i));
+                }
+
+                d += pseg->dX_poly.d;
+                for (int j = 0; j < segment_times.size(); ++j)
+                {
+                    auto tmp = pseg->dX_poly.lagrange_interpolation(segment_times[j], solx_segment_vec);
+                    for (int k = 0; k < tmp.rows(); ++k)
+                    {
+                        result(k, i) = double(tmp(k));
+                    }
+                    ++i;
+                }
+            }
+            return result;
         }
 
         template <class ProblemData, class SegmentType>
