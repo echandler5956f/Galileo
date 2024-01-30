@@ -56,6 +56,10 @@ namespace galileo
              */
             Eigen::MatrixXd get_solution(Eigen::VectorXd &times) const;
 
+            Eigen::VectorXd get_segment_times(Eigen::VectorXd &times, double start_time, double end_time) const;
+
+            void process_segment_times(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const;
+
         private:
             /**
              * @brief A Trajectory is made up of segments of finite elements.
@@ -312,9 +316,9 @@ namespace galileo
         template <class ProblemData>
         Eigen::MatrixXd TrajectoryOpt<ProblemData>::get_solution(Eigen::VectorXd &times) const
         {
-            /*TODO: Only implemented for pseudospectral segments (and not very well), use visitor pattern if we want to use other types of segments*/
+            auto start_time = std::chrono::high_resolution_clock::now();
             int i = 0;
-            casadi::MX solx = sol[0];
+            auto solx = sol[0];
             int count = 0;
             Eigen::MatrixXd result(state_indices->nx, times.size());
 
@@ -324,44 +328,58 @@ namespace galileo
                 std::vector<double> l_times_vec = pseg->get_local_times().get_elements();
                 double start_time = l_times_vec[0];
                 double end_time = l_times_vec[l_times_vec.size() - 1];
-                /*degree = d + 1 because of the d collocation points and the 1 knot point*/
-                int degree = pseg->dX_poly.d + 1;
+                int degree = pseg->get_degree() + 1;
                 int num_knots = pseg->get_knot_num();
+                auto polynomial = pseg->get_dXPoly();
 
-                /*Get the segment of times that is greater than start time and less than or equal to end time*/
-                double *start_it = std::lower_bound(times.data(), times.data() + times.size(), start_time);
-                double *end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
-                Eigen::VectorXd segment_times(end_it - start_it);
-                std::copy(start_it, end_it, segment_times.data());
+                Eigen::VectorXd segment_times = get_segment_times(times, start_time, end_time);
                 casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(count, count + degree * num_knots)));
 
                 for (int j = 0; j < segment_times.size(); ++j)
                 {
-                    double *it = std::lower_bound(l_times_vec.data(), l_times_vec.data() + l_times_vec.size(), segment_times(j));
-                    int index = (it - l_times_vec.data() - 1) / (degree);
-                    casadi::DM solx_knot_segment = solx_segment(casadi::Slice(0, solx_segment.rows()), casadi::Slice(index * degree, (index * degree) + degree));
-                    casadi::DMVector solx_segment_vec;
-                    for (int k = 0; k < solx_knot_segment.size2(); ++k)
-                    {
-                        solx_segment_vec.push_back(solx_knot_segment(casadi::Slice(0, solx_knot_segment.rows()), k));
-                    }
-                    double scaled_time = (segment_times[j] - l_times_vec[index * degree]) / (l_times_vec[(index * degree) + degree] - l_times_vec[index * degree]);
-                    std::vector<double> tmp = pseg->dX_poly.barycentric_interpolation(scaled_time, solx_segment_vec).get_elements();
-                    for (int k = 0; k < tmp.size(); ++k)
-                    {
-                        result(k, i) = tmp[k];
-                    }
+                    process_segment_times(l_times_vec, segment_times, solx_segment, degree, polynomial, result, i, j);
                     ++i;
                 }
                 count += degree * num_knots;
             }
+            auto end_time = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end_time - start_time;
+            std::cout << "Elapsed time for get_solution: " << elapsed.count() << std::endl;
             return result;
+        }
+
+        template <class ProblemData>
+        Eigen::VectorXd TrajectoryOpt<ProblemData>::get_segment_times(Eigen::VectorXd &times, double start_time, double end_time) const
+        {
+            auto start_it = std::lower_bound(times.data(), times.data() + times.size(), start_time);
+            auto end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
+            Eigen::VectorXd segment_times(end_it - start_it);
+            std::copy(start_it, end_it, segment_times.data());
+            return segment_times;
+        }
+
+        template <class ProblemData>
+        void TrajectoryOpt<ProblemData>::process_segment_times(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const
+        {
+            auto it = std::lower_bound(l_times_vec.data(), l_times_vec.data() + l_times_vec.size(), segment_times(j));
+            int index = (it - l_times_vec.data() - 1) / (degree);
+            casadi::DM solx_knot_segment = solx_segment(casadi::Slice(0, solx_segment.rows()), casadi::Slice(index * degree, (index * degree) + degree));
+            casadi::DMVector solx_segment_vec;
+            for (int k = 0; k < solx_knot_segment.size2(); ++k)
+            {
+                solx_segment_vec.push_back(solx_knot_segment(casadi::Slice(0, solx_knot_segment.rows()), k));
+            }
+            double scaled_time = (segment_times[j] - l_times_vec[index * degree]) / (l_times_vec[(index * degree) + degree] - l_times_vec[index * degree]);
+            std::vector<double> tmp = poly->barycentric_interpolation(scaled_time, solx_segment_vec).get_elements();
+            for (int k = 0; k < tmp.size(); ++k)
+            {
+                result(k, i) = tmp[k];
+            }
         }
 
         template <class ProblemData>
         std::vector<double> TrajectoryOpt<ProblemData>::get_global_times() const
         {
-            std::cout << global_times << std::endl;
             return global_times.get_elements();
         }
 

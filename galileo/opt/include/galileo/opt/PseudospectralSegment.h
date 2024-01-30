@@ -240,6 +240,21 @@ namespace galileo
              */
             tuple_size_t get_range_idx_decision_bounds() const;
 
+            const std::shared_ptr<LagrangePolynomial> get_dXPoly() const
+            {
+                return std::make_shared<LagrangePolynomial>(dX_poly);
+            }
+
+            const std::shared_ptr<LagrangePolynomial> get_UPoly() const
+            {
+                return std::make_shared<LagrangePolynomial>(U_poly);
+            }
+
+            int get_degree() const
+            {
+                return dX_poly.d;
+            }
+
             /**
              * @brief Get the knot num
              *
@@ -249,18 +264,6 @@ namespace galileo
             {
                 return knot_num;
             }
-
-            /**
-             * @brief Input polynomial. Helper object to store polynomial information for the input.
-             *
-             */
-            LagrangePolynomial U_poly;
-
-            /**
-             * @brief State polynomial. Helper object to store polynomial information for the state.
-             *
-             */
-            LagrangePolynomial dX_poly;
 
         private:
             /**
@@ -282,6 +285,18 @@ namespace galileo
              * @return The processed offset vector.
              */
             casadi::MX processOffsetVector(casadi::MXVector &vec) const;
+
+            /**
+             * @brief Input polynomial. Helper object to store polynomial information for the input.
+             *
+             */
+            LagrangePolynomial U_poly;
+
+            /**
+             * @brief State polynomial. Helper object to store polynomial information for the state.
+             *
+             */
+            LagrangePolynomial dX_poly;
 
             /**
              * @brief Collocation state decision variables.
