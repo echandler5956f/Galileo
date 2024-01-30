@@ -137,6 +137,18 @@ namespace galileo
                 phase = phase_sequence_[phase_index];
             }
 
+            void ContactSequence::getTimeAtPhase(int phase_idx, double &t, CONTACT_SEQUENCE_ERROR &error_status) const
+            {
+                if ((phase_idx < 0) || (phase_idx >= num_phases()))
+                {
+                    error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
+                    return;
+                }
+
+                t = phase_offset_[phase_idx].t0_offset;
+                error_status = CONTACT_SEQUENCE_ERROR::OK;
+            }
+
             void ContactSequence::getPhaseAtKnot(int knot_idx, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const
             {
                 int phase_index = getPhaseIndexAtKnot(knot_idx, error_status);

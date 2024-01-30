@@ -2,6 +2,7 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/opt/PseudospectralSegment.h"
 #include "galileo/legged-model/LeggedRobotProblemData.h"
+#include "galileo/legged-model/LeggedRobotStates.h"
 
 #include <Eigen/Dense>
 
@@ -18,28 +19,16 @@
 #include <pinocchio/algorithm/centroidal-derivatives.hpp>
 
 using namespace galileo;
+using namespace legged;
+using namespace opt;
+using namespace constraints;
 using namespace casadi;
 using namespace std;
-
-typedef double Scalar;
-typedef SX ADScalar;
-
-typedef pinocchio::ModelTpl<Scalar> Model;
-typedef Model::Data Data;
-
-typedef pinocchio::ModelTpl<ADScalar> ADModel;
-typedef ADModel::Data ADData;
-
-typedef Model::ConfigVectorType ConfigVector;
-typedef Model::TangentVectorType TangentVector;
-
-typedef ADModel::ConfigVectorType ConfigVectorAD;
-typedef ADModel::TangentVectorType TangentVectorAD;
 
 const string huron_location = "../resources/urdf/huron_cheat.urdf";
 
 const int num_ees = 2;
-const std::string end_effector_names[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
+const string end_effector_names[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
 
 /*So, for some reason, pinocchio's integrate function returns a slightly different SX matrix than than the python version.
 When I actually evaluate the function though, it seems to return the correct result for both versions.

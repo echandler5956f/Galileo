@@ -11,6 +11,16 @@ namespace galileo
 
             struct FrictionConeProblemData
             {
+                std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
+                std::shared_ptr<contact::ContactSequence> contact_sequence;
+                std::shared_ptr<opt::States> states;
+                std::shared_ptr<opt::ADModel> ad_model;
+                std::shared_ptr<opt::ADData> ad_data;
+                contact::RobotEndEffectors robot_end_effectors;
+                casadi::SX x;
+                casadi::SX u;
+                casadi::SX t;
+                int num_knots;
 
                 float mu;
 
@@ -38,7 +48,7 @@ namespace galileo
              *      LorentzConeConstraint ( [0   1   0] * Rotation * GRF )
              *                              [1   0   0]
              *
-             *      or      [0   0  mu] * Rotation * GRF
+             *      or     [0   0  mu] * Rotation * GRF
              *               - 2norm(   [0   1   0] * Rotation * GRF  )  => 0
              *                          [1   0   0]
              *
@@ -55,60 +65,47 @@ namespace galileo
             public:
                 FrictionConeConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
-                /**
-                 *
-                 * @brief Generate flags for each knot point. We set it to all ones, applicable at each knot.
-                 *
-                 * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @param knot_index the index of the knot point
-                 * @param apply_at a vector of flags, one for each collocation point in the knot segment
-                 */
-                void CreateApplyAt(const ProblemData &problem_data, int knot_index, Eigen::VectorXi &apply_at) const
-                {
-                    uint num_points = problem_data.num_knots;
-                    apply_at = Eigen::VectorXi::Constant(num_points, 1);
-                }
-
+            private:
                 /**
                  * @brief Generate bounds for a vector of points.
                  *
                  * For both approximations, each value is less than 0, with no lower bound.
                  *
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @param knot_index the index of the knot point
+                 * @param phase_index the index of the hase
                  * @param upper_bound Lower bound of the constraint at each point
                  * @param lower_bound Upper bound of the constraint at each point
                  */
-                void CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
+                void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
 
                 /**
                  * @brief Generate a function to evaluate each point
                  *
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                 * @param knot_index the index of the knot point
+                 * @param phase_index the index of the phase
                  * @param G A function that evaluates the constraint at each point
                  */
-                void CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
+                void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const;
 
-            private: /**
-                      * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
-                      *
-                      * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
-                      * @return uint
-                      */
+                /**
+                 * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
+                 *
+                 * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
+                 * @return uint
+                 */
                 uint getNumConstraintPerEEPerState(const ProblemData &problem_data) const;
 
                 /**
-                 * @brief Get the Casadi::Function object, G, to be applied to the end effector given by "EndEffectorID" at a collocation point.
+                 * @brief Get the Casadi::Function object, G, to be applied to the end effector given by "EndEffectorID" at a knot point.
                  * For a Second Order Constraint, for instance, this is a function that returns 11 value, the result of the lorentz cone constraint.
                  * function = g( state ) @ EndEffectorID
                  */
-                void CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int knot_index, casadi::Function &G) const;
+                void CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, casadi::SX &u_in, casadi::SX &G_out) const;
 
                 /**
-                 * @brief getModeAtKnot gets the contact mode at the current knot
+                 * @brief getModeAtKnot gets the contact mode at the current phase
                  */
-                const contact::ContactMode getModeAtKnot(const ProblemData &problem_data, int knot_index) const;
+                const contact::ContactMode getModeAtPhase(const ProblemData &problem_data, int phase_index) const;
 
                 /**
                  * @brief getContactSurfaceRotationAtMode gets a rotation matrix describing the normal to the contact surface at the current knot.
@@ -126,9 +123,9 @@ namespace galileo
             };
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, int knot_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
+            void FrictionConeConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
             {
-                uint num_points = problem_data.num_knots;
+                uint num_points = problem_data.friction_cone_problem_data.num_knots;
 
                 uint num_constraints = num_points * getNumConstraintPerEEPerState(problem_data);
 
@@ -142,31 +139,31 @@ namespace galileo
                 casadi::SX lower_bound_casadi = casadi::SX(casadi::Sparsity::dense(lower_bound_vect.rows(), 1));
                 pinocchio::casadi::copy(lower_bound_vect, lower_bound_casadi);
 
-                upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.t}, casadi::SXVector{upper_bound_casadi});
-                lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.t}, casadi::SXVector{lower_bound_casadi});
+                upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{upper_bound_casadi});
+                lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{lower_bound_casadi});
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int knot_index, casadi::Function &G) const
+            void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
             {
                 // CREATE CASADI MAP FROM EACH END EFFECTOR
                 // CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
                 // Possibly, this would mean creating a map.
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
-
                 casadi::SXVector G_vec;
                 casadi::SXVector u_vec;
-                for (auto &end_effector : problem_data.robot_end_effectors)
+                for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
-                    casadi::Function G_end_effector;
-                    CreateSingleEndEffectorFunction(end_effector.first, problem_data, knot_index, G_end_effector);
-                    if (G_end_effector.sx_out().at(1).is_zero())
+                    casadi::SX G_out;
+                    casadi::SX u_in;
+                    CreateSingleEndEffectorFunction(end_effector.first, problem_data, phase_index, u_in, G_out);
+                    if (!G_out.is_zero())
                     {
-                        G_vec.push_back(G_end_effector.sx_out().at(0));
-                        u_vec.push_back(G_end_effector.sx_in(1));
+                        G_vec.push_back(G_out);
+                        u_vec.push_back(u_in);
                     }
                 }
-                G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.x, casadi::SX::vertcat(u_vec)}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
+                G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, casadi::SX::vertcat(u_vec)}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
             }
 
             template <class ProblemData>
@@ -181,17 +178,16 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int knot_index, casadi::Function &G) const
+            void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, casadi::SX &u_in, casadi::SX &G_out) const
             {
                 // Get the size of the constraint applied to an end effector at a state.
                 uint num_contraint_per_ee_per_point = getNumConstraintPerEEPerState(problem_data);
 
                 // Get the mode at the knot point.
-                const contact::ContactMode mode = getModeAtKnot(problem_data, knot_index);
-                casadi::SX x = problem_data.x;
+                const contact::ContactMode mode = getModeAtPhase(problem_data, phase_index);
+                casadi::SX x = problem_data.friction_cone_problem_data.x;
                 auto it = mode.combination_definition.find(EndEffectorID);
-                bool dof6 = (it != mode.combination_definition.end()) ? problem_data.robot_end_effectors.find(EndEffectorID)->second->is_6d : false;
-                auto u = casadi::SX::sym("Grf" + EndEffectorID, dof6 ? 6 : 3);
+                bool dof6 = (it != mode.combination_definition.end()) ? problem_data.friction_cone_problem_data.robot_end_effectors.find(EndEffectorID)->second->is_6d : false;
 
                 // If the end effector is not in contact, Do not apply the constraint; the function is all zeros
                 if (it != mode.combination_definition.end() && !it->second)
@@ -199,9 +195,10 @@ namespace galileo
                 {
                     // SET ALL ZEROS CASADI FUNCTION
                     //  Function = Eigen::MatrixXd::Zero(num_contraint_per_ee_per_point, 3) * GRF
-                    G = casadi::Function("G" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{casadi::SX(0)});
+                    G_out = casadi::SX(0);
                     return;
                 }
+                u_in = casadi::SX::sym("Grf" + EndEffectorID, dof6 ? 6 : 3);
 
                 Eigen::Matrix<double, 3, 3> rotation = getContactSurfaceRotationAtMode(EndEffectorID, problem_data, mode);
 
@@ -211,45 +208,39 @@ namespace galileo
 
                 FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.approximation_order;
 
-                casadi::SX tmp1 = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
-                pinocchio::casadi::copy(rotated_cone_constraint, tmp1);
+                casadi::SX symbolic_rotated_cone_constraint = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
+                pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
 
                 // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
-
-                auto evaluated_vector = casadi::SX::mtimes(tmp1, u);
+                auto evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u_in);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
+                    //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
-                    G = casadi::Function("G" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{evaluated_vector});
+                    G_out = evaluated_vector;
                 }
                 else
                 {
+                    //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
                     //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
-                    G = casadi::Function("G" + EndEffectorID, casadi::SXVector{x, u}, casadi::SXVector{evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)))});
+                    G_out = evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)));
                 }
             }
 
             template <class ProblemData>
-            const contact::ContactMode FrictionConeConstraintBuilder<ProblemData>::getModeAtKnot(const ProblemData &problem_data, int knot_index) const
+            const contact::ContactMode FrictionConeConstraintBuilder<ProblemData>::getModeAtPhase(const ProblemData &problem_data, int phase_index) const
             {
-                assert(problem_data.contact_sequence != nullptr);
-
-                contact::ContactSequence::Phase phase;
-                contact::ContactSequence::CONTACT_SEQUENCE_ERROR status;
-                problem_data.contact_sequence->getPhaseAtKnot(knot_index, phase, status);
-
-                assert(status == contact::ContactSequence::CONTACT_SEQUENCE_ERROR::OK);
-
-                return phase.mode;
+                assert(problem_data.friction_cone_problem_data.contact_sequence != nullptr);
+                return problem_data.friction_cone_problem_data.contact_sequence->getPhase(phase_index).mode;
             }
 
             template <class ProblemData>
             Eigen::Matrix<double, 3, 3> FrictionConeConstraintBuilder<ProblemData>::getContactSurfaceRotationAtMode(const std::string &EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode) const
             {
-                assert(problem_data.environment_surfaces != nullptr);
+                assert(problem_data.friction_cone_problem_data.environment_surfaces != nullptr);
 
                 environment::SurfaceID contact_surface_id = mode.getSurfaceID(EndEffectorID);
 
@@ -259,7 +250,7 @@ namespace galileo
                     return Eigen::Matrix<double, 3, 3>::Zero();
                 }
 
-                return (*problem_data.environment_surfaces)[contact_surface_id].Rotation();
+                return (*problem_data.friction_cone_problem_data.environment_surfaces)[contact_surface_id].Rotation();
             }
 
             template <class ProblemData>

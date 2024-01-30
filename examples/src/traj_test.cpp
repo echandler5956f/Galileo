@@ -1,6 +1,6 @@
 #include "traj_test.h"
 
-int main()
+int main(int argc, char **argv)
 {
     double q0[] = {
         0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
@@ -8,22 +8,18 @@ int main()
 
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
 
-    legged::LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
+    LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
 
     Model model = bot.model;
-    Data data(model);
-
-    std::cout << "Set the robot" << std::endl;
+    Data data = Data(model);
 
     // Create environment Surfaces
-    std::shared_ptr<legged::environment::EnvironmentSurfaces> surfaces = std::make_shared<legged::environment::EnvironmentSurfaces>();
-    surfaces->push_back(legged::environment::CreateInfiniteGround());
+    shared_ptr<environment::EnvironmentSurfaces> surfaces = make_shared<environment::EnvironmentSurfaces>();
+    surfaces->push_back(environment::CreateInfiniteGround());
 
-    std::cout << "Set the ground" << std::endl;
+    shared_ptr<contact::ContactSequence> contact_sequence = make_shared<contact::ContactSequence>(num_ees);
 
-    std::shared_ptr<galileo::legged::contact::ContactSequence> contact_sequence = make_shared<legged::contact::ContactSequence>(num_ees);
-
-    legged::contact::ContactMode initial_mode;
+    contact::ContactMode initial_mode;
     initial_mode.combination_definition = bot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
 
@@ -40,7 +36,7 @@ int main()
     g(2) = 9.81;
     auto nq = model.nq;
     auto nv = model.nv;
-    shared_ptr<opt::LeggedRobotStates> si = make_shared<opt::LeggedRobotStates>(std::vector<int>{nq, nv});
+    shared_ptr<LeggedRobotStates> si = make_shared<LeggedRobotStates>(vector<int>{nq, nv});
 
     SX cx = SX::sym("x", si->nx);
     SX cx2 = SX::sym("x2", si->nx);
@@ -119,6 +115,25 @@ int main()
                         SX::mtimes(SX::inv(cAg(Slice(0, 6), Slice(0, 6))), (mass * ch - SX::mtimes(cAg(Slice(0, 6), Slice(6, int(Ag.cols()))), cvju))),
                         cvju)});
 
+    SX cf_left = SX::sym("cf_left", 3);
+    SX ctau_left = SX::sym("ctau_left", 3);
+    SX cf_right = SX::sym("cf_right", 3);
+    SX ctau_right = SX::sym("ctau_right", 3);
+    SX cu_11 = vertcat(SXVector{cf_left, ctau_left, cf_right, ctau_right, cvju});
+
+    auto left_pos = cdata.oMf[0].translation() - cdata.com[0];
+    auto right_pos = cdata.oMf[1].translation() - cdata.com[0];
+    SX cleft_pos(3, 1);
+    SX cright_pos(3, 1);
+    pinocchio::casadi::copy(left_pos, cleft_pos);
+    pinocchio::casadi::copy(right_pos, cright_pos);
+
+    SX condensed_u = vertcat(SXVector{cf_left + cf_right, cross(cleft_pos, cf_left) + cross(cright_pos, cf_right) + ctau_left + ctau_right, cvju});
+
+    Function F_11("F_11",
+                  {cx, cu_11},
+                  {F(SXVector{cx, condensed_u}).at(0)});
+
     SX cq0(model.nq);
     pinocchio::casadi::copy(q0_vec, cq0);
 
@@ -137,32 +152,34 @@ int main()
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 1;
+    opts["ipopt.max_iter"] = 25;
 
-    using namespace opt;
-    using namespace legged;
-    using namespace constraints;
+    shared_ptr<GeneralProblemData> gp_data = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
 
-    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>();
+    shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
+        make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
-    shared_ptr<GeneralProblemData> problem = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
+    shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
+        make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
 
-    legged_problem_data->gp_data = problem;
-    legged_problem_data->states = si;
-    legged_problem_data->model = make_shared<Model>(model);
-    legged_problem_data->robot_end_effectors = bot.getEndEffectors();
-    legged_problem_data->contact_sequence = contact_sequence;
-    legged_problem_data->environment_surfaces = surfaces;
-    legged_problem_data->num_knots = 20;
+    shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
+        make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-    shared_ptr<ConstraintData> friction_constraint_data = make_shared<ConstraintData>();
-    shared_ptr<FrictionConeProblemData> friction_problem_data = make_shared<FrictionConeProblemData>();
+    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder}; //, velocity_constraint_builder, contact_constraint_builder};
 
-    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_builder =
-        std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
+    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), bot.getEndEffectors(), cx, cu, cdt, 20);
 
-    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_builder};
-    TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
+    // :vector<opt::ConstraintData> constraint_datas;
+    // for (auto builder : builders)
+    // {
+    //     cout << "Building constraint" << endl;
+    //     opt::ConstraintData some_data;
+    //     builder->BuildConstraint(*legged_problem_data, 0, some_data);
+    //     cout << "Built constraint" << endl;
+    //     constraint_datas.push_back(some_data);
+    // }
+
+    TrajectoryOpt<LeggedRobotProblemData> traj(legged_problem_data, builders, opts);
 
     DM X0 = DM::zeros(si->nx, 1);
     int j = 0;
@@ -174,8 +191,29 @@ int main()
 
     traj.init_finite_elements(1, X0);
 
-    auto sol = traj.optimize();
-    cout << sol << endl;
+    MXVector sol = traj.optimize();
+    // std::cout << sol << std::endl;
+
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0, 1.0);
+    Eigen::MatrixXd new_sol = traj.get_solution(new_times);
+    Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, nq, new_sol.cols());
+    
+    // std::cout << subMatrix << std::endl;
+
+    std::ofstream new_times_file("../python/new_times.csv");
+    if (new_times_file.is_open())
+    {
+        new_times_file << new_times.transpose().format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
+        new_times_file.close();
+    }
+
+    // Save new_sol to a CSV file
+    std::ofstream new_sol_file("../python/new_sol.csv");
+    if (new_sol_file.is_open())
+    {
+        new_sol_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
+        new_sol_file.close();
+    }
 
     return 0;
 }
