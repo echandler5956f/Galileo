@@ -156,7 +156,7 @@ namespace galileo
              * @brief Vector of all times where decision variables are evaluated.
              *
              */
-            std::shared_ptr<casadi::DM> global_times;
+            casadi::DM global_times;
         };
 
         template <class ProblemData>
@@ -174,6 +174,7 @@ namespace galileo
         {
             assert(X0.size1() == state_indices->nx && X0.size2() == 1 && "Initial state must be a column vector");
             trajectory.clear();
+            global_times = casadi::DM(0, 0);
             w.clear();
             g.clear();
             lbg.clear();
@@ -182,8 +183,6 @@ namespace galileo
             ubw.clear();
             w0.clear();
             J = 0;
-
-            global_times = nullptr;
 
             casadi::MX prev_final_state = X0;
             casadi::MX prev_final_state_deviant;
@@ -234,7 +233,7 @@ namespace galileo
             for (size_t i = 0; i < num_phases; ++i)
             {
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
-                segment = std::make_shared<PseudospectralSegment>(gp_data, state_indices, d, 20, 1. / 20);
+                segment = std::make_shared<PseudospectralSegment>(gp_data, state_indices, d, 20, 10. / 20);
                 segment->initialize_local_time_vector(global_times);
                 segment->initialize_knot_segments(X0, prev_final_state);
                 segment->initialize_expression_graph(G, Wx, Wu);
@@ -315,38 +314,46 @@ namespace galileo
         {
             /*TODO: Only implemented for pseudospectral segments (and not very well), use visitor pattern if we want to use other types of segments*/
             int i = 0;
-            auto solx = sol[0];
-            int d = 0;
+            casadi::MX solx = sol[0];
+            int count = 0;
             Eigen::MatrixXd result(state_indices->nx, times.size());
 
             for (std::shared_ptr<Segment> seg : trajectory)
             {
                 std::shared_ptr<PseudospectralSegment> pseg = std::dynamic_pointer_cast<PseudospectralSegment>(seg);
-                auto l_times = pseg->get_local_times();
-                double start_time = l_times(0);
-                double end_time = l_times(l_times.size1() - 1);
+                std::vector<double> l_times_vec = pseg->get_local_times().get_elements();
+                double start_time = l_times_vec[0];
+                double end_time = l_times_vec[l_times_vec.size() - 1];
+                /*degree = d + 1 because of the d collocation points and the 1 knot point*/
+                int degree = pseg->dX_poly.d + 1;
+                int num_knots = pseg->get_knot_num();
 
                 /*Get the segment of times that is greater than start time and less than or equal to end time*/
-                auto start_it = std::lower_bound(times.data(), times.data() + times.size(), start_time);
-                auto end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
+                double *start_it = std::lower_bound(times.data(), times.data() + times.size(), start_time);
+                double *end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
                 Eigen::VectorXd segment_times(end_it - start_it);
                 std::copy(start_it, end_it, segment_times.data());
-                casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(d, d + pseg->dX_poly.d)));
-                casadi::DMVector solx_segment_vec;
-                for (int i = 0; i < solx_segment.size2(); ++i)
-                {
-                    solx_segment_vec.push_back(solx_segment(casadi::Slice(0, solx_segment.rows()), i));
-                }
-                d += pseg->dX_poly.d;
+                casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(count, count + degree * num_knots)));
+
                 for (int j = 0; j < segment_times.size(); ++j)
                 {
-                    auto tmp = pseg->dX_poly.lagrange_interpolation(segment_times[j] / times[times.rows() - 1], solx_segment_vec);
-                    for (int k = 0; k < tmp.rows(); ++k)
+                    double *it = std::lower_bound(l_times_vec.data(), l_times_vec.data() + l_times_vec.size(), segment_times(j));
+                    int index = (it - l_times_vec.data() - 1) / (degree);
+                    casadi::DM solx_knot_segment = solx_segment(casadi::Slice(0, solx_segment.rows()), casadi::Slice(index * degree, (index * degree) + degree));
+                    casadi::DMVector solx_segment_vec;
+                    for (int k = 0; k < solx_knot_segment.size2(); ++k)
                     {
-                        result(k, i) = double(tmp(k));
+                        solx_segment_vec.push_back(solx_knot_segment(casadi::Slice(0, solx_knot_segment.rows()), k));
+                    }
+                    double scaled_time = (segment_times[j] - l_times_vec[index * degree]) / (l_times_vec[(index * degree) + degree] - l_times_vec[index * degree]);
+                    std::vector<double> tmp = pseg->dX_poly.barycentric_interpolation(scaled_time, solx_segment_vec).get_elements();
+                    for (int k = 0; k < tmp.size(); ++k)
+                    {
+                        result(k, i) = tmp[k];
                     }
                     ++i;
                 }
+                count += degree * num_knots;
             }
             return result;
         }
@@ -354,7 +361,8 @@ namespace galileo
         template <class ProblemData>
         std::vector<double> TrajectoryOpt<ProblemData>::get_global_times() const
         {
-            return (*global_times).get_elements();
+            std::cout << global_times << std::endl;
+            return global_times.get_elements();
         }
 
     }

@@ -64,7 +64,7 @@ namespace galileo
              *
              * @param global_times Vector of global times
              */
-            virtual void initialize_local_time_vector(std::shared_ptr<casadi::DM> global_times) = 0;
+            virtual void initialize_local_time_vector(casadi::DM &global_times) = 0;
 
             /**
              * @brief Create all the knot segments.
