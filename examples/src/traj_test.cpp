@@ -152,7 +152,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 1;
+    opts["ipopt.max_iter"] = 25;
 
     shared_ptr<GeneralProblemData> gp_data = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
 
@@ -192,11 +192,28 @@ int main(int argc, char **argv)
     traj.init_finite_elements(1, X0);
 
     MXVector sol = traj.optimize();
-    std::cout << sol << std::endl;
+    // std::cout << sol << std::endl;
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0, 1.0);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0, 1.0);
     Eigen::MatrixXd new_sol = traj.get_solution(new_times);
-    std::cout << new_sol << std::endl;
+    Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, nq, new_sol.cols());
+    
+    // std::cout << subMatrix << std::endl;
+
+    std::ofstream new_times_file("../python/new_times.csv");
+    if (new_times_file.is_open())
+    {
+        new_times_file << new_times.transpose().format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
+        new_times_file.close();
+    }
+
+    // Save new_sol to a CSV file
+    std::ofstream new_sol_file("../python/new_sol.csv");
+    if (new_sol_file.is_open())
+    {
+        new_sol_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
+        new_sol_file.close();
+    }
 
     return 0;
 }

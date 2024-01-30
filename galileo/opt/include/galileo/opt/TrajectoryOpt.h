@@ -340,7 +340,7 @@ namespace galileo
                 d += pseg->dX_poly.d;
                 for (int j = 0; j < segment_times.size(); ++j)
                 {
-                    auto tmp = pseg->dX_poly.lagrange_interpolation(segment_times[j], solx_segment_vec);
+                    auto tmp = pseg->dX_poly.lagrange_interpolation(segment_times[j] / times[times.rows() - 1], solx_segment_vec);
                     for (int k = 0; k < tmp.rows(); ++k)
                     {
                         result(k, i) = double(tmp(k));
