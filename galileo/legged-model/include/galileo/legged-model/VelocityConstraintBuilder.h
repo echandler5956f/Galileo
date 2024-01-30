@@ -1,3 +1,5 @@
+#pragma once
+
 #include "galileo/opt/Constraint.h"
 #include "galileo/legged-model/ContactSequence.h"
 #include "galileo/legged-model/LeggedRobotStates.h"

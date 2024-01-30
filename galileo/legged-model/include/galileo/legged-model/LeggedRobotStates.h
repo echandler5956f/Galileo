@@ -1,7 +1,8 @@
 #pragma once
 
-#include <pinocchio/autodiff/casadi.hpp>
 #include "galileo/opt/States.h"
+#include <pinocchio/autodiff/casadi.hpp>
+#include "pinocchio/multibody/model.hpp"
 
 namespace galileo
 {

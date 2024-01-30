@@ -36,9 +36,7 @@ namespace galileo
              * @return const casadi::SX Resultant expression for the symbolic interpolated value
              */
             template <typename Scalar>
-            Scalar lagrange_interpolation(double t, const std::vector<Scalar> terms) const;
-
-            casadi::DM barycentric_interpolation(double t, const casadi::DMVector terms) const;
+            Scalar barycentric_interpolation(double t, const std::vector<Scalar> terms) const;
 
             /**
              * @brief Degree of the polynomial.
@@ -499,6 +497,9 @@ namespace galileo
             casadi::DM u_times;
         };
 
+        /****************************************/
+        /*Lagrange Polynomial Member Definitions*/
+        /****************************************/
         LagrangePolynomial::LagrangePolynomial(int d_, const std::string &scheme)
         {
             d = d_;
@@ -544,29 +545,10 @@ namespace galileo
         }
 
         template <typename Scalar>
-        Scalar LagrangePolynomial::lagrange_interpolation(double t, const std::vector<Scalar> terms) const
+        Scalar LagrangePolynomial::barycentric_interpolation(double t, const std::vector<Scalar> terms) const
         {
-            assert((t >= 0.0) && (t <= 1.0) && "t must be in the range [0,1]");
-            Scalar result = 0;
-            for (int j = 0; j < d; ++j)
-            {
-                Scalar term = terms[j];
-                for (int r = 0; r < d + 1; ++r)
-                {
-                    if (r != j)
-                    {
-                        term *= (t - tau_root[r]) / (tau_root[j] - tau_root[r]);
-                    }
-                }
-                result += term;
-            }
-            return result;
-        }
-
-        casadi::DM LagrangePolynomial::barycentric_interpolation(double t, const casadi::DMVector terms) const
-        {
-            casadi::DMVector w;
-            for (int j = 0; j < tau_root.size(); ++j)
+            std::vector<Scalar> w;
+            for (std::size_t j = 0; j < tau_root.size(); ++j)
             {
                 w.push_back(1.0);
             }
@@ -574,9 +556,9 @@ namespace galileo
             // Compute the barycentric weights
             for (int j = 0; j < d; ++j)
             {
-                for (int r = 0; r < tau_root.size(); ++r)
+                for (std::size_t r = 0; r < tau_root.size(); ++r)
                 {
-                    if (r != j)
+                    if (r != std::size_t(j))
                     {
                         w[j] *= (tau_root[j] - tau_root[r]);
                     }
@@ -585,14 +567,14 @@ namespace galileo
             }
 
             // Compute the interpolated value
-            casadi::DM numerator = 0.0, denominator = 0.0;
-            for (int i = 0; i < tau_root.size(); ++i)
+            Scalar numerator = 0.0, denominator = 0.0;
+            for (std::size_t i = 0; i < tau_root.size(); ++i)
             {
                 if (std::abs(t - tau_root[i]) < 1e-6)
                 {
                     return terms[i];
                 }
-                casadi::DM term = w[i] / (t - tau_root[i]);
+                Scalar term = w[i] / (t - tau_root[i]);
                 numerator += term * terms[i];
                 denominator += term;
             }
@@ -600,6 +582,13 @@ namespace galileo
             return numerator / denominator;
         }
 
+        // template casadi::DM LagrangePolynomial::barycentric_interpolation<casadi::DM> (double t, const std::vector<casadi::DM> terms) const;
+        // template casadi::SX LagrangePolynomial::barycentric_interpolation<casadi::SX> (double t, const std::vector<casadi::SX> terms) const;
+        // template casadi::MX LagrangePolynomial::barycentric_interpolation<casadi::MX> (double t, const std::vector<casadi::MX> terms) const;
+
+        /******************************************/
+        /*PseudospectralSegment member definitions*/
+        /******************************************/
         PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_)
         {
             auto Fint_ = problem->Fint;
@@ -888,7 +877,7 @@ namespace galileo
             general_lbg(casadi::Slice(0, tmp)) = casadi::DM::zeros(tmp, 1);
             general_ubg(casadi::Slice(0, tmp)) = casadi::DM::zeros(tmp, 1);
 
-            for (casadi_int i = 0; i < G.size(); ++i)
+            for (std::size_t i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
                 general_lbg(casadi::Slice(std::get<0>(ranges_G[i])), std::get<1>(ranges_G[i])) =
@@ -1100,6 +1089,5 @@ namespace galileo
         {
             return lbw_ubw_range;
         }
-
     }
 }

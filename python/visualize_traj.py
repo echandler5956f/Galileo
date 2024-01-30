@@ -1,8 +1,5 @@
 #!.venv/bin/python3
 
-from frozendict import frozendict
-from collections import defaultdict
-from typing import List
 import time
 import numpy as np
 import casadi as ca

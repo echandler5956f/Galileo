@@ -1,3 +1,5 @@
+#pragma once
+
 #include "galileo/legged-model/FrictionConeConstraintBuilder.h"
 #include "galileo/legged-model/ContactConstraintBuilder.h"
 #include "galileo/legged-model/VelocityConstraintBuilder.h"
@@ -11,10 +13,10 @@ namespace galileo
             class LeggedRobotProblemData
             {
             public:
-                LeggedRobotProblemData(std::shared_ptr<opt::GeneralProblemData> gp_data,
+                LeggedRobotProblemData(std::shared_ptr<opt::GeneralProblemData> gp_data_,
                                        std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces,
                                        std::shared_ptr<contact::ContactSequence> contact_sequence,
-                                       std::shared_ptr<opt::States> states,
+                                       std::shared_ptr<opt::States> states_,
                                        std::shared_ptr<opt::ADModel> ad_model,
                                        std::shared_ptr<opt::ADData> ad_data,
                                        contact::RobotEndEffectors robot_end_effectors,
@@ -23,8 +25,8 @@ namespace galileo
                                        casadi::SX t,
                                        int num_knots)
                 {
-                    this->gp_data = gp_data;
-                    this->states = states;
+                    this->gp_data = gp_data_;
+                    this->states = states_;
 
                     this->friction_cone_problem_data.environment_surfaces = environment_surfaces;
                     this->friction_cone_problem_data.contact_sequence = contact_sequence;
