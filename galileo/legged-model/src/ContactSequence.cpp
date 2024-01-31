@@ -68,7 +68,7 @@ namespace galileo
                     throw std::runtime_error(std::string("'Contact is not valid!'"));
                 }
 
-                PhaseSequence<ContactMode>::addPhase(validity_mode, knot_points, dt);
+                return PhaseSequence<ContactMode>::addPhase(validity_mode, knot_points, dt);
             }
 
             void ContactMode::createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states)
@@ -117,7 +117,6 @@ namespace galileo
                 // joint velocity inputs
                 auto cvju = si->get_vju(cu);
 
-
                 // Centroidal momentum matrix
                 auto Ag = cdata.Ag;
                 casadi::SX cAg(Ag.rows(), Ag.cols());
@@ -129,7 +128,7 @@ namespace galileo
 
                 // cu is the wrench, appended onto the joint velocities.
                 casadi::Function F("F",
-                                   {cx, cu, cf, ctau},
+                                   {cx, cf, ctau, cvju},
                                    {vertcat(cdh,
                                             (cf - mass * g) / mass,
                                             ctau / mass,
@@ -158,50 +157,48 @@ namespace galileo
                         auto end_effector_ptr = end_effectors[ee.first];
                         auto foot_pos = cdata.oMf[end_effector_ptr->frame_id].translation() - cdata.com[0];
 
-                        casadi::SX cfoot_pos = casadi::SX::sym("foot_pos", 3);
+                        casadi::SX cfoot_pos(3, 1);
                         pinocchio::casadi::copy(foot_pos, cfoot_pos);
 
-                        // GET FORCE FROM U. UNIMPLEMENTED. 
                         auto cforce = si->get_f(cu, end_effector_idx);
 
-                        casadi::SX ctau;
-                        if(end_effector_ptr->is_6d){
-                            auto ctau = si->get_tau(cu, end_effector_idx);
-                        }else{
-                            ctau = casadi::SX::zeros(3, 1);
+                        casadi::SX ctau_ee;
+                        if (end_effector_ptr->is_6d)
+                        {
+                            ctau_ee = si->get_tau(cu, end_effector_idx);
                         }
-                        
+                        else
+                        {
+                            ctau_ee = casadi::SX::zeros(3, 1);
+                        }
+
                         foot_forces.push_back(cforce);
                         foot_poss.push_back(cfoot_pos);
-                        foot_taus.push_back(ctau);
+                        foot_taus.push_back(ctau_ee);
                     }
                 }
 
                 // Now we have the foot forces, foot positions, and foot torques.
                 // We can now create the total wrench, and our mode specific dynamics function
 
-                casadi::SX total_f = casadi::SX::zeros(3, 1);
-                casadi::SX total_tau = casadi::SX::zeros(3, 1);
-                for (int i = 0; i < foot_forces.size(); i++)
+                casadi::SX total_f_input = casadi::SX::zeros(3, 1);
+                casadi::SX total_tau_input = casadi::SX::zeros(3, 1);
+                for (std::size_t i = 0; i < foot_forces.size(); i++)
                 {
-                    total_f += foot_forces[i];
-                    total_tau += cross(foot_forces[i], foot_poss[i]) + foot_taus[i];
+                    total_f_input += foot_forces[i];
+                    total_tau_input += cross(foot_forces[i], foot_poss[i]) + foot_taus[i];
                 }
 
                 casadi::Function F_mode = casadi::Function("F_mode",
                                                            {cx, cu},
                                                            {F(casadi::SXVector{cx,
-                                                                               cu,
-                                                                               total_f,
-                                                                               total_tau,
-                                                                               cvju}).at(0)
-                                                           }
-                );
-
+                                                                               total_f_input,
+                                                                               total_tau_input,
+                                                                               cvju})
+                                                                .at(0)});
 
                 ModeDynamics_ = F_mode;
             }
-
         }
     }
 }

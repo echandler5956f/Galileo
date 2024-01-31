@@ -226,8 +226,10 @@ namespace galileo
             {
                 Sym tmp = u(casadi::Slice(this->nvju + std::get<0>(this->frame_id_to_index_range[ee_id]), this->nvju + std::get<1>(this->frame_id_to_index_range[ee_id])));
                 if (tmp.size1() < 6)
+                {
                     std::cout << "tau does not exist for ee " << ee_id << "\n";
-                    return;
+                    return tmp;
+                }
                 else
                     return tmp(casadi::Slice(3, 6));
             }
@@ -245,7 +247,7 @@ namespace galileo
                 return u(casadi::Slice(this->nF, this->nu));
             }
 
-            //map between frame id and its index in the input vector
+            // map between frame id and its index in the input vector
             std::map<int, std::tuple<int, int>> frame_id_to_index_range;
 
             /**

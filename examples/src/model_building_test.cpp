@@ -31,7 +31,7 @@ int main()
 
     // Target defines parameter for defining the cost
     // problemSetup defines parameters for setting up the problem, such as initial state
-    std::shared_ptr<opt::LeggedRobotStates> si = std::make_shared<opt::LeggedRobotStates>(std::vector<int>{bot.model.nq, bot.model.nv});
+    std::shared_ptr<opt::LeggedRobotStates> si = std::make_shared<opt::LeggedRobotStates>(bot.model.nq, bot.model.nv, bot.getEndEffectors());
     Eigen::VectorXd target_state_vector;
     Eigen::VectorXd initial_state_vector;
 

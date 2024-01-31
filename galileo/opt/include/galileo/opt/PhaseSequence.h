@@ -93,7 +93,7 @@ namespace galileo
              * @param index The index of the phase to retrieve.
              * @return The phase at the specified index.
              */
-            const Phase getPhase(int index) const { return PHASE_SEQUENCE_[index]; }
+            const Phase getPhase(int index) const { return phase_sequence_[index]; }
 
             /**
              * @brief Get the phase at a given time.
@@ -129,7 +129,7 @@ namespace galileo
              *
              * @return The number of phases.
              */
-            int num_phases() const { return PHASE_SEQUENCE_.size(); }
+            int num_phases() const { return phase_sequence_.size(); }
 
             const double &dt() { return dt_; }
 
