@@ -61,7 +61,7 @@ git clone https://github.com/casadi/casadi.git && cd casadi && mkdir build && cd
 
 Now, run
 ```bash
-cmake -DCMAKE_BUILD_TYPE=Release -DWITH_BUILD_IPOPT=ON -DWITH_IPOPT=ON -DWITH_MUMPS=ON -DWITH_BUILD_MUMPS=ON  ..
+cmake -DCMAKE_BUILD_TYPE=Release -DWITH_BUILD_IPOPT=ON -DWITH_IPOPT=ON -DWITH_BUILD_METIS=ON -DWITH_MUMPS=ON -DWITH_BUILD_MUMPS=ON  ..
 ```
 If you have an [HSL] license (highly recommended, as these solvers tend to speed up convergence by ~2x for our problems, and academics can acquire one for free!), you should manually build the [ThirdParty-HSL] interface and then add the following CasADi flag:
 
