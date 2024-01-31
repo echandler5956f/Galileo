@@ -19,23 +19,27 @@ namespace galileo
              *
              * @param nq_nv The number of position and velocity variables.
              */
-            LeggedRobotStates(std::vector<int> nq_nv)
+            LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees)
             {
-                auto nq_ = nq_nv[0];
-                auto nv_ = nq_nv[1];
                 this->nq = nq_;
                 this->nv = nv_;
                 this->nx = this->nh + this->ndh + this->nq + this->nv;
                 this->ndx = this->nh + this->ndh + 2 * this->nv;
                 this->nvju = this->nv - this->nvb;
-                this->nu = this->nF + this->nvju;
+                this->nu = this->nvju;
+                for (auto ee : ees)
+                {
+                    if (ee.second->is_6d)
+                    {
+                        this->nF += 6;
+                    }
+                    else
+                    {
+                        this->nF += 3;
+                    }
+                }
+                this->nu += this->nF;
             }
-
-            /**
-             * @brief Input space dimension.
-             *
-             */
-            static const int nF = 6;
 
             /**
              * @brief Momenta space dimension.
@@ -248,14 +252,13 @@ namespace galileo
              *
              */
             int nvju;
+
+            /**
+             * @brief Number of wrench variables
+             *
+             */
+            int nF;
         };
-        // Register the factory function for LeggedRobotStates
-        bool registered = []
-        {
-            States::registerRobotType("Legged", [](std::vector<int> nq_nv)
-                                      { return std::make_unique<LeggedRobotStates>(nq_nv); });
-            return true;
-        }();
 
         typedef double Scalar;
         typedef casadi::SX ADScalar;

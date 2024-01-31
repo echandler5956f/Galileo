@@ -17,19 +17,12 @@ namespace galileo
              *
              * @param args The number of position and velocity variables.
              */
-            BasicStates(std::vector<int> args)
+            BasicStates(int nx, int nu)
             {
-                this->nx = args[0];
-                this->ndx = args[0];
-                this->nu = args[1];
+                this->nx = nx;
+                this->ndx = nx;
+                this->nu = nu;
             }
         };
-        // Register the factory function for LeggedRobotStates
-        bool registered = []
-        {
-            States::registerRobotType("BasicStates", [](std::vector<int> args)
-                                      { return std::make_unique<BasicStates>(args); });
-            return true;
-        }();
     }
 }

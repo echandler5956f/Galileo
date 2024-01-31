@@ -3,7 +3,7 @@
 int main()
 {
 
-    std::shared_ptr<opt::BasicStates> si = std::make_shared<opt::BasicStates>(std::vector<int>{2, 1});
+    std::shared_ptr<opt::BasicStates> si = std::make_shared<opt::BasicStates>(2, 1);
 
     // Declare model variables
     casadi::SX dt = SX::sym("dt", 1);

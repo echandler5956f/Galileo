@@ -29,6 +29,8 @@ int main()
 
     contact_sequence->addPhase(initial_mode, 100, 0.2);
 
+    legged::contact::RobotEndEffectors ees = bot.getEndEffectors();
+
     pinocchio::computeTotalMass(model, data);
     pinocchio::framesForwardKinematics(model, data, q0_vec);
 
@@ -40,7 +42,7 @@ int main()
     g(2) = 9.81;
     auto nq = model.nq;
     auto nv = model.nv;
-    shared_ptr<opt::LeggedRobotStates> si = make_shared<opt::LeggedRobotStates>(std::vector<int>{nq, nv});
+    shared_ptr<opt::LeggedRobotStates> si = make_shared<opt::LeggedRobotStates>(nq, nv, ees);
 
     SX cx = SX::sym("x", si->nx);
     SX cx2 = SX::sym("x2", si->nx);
@@ -155,7 +157,7 @@ int main()
 
     vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
 
-    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<Model>(model), make_shared<Data>(data), make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), bot.getEndEffectors(), cx, cu, cdt, 20);
+    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<Model>(model), make_shared<Data>(data), make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
 
     std::vector<opt::ConstraintData> constraint_datas;
     for (auto builder : builders)

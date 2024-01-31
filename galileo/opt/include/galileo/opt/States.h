@@ -35,24 +35,6 @@ namespace galileo
              *
              */
             int nu;
-
-            using FactoryFunction = std::function<std::unique_ptr<States>(std::vector<int>)>;
-
-            static void registerRobotType(const std::string &type, FactoryFunction function)
-            {
-                getFactories()[type] = function;
-            }
-            static std::unique_ptr<States> create(const std::string &type, std::vector<int> args)
-            {
-                return getFactories()[type](args);
-            }
-
-        private:
-            static std::map<std::string, FactoryFunction> &getFactories()
-            {
-                static std::map<std::string, FactoryFunction> factories;
-                return factories;
-            }
         };
     }
 }
