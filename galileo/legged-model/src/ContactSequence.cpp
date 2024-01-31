@@ -114,12 +114,9 @@ namespace galileo
                 g(2) = 9.81;
                 // derivative of moment
                 auto cdh = si->get_cdh(cx);
-                // Force
-                auto cf = si->get_f(cu);
-                // Torque
-                auto ctau = si->get_tau(cu);
                 // joint velocity inputs
                 auto cvju = si->get_vju(cu);
+
 
                 // Centroidal momentum matrix
                 auto Ag = cdata.Ag;
@@ -127,9 +124,12 @@ namespace galileo
                 pinocchio::casadi::copy(Ag, cAg);
                 auto ch = si->get_ch(cx);
 
+                casadi::SX cf = casadi::SX::sym("wrench_f", 3);
+                casadi::SX ctau = casadi::SX::sym("wrench_tau", 3);
+
                 // cu is the wrench, appended onto the joint velocities.
                 casadi::Function F("F",
-                                   {cx, cu},
+                                   {cx, cu, cf, ctau},
                                    {vertcat(cdh,
                                             (cf - mass * g) / mass,
                                             ctau / mass,
@@ -162,9 +162,15 @@ namespace galileo
                         pinocchio::casadi::copy(foot_pos, cfoot_pos);
 
                         // GET FORCE FROM U. UNIMPLEMENTED. 
-                        auto cforce = casadi::SX::zeros(3, 1);
-                        auto ctau = casadi::SX::zeros(3, 1);
+                        auto cforce = si->get_f(cu, end_effector_idx);
 
+                        casadi::SX ctau;
+                        if(end_effector_ptr->is_6d){
+                            auto ctau = si->get_tau(cu, end_effector_idx);
+                        }else{
+                            ctau = casadi::SX::zeros(3, 1);
+                        }
+                        
                         foot_forces.push_back(cforce);
                         foot_poss.push_back(cfoot_pos);
                         foot_taus.push_back(ctau);
@@ -174,21 +180,22 @@ namespace galileo
                 // Now we have the foot forces, foot positions, and foot torques.
                 // We can now create the total wrench, and our mode specific dynamics function
 
-                casadi::SX total_wrench = casadi::SX::zeros(6, 1);
+                casadi::SX total_f = casadi::SX::zeros(3, 1);
+                casadi::SX total_tau = casadi::SX::zeros(3, 1);
                 for (int i = 0; i < foot_forces.size(); i++)
                 {
-                    total_wrench += casadi::SX::vertcat({foot_forces[i], cross(foot_forces[i], foot_poss[i]) + foot_taus[i]});
+                    total_f += foot_forces[i];
+                    total_tau += cross(foot_forces[i], foot_poss[i]) + foot_taus[i];
                 }
-
-                // 
 
                 casadi::Function F_mode = casadi::Function("F_mode",
                                                            {cx, cu},
                                                            {F(casadi::SXVector{cx,
-                                                                               casadi::SX::vertcat({total_wrench, cvju})})
-
+                                                                               cu,
+                                                                               total_f,
+                                                                               total_tau,
+                                                                               cvju}).at(0)
                                                            }
-
                 );
 
 
