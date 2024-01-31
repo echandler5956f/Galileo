@@ -3,8 +3,6 @@
 #include "galileo/legged-model/EndEffector.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 
-#include "casadi/casadi.hpp"
-
 #include "galileo/opt/PhaseSequence.h"
 #include "galileo/opt/States.h"
 
@@ -115,7 +113,7 @@ namespace galileo
                  * @brief creates the dynamics for this mode
                  * 
                  */
-                void createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<LeggedRobotStates> states);
+                void createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states);
 
                 /**
                  * @brief Gets the dynamics for this mode
@@ -131,14 +129,14 @@ namespace galileo
              * @brief Class for holding simple contact sequence metadata.
              *
              */
-            class ContactSequence : public PhaseSequence<ContactMode>
+            class ContactSequence : public opt::PhaseSequence<ContactMode>
             {
             public:
                 /**
                  * @brief Error codes.
                  *
                  */
-                typedef CONTACT_SEQUENCE_ERROR PHASE_SEQUENCE_ERROR;
+                typedef PHASE_SEQUENCE_ERROR CONTACT_SEQUENCE_ERROR ;
 
                 /**
                  * @brief Construct a new Contact Sequence object.
@@ -156,7 +154,7 @@ namespace galileo
                  * @param knot_points The number of knot points in the phase.
                  * @param dt The time step of the phase.
                 */
-                int addPhase(const ContactMode &mode, int knot_points, double dt) override;
+                int addPhase(const ContactMode &mode, int knot_points, double dt);
 
                 private:
                 /**

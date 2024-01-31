@@ -71,7 +71,7 @@ namespace galileo
                 PhaseSequence<ContactMode>::addPhase(validity_mode, knot_points, dt);
             }
 
-            void ContactMode::createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<LeggedRobotStates> states)
+            void ContactMode::createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states)
             {
 
                 opt::Data data = opt::Data(*model);
