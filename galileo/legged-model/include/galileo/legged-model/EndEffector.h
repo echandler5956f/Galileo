@@ -44,7 +44,7 @@ namespace galileo
             };
 
             /**
-             * @brief We use a ptr so that there is only ever one instance of the end effector.
+             * @brief Maps an end effector name to am End Effector ptr. We use a ptr so that there is only ever one instance of the end effector.
              *
              */
             typedef std::map<std::string, std::shared_ptr<EndEffector>> RobotEndEffectors;

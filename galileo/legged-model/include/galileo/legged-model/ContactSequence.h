@@ -3,8 +3,25 @@
 #include "galileo/legged-model/EndEffector.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 
-#include "galileo/opt/PhaseSequence.h"
+#include "casadi/casadi.hpp"
 
+#include "galileo/opt/PhaseSequence.h"
+#include "galileo/opt/States.h"
+
+#include <pinocchio/autodiff/casadi.hpp>
+#include <pinocchio/multibody/model.hpp>
+#include <pinocchio/multibody/data.hpp>
+#include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/jacobian.hpp>
+#include <pinocchio/algorithm/crba.hpp>
+#include <pinocchio/algorithm/rnea.hpp>
+#include <pinocchio/algorithm/aba.hpp>
+#include <pinocchio/algorithm/centroidal.hpp>
+
+
+#include "galileo/legged-model/LeggedRobotStates.h"
 namespace galileo
 {
     namespace legged
@@ -93,6 +110,21 @@ namespace galileo
                  * @param validity Error code
                  */
                 void MakeValid(ContactModeValidity &validity);
+
+                /**
+                 * @brief creates the dynamics for this mode
+                 * 
+                 */
+                void createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<LeggedRobotStates> states);
+
+                /**
+                 * @brief Gets the dynamics for this mode
+                 * 
+                 * @param f The dynamics function
+                */
+                void getModeDynamics(casadi::Function &f);
+
+                casadi::Function ModeDynamics_;
             };
 
             /**

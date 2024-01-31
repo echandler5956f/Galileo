@@ -19,7 +19,6 @@ namespace galileo
              */
             enum PHASE_SEQUENCE_ERROR
             {
-
                 OK,       // No error
                 NOT_IN_DT // The time is out of bounds
             };
