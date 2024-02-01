@@ -153,6 +153,7 @@ namespace galileo
                 // Possibly, this would mean creating a map.
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
                 casadi::SXVector G_vec;
+                casadi::SXVector u_vec;
                 casadi::SX u_in = casadi::SX::sym( "u", problem_data.friction_cone_problem_data.states->nu() );
                 for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
