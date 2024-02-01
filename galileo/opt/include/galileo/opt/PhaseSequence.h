@@ -29,6 +29,8 @@ namespace galileo
              */
             PhaseSequence() {}
 
+            ~PhaseSequence() = default;
+
             /**
              * @brief Holds the mode, the number of knot points, and the time value for a certain phase. Note: Does the phase timing change? if so, then the _t0_offset and dt_ need to change.
              *
@@ -63,7 +65,7 @@ namespace galileo
              * @param dt The time step between each knot point.
              * @return The index of the newly added phase.
              */
-            int addPhase(const MODE_T &mode, int knot_points, double dt);
+            virtual int addPhase(const MODE_T &mode, int knot_points, double dt);
 
             /**
              * @brief Get the phase index at a given time.
@@ -135,7 +137,7 @@ namespace galileo
 
             const int &total_knots() { return total_knots_; }
 
-            const std::vector<Phase> &PHASE_SEQUENCE() { return phase_sequence_; }
+            const std::vector<Phase> & phase_sequence() { return phase_sequence_; }
 
             /**
              * @brief A vector of Phase objects.
