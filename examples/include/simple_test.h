@@ -1,9 +1,7 @@
 #include "galileo/opt/TrajectoryOpt.h"
-#include "galileo/opt/PseudospectralSegment.h"
-#include <Eigen/Dense>
-#include <boost/math/interpolators/barycentric_rational.hpp>
 #include "third-party/gnuplot-iostream/gnuplot-iostream.h"
 #include "galileo/opt/BasicStates.h"
+#include <Eigen/Dense>
 
 using namespace galileo;
 

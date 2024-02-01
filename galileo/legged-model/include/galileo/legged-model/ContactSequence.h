@@ -1,10 +1,9 @@
 #pragma once
 
+#include "galileo/opt/PhaseSequence.h"
+
 #include "galileo/legged-model/EndEffector.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
-
-#include "galileo/opt/PhaseSequence.h"
-#include "galileo/opt/States.h"
 
 #include <pinocchio/autodiff/casadi.hpp>
 #include <pinocchio/multibody/model.hpp>
@@ -109,20 +108,21 @@ namespace galileo
                  */
                 void MakeValid(ContactModeValidity &validity);
 
-                // /**
-                //  * @brief creates the dynamics for this mode
-                //  * 
-                //  */
-                // void createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states);
+                /**
+                 * @brief creates the dynamics for this mode
+                 *
+                 */
+                void createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states);
 
-                // /**
-                //  * @brief Gets the dynamics for this mode
-                //  * 
-                //  * @param f The dynamics function
-                // */
-                // void getModeDynamics(casadi::Function &f);
+                /**
+                 * @brief Gets the dynamics for this mode
+                 *
+                 * @param f The dynamics function
+                 */
+                void getModeDynamics(casadi::Function &f);
 
-                // casadi::Function ModeDynamics_;
+            protected:
+                casadi::Function ModeDynamics_;
             };
 
             /**
@@ -136,7 +136,7 @@ namespace galileo
                  * @brief Error codes.
                  *
                  */
-                typedef PHASE_SEQUENCE_ERROR CONTACT_SEQUENCE_ERROR ;
+                typedef PHASE_SEQUENCE_ERROR CONTACT_SEQUENCE_ERROR;
 
                 /**
                  * @brief Construct a new Contact Sequence object.
@@ -144,19 +144,19 @@ namespace galileo
                  * @param num_end_effectors The number of end effectors in the contact sequence.
                  */
                 ContactSequence(int num_end_effectors) : PhaseSequence(), num_end_effectors_(num_end_effectors) {}
-                
+
                 const int &num_end_effectors() { return num_end_effectors_; }
 
                 /**
                  * @brief Adds a phase to the contact sequence.
-                 * 
+                 *
                  * @param mode The contact mode of the phase.
                  * @param knot_points The number of knot points in the phase.
                  * @param dt The time step of the phase.
-                */
+                 */
                 int addPhase(const ContactMode &mode, int knot_points, double dt);
 
-                private:
+            private:
                 /**
                  * @brief The number of end effectors in the contact sequence.
                  */

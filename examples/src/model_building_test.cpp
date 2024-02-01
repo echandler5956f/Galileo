@@ -1,12 +1,6 @@
 #include "galileo/legged-model/LeggedBody.h"
 #include "galileo/legged-model/ContactSequence.h"
-#include "galileo/legged-model/EnvironmentSurfaces.h"
-
-#include "galileo/legged-model/LeggedRobotStates.h"
-
 #include <string>
-
-#include <pinocchio/parsers/urdf.hpp>
 
 using namespace galileo;
 using namespace legged;

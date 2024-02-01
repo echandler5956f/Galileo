@@ -16,35 +16,42 @@ int main(int argc, char **argv)
     // Create environment Surfaces
     shared_ptr<environment::EnvironmentSurfaces> surfaces = make_shared<environment::EnvironmentSurfaces>();
     surfaces->push_back(environment::CreateInfiniteGround());
+    std::cout << "Surfaces created" << std::endl;
 
     shared_ptr<contact::ContactSequence> contact_sequence = make_shared<contact::ContactSequence>(num_ees);
+    std::cout << "Contact sequence created" << std::endl;
 
     contact::ContactMode initial_mode;
     initial_mode.combination_definition = bot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
+    std::cout << "Initial mode created" << std::endl;
 
     contact_sequence->addPhase(initial_mode, 100, 0.2);
+    std::cout << "Phase added" << std::endl;
 
     legged::contact::RobotEndEffectors ees = bot.getEndEffectors();
-
-    pinocchio::computeTotalMass(model, data);
-    pinocchio::framesForwardKinematics(model, data, q0_vec);
+    std::cout << "End effectors retrieved" << std::endl;
 
     ADModel cmodel = model.cast<ADScalar>();
     ADData cdata(cmodel);
+    std::cout << "AD model and data created" << std::endl;
 
-    auto mass = data.mass[0];
-    auto g = SX::zeros(3, 1);
-    g(2) = 9.81;
     auto nq = model.nq;
     auto nv = model.nv;
     shared_ptr<opt::LeggedRobotStates> si = make_shared<opt::LeggedRobotStates>(nq, nv, ees);
+    std::cout << "Legged robot states created" << std::endl;
 
     SX cx = SX::sym("x", si->nx);
+    std::cout << "cx created" << std::endl;
     SX cx2 = SX::sym("x2", si->nx);
+    std::cout << "cx2 created" << std::endl;
     SX cdx = SX::sym("dx", si->ndx);
+    std::cout << "cdx created" << std::endl;
     SX cu = SX::sym("u", si->nu);
+    std::cout << "cu created" << std::endl;
     SX cdt = SX::sym("dt");
+    std::cout << "cdt created" << std::endl;
+    std::cout << "Reached end of program" << std::endl;
 
     // auto ch = si->get_ch(cx);
     // auto ch_d = si->get_ch_d(cdx);

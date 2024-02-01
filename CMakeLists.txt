@@ -32,7 +32,7 @@ set_target_properties(galileo PROPERTIES LINKER_LANGUAGE CXX)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -lgomp -no-pie -ggdb -Wall \
+set(CMAKE_CXX_FLAGS "-g -O3 -fopenmp -lgomp -no-pie -ggdb -Wall \
     -Wextra -Wcast-align -Wdisabled-optimization -Wformat=2 \
     -Winit-self -Wmissing-include-dirs -Woverloaded-virtual \
     -Wshadow -Wsign-promo")

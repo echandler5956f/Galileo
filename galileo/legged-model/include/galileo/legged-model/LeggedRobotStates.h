@@ -255,25 +255,25 @@ namespace galileo
              * @brief Number of position variables.
              *
              */
-            int nq;
+            int nq = 0;
 
             /**
              * @brief Number of velocity variables.
              *
              */
-            int nv;
+            int nv = 0;
 
             /**
              * @brief Number of joint velocity inputs.
              *
              */
-            int nvju;
+            int nvju = 0;
 
             /**
              * @brief Number of wrench variables
              *
              */
-            int nF;
+            int nF = 0;
         };
 
         typedef double Scalar;

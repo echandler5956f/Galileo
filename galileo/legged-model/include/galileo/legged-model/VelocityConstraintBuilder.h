@@ -2,8 +2,6 @@
 
 #include "galileo/opt/Constraint.h"
 #include "galileo/legged-model/ContactSequence.h"
-#include "galileo/legged-model/LeggedRobotStates.h"
-#include <pinocchio/algorithm/frames.hpp>
 
 namespace galileo
 {
