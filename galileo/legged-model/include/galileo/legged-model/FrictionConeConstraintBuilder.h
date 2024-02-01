@@ -102,7 +102,7 @@ namespace galileo
                  * For a Second Order Constraint, for instance, this is a function that returns 11 value, the result of the lorentz cone constraint.
                  * function = g( state ) @ EndEffectorID
                  */
-                void CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, casadi::SX &u_in, casadi::SX &G_out) const;
+                void CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, const casadi::SX &u_in, casadi::SX &G_out) const;
 
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current phase
@@ -153,11 +153,10 @@ namespace galileo
                 // Possibly, this would mean creating a map.
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
                 casadi::SXVector G_vec;
-                casadi::SXVector u_vec;
+                casadi::SX u_in = casadi::SX::sym( "u", problem_data.friction_cone_problem_data.states->nu() );
                 for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
                     casadi::SX G_out;
-                    casadi::SX u_in;
                     CreateSingleEndEffectorFunction(end_effector.first, problem_data, phase_index, u_in, G_out);
                     if (!G_out.is_zero())
                     {
@@ -180,7 +179,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, casadi::SX &u_in, casadi::SX &G_out) const
+            void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, const casadi::SX &u_in, casadi::SX &G_out) const
             {
                 // Get the size of the constraint applied to an end effector at a state.
                 uint num_contraint_per_ee_per_point = getNumConstraintPerEEPerState(problem_data);
@@ -200,7 +199,8 @@ namespace galileo
                     G_out = casadi::SX(0);
                     return;
                 }
-                u_in = casadi::SX::sym("Grf" + EndEffectorID, dof6 ? 6 : 3);
+
+                auto u_ee = problem_data.friction_cone_problem_data.states->get_f(u_in, EndEffectorID);
 
                 Eigen::Matrix<double, 3, 3> rotation = getContactSurfaceRotationAtMode(EndEffectorID, problem_data, mode);
 
@@ -214,7 +214,7 @@ namespace galileo
                 pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
 
                 // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
-                auto evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u_in);
+                auto evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u_ee);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
                     //@todo (ethan)
