@@ -2,18 +2,18 @@
 
 using namespace casadi;
 
-//quat = [qr qx qy qz]
+// quat = [qr qx qy qz]
 SX quat_assign_if_negative(SX R, int i)
 {
     auto quat = SX::zeros(4);
     auto j = (i + 1) % 3;
     auto k = (j + 1) % 3;
-    auto t = sqrt(R(i,i) - R(j,j) - R(k,k) + 1.0);
+    auto t = sqrt(R(i, i) - R(j, j) - R(k, k) + 1.0);
     quat(i) = t / 2.0;
     t = 0.5 / t;
-    quat(0) = (R(k,j) - R(j,k)) * t;
-    quat(j) = (R(j,i) + R(i,j)) * t;
-    quat(k) = (R(k,i) + R(i,k)) * t;
+    quat(0) = (R(k, j) - R(j, k)) * t;
+    quat(j) = (R(j, i) + R(i, j)) * t;
+    quat(k) = (R(k, i) + R(i, k)) * t;
     return quat;
 }
 
@@ -23,9 +23,9 @@ SX quat_assign_if_positive(SX R, SX t)
     auto t2 = sqrt(t + 1.0);
     quat(0) = t2 / 2.0;
     t2 = 0.5 / t2;
-    quat(1) = (R(2,1) - R(1,2)) * t2;
-    quat(2) = (R(0,2) - R(2,0)) * t2;
-    quat(3) = (R(1,0) - R(0,1)) * t2;
+    quat(1) = (R(2, 1) - R(1, 2)) * t2;
+    quat(2) = (R(0, 2) - R(2, 0)) * t2;
+    quat(3) = (R(1, 0) - R(0, 1)) * t2;
     return quat;
 }
 
@@ -83,7 +83,7 @@ SX lie_group_int(SX x, SX dx, SX dt)
     rot(2, 0) -= alpha_v * omega(1);
     rot(1, 2) -= alpha_v * omega(0);
     rot(2, 1) += alpha_v * omega(0);
-    
+
     rot(0, 0) += diagonal_term;
     rot(1, 1) += diagonal_term;
     rot(2, 2) += diagonal_term;

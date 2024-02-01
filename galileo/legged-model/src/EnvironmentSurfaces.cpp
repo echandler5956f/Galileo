@@ -56,6 +56,7 @@ namespace galileo
                 Eigen::Vector3d c_center;
                 c_center.head(2) = surface_data.polytope_local_chebyshev_center;
                 c_center.tail(1)[0] = surface_data.origin_z_offset;
+                return c_center;
             }
 
             // Eigen::VectorXd CalculateCenter(const Eigen::MatrixXd &A, const Eigen::VectorXd &b)
@@ -80,7 +81,7 @@ namespace galileo
             std::vector<int> EnvironmentSurfaces::getSurfacesUnder(const Eigen::Vector2d &ee_pos) const
             {
                 std::vector<int> surface_indeces;
-                for (int i = 0; i < this->size(); i++)
+                for (std::size_t i = 0; i < this->size(); i++)
                 {
                     bool is_in_region = isInRegion((*this)[i], ee_pos);
                     if (is_in_region)
@@ -91,13 +92,13 @@ namespace galileo
                 return surface_indeces;
             }
 
-            std::vector<SurfaceData> EnvironmentSurfaces::getSurfacesFromIDs(const std::vector<int> indeces) const
+            std::vector<SurfaceData> EnvironmentSurfaces::getSurfacesFromIDs(const std::vector<int> indices) const
             {
 
                 std::vector<SurfaceData> surfaces;
-                for (int i = 0; i < indeces.size(); i++)
+                for (std::size_t i = 0; i < indices.size(); i++)
                 {
-                    surfaces.push_back((*this)[indeces[i]]);
+                    surfaces.push_back((*this)[indices[i]]);
                 }
                 return surfaces;
             }

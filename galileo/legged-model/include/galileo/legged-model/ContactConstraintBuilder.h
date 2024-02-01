@@ -1,3 +1,5 @@
+#pragma once
+
 #include "galileo/opt/Constraint.h"
 #include "galileo/legged-model/ContactSequence.h"
 #include "galileo/legged-model/LeggedRobotStates.h"
@@ -13,8 +15,6 @@ namespace galileo
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
                 std::shared_ptr<opt::States> states;
-                std::shared_ptr<opt::Model> model;
-                std::shared_ptr<opt::Data> data;
                 std::shared_ptr<opt::ADModel> ad_model;
                 std::shared_ptr<opt::ADData> ad_data;
                 contact::RobotEndEffectors robot_end_effectors;
@@ -61,7 +61,7 @@ namespace galileo
 
                             auto foot_pos = frame_omf_data.translation();
 
-                            SX cfootpos = casadi::SX::sym("foot_pos", 3);
+                            casadi::SX cfootpos = casadi::SX::sym("foot_pos", 3);
                             pinocchio::casadi::copy(foot_pos, cfootpos);
 
                             casadi::SX symbolic_A = casadi::SX(casadi::Sparsity::dense(A.rows(), 1));

@@ -1,6 +1,6 @@
 #include "traj_test.h"
 
-int main()
+int main(int argc, char **argv)
 {
     double q0[] = {
         0, 0, 1.0627, 0, 0, 0, 1, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365,
@@ -8,22 +8,18 @@ int main()
 
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
 
-    legged::LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
+    LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
 
     Model model = bot.model;
     Data data = Data(model);
 
-    std::cout << "Set the robot" << std::endl;
-
     // Create environment Surfaces
-    std::shared_ptr<legged::environment::EnvironmentSurfaces> surfaces = std::make_shared<legged::environment::EnvironmentSurfaces>();
-    surfaces->push_back(legged::environment::CreateInfiniteGround());
+    shared_ptr<environment::EnvironmentSurfaces> surfaces = make_shared<environment::EnvironmentSurfaces>();
+    surfaces->push_back(environment::CreateInfiniteGround());
 
-    std::cout << "Set the ground" << std::endl;
+    shared_ptr<contact::ContactSequence> contact_sequence = make_shared<contact::ContactSequence>(num_ees);
 
-    std::shared_ptr<galileo::legged::contact::ContactSequence> contact_sequence = make_shared<legged::contact::ContactSequence>(num_ees);
-
-    legged::contact::ContactMode initial_mode;
+    contact::ContactMode initial_mode;
     initial_mode.combination_definition = bot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
 
