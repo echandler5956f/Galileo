@@ -18,8 +18,8 @@
 #include <pinocchio/algorithm/aba.hpp>
 #include <pinocchio/algorithm/centroidal.hpp>
 
-
 #include "galileo/legged-model/LeggedRobotStates.h"
+
 namespace galileo
 {
     namespace legged
@@ -109,20 +109,20 @@ namespace galileo
                  */
                 void MakeValid(ContactModeValidity &validity);
 
-                /**
-                 * @brief creates the dynamics for this mode
-                 * 
-                 */
-                void createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states);
+                // /**
+                //  * @brief creates the dynamics for this mode
+                //  * 
+                //  */
+                // void createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states);
 
-                /**
-                 * @brief Gets the dynamics for this mode
-                 * 
-                 * @param f The dynamics function
-                */
-                void getModeDynamics(casadi::Function &f);
+                // /**
+                //  * @brief Gets the dynamics for this mode
+                //  * 
+                //  * @param f The dynamics function
+                // */
+                // void getModeDynamics(casadi::Function &f);
 
-                casadi::Function ModeDynamics_;
+                // casadi::Function ModeDynamics_;
             };
 
             /**

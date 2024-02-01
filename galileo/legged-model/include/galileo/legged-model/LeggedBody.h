@@ -60,8 +60,8 @@ namespace galileo
                     ee_obj_ptr->frame_name = ee_name;
                     ee_obj_ptr->frame_id = this->model.getFrameId(ee_name);
 
-                    // todo : use the jacobian from the body frame to find the actual DOFs of this frame.
                     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix(6, this->model.nv);
+                    matrix.setZero();
                     pinocchio::computeFrameJacobian(model, data, pinocchio::neutral(model), ee_obj_ptr->frame_id, pinocchio::LOCAL, matrix);
                     Eigen::FullPivLU<Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>> lu_decomp(matrix);
                     ee_obj_ptr->is_6d = lu_decomp.rank() == 6;

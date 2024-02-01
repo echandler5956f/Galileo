@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 namespace galileo
 {
     namespace opt
@@ -53,19 +55,6 @@ namespace galileo
                  */
                 double time_value = 1;
             };
-
-            /**
-             * @brief Adds a new phase to the Phase sequence.
-             *
-             * This function adds a new phase to the sequence with the specified mode,
-             * number of knot points, and time step.
-             *
-             * @param mode The mode of the phase.
-             * @param knot_points The number of knot points in the phase.
-             * @param dt The time step between each knot point.
-             * @return The index of the newly added phase.
-             */
-            virtual int addPhase(const MODE_T &mode, int knot_points, double dt);
 
             /**
              * @brief Get the phase index at a given time.
@@ -137,7 +126,21 @@ namespace galileo
 
             const int &total_knots() { return total_knots_; }
 
-            const std::vector<Phase> & phase_sequence() { return phase_sequence_; }
+            const std::vector<Phase> &phase_sequence() { return phase_sequence_; }
+
+        protected:
+            /**
+             * @brief Adds a new phase to the Phase sequence.
+             *
+             * This function adds a new phase to the sequence with the specified mode,
+             * number of knot points, and time step.
+             *
+             * @param mode The mode of the phase.
+             * @param knot_points The number of knot points in the phase.
+             * @param dt The time step between each knot point.
+             * @return The index of the newly added phase.
+             */
+            int commonAddPhase(const MODE_T &mode, int knot_points, double dt);
 
             /**
              * @brief A vector of Phase objects.
@@ -177,7 +180,7 @@ namespace galileo
         };
 
         template <typename MODE_T>
-        int PhaseSequence<MODE_T>::addPhase(const MODE_T &mode, int knot_points, double dt)
+        int PhaseSequence<MODE_T>::commonAddPhase(const MODE_T &mode, int knot_points, double dt)
         {
             Phase new_phase;
             GlobalPhaseOffset new_phase_offset;
@@ -193,7 +196,6 @@ namespace galileo
             phase_offset_.push_back(new_phase_offset);
             dt_ += dt;
             total_knots_ += knot_points;
-
             return phase_sequence_.size() - 1;
         }
 
