@@ -1,6 +1,7 @@
 #pragma once
 
 #include "galileo/opt/States.h"
+#include "galileo/legged-model/EndEffector.h"
 #include <pinocchio/autodiff/casadi.hpp>
 #include "pinocchio/multibody/model.hpp"
 

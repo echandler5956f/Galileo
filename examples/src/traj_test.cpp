@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     contact::ContactMode initial_mode;
     initial_mode.combination_definition = bot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
-    initial_mode.createModeDynamics(make_shared<Model>(cmodel),ees, si);
+    initial_mode.createModeDynamics(make_shared<Model>(model), ees, si);
     std::cout << "Initial mode created" << std::endl;
 
     contact_sequence->addPhase(initial_mode, 100, 0.2);
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 1;
+    opts["ipopt.max_iter"] = 25;
 
     using namespace legged;
     using namespace constraints;
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
+    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {};//friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
 
     shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
 
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
     traj.init_finite_elements(1, X0);
 
     auto sol = traj.optimize();
-    cout << sol << endl;
+    // cout << sol << endl;
 
     return 0;
 }
