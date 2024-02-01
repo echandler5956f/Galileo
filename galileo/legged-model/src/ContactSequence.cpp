@@ -58,108 +58,148 @@ namespace galileo
 
             int ContactSequence::addPhase(const ContactMode &mode, int knot_points, double dt)
             {
-                // assert that contacts.size() == num_end_effectors_
-                Phase new_phase;
-                GlobalPhaseOffset new_phase_offset;
-                new_phase.mode = mode;
+                std::cout << "Adding phase from Contact Sequence class" << std::endl;
+                auto validity_mode = mode;
                 ContactMode::ContactModeValidity validity;
 
-                new_phase.mode.MakeValid(validity);
+                validity_mode.MakeValid(validity);
 
                 if (validity != ContactMode::VALID)
                 {
-                    throw std::runtime_error(std::string("'Contact is not valid!'"));
+                    throw std::runtime_error(std::string("Contact is not valid!"));
                 }
-
-                new_phase.knot_points = knot_points;
-                new_phase.time_value = dt;
-
-                new_phase_offset.t0_offset = dt_;
-                new_phase_offset.knot0_offset = total_knots_;
-
-                phase_sequence_.push_back(new_phase);
-                phase_offset_.push_back(new_phase_offset);
-                dt_ += dt;
-                total_knots_ += knot_points;
-
-                return phase_sequence_.size() - 1;
+                std::cout << "Contact is valid!" << std::endl;
+                return commonAddPhase(mode, knot_points, dt);
             }
 
-            int ContactSequence::getPhaseIndexAtTime(double t, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
+            // void ContactMode::createModeDynamics(std::shared_ptr<opt::Model> model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states)
+            // {
 
-                if ((t < 0) || (t > dt_))
-                {
-                    error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
-                    return -1;
-                }
+            //     // opt::Data data = opt::Data(*model);
 
-                for (int i = num_phases() - 1; i > 0; i--)
-                {
-                    bool is_in_phase_i = (t >= phase_offset_[i].t0_offset);
-                    if (is_in_phase_i)
-                    {
-                        error_status = CONTACT_SEQUENCE_ERROR::OK;
-                        return i;
-                    }
-                }
-                return -1;
-            }
+            //     // auto si = states;
+            //     // casadi::SX cx = casadi::SX::sym("x", si->nx);
+            //     // casadi::SX cu = casadi::SX::sym("u", si->nu);
 
-            int ContactSequence::getPhaseIndexAtKnot(int knot_idx, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                if ((knot_idx < 0) || (knot_idx >= total_knots_))
-                {
-                    error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
-                    return -1;
-                }
+            //     // // Get the slices of the state that represent
+            //     // // Joint pos/vel
+            //     // auto cq = si->get_q(cx);
+            //     // auto cv = si->get_v(cx);
 
-                for (int i = num_phases() - 1; i > 0; i--)
-                {
-                    bool is_in_phase_i = (knot_idx >= phase_offset_[i].knot0_offset);
-                    if (is_in_phase_i)
-                    {
-                        error_status = CONTACT_SEQUENCE_ERROR::OK;
-                        return i;
-                    }
-                }
-                return -1;
-            }
+            //     // opt::ADModel cmodel = (*model).cast<opt::ADScalar>();
+            //     // opt::ADData cdata(cmodel);
+            //     // opt::ConfigVectorAD q_AD(model->nq);
+            //     // opt::TangentVectorAD v_AD(model->nv);
 
-            void ContactSequence::getPhaseAtTime(double t, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                int phase_index = getPhaseIndexAtTime(t, error_status);
-                if (error_status != CONTACT_SEQUENCE_ERROR::OK)
-                {
-                    return;
-                }
+            //     // q_AD = Eigen::Map<opt::ConfigVectorAD>(static_cast<std::vector<opt::ADScalar>>(cq).data(), model->nq, 1);
+            //     // v_AD = Eigen::Map<opt::TangentVectorAD>(static_cast<std::vector<opt::ADScalar>>(cv).data(), model->nv, 1);
 
-                phase = phase_sequence_[phase_index];
-            }
+            //     // pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
+            //     // pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
+            //     // pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
+            //     // pinocchio::updateFramePlacements(cmodel, cdata);
 
-            void ContactSequence::getTimeAtPhase(int phase_idx, double &t, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                if ((phase_idx < 0) || (phase_idx >= num_phases()))
-                {
-                    error_status = CONTACT_SEQUENCE_ERROR::NOT_IN_DT;
-                    return;
-                }
+            //     // casadi::SX ground_reaction_f;
+            //     // casadi::SX ground_reaction_tau;
 
-                t = phase_offset_[phase_idx].t0_offset;
-                error_status = CONTACT_SEQUENCE_ERROR::OK;
-            }
+            //     // std::vector<casadi::SX> ground_reaction_f_vec;
+            //     // std::vector<casadi::SX> ground_reaction_tau_vec;
 
-            void ContactSequence::getPhaseAtKnot(int knot_idx, Phase &phase, CONTACT_SEQUENCE_ERROR &error_status) const
-            {
-                int phase_index = getPhaseIndexAtKnot(knot_idx, error_status);
-                if (error_status != CONTACT_SEQUENCE_ERROR::OK)
-                {
-                    return;
-                }
+            //     // // First we create a dynamics function given only the TOTAL WRENCH
 
-                phase = phase_sequence_[phase_index];
-            }
+            //     // casadi::SX total_f(3, 1);
+            //     // casadi::SX total_tau(3, 1);
 
+            //     // auto mass = data.mass[0];
+            //     // auto g = casadi::SX::zeros(3, 1);
+            //     // g(2) = 9.81;
+            //     // // derivative of moment
+            //     // auto cdh = si->get_cdh(cx);
+            //     // // joint velocity inputs
+            //     // auto cvju = si->get_vju(cu);
+
+            //     // // Centroidal momentum matrix
+            //     // auto Ag = cdata.Ag;
+            //     // casadi::SX cAg(Ag.rows(), Ag.cols());
+            //     // pinocchio::casadi::copy(Ag, cAg);
+            //     // auto ch = si->get_ch(cx);
+
+            //     // casadi::SX cf = casadi::SX::sym("wrench_f", 3);
+            //     // casadi::SX ctau = casadi::SX::sym("wrench_tau", 3);
+
+            //     // // cu is the wrench, appended onto the joint velocities.
+            //     // casadi::Function F("F",
+            //     //                    {cx, cf, ctau, cvju},
+            //     //                    {vertcat(cdh,
+            //     //                             (cf - mass * g) / mass,
+            //     //                             ctau / mass,
+            //     //                             cv,
+            //     //                             casadi::SX::mtimes(
+            //     //                                 casadi::SX::inv(cAg(casadi::Slice(0, 6), casadi::Slice(0, 6))),
+            //     //                                 (mass * ch - casadi::SX::mtimes(cAg(casadi::Slice(0, 6), casadi::Slice(6, int(Ag.cols()))),
+            //     //                                                                 cvju))),
+            //     //                             cvju)});
+
+            //     // // Now, we create a function to gain the total wrench
+            //     // casadi::SX total_wrench = casadi::SX::zeros(6, 1);
+
+            //     // std::vector<casadi::SX> foot_forces;
+            //     // std::vector<casadi::SX> foot_poss;
+            //     // std::vector<casadi::SX> foot_taus;
+
+            //     // for (auto ee : combination_definition)
+            //     // {
+            //     //     if (ee.second)
+            //     //     {
+            //     //         // The index of the end effector in the combination definiton
+            //     //         int end_effector_idx = std::distance(combination_definition.begin(), combination_definition.find(ee.first));
+
+            //     //         // get the wrench "contribution" if in contact
+            //     //         auto end_effector_ptr = end_effectors[ee.first];
+            //     //         auto foot_pos = cdata.oMf[end_effector_ptr->frame_id].translation() - cdata.com[0];
+
+            //     //         casadi::SX cfoot_pos(3, 1);
+            //     //         pinocchio::casadi::copy(foot_pos, cfoot_pos);
+
+            //     //         auto cforce = si->get_f(cu, end_effector_idx);
+
+            //     //         casadi::SX ctau_ee;
+            //     //         if (end_effector_ptr->is_6d)
+            //     //         {
+            //     //             ctau_ee = si->get_tau(cu, end_effector_idx);
+            //     //         }
+            //     //         else
+            //     //         {
+            //     //             ctau_ee = casadi::SX::zeros(3, 1);
+            //     //         }
+
+            //     //         foot_forces.push_back(cforce);
+            //     //         foot_poss.push_back(cfoot_pos);
+            //     //         foot_taus.push_back(ctau_ee);
+            //     //     }
+            //     // }
+
+            //     // // Now we have the foot forces, foot positions, and foot torques.
+            //     // // We can now create the total wrench, and our mode specific dynamics function
+
+            //     // casadi::SX total_f_input = casadi::SX::zeros(3, 1);
+            //     // casadi::SX total_tau_input = casadi::SX::zeros(3, 1);
+            //     // for (std::size_t i = 0; i < foot_forces.size(); i++)
+            //     // {
+            //     //     total_f_input += foot_forces[i];
+            //     //     total_tau_input += cross(foot_forces[i], foot_poss[i]) + foot_taus[i];
+            //     // }
+
+            //     // casadi::Function F_mode = casadi::Function("F_mode",
+            //     //                                            {cx, cu},
+            //     //                                            {F(casadi::SXVector{cx,
+            //     //                                                                total_f_input,
+            //     //                                                                total_tau_input,
+            //     //                                                                cvju})
+            //     //                                                 .at(0)});
+
+            //     // ModeDynamics_ = F_mode;
+            // }
         }
     }
 }

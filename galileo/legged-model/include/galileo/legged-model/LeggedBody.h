@@ -2,6 +2,9 @@
 
 #include "galileo/legged-model/EndEffector.h"
 #include <pinocchio/multibody/model.hpp>
+#include <pinocchio/algorithm/joint-configuration.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <Eigen/LU>
 #include <pinocchio/parsers/urdf.hpp>
 #include <vector>
 #include <bitset>
@@ -47,6 +50,7 @@ namespace galileo
              */
             void setEndEffectors(const std::vector<std::string> &ee_names)
             {
+                auto data = pinocchio::DataTpl<Scalar>(this->model);
                 for (int i = 0; i < ee_names.size(); ++i)
                 {
                     auto &ee_name = ee_names[i];
@@ -56,9 +60,11 @@ namespace galileo
                     ee_obj_ptr->frame_name = ee_name;
                     ee_obj_ptr->frame_id = this->model.getFrameId(ee_name);
 
-                    // todo : use the jacobian from the body frame to find the actual DOFs of this frame.
-                    ee_obj_ptr->is_6d = false;
-
+                    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> matrix(6, this->model.nv);
+                    matrix.setZero();
+                    pinocchio::computeFrameJacobian(model, data, pinocchio::neutral(model), ee_obj_ptr->frame_id, pinocchio::LOCAL, matrix);
+                    Eigen::FullPivLU<Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>> lu_decomp(matrix);
+                    ee_obj_ptr->is_6d = lu_decomp.rank() == 6;
                     ee_obj_ptr->local_ee_idx = i;
 
                     ees_.insert({ee_name, ee_obj_ptr});

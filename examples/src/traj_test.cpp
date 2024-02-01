@@ -25,6 +25,8 @@ int main(int argc, char **argv)
 
     contact_sequence->addPhase(initial_mode, 100, 0.2);
 
+    legged::contact::RobotEndEffectors ees = bot.getEndEffectors();
+
     pinocchio::computeTotalMass(model, data);
     pinocchio::framesForwardKinematics(model, data, q0_vec);
 
@@ -36,7 +38,7 @@ int main(int argc, char **argv)
     g(2) = 9.81;
     auto nq = model.nq;
     auto nv = model.nv;
-    shared_ptr<LeggedRobotStates> si = make_shared<LeggedRobotStates>(vector<int>{nq, nv});
+    shared_ptr<opt::LeggedRobotStates> si = make_shared<opt::LeggedRobotStates>(nq, nv, ees);
 
     SX cx = SX::sym("x", si->nx);
     SX cx2 = SX::sym("x2", si->nx);
@@ -44,176 +46,139 @@ int main(int argc, char **argv)
     SX cu = SX::sym("u", si->nu);
     SX cdt = SX::sym("dt");
 
-    auto ch = si->get_ch(cx);
-    auto ch_d = si->get_ch_d(cdx);
-    auto cdh = si->get_cdh(cx);
-    auto cdh_d = si->get_cdh_d(cdx);
-    auto cq = si->get_q(cx);
-    auto cq_d = si->get_q_d(cdx);
-    auto cqj = si->get_qj(cx);
-    auto cv = si->get_v(cx);
-    auto cv_d = si->get_v_d(cdx);
-    auto cvj = si->get_vj(cx);
-    auto cf = si->get_f(cu);
-    auto ctau = si->get_tau(cu);
-    auto cvju = si->get_vju(cu);
+    // auto ch = si->get_ch(cx);
+    // auto ch_d = si->get_ch_d(cdx);
+    // auto cdh = si->get_cdh(cx);
+    // auto cdh_d = si->get_cdh_d(cdx);
+    // auto cq = si->get_q(cx);
+    // auto cq_d = si->get_q_d(cdx);
+    // auto cqj = si->get_qj(cx);
+    // auto cv = si->get_v(cx);
+    // auto cv_d = si->get_v_d(cdx);
+    // auto cvj = si->get_vj(cx);
+    // // auto cf = si->get_f(cu);
+    // // auto ctau = si->get_tau(cu);
+    // // auto cvju = si->get_vju(cu);
 
-    ConfigVectorAD q_AD(model.nq);
-    TangentVectorAD v_AD(model.nv);
-    TangentVectorAD q_d_AD(model.nv);
+    // // ConfigVectorAD q_AD(model.nq);
+    // // TangentVectorAD v_AD(model.nv);
+    // // TangentVectorAD q_d_AD(model.nv);
 
-    q_AD = Eigen::Map<ConfigVectorAD>(static_cast<vector<ADScalar>>(cq).data(), model.nq, 1);
-    v_AD = Eigen::Map<TangentVectorAD>(static_cast<vector<ADScalar>>(cv).data(), model.nv, 1);
-    q_d_AD = Eigen::Map<TangentVectorAD>(static_cast<vector<ADScalar>>(cq_d).data(), model.nv, 1);
+    // // q_AD = Eigen::Map<ConfigVectorAD>(static_cast<vector<ADScalar>>(cq).data(), model.nq, 1);
+    // // v_AD = Eigen::Map<TangentVectorAD>(static_cast<vector<ADScalar>>(cv).data(), model.nv, 1);
+    // // q_d_AD = Eigen::Map<TangentVectorAD>(static_cast<vector<ADScalar>>(cq_d).data(), model.nv, 1);
 
-    pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
-    pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
-    pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
-    pinocchio::updateFramePlacements(cmodel, cdata);
+    // // pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
+    // // pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
+    // // pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
+    // // pinocchio::updateFramePlacements(cmodel, cdata);
 
-    ConfigVectorAD q_result = pinocchio::integrate(cmodel, q_AD, q_d_AD * cdt);
-    SX cq_result(model.nq, 1);
-    pinocchio::casadi::copy(q_result, cq_result);
+    // // ConfigVectorAD q_result = pinocchio::integrate(cmodel, q_AD, q_d_AD * cdt);
+    // // SX cq_result(model.nq, 1);
+    // // pinocchio::casadi::copy(q_result, cq_result);
 
-    Function Fint("Fint",
-                  {cx, cdx, cdt},
-                  {vertcat(ch + ch_d,
-                           cdh + cdh_d,
-                           // cq_result, // returns different expression than python version, NO idea why
-                           custom_fint(cx, cdx, cdt),
-                           cv + cv_d)});
+    // // Function Fint("Fint",
+    // //               {cx, cdx, cdt},
+    // //               {vertcat(ch + ch_d,
+    // //                        cdh + cdh_d,
+    // //                        // cq_result, // returns different expression than python version, NO idea why
+    // //                        custom_fint(cx, cdx, cdt),
+    // //                        cv + cv_d)});
 
-    auto ch2 = si->get_ch(cx2);
-    auto cdh2 = si->get_cdh(cx2);
-    auto cq2 = si->get_q(cx2);
-    auto cv2 = si->get_v(cx2);
+    // // auto ch2 = si->get_ch(cx2);
+    // // auto cdh2 = si->get_cdh(cx2);
+    // // auto cq2 = si->get_q(cx2);
+    // // auto cv2 = si->get_v(cx2);
 
-    ConfigVectorAD q2_AD(model.nq);
-    q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<vector<ADScalar>>(cq2).data(), model.nq, 1);
+    // // ConfigVectorAD q2_AD(model.nq);
+    // // q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<vector<ADScalar>>(cq2).data(), model.nq, 1);
 
-    ConfigVectorAD v_result = pinocchio::difference(cmodel, q_AD, q2_AD);
-    SX cv_result(model.nv, 1);
-    pinocchio::casadi::copy(v_result, cv_result);
+    // // ConfigVectorAD v_result = pinocchio::difference(cmodel, q_AD, q2_AD);
+    // // SX cv_result(model.nv, 1);
+    // // pinocchio::casadi::copy(v_result, cv_result);
 
-    Function Fdif("Fdif",
-                  {cx, cx2, cdt},
-                  {vertcat(ch2 - ch,
-                           cdh2 - cdh,
-                           cv_result / cdt,
-                           cv2 - cv)});
+    // // Function Fdif("Fdif",
+    // //               {cx, cx2, cdt},
+    // //               {vertcat(ch2 - ch,
+    // //                        cdh2 - cdh,
+    // //                        cv_result / cdt,
+    // //                        cv2 - cv)});
 
-    auto Ag = cdata.Ag;
-    SX cAg(Ag.rows(), Ag.cols());
-    pinocchio::casadi::copy(Ag, cAg);
+    // // auto Ag = cdata.Ag;
+    // // SX cAg(Ag.rows(), Ag.cols());
+    // // pinocchio::casadi::copy(Ag, cAg);
 
-    Function F("F",
-               {cx, cu},
-               {vertcat(cdh,
-                        (cf - mass * g) / mass,
-                        ctau / mass,
-                        cv,
-                        SX::mtimes(SX::inv(cAg(Slice(0, 6), Slice(0, 6))), (mass * ch - SX::mtimes(cAg(Slice(0, 6), Slice(6, int(Ag.cols()))), cvju))),
-                        cvju)});
+    // // Function F("F",
+    // //            {cx, cu},
+    // //            {vertcat(cdh,
+    // //                     (cf - mass * g) / mass,
+    // //                     ctau / mass,
+    // //                     cv,
+    // //                     SX::mtimes(SX::inv(cAg(Slice(0, 6), Slice(0, 6))), (mass * ch - SX::mtimes(cAg(Slice(0, 6), Slice(6, int(Ag.cols()))), cvju))),
+    // //                     cvju)});
 
-    SX cf_left = SX::sym("cf_left", 3);
-    SX ctau_left = SX::sym("ctau_left", 3);
-    SX cf_right = SX::sym("cf_right", 3);
-    SX ctau_right = SX::sym("ctau_right", 3);
-    SX cu_11 = vertcat(SXVector{cf_left, ctau_left, cf_right, ctau_right, cvju});
+    // // SX cq0(model.nq);
+    // // pinocchio::casadi::copy(q0_vec, cq0);
 
-    auto left_pos = cdata.oMf[0].translation() - cdata.com[0];
-    auto right_pos = cdata.oMf[1].translation() - cdata.com[0];
-    SX cleft_pos(3, 1);
-    SX cright_pos(3, 1);
-    pinocchio::casadi::copy(left_pos, cleft_pos);
-    pinocchio::casadi::copy(right_pos, cright_pos);
+    // // Function L("L",
+    // //            {cx, cu},
+    // //            {1e-3 * SX::sumsqr(cvju) +
+    // //             1e-4 * SX::sumsqr(cf) +
+    // //             1e-4 * SX::sumsqr(ctau) +
+    // //             1e1 * SX::sumsqr(cqj - cq0(Slice(7, nq)))});
 
-    SX condensed_u = vertcat(SXVector{cf_left + cf_right, cross(cleft_pos, cf_left) + cross(cright_pos, cf_right) + ctau_left + ctau_right, cvju});
+    // // Function Phi("Phi",
+    // //              {cx},
+    // //              {1e2 * SX::sumsqr(cqj - cq0(Slice(7, nq)))});
 
-    Function F_11("F_11",
-                  {cx, cu_11},
-                  {F(SXVector{cx, condensed_u}).at(0)});
+    // // Dict opts;
+    // // opts["ipopt.linear_solver"] = "ma97";
+    // // opts["ipopt.ma97_order"] = "metis";
+    // // opts["ipopt.fixed_variable_treatment"] = "make_constraint";
+    // // opts["ipopt.max_iter"] = 1;
 
-    SX cq0(model.nq);
-    pinocchio::casadi::copy(q0_vec, cq0);
+    // // using namespace legged;
+    // // using namespace constraints;
 
-    Function L("L",
-               {cx, cu},
-               {1e-3 * SX::sumsqr(cvju) +
-                1e-4 * SX::sumsqr(cf) +
-                1e-4 * SX::sumsqr(ctau) +
-                1e1 * SX::sumsqr(cqj - cq0(Slice(7, nq)))});
+    // // shared_ptr<GeneralProblemData> gp_data = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
 
-    Function Phi("Phi",
-                 {cx},
-                 {1e2 * SX::sumsqr(cqj - cq0(Slice(7, nq)))});
+    // // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
+    // //     std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
-    Dict opts;
-    opts["ipopt.linear_solver"] = "ma97";
-    opts["ipopt.ma97_order"] = "metis";
-    opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 25;
+    // // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
+    // //     std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
 
-    shared_ptr<GeneralProblemData> gp_data = make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
+    // // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
+    // //     std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-    shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
-        make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
+    // // vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
 
-    shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
-        make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
+    // // shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<Model>(model), make_shared<Data>(data), make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
 
-    shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
-        make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
+    // // std::vector<opt::ConstraintData> constraint_datas;
+    // // for (auto builder : builders)
+    // // {
+    // //     std::cout << "Building constraint" << std::endl;
+    // //     opt::ConstraintData some_data;
+    // //     builder->BuildConstraint(*legged_problem_data, 0, some_data);
+    // //     std::cout << "Built constraint" << std::endl;
+    // //     constraint_datas.push_back(some_data);
+    // // }
 
-    vector<shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder}; //, velocity_constraint_builder, contact_constraint_builder};
+    // // TrajectoryOpt<LeggedRobotProblemData, PseudospectralSegment> traj(legged_problem_data, builders, opts);
 
-    shared_ptr<LeggedRobotProblemData> legged_problem_data = make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, make_shared<ADModel>(cmodel), make_shared<ADData>(cdata), bot.getEndEffectors(), cx, cu, cdt, 20);
+    // // DM X0 = DM::zeros(si->nx, 1);
+    // // int j = 0;
+    // // for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
+    // // {
+    // //     X0(i) = q0_vec[j];
+    // //     ++j;
+    // // }
 
-    // :vector<opt::ConstraintData> constraint_datas;
-    // for (auto builder : builders)
-    // {
-    //     cout << "Building constraint" << endl;
-    //     opt::ConstraintData some_data;
-    //     builder->BuildConstraint(*legged_problem_data, 0, some_data);
-    //     cout << "Built constraint" << endl;
-    //     constraint_datas.push_back(some_data);
-    // }
+    // // traj.init_finite_elements(1, X0);
 
-    TrajectoryOpt<LeggedRobotProblemData> traj(legged_problem_data, builders, opts);
-
-    DM X0 = DM::zeros(si->nx, 1);
-    int j = 0;
-    for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
-    {
-        X0(i) = q0_vec[j];
-        ++j;
-    }
-
-    traj.init_finite_elements(1, X0);
-
-    MXVector sol = traj.optimize();
-    // std::cout << sol << std::endl;
-
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0, 1.0);
-    Eigen::MatrixXd new_sol = traj.get_solution(new_times);
-    Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, nq, new_sol.cols());
-    
-    // std::cout << subMatrix << std::endl;
-
-    std::ofstream new_times_file("../python/new_times.csv");
-    if (new_times_file.is_open())
-    {
-        new_times_file << new_times.transpose().format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
-        new_times_file.close();
-    }
-
-    // Save new_sol to a CSV file
-    std::ofstream new_sol_file("../python/new_sol.csv");
-    if (new_sol_file.is_open())
-    {
-        new_sol_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
-        new_sol_file.close();
-    }
+    // // auto sol = traj.optimize();
+    // // cout << sol << endl;
 
     return 0;
 }

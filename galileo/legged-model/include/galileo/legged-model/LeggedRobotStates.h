@@ -20,23 +20,29 @@ namespace galileo
              *
              * @param nq_nv The number of position and velocity variables.
              */
-            LeggedRobotStates(std::vector<int> nq_nv)
+            LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees)
             {
-                auto nq_ = nq_nv[0];
-                auto nv_ = nq_nv[1];
                 this->nq = nq_;
                 this->nv = nv_;
                 this->nx = this->nh + this->ndh + this->nq + this->nv;
                 this->ndx = this->nh + this->ndh + 2 * this->nv;
                 this->nvju = this->nv - this->nvb;
-                this->nu = this->nF + this->nvju;
+                this->nu = this->nvju;
+                for (auto ee : ees)
+                {
+                    if (ee.second->is_6d)
+                    {
+                        this->frame_id_to_index_range[ee.second->frame_id] = std::make_tuple(this->nF, this->nF + 6);
+                        this->nF += 6;
+                    }
+                    else
+                    {
+                        this->frame_id_to_index_range[ee.second->frame_id] = std::make_tuple(this->nF, this->nF + 3);
+                        this->nF += 3;
+                    }
+                }
+                this->nu += this->nF;
             }
-
-            /**
-             * @brief Input space dimension.
-             *
-             */
-            static const int nF = 6;
 
             /**
              * @brief Momenta space dimension.
@@ -198,12 +204,14 @@ namespace galileo
              *
              * @tparam Sym The type of the input
              * @param u The input
+             * @param ee_id The end effector id
              * @return const Sym The force
              */
             template <class Sym>
-            const Sym get_f(const Sym &u)
+            const Sym get_f(const Sym &u, const int ee_id)
             {
-                return u(casadi::Slice(0, 3));
+                Sym tmp = u(casadi::Slice(this->nvju + std::get<0>(this->frame_id_to_index_range[ee_id]), this->nvju + std::get<1>(this->frame_id_to_index_range[ee_id])));
+                return tmp(casadi::Slice(0, 3));
             }
 
             /**
@@ -211,12 +219,20 @@ namespace galileo
              *
              * @tparam Sym The type of the input
              * @param u The input
+             * @param ee_id The end effector id
              * @return const Sym The torque
              */
             template <class Sym>
-            const Sym get_tau(const Sym &u)
+            const Sym get_tau(const Sym &u, const int ee_id)
             {
-                return u(casadi::Slice(3, this->nF));
+                Sym tmp = u(casadi::Slice(this->nvju + std::get<0>(this->frame_id_to_index_range[ee_id]), this->nvju + std::get<1>(this->frame_id_to_index_range[ee_id])));
+                if (tmp.size1() < 6)
+                {
+                    std::cout << "tau does not exist for ee " << ee_id << "\n";
+                    return tmp;
+                }
+                else
+                    return tmp(casadi::Slice(3, 6));
             }
 
             /**
@@ -231,6 +247,9 @@ namespace galileo
             {
                 return u(casadi::Slice(this->nF, this->nu));
             }
+
+            // map between frame id and its index in the input vector
+            std::map<int, std::tuple<int, int>> frame_id_to_index_range;
 
             /**
              * @brief Number of position variables.
@@ -249,14 +268,13 @@ namespace galileo
              *
              */
             int nvju;
+
+            /**
+             * @brief Number of wrench variables
+             *
+             */
+            int nF;
         };
-        // Register the factory function for LeggedRobotStates
-        bool registered = []
-        {
-            States::registerRobotType("Legged", [](std::vector<int> nq_nv)
-                                      { return std::make_unique<LeggedRobotStates>(nq_nv); });
-            return true;
-        }();
 
         typedef double Scalar;
         typedef casadi::SX ADScalar;
