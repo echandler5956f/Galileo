@@ -14,7 +14,7 @@ namespace galileo
             {
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
-                std::shared_ptr<opt::States> states;
+                std::shared_ptr<opt::LeggedRobotStates> states;
                 std::shared_ptr<opt::ADModel> ad_model;
                 std::shared_ptr<opt::ADData> ad_data;
                 contact::RobotEndEffectors robot_end_effectors;
@@ -152,8 +152,7 @@ namespace galileo
                 // Possibly, this would mean creating a map.
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
                 casadi::SXVector G_vec;
-                casadi::SXVector u_vec;
-                casadi::SX u_in = casadi::SX::sym( "u", problem_data.friction_cone_problem_data.states->nu() );
+                casadi::SX u_in = casadi::SX::sym( "u", problem_data.friction_cone_problem_data.states->nu);
                 for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
                     casadi::SX G_out;
@@ -161,10 +160,9 @@ namespace galileo
                     if (!G_out.is_zero())
                     {
                         G_vec.push_back(G_out);
-                        u_vec.push_back(u_in);
                     }
                 }
-                G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, casadi::SX::vertcat(u_vec)}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
+                G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, u_in}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
             }
 
             template <class ProblemData>

@@ -16,7 +16,7 @@ namespace galileo
                 LeggedRobotProblemData(std::shared_ptr<opt::GeneralProblemData> gp_data_,
                                        std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces,
                                        std::shared_ptr<contact::ContactSequence> contact_sequence,
-                                       std::shared_ptr<opt::States> states_,
+                                       std::shared_ptr<opt::LeggedRobotStates> states_,
                                        std::shared_ptr<opt::ADModel> ad_model,
                                        std::shared_ptr<opt::ADData> ad_data,
                                        contact::RobotEndEffectors robot_end_effectors,
@@ -65,7 +65,7 @@ namespace galileo
                     this->velocity_constraint_problem_data.max_footstep_offset_height = 0.1;
                 }
                 std::shared_ptr<opt::GeneralProblemData> gp_data;
-                std::shared_ptr<opt::States> states;
+                std::shared_ptr<opt::LeggedRobotStates> states;
                 FrictionConeProblemData friction_cone_problem_data;
                 ContactConstraintProblemData contact_constraint_problem_data;
                 VelocityConstraintProblemData velocity_constraint_problem_data;

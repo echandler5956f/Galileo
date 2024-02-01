@@ -32,12 +32,12 @@ namespace galileo
                 {
                     if (ee.second->is_6d)
                     {
-                        this->frame_id_to_index_range[ee.second->frame_id] = std::make_tuple(this->nF, this->nF + 6);
+                        this->frame_id_to_index_range[ee.second->frame_name] = std::make_tuple(this->nF, this->nF + 6);
                         this->nF += 6;
                     }
                     else
                     {
-                        this->frame_id_to_index_range[ee.second->frame_id] = std::make_tuple(this->nF, this->nF + 3);
+                        this->frame_id_to_index_range[ee.second->frame_name] = std::make_tuple(this->nF, this->nF + 3);
                         this->nF += 3;
                     }
                 }
@@ -208,9 +208,9 @@ namespace galileo
              * @return const Sym The force
              */
             template <class Sym>
-            const Sym get_f(const Sym &u, const int ee_id)
+            const Sym get_f(const Sym &u, const std::string ee_id)
             {
-                Sym tmp = u(casadi::Slice(this->nvju + std::get<0>(this->frame_id_to_index_range[ee_id]), this->nvju + std::get<1>(this->frame_id_to_index_range[ee_id])));
+                Sym tmp = u(casadi::Slice(std::get<0>(this->frame_id_to_index_range[ee_id]), std::get<1>(this->frame_id_to_index_range[ee_id])));
                 return tmp(casadi::Slice(0, 3));
             }
 
@@ -223,9 +223,9 @@ namespace galileo
              * @return const Sym The torque
              */
             template <class Sym>
-            const Sym get_tau(const Sym &u, const int ee_id)
+            const Sym get_tau(const Sym &u, const std::string ee_id)
             {
-                Sym tmp = u(casadi::Slice(this->nvju + std::get<0>(this->frame_id_to_index_range[ee_id]), this->nvju + std::get<1>(this->frame_id_to_index_range[ee_id])));
+                Sym tmp = u(casadi::Slice(std::get<0>(this->frame_id_to_index_range[ee_id]), std::get<1>(this->frame_id_to_index_range[ee_id])));
                 if (tmp.size1() < 6)
                 {
                     std::cout << "tau does not exist for ee " << ee_id << "\n";
@@ -233,6 +233,19 @@ namespace galileo
                 }
                 else
                     return tmp(casadi::Slice(3, 6));
+            }
+
+            /**
+             * @brief Get all wrenches: nF x 1.
+             *
+             * @tparam Sym The type of the input
+             * @param u The input
+             * @return const Sym The wrenches
+             */
+            template <class Sym>
+            const Sym get_all_wrenches(const Sym &u)
+            {
+                return u(casadi::Slice(0, this->nvju));
             }
 
             /**
@@ -249,7 +262,7 @@ namespace galileo
             }
 
             // map between frame id and its index in the input vector
-            std::map<int, std::tuple<int, int>> frame_id_to_index_range;
+            std::map<std::string, std::tuple<int, int>> frame_id_to_index_range;
 
             /**
              * @brief Number of position variables.

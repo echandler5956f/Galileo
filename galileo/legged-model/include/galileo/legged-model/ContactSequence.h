@@ -30,8 +30,12 @@ namespace galileo
              * @brief A struct for holding the contact mode of the robot.
              *
              */
-            struct ContactMode
+            class ContactMode
             {
+            public:
+
+                ContactMode() {}
+                
                 /**
                  * @brief Error codes
                  *
@@ -122,7 +126,7 @@ namespace galileo
                 void getModeDynamics(casadi::Function &f);
 
             protected:
-                casadi::Function ModeDynamics_;
+                std::shared_ptr<casadi::Function> ModeDynamics_;
             };
 
             /**
@@ -144,6 +148,8 @@ namespace galileo
                  * @param num_end_effectors The number of end effectors in the contact sequence.
                  */
                 ContactSequence(int num_end_effectors) : PhaseSequence(), num_end_effectors_(num_end_effectors) {}
+
+                ~ContactSequence() {}
 
                 const int &num_end_effectors() { return num_end_effectors_; }
 
