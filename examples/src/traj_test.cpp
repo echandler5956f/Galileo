@@ -10,8 +10,7 @@ int main(int argc, char **argv)
 
     LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
 
-    Model model = bot.model;
-    Data data = Data(model);
+    Data data = Data(bot.model);
 
     // Create environment Surfaces
     std::shared_ptr<environment::EnvironmentSurfaces> surfaces = std::make_shared<environment::EnvironmentSurfaces>();
@@ -24,19 +23,20 @@ int main(int argc, char **argv)
     legged::contact::RobotEndEffectors ees = bot.getEndEffectors();
     std::cout << "RobotEndEffectors created" << std::endl;
 
-    ADModel cmodel = model.cast<ADScalar>();
+    ADModel cmodel = bot.model.cast<ADScalar>();
+
     ADData cdata(cmodel);
     std::cout << "ADModel and ADData created" << std::endl;
 
-    auto nq = model.nq;
-    auto nv = model.nv;
+    auto nq = bot.model.nq;
+    auto nv = bot.model.nv;
     std::shared_ptr<opt::LeggedRobotStates> si = std::make_shared<opt::LeggedRobotStates>(nq, nv, ees);
     std::cout << "LeggedRobotStates created" << std::endl;
 
     contact::ContactMode initial_mode;
     initial_mode.combination_definition = bot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
-    initial_mode.createModeDynamics(model, ees, si);
+    initial_mode.createModeDynamics(bot.model, ees, si);
     std::cout << "Initial mode created" << std::endl;
 
     contact_sequence->addPhase(initial_mode, 100, 0.2);
@@ -64,17 +64,17 @@ int main(int argc, char **argv)
     auto cvj = si->get_vj(cx);
     auto cvju = si->get_vju(cu);
     auto cwrenches = si->get_all_wrenches(cu);
-    
+
     auto ch2 = si->get_ch(cx2);
     auto cdh2 = si->get_cdh(cx2);
     auto cq2 = si->get_q(cx2);
     auto cv2 = si->get_v(cx2);
 
-    ConfigVectorAD q_AD(model.nq);
-    q_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq).data(), model.nq, 1);
-    
-    ConfigVectorAD q2_AD(model.nq);
-    q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq2).data(), model.nq, 1);
+    ConfigVectorAD q_AD(nq);
+    q_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq).data(), nq, 1);
+
+    ConfigVectorAD q2_AD(nq);
+    q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq2).data(), nq, 1);
 
     casadi::Function Fint("Fint",
                   {cx, cdx, cdt},
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
                            cv + cv_d)});
 
     ConfigVectorAD v_result = pinocchio::difference(cmodel, q_AD, q2_AD);
-    casadi::SX cv_result(model.nv, 1);
+    casadi::SX cv_result(nv, 1);
     pinocchio::casadi::copy(v_result, cv_result);
 
     casadi::Function Fdif("Fdif",
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
                            cdh2 - cdh,
                            cv_result / cdt,
                            cv2 - cv)});
-    casadi::SX cq0(model.nq);
+    casadi::SX cq0(nq);
     pinocchio::casadi::copy(q0_vec, cq0);
 
     casadi::Function L("L",
@@ -124,9 +124,10 @@ int main(int argc, char **argv)
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
+    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {}; // friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
 
-    std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, std::make_shared<ADModel>(cmodel), std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
+    std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, std::make_shared<ADModel>(cmodel),
+                                                                                                 std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
 
     std::vector<opt::ConstraintData> constraint_datas;
     for (auto builder : builders)
