@@ -95,14 +95,26 @@ Clone the repo and its submodules:
 git clone --recursive https://github.com/stack-of-tasks/pinocchio
 ```
 
-Make a build directory
+Checkout the Pinocchio3 preview branch
+
 ```bash
-cd pinocchio && mkdir build && cd build
+cd pinocchio && git checkout pinocchio3-preview
 ```
 
-Run cmake with [CasADi] support 
+Make a build directory
+```bash
+mkdir build && cd build
+```
+
+Run cmake with [CasADi] support
 ```bash
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_WITH_CASADI_SUPPORT=ON ..
+```
+
+If you are not building the Python interface, you can add the following flag:
+
+```bash
+-DBUILD_PYTHON_INTERFACE=OFF
 ```
 
 and then build and install with
