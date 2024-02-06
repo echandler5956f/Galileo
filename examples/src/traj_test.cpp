@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     initial_mode.createModeDynamics(bot.model, ees, si);
     std::cout << "Initial mode created" << std::endl;
 
-    contact_sequence->addPhase(initial_mode, 5, 1.0);
+    contact_sequence->addPhase(initial_mode, 20, 1.0);
     std::cout << "Initial mode added to sequence" << std::endl;
 
     casadi::Function F;
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     opt::TangentVectorAD v_AD(nv);
     v_AD = Eigen::Map<opt::TangentVectorAD>(static_cast<std::vector<opt::ADScalar>>(cv).data(), nv, 1);
 
-    pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD); 
+    pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
     pinocchio::updateFramePlacements(cmodel, cdata);
 
     casadi::Function Fint("Fint",
@@ -105,15 +105,20 @@ int main(int argc, char **argv)
 
     casadi::Function L("L",
                        {cx, cu},
-                       {1e-3 * casadi::SX::sumsqr(cvju) +
-                        1e-4 * casadi::SX::sumsqr(cwrenches) +
-                        1e1 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
-                        1e1 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
+                       {
+                        // 1e-3 * casadi::SX::sumsqr(cvju) +
+                        // 1e-4 * casadi::SX::sumsqr(cwrenches) +
+                        // 1e1 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
+                        1e1 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
+                        });
 
     casadi::Function Phi("Phi",
                          {cx},
-                         {1e6 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
-                          1e6 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
+                         {
+                            casadi::SX(0)
+                        //     1e6 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
+                        //   1e6 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
+                          });
 
     casadi::Dict opts;
     opts["ipopt.linear_solver"] = "ma97";
@@ -135,7 +140,7 @@ int main(int argc, char **argv)
     std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder};
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, std::make_shared<ADModel>(cmodel),
-                                                                                                           std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 5);
+                                                                                                           std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
 
     std::vector<opt::ConstraintData> constraint_datas;
     for (auto builder : builders)
@@ -161,8 +166,19 @@ int main(int argc, char **argv)
 
     casadi::MXVector sol = traj.optimize();
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0, 1.0);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0, 1.0);
     Eigen::MatrixXd new_sol = traj.get_solution(new_times);
+    auto vel_function = constraint_datas[1].G;
+
+    for (int k = 0; k < new_sol.cols(); ++k)
+    {
+        casadi::SX tmp_x(si->nx);
+        casadi::SX tmp_u = casadi::SX::zeros(si->nu, 1);
+        pinocchio::casadi::copy(new_sol.block(0, k, si->nx, 1), tmp_x);   
+        casadi::SX tmp_v = vel_function(casadi::SXVector{tmp_x, tmp_u}).at(0);
+        std::cout << "Velocity: " << tmp_v << std::endl;
+    }
+
     Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, nq, new_sol.cols());
 
     std::ofstream new_times_file("../python/new_times.csv");
