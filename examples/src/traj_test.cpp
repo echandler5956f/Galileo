@@ -77,41 +77,43 @@ int main(int argc, char **argv)
     q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq2).data(), nq, 1);
 
     casadi::Function Fint("Fint",
-                  {cx, cdx, cdt},
-                  {vertcat(ch + ch_d,
-                           cdh + cdh_d,
-                           // cq_result, // returns different expression than python version, NO idea why
-                           custom_fint(cx, cdx, cdt),
-                           cv + cv_d)});
+                          {cx, cdx, cdt},
+                          {vertcat(ch + ch_d,
+                                   cdh + cdh_d,
+                                   // cq_result, // returns different expression than python version, NO idea why
+                                   custom_fint(cx, cdx, cdt),
+                                   cv + cv_d)});
 
     ConfigVectorAD v_result = pinocchio::difference(cmodel, q_AD, q2_AD);
     casadi::SX cv_result(nv, 1);
     pinocchio::casadi::copy(v_result, cv_result);
 
     casadi::Function Fdif("Fdif",
-                  {cx, cx2, cdt},
-                  {vertcat(ch2 - ch,
-                           cdh2 - cdh,
-                           cv_result / cdt,
-                           cv2 - cv)});
+                          {cx, cx2, cdt},
+                          {vertcat(ch2 - ch,
+                                   cdh2 - cdh,
+                                   cv_result / cdt,
+                                   cv2 - cv)});
     casadi::SX cq0(nq);
     pinocchio::casadi::copy(q0_vec, cq0);
 
     casadi::Function L("L",
-               {cx, cu},
-               {1e-3 * casadi::SX::sumsqr(cvju) +
-                1e-4 * casadi::SX::sumsqr(cwrenches) +
-                1e1 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
+                       {cx, cu},
+                       {1e-3 * casadi::SX::sumsqr(cvju) +
+                        1e-4 * casadi::SX::sumsqr(cwrenches) +
+                        1e1 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
+                        1e1 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
 
     casadi::Function Phi("Phi",
-                 {cx},
-                 {1e2 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
+                         {cx},
+                         {1e6 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
+                          1e6 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))});
 
     casadi::Dict opts;
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 5;
+    opts["ipopt.max_iter"] = 100;
 
     std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
 
@@ -124,10 +126,10 @@ int main(int argc, char **argv)
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {}; // friction_cone_constraint_builder, velocity_constraint_builder, contact_constraint_builder};
+    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder};
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, std::make_shared<ADModel>(cmodel),
-                                                                                                 std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
+                                                                                                           std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
 
     std::vector<opt::ConstraintData> constraint_datas;
     for (auto builder : builders)
@@ -149,10 +151,28 @@ int main(int argc, char **argv)
         ++j;
     }
 
-    traj.init_finite_elements(1, X0);
+    traj.init_finite_elements(3, X0);
 
-    auto sol = traj.optimize();
-    // cout << sol << endl;
+    casadi::MXVector sol = traj.optimize();
+
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0, 1.0);
+    Eigen::MatrixXd new_sol = traj.get_solution(new_times);
+    Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, nq, new_sol.cols());
+
+    std::ofstream new_times_file("../python/new_times.csv");
+    if (new_times_file.is_open())
+    {
+        new_times_file << new_times.transpose().format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
+        new_times_file.close();
+    }
+
+    // Save new_sol to a CSV file
+    std::ofstream new_sol_file("../python/new_sol.csv");
+    if (new_sol_file.is_open())
+    {
+        new_sol_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
+        new_sol_file.close();
+    }
 
     return 0;
 }

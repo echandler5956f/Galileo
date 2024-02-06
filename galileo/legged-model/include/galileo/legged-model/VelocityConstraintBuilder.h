@@ -179,8 +179,8 @@ namespace galileo
                         pinocchio::casadi::copy(foot_vel, cfoot_vel);
 
                         G_vec.push_back(cfoot_vel);
-                        lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
-                        upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                        lower_bound_vec.push_back(casadi::SX::zeros(foot_vel.rows(), 1));
+                        upper_bound_vec.push_back(casadi::SX::zeros(foot_vel.rows(), 1));
                     }
                 }
                 // replace u with an SX vector the size of (sum dof of ee in contact during this knot index)

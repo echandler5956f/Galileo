@@ -218,7 +218,8 @@ namespace galileo
                     //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
-                    G_out = evaluated_vector;
+                    // G_out = evaluated_vector;
+                    G_out = -u_ee(2);
                 }
                 else
                 {
