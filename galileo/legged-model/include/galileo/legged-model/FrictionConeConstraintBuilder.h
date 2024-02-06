@@ -130,8 +130,8 @@ namespace galileo
 
                 uint num_constraints = num_points * getNumConstraintPerEEPerState(problem_data);
 
-                Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(num_constraints, 0);
-                Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(num_constraints, -std::numeric_limits<double>::infinity());
+                Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(2, 0);
+                Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(2, -std::numeric_limits<double>::infinity());
 
                 // Convert Eigen to casadi (see traj_test example)
                 casadi::SX upper_bound_casadi = casadi::SX(casadi::Sparsity::dense(upper_bound_vect.rows(), 1));
@@ -227,7 +227,8 @@ namespace galileo
                     // SET CASADI FUNCTION
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
                     //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
-                    G_out = evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)));
+                    // G_out = evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)));
+                    G_out = -u_ee(2);
                 }
             }
 

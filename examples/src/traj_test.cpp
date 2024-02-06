@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     initial_mode.createModeDynamics(bot.model, ees, si);
     std::cout << "Initial mode created" << std::endl;
 
-    contact_sequence->addPhase(initial_mode, 100, 0.2);
+    contact_sequence->addPhase(initial_mode, 5, 1.0);
     std::cout << "Initial mode added to sequence" << std::endl;
 
     casadi::Function F;
@@ -75,6 +75,12 @@ int main(int argc, char **argv)
 
     ConfigVectorAD q2_AD(nq);
     q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq2).data(), nq, 1);
+
+    opt::TangentVectorAD v_AD(nv);
+    v_AD = Eigen::Map<opt::TangentVectorAD>(static_cast<std::vector<opt::ADScalar>>(cv).data(), nv, 1);
+
+    pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD); 
+    pinocchio::updateFramePlacements(cmodel, cdata);
 
     casadi::Function Fint("Fint",
                           {cx, cdx, cdt},
@@ -129,7 +135,7 @@ int main(int argc, char **argv)
     std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder};
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, std::make_shared<ADModel>(cmodel),
-                                                                                                           std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
+                                                                                                           std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 5);
 
     std::vector<opt::ConstraintData> constraint_datas;
     for (auto builder : builders)
@@ -151,7 +157,7 @@ int main(int argc, char **argv)
         ++j;
     }
 
-    traj.init_finite_elements(3, X0);
+    traj.init_finite_elements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 

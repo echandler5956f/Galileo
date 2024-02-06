@@ -94,6 +94,7 @@ namespace galileo
                 {
                     if (!mode[(*ee.second)])
                     {
+                        std::cout << "EE " << ee.first << " is not in contact" << std::endl;
                         double liftoff_time = 0;
                         double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->dt();
                         FootstepDefinition footstep_definition;
@@ -154,7 +155,7 @@ namespace galileo
                         auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                     *(problem_data.velocity_constraint_problem_data.ad_data),
                                                                     ee.second->frame_id,
-                                                                    pinocchio::LOCAL)
+                                                                    pinocchio::WORLD)
                                             .toVector();
 
                         casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
@@ -172,7 +173,7 @@ namespace galileo
                         auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                     *(problem_data.velocity_constraint_problem_data.ad_data),
                                                                     ee.second->frame_id,
-                                                                    pinocchio::LOCAL)
+                                                                    pinocchio::WORLD)
                                             .toVector();
 
                         casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
@@ -184,7 +185,8 @@ namespace galileo
                     }
                 }
                 // replace u with an SX vector the size of (sum dof of ee in contact during this knot index)
-                constraint_data.G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, problem_data.friction_cone_problem_data.u}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
+                constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
+                std::cout << "G_velocity: " << constraint_data.G << std::endl;
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{casadi::SX::vertcat(lower_bound_vec)});
             }
