@@ -71,3 +71,4 @@ def display_traj(qs: np.ndarray, dts: np.ndarray):
 
 while True:
     display_traj(new_sol, new_times)
+    time.sleep(5)

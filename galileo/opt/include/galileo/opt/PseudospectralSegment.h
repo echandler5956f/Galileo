@@ -767,7 +767,6 @@ namespace galileo
             casadi::SXVector tmp_dx;
             tmp_x.push_back(X0);
             tmp_dx.push_back(dX0);
-
             for (int j = 0; j < dX_poly.d; ++j)
             {
                 double dt_j = (dX_poly.tau_root[j + 1] - dX_poly.tau_root[j]) * h;
@@ -862,6 +861,9 @@ namespace galileo
                 g_data->G.assert_size_in(0, st_m->nx, 1);
                 g_data->G.assert_size_in(1, st_m->nu, 1);
                 /*TODO: Add assertions to check the bounds functions here!!!*/
+                assert(g_data->lower_bound.n_in() == 1 && "G lower_bound must have 1 inputs");
+                assert(g_data->lower_bound.n_out() == 1 && "G lower_bound must have 1 output");
+                g_data->lower_bound.assert_size_in(0, 1, 1);
 
                 auto tmap = casadi::Function("fg",
                                              casadi::SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
@@ -880,10 +882,12 @@ namespace galileo
             for (std::size_t i = 0; i < G.size(); ++i)
             {
                 auto g_data = G[i];
-                general_lbg(casadi::Slice(std::get<0>(ranges_G[i])), std::get<1>(ranges_G[i])) =
-                    vertcat(g_data->lower_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times));
-                general_ubg(casadi::Slice(std::get<0>(ranges_G[i])), std::get<1>(ranges_G[i])) =
-                    vertcat(g_data->upper_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times));
+                std::cout << "general_lbg.size1() = " << general_lbg.size1() << " general_lbg.size2() = " << general_lbg.size2() << std::endl;
+                std::cout << "ranges_G[i] = " << std::get<0>(ranges_G[i]) << " " << std::get<1>(ranges_G[i]) << std::endl;
+                general_lbg(casadi::Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i]))), 0) =
+                    casadi::DM::reshape(vertcat(g_data->lower_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
+                general_ubg(casadi::Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i]))), 0) =
+                    casadi::DM::reshape(vertcat(g_data->upper_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
             }
 
             auto Ndxknot = st_m->ndx * (knot_num + 1);
@@ -899,13 +903,12 @@ namespace galileo
 
             casadi::MX xkg_sym = casadi::MX::sym("xkg", st_m->nx, 1);
             casadi::MX xckg_sym = casadi::MX::sym("Xckg", st_m->nx * dX_poly.d, 1);
-
             if (!Wx->initial_guess.is_null())
             {
                 auto xg = vertcat(Wx->initial_guess.map(knot_num + 1, "serial")(knot_times));
                 casadi::Function dxg_func = casadi::Function("xg_fun", casadi::MXVector{xkg_sym}, casadi::MXVector{Fdif(casadi::MXVector{x0_global, xkg_sym, 1.0}).at(0)})
                                                 .map(knot_num + 1, "serial");
-                w0(casadi::Slice(0, Ndxknot)) = reshape(dxg_func(casadi::DMVector{xg}).at(0), Ndxknot, 1);
+                w0(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(dxg_func(casadi::DMVector{xg}).at(0), Ndxknot, 1);
                 /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
                 Thus, dxc_k = fdif(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
                 auto xc_g = vertcat(Wx->initial_guess.map((dX_poly.d) * knot_num, "serial")(collocation_times));
@@ -923,21 +926,21 @@ namespace galileo
 
             if (!Wx->lower_bound.is_null() && !Wx->upper_bound.is_null())
             {
-                general_lbw(casadi::Slice(0, Ndxknot)) = reshape(vertcat(Wx->lower_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
-                general_ubw(casadi::Slice(0, Ndxknot)) = reshape(vertcat(Wx->upper_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
-                general_lbw(casadi::Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->lower_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
-                general_ubw(casadi::Slice(Ndxknot, Ndx)) = reshape(vertcat(Wx->upper_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
+                general_lbw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(vertcat(Wx->lower_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
+                general_ubw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(vertcat(Wx->upper_bound.map(knot_num + 1, "serial")(knot_times)), Ndxknot, 1);
+                general_lbw(casadi::Slice(Ndxknot, Ndx)) = casadi::DM::reshape(vertcat(Wx->lower_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
+                general_ubw(casadi::Slice(Ndxknot, Ndx)) = casadi::DM::reshape(vertcat(Wx->upper_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times)), Ndxcol, 1);
             }
 
             if (!Wu->initial_guess.is_null())
             {
-                w0(casadi::Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->initial_guess.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
+                w0(casadi::Slice(Ndx, Ndx + Nu)) = casadi::DM::reshape(vertcat(Wu->initial_guess.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
             }
 
             if (!Wu->lower_bound.is_null() && !Wu->upper_bound.is_null())
             {
-                general_lbw(casadi::Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->lower_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
-                general_ubw(casadi::Slice(Ndx, Ndx + Nu)) = reshape(vertcat(Wu->upper_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
+                general_lbw(casadi::Slice(Ndx, Ndx + Nu)) = casadi::DM::reshape(vertcat(Wu->lower_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
+                general_ubw(casadi::Slice(Ndx, Ndx + Nu)) = casadi::DM::reshape(vertcat(Wu->upper_bound.map(U_poly.d * knot_num, "serial")(u_times)), Nu, 1);
             }
         }
 

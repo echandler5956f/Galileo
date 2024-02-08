@@ -106,18 +106,19 @@ int main(int argc, char **argv)
     casadi::Function L("L",
                        {cx, cu},
                        {
+                        // casadi::SX(0)
                         // 1e-3 * casadi::SX::sumsqr(cvju) +
                         // 1e-4 * casadi::SX::sumsqr(cwrenches) +
                         // 1e1 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
-                        1e1 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
+                        casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
                         });
 
     casadi::Function Phi("Phi",
                          {cx},
                          {
-                            casadi::SX(0)
-                        //     1e6 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
-                        //   1e6 * casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
+                            // casadi::SX(0)
+                            // 1e6 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
+                            casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
                           });
 
     casadi::Dict opts;

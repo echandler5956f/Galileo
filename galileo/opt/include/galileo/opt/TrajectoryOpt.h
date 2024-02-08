@@ -206,6 +206,13 @@ namespace galileo
             casadi::SX t = casadi::SX::sym("t");
 
             std::vector<std::shared_ptr<ConstraintData>> G;
+            for (auto builder : builders)
+            {
+                std::shared_ptr<ConstraintData> con_data = std::make_shared<ConstraintData>();
+                builder->BuildConstraint(*problem, 0, *con_data);
+                G.push_back(con_data);
+            }
+
             std::shared_ptr<ConstraintData> u_bound_constraint = std::make_shared<ConstraintData>();
 
             // u_bound_constraint->global = true;
@@ -237,7 +244,7 @@ namespace galileo
             for (size_t i = 0; i < num_phases; ++i)
             {
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
-                segment = std::make_shared<PseudospectralSegment>(gp_data, state_indices, d, 20, 10. / 20);
+                segment = std::make_shared<PseudospectralSegment>(gp_data, state_indices, d, 20, 1. / 20);
                 segment->initialize_local_time_vector(global_times);
                 segment->initialize_knot_segments(X0, prev_final_state);
                 segment->initialize_expression_graph(G, Wx, Wu);

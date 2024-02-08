@@ -219,7 +219,7 @@ namespace galileo
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
                     // G_out = evaluated_vector;
-                    G_out = -u_ee(2);
+                    G_out = u_ee(2);
                 }
                 else
                 {
@@ -228,7 +228,7 @@ namespace galileo
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
                     //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
                     // G_out = evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)));
-                    G_out = -u_ee(2);
+                    G_out = u_ee(2);
                 }
             }
 
