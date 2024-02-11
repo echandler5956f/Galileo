@@ -35,16 +35,17 @@ int main(int argc, char **argv)
 
     casadi::Function L("L",
                        {robot.cx, robot.cu},
-                       {1e-3 * casadi::SX::sumsqr(si->get_vju(robot.cu)) +
+                       {1e1 * casadi::SX::sumsqr(si->get_vju(robot.cu)) +
                         1e-4 * casadi::SX::sumsqr(si->get_all_wrenches(robot.cu)) +
-                        // 1e1 * casadi::SX::sumsqr(si->get_q(robot.cx)(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3)) - casadi::SX::vertcat(casadi::SXVector{0., 0., 0.})) +
-                        1e4 * casadi::SX::sumsqr(si->get_qj(robot.cx) - cq0(casadi::Slice(7, robot.model.nq)))});
+                        1e6 * casadi::SX::sumsqr(si->get_q(robot.cx)(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3)) - casadi::SX::vertcat(casadi::SXVector{0., 0.075, 0.})) + 
+                        1e4 * casadi::SX::sumsqr(si->get_qj(robot.cx) - cq0(casadi::Slice(7, robot.model.nq)))
+                        });
 
     casadi::Function Phi("Phi",
                          {robot.cx},
                          {//   casadi::SX::sumsqr(robot.fdif(casadi::SXVector{robot.cx, casadi::SX(X0), 1.0}).at(0))
-                          //   1e10 * casadi::SX::sumsqr(si->get_q(robot.cx)(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3)) - casadi::SX::vertcat(casadi::SXVector{0., 0., 0.})) +
-                          1e5 * casadi::SX::sumsqr(si->get_qj(robot.cx) - cq0(casadi::Slice(7, robot.model.nq))) +
+                          1e5 * casadi::SX::sumsqr(si->get_q(robot.cx)(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3)) - casadi::SX::vertcat(casadi::SXVector{0., 0.075, 0.})) +
+                        //   1e4 * casadi::SX::sumsqr(si->get_qj(robot.cx) - cq0(casadi::Slice(7, robot.model.nq))) +
                           casadi::SX::zeros(1, 1)});
 
     std::cout << "cq0: " << cq0 << std::endl;
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 100;
+    opts["ipopt.max_iter"] = 250;
 
     std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
 
