@@ -25,6 +25,7 @@ namespace galileo
                                        casadi::SX t,
                                        int num_knots)
                 {
+                    this->phase_sequence = contact_sequence;
                     this->gp_data = gp_data_;
                     this->states = states_;
 
@@ -64,6 +65,7 @@ namespace galileo
                     this->velocity_constraint_problem_data.num_knots = num_knots;
                     this->velocity_constraint_problem_data.max_footstep_offset_height = 0.1;
                 }
+                std::shared_ptr<contact::ContactSequence> phase_sequence;
                 std::shared_ptr<opt::GeneralProblemData> gp_data;
                 std::shared_ptr<opt::LeggedRobotStates> states;
                 FrictionConeProblemData friction_cone_problem_data;

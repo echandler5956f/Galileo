@@ -8,118 +8,47 @@ int main(int argc, char **argv)
 
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
 
-    LeggedBody<Scalar> bot(huron_location, num_ees, end_effector_names);
+    LeggedBody robot(huron_location, num_ees, end_effector_names);
+    std::shared_ptr<LeggedRobotStates> si = robot.si;
 
-    Data data = Data(bot.model);
+    casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
+    int j = 0;
+    for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
+    {
+        X0(i) = q0_vec[j];
+        ++j;
+    }
 
-    // Create environment Surfaces
     std::shared_ptr<environment::EnvironmentSurfaces> surfaces = std::make_shared<environment::EnvironmentSurfaces>();
-    surfaces->push_back(environment::CreateInfiniteGround());
-    std::cout << "EnvironmentSurfaces created" << std::endl;
-
-    std::shared_ptr<contact::ContactSequence> contact_sequence = std::make_shared<contact::ContactSequence>(num_ees);
-    std::cout << "ContactSequence created" << std::endl;
-
-    legged::contact::RobotEndEffectors ees = bot.getEndEffectors();
-    std::cout << "RobotEndEffectors created" << std::endl;
-
-    ADModel cmodel = bot.model.cast<ADScalar>();
-
-    ADData cdata(cmodel);
-    std::cout << "ADModel and ADData created" << std::endl;
-
-    auto nq = bot.model.nq;
-    auto nv = bot.model.nv;
-    std::shared_ptr<opt::LeggedRobotStates> si = std::make_shared<opt::LeggedRobotStates>(nq, nv, ees);
-    std::cout << "LeggedRobotStates created" << std::endl;
+    surfaces->push_back(environment::createInfiniteGround());
 
     contact::ContactMode initial_mode;
-    initial_mode.combination_definition = bot.getContactCombination(0b11);
+    initial_mode.combination_definition = robot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
-    initial_mode.createModeDynamics(bot.model, ees, si);
-    std::cout << "Initial mode created" << std::endl;
 
-    contact_sequence->addPhase(initial_mode, 20, 1.0);
-    std::cout << "Initial mode added to sequence" << std::endl;
+    robot.contact_sequence->addPhase(initial_mode, 20, 1.0);
 
-    casadi::Function F;
-    initial_mode.getModeDynamics(F);
-    std::cout << "Initial mode dynamics created" << std::endl;
+    robot.fillModeDynamics();
 
-    casadi::SX cx = casadi::SX::sym("x", si->nx);
-    casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
-    casadi::SX cdx = casadi::SX::sym("dx", si->ndx);
-    casadi::SX cu = casadi::SX::sym("u", si->nu);
-    casadi::SX cdt = casadi::SX::sym("dt");
-
-    auto ch = si->get_ch(cx);
-    auto ch_d = si->get_ch_d(cdx);
-    auto cdh = si->get_cdh(cx);
-    auto cdh_d = si->get_cdh_d(cdx);
-    auto cq = si->get_q(cx);
-    auto cq_d = si->get_q_d(cdx);
-    auto cqj = si->get_qj(cx);
-    auto cv = si->get_v(cx);
-    auto cv_d = si->get_v_d(cdx);
-    auto cvj = si->get_vj(cx);
-    auto cvju = si->get_vju(cu);
-    auto cwrenches = si->get_all_wrenches(cu);
-
-    auto ch2 = si->get_ch(cx2);
-    auto cdh2 = si->get_cdh(cx2);
-    auto cq2 = si->get_q(cx2);
-    auto cv2 = si->get_v(cx2);
-
-    ConfigVectorAD q_AD(nq);
-    q_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq).data(), nq, 1);
-
-    ConfigVectorAD q2_AD(nq);
-    q2_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(cq2).data(), nq, 1);
-
-    opt::TangentVectorAD v_AD(nv);
-    v_AD = Eigen::Map<opt::TangentVectorAD>(static_cast<std::vector<opt::ADScalar>>(cv).data(), nv, 1);
-
-    pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
-    pinocchio::updateFramePlacements(cmodel, cdata);
-
-    casadi::Function Fint("Fint",
-                          {cx, cdx, cdt},
-                          {vertcat(ch + ch_d,
-                                   cdh + cdh_d,
-                                   // cq_result, // returns different expression than python version, NO idea why
-                                   custom_fint(cx, cdx, cdt),
-                                   cv + cv_d)});
-
-    ConfigVectorAD v_result = pinocchio::difference(cmodel, q_AD, q2_AD);
-    casadi::SX cv_result(nv, 1);
-    pinocchio::casadi::copy(v_result, cv_result);
-
-    casadi::Function Fdif("Fdif",
-                          {cx, cx2, cdt},
-                          {vertcat(ch2 - ch,
-                                   cdh2 - cdh,
-                                   cv_result / cdt,
-                                   cv2 - cv)});
-    casadi::SX cq0(nq);
+    casadi::SX cq0(robot.model.nq);
     pinocchio::casadi::copy(q0_vec, cq0);
 
     casadi::Function L("L",
-                       {cx, cu},
-                       {
-                        // casadi::SX(0)
-                        // 1e-3 * casadi::SX::sumsqr(cvju) +
-                        // 1e-4 * casadi::SX::sumsqr(cwrenches) +
-                        // 1e1 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
-                        casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
-                        });
+                       {robot.cx, robot.cu},
+                       {1e-3 * casadi::SX::sumsqr(si->get_vju(robot.cu)) +
+                        1e-4 * casadi::SX::sumsqr(si->get_all_wrenches(robot.cu)) +
+                        // 1e1 * casadi::SX::sumsqr(si->get_q(robot.cx)(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3)) - casadi::SX::vertcat(casadi::SXVector{0., 0., 0.})) +
+                        1e4 * casadi::SX::sumsqr(si->get_qj(robot.cx) - cq0(casadi::Slice(7, robot.model.nq)))});
 
     casadi::Function Phi("Phi",
-                         {cx},
-                         {
-                            // casadi::SX(0)
-                            // 1e6 * casadi::SX::sumsqr(cq(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3))) +
-                            casadi::SX::sumsqr(cqj - cq0(casadi::Slice(7, nq)))
-                          });
+                         {robot.cx},
+                         {//   casadi::SX::sumsqr(robot.fdif(casadi::SXVector{robot.cx, casadi::SX(X0), 1.0}).at(0))
+                          //   1e10 * casadi::SX::sumsqr(si->get_q(robot.cx)(casadi::Slice(0, 3)) - cq0(casadi::Slice(0, 3)) - casadi::SX::vertcat(casadi::SXVector{0., 0., 0.})) +
+                          1e5 * casadi::SX::sumsqr(si->get_qj(robot.cx) - cq0(casadi::Slice(7, robot.model.nq))) +
+                          casadi::SX::zeros(1, 1)});
+
+    std::cout << "cq0: " << cq0 << std::endl;
+    std::cout << "cq0(casadi::Slice(0, 3)): " << cq0(casadi::Slice(0, 3)) << std::endl;
 
     casadi::Dict opts;
     opts["ipopt.linear_solver"] = "ma97";
@@ -127,7 +56,7 @@ int main(int argc, char **argv)
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 100;
 
-    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(Fint, Fdif, F, L, Phi);
+    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
 
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
         std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
@@ -138,49 +67,53 @@ int main(int argc, char **argv)
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {friction_cone_constraint_builder, velocity_constraint_builder};
+    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder};
 
-    std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, contact_sequence, si, std::make_shared<ADModel>(cmodel),
-                                                                                                           std::make_shared<ADData>(cdata), ees, cx, cu, cdt, 20);
+    std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
+                                                                                                           std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt, 20);
 
     std::vector<opt::ConstraintData> constraint_datas;
     for (auto builder : builders)
     {
-        std::cout << "Building constraint" << std::endl;
         opt::ConstraintData some_data;
-        builder->BuildConstraint(*legged_problem_data, 0, some_data);
-        std::cout << "Built constraint" << std::endl;
+        builder->buildConstraint(*legged_problem_data, 0, some_data);
         constraint_datas.push_back(some_data);
     }
+    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, builders, opts);
 
-    TrajectoryOpt<LeggedRobotProblemData> traj(legged_problem_data, builders, opts);
-
-    casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
-    int j = 0;
-    for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
-    {
-        X0(i) = q0_vec[j];
-        ++j;
-    }
-
-    traj.init_finite_elements(1, X0);
+    traj.initFiniteElements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0, 1.0);
-    Eigen::MatrixXd new_sol = traj.get_solution(new_times);
-    auto vel_function = constraint_datas[1].G;
+    Eigen::MatrixXd new_sol = traj.getSolution(new_times);
+
+    opt::ConstraintData fri;
+    friction_cone_constraint_builder->buildConstraint(*legged_problem_data, 0, fri);
+    auto force_function = fri.G;
+    opt::ConstraintData vel;
+    velocity_constraint_builder->buildConstraint(*legged_problem_data, 0, vel);
+    auto vel_function = vel.G;
+
+    auto solu = sol[1];
+    auto dm_u = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(0, solu.columns())));
+    std::cout << dm_u.get_elements() << std::endl;
 
     for (int k = 0; k < new_sol.cols(); ++k)
     {
         casadi::SX tmp_x(si->nx);
         casadi::SX tmp_u = casadi::SX::zeros(si->nu, 1);
-        pinocchio::casadi::copy(new_sol.block(0, k, si->nx, 1), tmp_x);   
+        pinocchio::casadi::copy(new_sol.block(0, k, si->nx, 1), tmp_x);
+        std::cout << "State: " << tmp_x << std::endl;
         casadi::SX tmp_v = vel_function(casadi::SXVector{tmp_x, tmp_u}).at(0);
         std::cout << "Velocity: " << tmp_v << std::endl;
+        casadi::SX tmp_f = force_function(casadi::SXVector{tmp_x, dm_u(casadi::Slice(0, si->nu), k)}).at(0);
+        std::cout << "Lower bound force: " << fri.lower_bound(casadi::DMVector{0}) << " Force: " << tmp_f << " Upper bound force: " << fri.upper_bound(casadi::DMVector{0}) << std::endl;
+        auto dm_f = si->get_f<casadi::DM>(dm_u(casadi::Slice(0, si->nu), k), robot.cmodel.getFrameId("l_foot_v_ft_link", pinocchio::BODY));
+        std::cout << "Actual force: " << dm_f << std::endl;
     }
 
-    Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, nq, new_sol.cols());
+    Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, si->nq, new_sol.cols());
 
     std::ofstream new_times_file("../python/new_times.csv");
     if (new_times_file.is_open())

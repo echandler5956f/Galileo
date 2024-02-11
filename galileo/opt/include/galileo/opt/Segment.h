@@ -22,49 +22,49 @@ namespace galileo
              * @param w Decision variable vector
              * @return casadi::MX Solution values
              */
-            virtual casadi::MXVector extract_solution(casadi::MX &w) const = 0;
+            virtual casadi::MXVector extractSolution(casadi::MX &w) const = 0;
 
             /**
              * @brief Get the initial state.
              *
              * @return casadi::MX The initial state
              */
-            virtual casadi::MX get_initial_state() const = 0;
+            virtual casadi::MX getInitialState() const = 0;
 
             /**
              * @brief Get the initial state deviant.
              *
              * @return casadi::MX The initial state deviant
              */
-            virtual casadi::MX get_initial_state_deviant() const = 0;
+            virtual casadi::MX getInitialStateDeviant() const = 0;
 
             /**
              * @brief Get the final state deviant.
              *
              * @return casadi::MX The final state deviant
              */
-            virtual casadi::MX get_final_state_deviant() const = 0;
+            virtual casadi::MX getFinalStateDeviant() const = 0;
 
             /**
              * @brief Get the actual final state.
              *
              * @return casadi::MX The final state.
              */
-            virtual casadi::MX get_final_state() const = 0;
+            virtual casadi::MX getFinalState() const = 0;
 
             /**
              * @brief Get the local times vector.
              *
              * @return casadi::DM The local times vector
              */
-            virtual casadi::DM get_local_times() const = 0;
+            virtual casadi::DM getLocalTimes() const = 0;
 
             /**
              * @brief Initialize the vector of local times which constraints are evaluated at.
              *
              * @param global_times Vector of global times
              */
-            virtual void initialize_local_time_vector(casadi::DM &global_times) = 0;
+            virtual void initializeLocalTimeVector(casadi::DM &global_times) = 0;
 
             /**
              * @brief Create all the knot segments.
@@ -73,7 +73,7 @@ namespace galileo
              * @param x0_local Local starting state to integrate from
              *
              */
-            virtual void initialize_knot_segments(casadi::DM x0_global, casadi::MX x0_local) = 0;
+            virtual void initializeKnotSegments(casadi::DM x0_global, casadi::MX x0_local) = 0;
 
             /**
              * @brief Build the function graph.
@@ -82,7 +82,7 @@ namespace galileo
              * @param Wx Decision bound and initial guess data for the state
              * @param Wu Decision bound and initial guess data for the input
              */
-            virtual void initialize_expression_graph(std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu) = 0;
+            virtual void initializeExpressionGraph(std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wx, std::shared_ptr<DecisionData> Wu) = 0;
 
             /**
              * @brief Evaluate the expressions with the actual decision variables.
@@ -91,7 +91,7 @@ namespace galileo
              * @param w Decision variable vector to fill
              * @param g Constraint vector to fill
              */
-            virtual void evaluate_expression_graph(casadi::MX &J0, casadi::MXVector &w, casadi::MXVector &g) = 0;
+            virtual void evaluateExpressionGraph(casadi::MX &J0, casadi::MXVector &w, casadi::MXVector &g) = 0;
 
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.

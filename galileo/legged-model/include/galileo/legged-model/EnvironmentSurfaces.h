@@ -43,7 +43,7 @@ namespace galileo
                 /**
                  * @brief Get a "rotation" matrix R such that R * unit_surface_normal_in_global_frame = z_hat
                  */
-                Eigen::Matrix<double, 3, 3> Rotation()
+                Eigen::Matrix<double, 3, 3> rotation()
                 {
                     return Eigen::Matrix<double, 3, 3>::Identity();
                 }
@@ -56,7 +56,7 @@ namespace galileo
              *
              * @return The created infinite ground surface.
              */
-            SurfaceData CreateInfiniteGround();
+            SurfaceData createInfiniteGround();
 
             /**
              * \brief Calculates the violation of inequality constraints at a given point within a surface region.
@@ -71,7 +71,7 @@ namespace galileo
              * \tparam T The data type of the matrix elements.
              */
             template <class T>
-            void PointViolation(const SurfaceData &region, const Eigen::Matrix<T, 2, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation);
+            void pointViolation(const SurfaceData &region, const Eigen::Matrix<T, 2, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation);
 
             /**
              * @brief Calculates the violation of point constraints for a given region and point.
@@ -86,7 +86,7 @@ namespace galileo
              * @param eq_violation The matrix to store the equality violations.
              */
             template <class T>
-            void PointViolation(const SurfaceData &region, const Eigen::Matrix<T, 3, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation, Eigen::Matrix<T, Eigen::Dynamic, 1> &eq_violation);
+            void pointViolation(const SurfaceData &region, const Eigen::Matrix<T, 3, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation, Eigen::Matrix<T, Eigen::Dynamic, 1> &eq_violation);
 
             /**
              * @brief Checks if a given point is inside a specified region.
@@ -126,7 +126,7 @@ namespace galileo
              * @param b The vector representing the right-hand side of the linear inequality system.
              * @return The Chebyshev center as a vector.
              */
-            Eigen::VectorXd CalculateChebyshevCenter(const Eigen::MatrixXd &A, const Eigen::VectorXd &b);
+            Eigen::VectorXd calculateChebyshevCenter(const Eigen::MatrixXd &A, const Eigen::VectorXd &b);
 
             /**
              * @brief Represents the ID of a surface in the environment.
@@ -182,7 +182,7 @@ namespace galileo
                  *
                  * @return uint The number of surfaces.
                  */
-                uint num_surface() const { return (*this).size(); }
+                uint numSurface() const { return (*this).size(); }
             };
 
         }

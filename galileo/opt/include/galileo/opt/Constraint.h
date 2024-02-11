@@ -25,11 +25,10 @@ namespace galileo
              * @param L_ Running cost
              * @param Phi_ Terminal cost
              */
-            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdif_, casadi::Function F_, casadi::Function L_, casadi::Function Phi_)
+            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdif_, casadi::Function L_, casadi::Function Phi_)
             {
                 this->Fint = Fint_;
                 this->Fdif = Fdif_;
-                this->F = F_;
                 this->L = L_;
                 this->Phi = Phi_;
             }
@@ -47,12 +46,6 @@ namespace galileo
              *
              */
             casadi::Function Fdif;
-
-            /**
-             * @brief Continuous-time function. This function stores the system dynamics.
-             *
-             */
-            casadi::Function F;
 
             /**
              * @brief The "running" or integrated cost function.
@@ -165,10 +158,10 @@ namespace galileo
              * @param phase_index index to build constraint data for
              * @param constraint_data Constraint specific data
              */
-            virtual void BuildConstraint(const ProblemData &problem_data, int phase_index, ConstraintData &constraint_data)
+            virtual void buildConstraint(const ProblemData &problem_data, int phase_index, ConstraintData &constraint_data)
             {
-                CreateBounds(problem_data, phase_index, constraint_data.upper_bound, constraint_data.lower_bound);
-                CreateFunction(problem_data, phase_index, constraint_data.G);
+                createBounds(problem_data, phase_index, constraint_data.upper_bound, constraint_data.lower_bound);
+                createFunction(problem_data, phase_index, constraint_data.G);
             }
 
             /**
@@ -179,7 +172,7 @@ namespace galileo
              * @param upper_bound Upper bound function to return
              * @param lower_bound Lower bound function to return
              */
-            virtual void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
+            virtual void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
 
             /**
              * @brief Generate a function to evaluate each point
@@ -188,7 +181,7 @@ namespace galileo
              * @param phase_index index to build constraint data for
              * @param G The constraint function to return
              */
-            virtual void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const = 0;
+            virtual void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const = 0;
         };
     };
 };

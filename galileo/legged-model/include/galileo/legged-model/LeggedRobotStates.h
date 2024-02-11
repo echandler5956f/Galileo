@@ -21,29 +21,7 @@ namespace galileo
              *
              * @param nq_nv The number of position and velocity variables.
              */
-            LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees)
-            {
-                this->nq = nq_;
-                this->nv = nv_;
-                this->nx = this->nh + this->ndh + this->nq + this->nv;
-                this->ndx = this->nh + this->ndh + 2 * this->nv;
-                this->nvju = this->nv - this->nvb;
-                this->nu = this->nvju;
-                for (auto ee : ees)
-                {
-                    if (ee.second->is_6d)
-                    {
-                        this->frame_id_to_index_range[ee.second->frame_name] = std::make_tuple(this->nF, this->nF + 6);
-                        this->nF += 6;
-                    }
-                    else
-                    {
-                        this->frame_id_to_index_range[ee.second->frame_name] = std::make_tuple(this->nF, this->nF + 3);
-                        this->nF += 3;
-                    }
-                }
-                this->nu += this->nF;
-            }
+            LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees);
 
             /**
              * @brief Momenta space dimension.
@@ -77,10 +55,7 @@ namespace galileo
              * @return const Sym The momenta
              */
             template <class Sym>
-            const Sym get_ch(const Sym &cx)
-            {
-                return cx(casadi::Slice(0, this->nh));
-            }
+            const Sym get_ch(const Sym &cx);
 
             /**
              * @brief Get momenta delta: nh x 1.
@@ -90,10 +65,7 @@ namespace galileo
              * @return const Sym The momenta delta
              */
             template <class Sym>
-            const Sym get_ch_d(const Sym &cdx)
-            {
-                return cdx(casadi::Slice(0, this->nh));
-            }
+            const Sym get_ch_d(const Sym &cdx);
 
             /**
              * @brief Get momenta time derivative: nh x 1.
@@ -103,10 +75,7 @@ namespace galileo
              * @return const Sym The momenta time derivative
              */
             template <class Sym>
-            const Sym get_cdh(const Sym &cx)
-            {
-                return cx(casadi::Slice(this->nh, this->nh + this->ndh));
-            }
+            const Sym get_cdh(const Sym &cx);
 
             /**
              * @brief Get momentum time derivative delta: nh x 1.
@@ -116,10 +85,7 @@ namespace galileo
              * @return const Sym The momentum time derivative delta.
              */
             template <class Sym>
-            const Sym get_cdh_d(const Sym &cdx)
-            {
-                return cdx(casadi::Slice(this->nh, this->nh + this->ndh));
-            }
+            const Sym get_cdh_d(const Sym &cdx);
 
             /**/
             /**
@@ -130,10 +96,7 @@ namespace galileo
              * @return const Sym The position
              */
             template <class Sym>
-            const Sym get_q(const Sym &cx)
-            {
-                return cx(casadi::Slice(this->nh + this->ndh, this->nh + this->ndh + this->nq));
-            }
+            const Sym get_q(const Sym &cx);
 
             /**
              * @brief Get q delta: nv x 1.
@@ -143,10 +106,7 @@ namespace galileo
              * @return const Sym The position delta
              */
             template <class Sym>
-            const Sym get_q_d(const Sym &cdx)
-            {
-                return cdx(casadi::Slice(this->nh + this->ndh, this->nh + this->ndh + this->nv));
-            }
+            const Sym get_q_d(const Sym &cdx);
 
             /**
              * @brief Get qj: (nq - 7) x 1.
@@ -156,10 +116,7 @@ namespace galileo
              * @return const Sym The joint position
              */
             template <class Sym>
-            const Sym get_qj(const Sym &cx)
-            {
-                return cx(casadi::Slice(this->nh + this->ndh + this->nqb, this->nh + this->ndh + this->nq));
-            }
+            const Sym get_qj(const Sym &cx);
 
             /**
              * @brief Get v: nv x 1.
@@ -169,10 +126,7 @@ namespace galileo
              * @return const Sym The velocity
              */
             template <class Sym>
-            const Sym get_v(const Sym &cx)
-            {
-                return cx(casadi::Slice(this->nh + this->ndh + this->nq, this->nx));
-            }
+            const Sym get_v(const Sym &cx);
 
             /**
              * @brief Get v delta: nv x 1.
@@ -182,10 +136,7 @@ namespace galileo
              * @return const Sym The velocity delta
              */
             template <class Sym>
-            const Sym get_v_d(const Sym &cdx)
-            {
-                return cdx(casadi::Slice(this->nh + this->ndh + this->nv, this->ndx));
-            }
+            const Sym get_v_d(const Sym &cdx);
 
             /**
              * @brief Get v_j: (nv - 6) x 1.
@@ -195,10 +146,7 @@ namespace galileo
              * @return const Sym The joint velocity
              */
             template <class Sym>
-            const Sym get_vj(const Sym &cx)
-            {
-                return cx(casadi::Slice(this->nh + this->ndh + this->nq + this->nvb, this->nx));
-            }
+            const Sym get_vj(const Sym &cx);
 
             /**
              * @brief Get f: 3 x 1.
@@ -209,11 +157,7 @@ namespace galileo
              * @return const Sym The force
              */
             template <class Sym>
-            const Sym get_f(const Sym &u, const std::string ee_id)
-            {
-                Sym tmp = u(casadi::Slice(std::get<0>(this->frame_id_to_index_range[ee_id]), std::get<1>(this->frame_id_to_index_range[ee_id])));
-                return tmp(casadi::Slice(0, 3));
-            }
+            const Sym get_f(const Sym &u, pinocchio::FrameIndex ee_id);
 
             /**
              * @brief Get tau: 3 x 1.
@@ -224,17 +168,7 @@ namespace galileo
              * @return const Sym The torque
              */
             template <class Sym>
-            const Sym get_tau(const Sym &u, const std::string ee_id)
-            {
-                Sym tmp = u(casadi::Slice(std::get<0>(this->frame_id_to_index_range[ee_id]), std::get<1>(this->frame_id_to_index_range[ee_id])));
-                if (tmp.size1() < 6)
-                {
-                    std::cout << "tau does not exist for ee " << ee_id << "\n";
-                    return tmp;
-                }
-                else
-                    return tmp(casadi::Slice(3, 6));
-            }
+            const Sym get_tau(const Sym &u, pinocchio::FrameIndex ee_id);
 
             /**
              * @brief Get all wrenches: nF x 1.
@@ -244,10 +178,7 @@ namespace galileo
              * @return const Sym The wrenches
              */
             template <class Sym>
-            const Sym get_all_wrenches(const Sym &u)
-            {
-                return u(casadi::Slice(0, this->nvju));
-            }
+            const Sym get_all_wrenches(const Sym &u);
 
             /**
              * @brief Get vju: nvju x 1.
@@ -257,13 +188,40 @@ namespace galileo
              * @return const Sym The joint velocity input
              */
             template <class Sym>
-            const Sym get_vju(const Sym &u)
-            {
-                return u(casadi::Slice(this->nF, this->nu));
-            }
+            const Sym get_vju(const Sym &u);
+
+            /**
+             * @brief Get the general forces: 3 x 1.
+             * 
+             * @tparam Sym The type of the input
+             * @param u_general The input
+             * @return const Sym The forces
+             */
+            template <class Sym>
+            const Sym get_general_forces(const Sym &u_general);
+
+            /**
+             * @brief Get the general torques: 3 x 1.
+             * 
+             * @tparam Sym The type of the input
+             * @param u_general The input
+             * @return const Sym The torques
+             */
+            template <class Sym>
+            const Sym get_general_torques(const Sym &u_general);
+
+            /**
+             * @brief Get the general joint velocities: nvju x 1.
+             * 
+             * @tparam Sym The type of the input
+             * @param u_general The input
+             * @return const Sym The joint velocities
+             */
+            template <class Sym>
+            const Sym get_general_joint_velocities(const Sym &u_general);
 
             // map between frame id and its index in the input vector
-            std::map<std::string, std::tuple<int, int>> frame_id_to_index_range;
+            std::map<pinocchio::FrameIndex, std::tuple<int, int>> frame_id_to_index_range;
 
             /**
              * @brief Number of position variables.
@@ -288,6 +246,12 @@ namespace galileo
              *
              */
             int nF = 0;
+
+            /**
+             * @brief Summed wrenches followed by the joint velocities.
+             * 
+             */
+            int nu_general = 0;
         };
 
         typedef double Scalar;

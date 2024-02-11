@@ -2,8 +2,9 @@
 
 #include "galileo/opt/Segment.h"
 #include "galileo/opt/PseudospectralSegment.h"
-#include <chrono>
+#include "galileo/opt/PhaseSequence.h"
 #include <Eigen/Dense>
+#include <chrono>
 
 namespace galileo
 {
@@ -14,7 +15,7 @@ namespace galileo
             initializing the finite elements, and optimizing the trajectory.
          *
          */
-        template <class ProblemData>
+        template <class ProblemData, class MODE_T>
         class TrajectoryOpt
         {
         public:
@@ -33,7 +34,7 @@ namespace galileo
              * @param d The degree of the finite element polynomials
              * @param X0 The initial state to deviate from
              */
-            void init_finite_elements(int d, casadi::DM X0);
+            void initFiniteElements(int d, casadi::DM X0);
 
             /**
              * @brief Optimize and return the solution.
@@ -45,7 +46,7 @@ namespace galileo
             /**
              * @brief Get the times where the decision variables are evaluated.
              */
-            std::vector<double> get_global_times() const;
+            std::vector<double> getGlobalTimes() const;
 
             /**
              * @brief Get the solution at the specified times. Times should be monotonically increasing, but do not have to be evenly spaced.
@@ -54,11 +55,11 @@ namespace galileo
              * @param times The times to evaluate the solution at
              * @return Eigen::MatrixXd The solution at the specified times
              */
-            Eigen::MatrixXd get_solution(Eigen::VectorXd &times) const;
+            Eigen::MatrixXd getSolution(Eigen::VectorXd &times) const;
 
-            Eigen::VectorXd get_segment_times(Eigen::VectorXd &times, double initial_time, double end_time) const;
+            Eigen::VectorXd getSegmentTimes(Eigen::VectorXd &times, double initial_time, double end_time) const;
 
-            void process_segment_times(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const;
+            void processSegmentTimes(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const;
 
         private:
             /**
@@ -108,6 +109,12 @@ namespace galileo
              *
              */
             std::shared_ptr<States> state_indices;
+
+            /**
+             * @brief Sequence of phases including dynamics and timing information
+             * 
+             */
+            std::shared_ptr<PhaseSequence<MODE_T>> sequence;
 
             /**
              * @brief Vector of all decision variables.
@@ -163,18 +170,19 @@ namespace galileo
             casadi::DM global_times;
         };
 
-        template <class ProblemData>
-        TrajectoryOpt<ProblemData>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_)
+        template <class ProblemData, class MODE_T>
+        TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_)
         {
             this->problem = problem_;
             this->gp_data = problem_->gp_data;
             this->builders = builders_;
             this->state_indices = problem_->states;
+            this->sequence = problem->phase_sequence;
             this->opts = opts_;
         }
 
-        template <class ProblemData>
-        void TrajectoryOpt<ProblemData>::init_finite_elements(int d, casadi::DM X0)
+        template <class ProblemData, class MODE_T>
+        void TrajectoryOpt<ProblemData, MODE_T>::initFiniteElements(int d, casadi::DM X0)
         {
             assert(X0.size1() == state_indices->nx && X0.size2() == 1 && "Initial state must be a column vector");
             trajectory.clear();
@@ -192,11 +200,6 @@ namespace galileo
             casadi::MX prev_final_state_deviant;
             casadi::MX curr_initial_state_deviant;
 
-            std::shared_ptr<Segment> segment;
-
-            /*Each phase should have a vector of constraint data*/
-            size_t num_phases = 1;
-
             /*DUMMY DATA FOR TESTING*/
             std::vector<double> equality_back(state_indices->nx, 0.0);
 
@@ -206,12 +209,6 @@ namespace galileo
             casadi::SX t = casadi::SX::sym("t");
 
             std::vector<std::shared_ptr<ConstraintData>> G;
-            for (auto builder : builders)
-            {
-                std::shared_ptr<ConstraintData> con_data = std::make_shared<ConstraintData>();
-                builder->BuildConstraint(*problem, 0, *con_data);
-                G.push_back(con_data);
-            }
 
             std::shared_ptr<ConstraintData> u_bound_constraint = std::make_shared<ConstraintData>();
 
@@ -230,25 +227,42 @@ namespace galileo
             // Wx->w = x;
 
             std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
-            // Wu->upper_bound = Function("u_ubound", {t}, {SX::ones(state_indices->nu, 1)});
-            // Wu->lower_bound = Function("u_lbound", {t}, {-SX::ones(state_indices->nu, 1)});
-            // Wu->initial_guess = Function("u_guess", {t}, {SX::zeros(state_indices->nu, 1)});
-            // Wu->w = u;
+            casadi::SX u_lower_bound = -casadi::inf * casadi::SX::ones(state_indices->nu, 1);
+            u_lower_bound(5) = 0.;
+            u_lower_bound(11) = 0.;
+            Wu->upper_bound = casadi::Function("u_ubound", {t}, {casadi::inf * casadi::SX::ones(state_indices->nu, 1)});
+            Wu->lower_bound = casadi::Function("u_lbound", {t}, {u_lower_bound});
+            casadi::SX u_guess = casadi::SX::zeros(state_indices->nu, 1);
+            u_guess(5) = 183.744;
+            u_guess(11) = 183.744;
+            Wu->initial_guess = casadi::Function("u_guess", {t}, {u_guess});
+            Wu->w = u;
 
             /*END OF DUMMY DATA*/
 
+            auto num_phases = sequence->getNumPhases();
+
             printf("Starting initialization\n");
             auto start_time = std::chrono::high_resolution_clock::now();
-            casadi::Function Phi = gp_data->Phi;
 
             for (size_t i = 0; i < num_phases; ++i)
             {
+                G.clear();
+                for (auto builder : builders)
+                {
+                    std::shared_ptr<ConstraintData> con_data = std::make_shared<ConstraintData>();
+                    builder->buildConstraint(*problem, i, *con_data);
+                    G.push_back(con_data);
+                }
+
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
-                segment = std::make_shared<PseudospectralSegment>(gp_data, state_indices, d, 20, 1. / 20);
-                segment->initialize_local_time_vector(global_times);
-                segment->initialize_knot_segments(X0, prev_final_state);
-                segment->initialize_expression_graph(G, Wx, Wu);
-                segment->evaluate_expression_graph(J, w, g);
+                auto phase = sequence->phase_sequence_[i];
+
+                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, state_indices, d, phase.knot_points, phase.time_value/phase.knot_points);
+                segment->initializeLocalTimeVector(global_times);
+                segment->initializeKnotSegments(X0, prev_final_state);
+                segment->initializeExpressionGraph(G, Wx, Wu);
+                segment->evaluateExpressionGraph(J, w, g);
 
                 trajectory.push_back(segment);
 
@@ -259,7 +273,7 @@ namespace galileo
                 /*Initial state constraint*/
                 if (i == 0)
                 {
-                    auto curr_initial_state = segment->get_initial_state();
+                    auto curr_initial_state = segment->getInitialState();
                     g.push_back(prev_final_state - curr_initial_state);
                     lbg.insert(lbg.end(), equality_back.begin(), equality_back.end());
                     ubg.insert(ubg.end(), equality_back.begin(), equality_back.end());
@@ -267,20 +281,21 @@ namespace galileo
                 /*Continuity constraint for the state deviant between phases*/
                 else if (i > 0)
                 {
-                    curr_initial_state_deviant = segment->get_initial_state_deviant();
+                    curr_initial_state_deviant = segment->getInitialStateDeviant();
                     /*For general jump map functions you can use the following syntax:*/
                     // g.push_back(jump_map_function(MXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
                     g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
                     lbg.insert(lbg.end(), equality_back.begin(), equality_back.end() - 1);
                     ubg.insert(ubg.end(), equality_back.begin(), equality_back.end() - 1);
                 }
-                prev_final_state = segment->get_final_state();
-                prev_final_state_deviant = segment->get_final_state_deviant();
+                prev_final_state = segment->getFinalState();
+                prev_final_state_deviant = segment->getFinalStateDeviant();
 
                 /*Terminal cost*/
                 if (i == num_phases - 1)
                 {
-                    J += Phi(casadi::MXVector{prev_final_state}).at(0);
+                    std::cout << "Adding terminal cost..." << std::endl;
+                    J += gp_data->Phi(casadi::MXVector{prev_final_state}).at(0);
                 }
             }
             printf("Finished initialization.\n");
@@ -289,8 +304,8 @@ namespace galileo
             std::cout << "Elapsed time for initialization: " << elapsed.count() << std::endl;
         }
 
-        template <class ProblemData>
-        casadi::MXVector TrajectoryOpt<ProblemData>::optimize()
+        template <class ProblemData, class MODE_T>
+        casadi::MXVector TrajectoryOpt<ProblemData, MODE_T>::optimize()
         {
 
             casadi::MXDict nlp = {{"x", vertcat(w)},
@@ -316,12 +331,12 @@ namespace galileo
 
             std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
             std::cout << "Total seconds from Ipopt w/o function: " << time_just_ipopt << std::endl;
-            sol = trajectory[0]->extract_solution(tmp);
+            sol = trajectory[0]->extractSolution(tmp);
             return sol;
         }
 
-        template <class ProblemData>
-        Eigen::MatrixXd TrajectoryOpt<ProblemData>::get_solution(Eigen::VectorXd &times) const
+        template <class ProblemData, class MODE_T>
+        Eigen::MatrixXd TrajectoryOpt<ProblemData, MODE_T>::getSolution(Eigen::VectorXd &times) const
         {
             auto start_time = std::chrono::high_resolution_clock::now();
             int i = 0;
@@ -332,19 +347,19 @@ namespace galileo
             for (std::shared_ptr<Segment> seg : trajectory)
             {
                 std::shared_ptr<PseudospectralSegment> pseg = std::dynamic_pointer_cast<PseudospectralSegment>(seg);
-                std::vector<double> l_times_vec = pseg->get_local_times().get_elements();
+                std::vector<double> l_times_vec = pseg->getLocalTimes().get_elements();
                 double initial_time = l_times_vec[0];
                 double end_time = l_times_vec[l_times_vec.size() - 1];
-                int degree = pseg->get_degree() + 1;
-                int num_knots = pseg->get_knot_num();
+                int degree = pseg->getDegree() + 1;
+                int num_knots = pseg->getKnotNum();
                 auto polynomial = pseg->get_dXPoly();
 
-                Eigen::VectorXd segment_times = get_segment_times(times, initial_time, end_time);
+                Eigen::VectorXd segment_times = getSegmentTimes(times, initial_time, end_time);
                 casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(count, count + degree * num_knots)));
 
                 for (Eigen::Index j = 0; j < segment_times.size(); ++j)
                 {
-                    process_segment_times(l_times_vec, segment_times, solx_segment, degree, polynomial, result, i, j);
+                    processSegmentTimes(l_times_vec, segment_times, solx_segment, degree, polynomial, result, i, j);
                     ++i;
                 }
                 count += degree * num_knots;
@@ -355,8 +370,8 @@ namespace galileo
             return result;
         }
 
-        template <class ProblemData>
-        Eigen::VectorXd TrajectoryOpt<ProblemData>::get_segment_times(Eigen::VectorXd &times, double initial_time, double end_time) const
+        template <class ProblemData, class MODE_T>
+        Eigen::VectorXd TrajectoryOpt<ProblemData, MODE_T>::getSegmentTimes(Eigen::VectorXd &times, double initial_time, double end_time) const
         {
             auto start_it = std::lower_bound(times.data(), times.data() + times.size(), initial_time);
             auto end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
@@ -365,8 +380,8 @@ namespace galileo
             return segment_times;
         }
 
-        template <class ProblemData>
-        void TrajectoryOpt<ProblemData>::process_segment_times(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const
+        template <class ProblemData, class MODE_T>
+        void TrajectoryOpt<ProblemData, MODE_T>::processSegmentTimes(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const
         {
             auto it = std::lower_bound(l_times_vec.data(), l_times_vec.data() + l_times_vec.size(), segment_times(j));
             int index = (it - l_times_vec.data() - 1) / (degree);
@@ -377,15 +392,15 @@ namespace galileo
                 solx_segment_vec.push_back(solx_knot_segment(casadi::Slice(0, solx_knot_segment.rows()), k));
             }
             double scaled_time = (segment_times[j] - l_times_vec[index * degree]) / (l_times_vec[(index * degree) + degree] - l_times_vec[index * degree]);
-            std::vector<double> tmp = poly->barycentric_interpolation(scaled_time, solx_segment_vec).get_elements();
+            std::vector<double> tmp = poly->barycentricInterpolation(scaled_time, solx_segment_vec).get_elements();
             for (std::size_t k = 0; k < tmp.size(); ++k)
             {
                 result(k, i) = tmp[k];
             }
         }
 
-        template <class ProblemData>
-        std::vector<double> TrajectoryOpt<ProblemData>::get_global_times() const
+        template <class ProblemData, class MODE_T>
+        std::vector<double> TrajectoryOpt<ProblemData,  MODE_T>::getGlobalTimes() const
         {
             return global_times.get_elements();
         }

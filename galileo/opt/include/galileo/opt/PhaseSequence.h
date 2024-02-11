@@ -1,12 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <pinocchio/autodiff/casadi.hpp>
 
 namespace galileo
 {
     namespace opt
     {
-
         /**
          * @brief Class for holding simple Phase sequence metadata.
          *
@@ -44,6 +44,13 @@ namespace galileo
                  *
                  */
                 MODE_T mode;
+
+                /**
+                 * @brief Dynamics of this phase.
+                 *
+                 */
+                casadi::Function phase_dynamics;
+
                 /**
                  * @brief Number of knot points for which the phase applies over.
                  *
@@ -120,13 +127,20 @@ namespace galileo
              *
              * @return The number of phases.
              */
-            int num_phases() const { return phase_sequence_.size(); }
+            int getNumPhases() const { return phase_sequence_.size(); }
 
-            const double &dt() { return dt_; }
+            const double &getDT() { return dt_; }
 
-            const int &total_knots() { return total_knots_; }
+            const int &getTotalKnots() { return total_knots_; }
 
-            const std::vector<Phase> &phase_sequence() { return phase_sequence_; }
+            const std::vector<Phase> &getPhaseSequence() { return phase_sequence_; }
+
+            /**
+             * @brief A vector of Phase objects.
+             *
+             * This vector represents a sequence of phases.
+             */
+            std::vector<Phase> phase_sequence_;
 
         protected:
             /**
@@ -141,13 +155,6 @@ namespace galileo
              * @return The index of the newly added phase.
              */
             int commonAddPhase(const MODE_T &mode, int knot_points, double dt);
-
-            /**
-             * @brief A vector of Phase objects.
-             *
-             * This vector represents a sequence of phases.
-             */
-            std::vector<Phase> phase_sequence_;
 
             /**
              * @brief Struct representing the global phase offset.
@@ -180,7 +187,7 @@ namespace galileo
         };
 
         template <typename MODE_T>
-        int PhaseSequence<MODE_T>::commonAddPhase(const MODE_T &mode, int knot_points, double dt)
+        int PhaseSequence<MODE_T>::commonAddPhase(const MODE_T &mode,  int knot_points, double dt)
         {
             Phase new_phase;
             GlobalPhaseOffset new_phase_offset;
@@ -202,14 +209,13 @@ namespace galileo
         template <typename MODE_T>
         int PhaseSequence<MODE_T>::getPhaseIndexAtTime(double t, PHASE_SEQUENCE_ERROR &error_status) const
         {
-
             if ((t < 0) || (t > dt_))
             {
                 error_status = PHASE_SEQUENCE_ERROR::NOT_IN_DT;
                 return -1;
             }
 
-            for (int i = num_phases() - 1; i > 0; i--)
+            for (int i = getNumPhases() - 1; i > 0; i--)
             {
                 bool is_in_phase_i = (t >= phase_offset_[i].t0_offset);
                 if (is_in_phase_i)
@@ -230,7 +236,7 @@ namespace galileo
                 return -1;
             }
 
-            for (int i = num_phases() - 1; i > 0; i--)
+            for (int i = getNumPhases() - 1; i > 0; i--)
             {
                 bool is_in_phase_i = (knot_idx >= phase_offset_[i].knot0_offset);
                 if (is_in_phase_i)
@@ -257,7 +263,7 @@ namespace galileo
         template <typename MODE_T>
         void PhaseSequence<MODE_T>::getTimeAtPhase(int phase_idx, double &t, PHASE_SEQUENCE_ERROR &error_status) const
         {
-            if ((phase_idx < 0) || (phase_idx >= num_phases()))
+            if ((phase_idx < 0) || (phase_idx >= getNumPhases()))
             {
                 error_status = PHASE_SEQUENCE_ERROR::NOT_IN_DT;
                 return;

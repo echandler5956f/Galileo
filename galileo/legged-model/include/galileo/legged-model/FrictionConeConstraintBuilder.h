@@ -77,7 +77,7 @@ namespace galileo
                  * @param upper_bound Lower bound of the constraint at each point
                  * @param lower_bound Upper bound of the constraint at each point
                  */
-                void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
+                void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
 
                 /**
                  * @brief Generate a function to evaluate each point
@@ -86,7 +86,7 @@ namespace galileo
                  * @param phase_index the index of the phase
                  * @param G A function that evaluates the constraint at each point
                  */
-                void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const;
+                void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const;
 
                 /**
                  * @brief get the number of constraints applied to each end effector at a given state. 5 for a first order approximation, 1 for second order
@@ -101,7 +101,7 @@ namespace galileo
                  * For a Second Order Constraint, for instance, this is a function that returns 11 value, the result of the lorentz cone constraint.
                  * function = g( state ) @ EndEffectorID
                  */
-                void CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, const casadi::SX &u_in, casadi::SX &G_out) const;
+                void createSingleEndEffectorFunction(pinocchio::FrameIndex EndEffectorID, const ProblemData &problem_data, int phase_index, const casadi::SX &u_in, casadi::SX &G_out) const;
 
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current phase
@@ -112,7 +112,7 @@ namespace galileo
                  * @brief getContactSurfaceRotationAtMode gets a rotation matrix describing the normal to the contact surface at the current knot.
                  * If the End Effector is in contact with a surface, the result is a rotation describing the surface noraml, else it is a matrix of zeros.
                  */
-                Eigen::Matrix<double, 3, 3> getContactSurfaceRotationAtMode(const std::string &EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode) const;
+                Eigen::Matrix<double, 3, 3> getContactSurfaceRotationAtMode(pinocchio::FrameIndex EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode) const;
 
                 /**
                  * @brief Each approximated cone constraint can be represented as an operation on a transformed "ground reaction force".
@@ -124,14 +124,14 @@ namespace galileo
             };
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
+            void FrictionConeConstraintBuilder<ProblemData>::createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
             {
                 uint num_points = problem_data.friction_cone_problem_data.num_knots;
 
                 uint num_constraints = num_points * getNumConstraintPerEEPerState(problem_data);
 
-                Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(2, 0);
-                Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(2, -std::numeric_limits<double>::infinity());
+                Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(2, casadi::inf);
+                Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(2, 0);
 
                 // Convert Eigen to casadi (see traj_test example)
                 casadi::SX upper_bound_casadi = casadi::SX(casadi::Sparsity::dense(upper_bound_vect.rows(), 1));
@@ -145,7 +145,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
+            void FrictionConeConstraintBuilder<ProblemData>::createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
             {
                 // CREATE CASADI MAP FROM EACH END EFFECTOR
                 // CreateSingleEndEffectorFunction creates a function, g(state) @ end_effector. Here, we must get the constraint for each end_effector at this knot point, and apply them to each collocation point in the knot.
@@ -156,7 +156,7 @@ namespace galileo
                 for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
                     casadi::SX G_out;
-                    CreateSingleEndEffectorFunction(end_effector.first, problem_data, phase_index, u_in, G_out);
+                    createSingleEndEffectorFunction(end_effector.first, problem_data, phase_index, u_in, G_out);
                     if (!G_out.is_zero())
                     {
                         G_vec.push_back(G_out);
@@ -177,7 +177,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::CreateSingleEndEffectorFunction(const std::string &EndEffectorID, const ProblemData &problem_data, int phase_index, const casadi::SX &u_in, casadi::SX &G_out) const
+            void FrictionConeConstraintBuilder<ProblemData>::createSingleEndEffectorFunction(pinocchio::FrameIndex EndEffectorID, const ProblemData &problem_data, int phase_index, const casadi::SX &u_in, casadi::SX &G_out) const
             {
                 // Get the size of the constraint applied to an end effector at a state.
                 uint num_contraint_per_ee_per_point = getNumConstraintPerEEPerState(problem_data);
@@ -240,7 +240,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            Eigen::Matrix<double, 3, 3> FrictionConeConstraintBuilder<ProblemData>::getContactSurfaceRotationAtMode(const std::string &EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode) const
+            Eigen::Matrix<double, 3, 3> FrictionConeConstraintBuilder<ProblemData>::getContactSurfaceRotationAtMode(pinocchio::FrameIndex EndEffectorID, const ProblemData &problem_data, const contact::ContactMode &mode) const
             {
                 assert(problem_data.friction_cone_problem_data.environment_surfaces != nullptr);
 
@@ -252,7 +252,7 @@ namespace galileo
                     return Eigen::Matrix<double, 3, 3>::Zero();
                 }
 
-                return (*problem_data.friction_cone_problem_data.environment_surfaces)[contact_surface_id].Rotation();
+                return (*problem_data.friction_cone_problem_data.environment_surfaces)[contact_surface_id].rotation();
             }
 
             template <class ProblemData>

@@ -4,25 +4,12 @@
 #include "galileo/legged-model/LeggedRobotStates.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 
-#include <pinocchio/autodiff/casadi.hpp>
-#include <pinocchio/multibody/model.hpp>
-#include <pinocchio/multibody/data.hpp>
-#include <pinocchio/algorithm/center-of-mass.hpp>
-#include <pinocchio/algorithm/kinematics.hpp>
-#include <pinocchio/algorithm/frames.hpp>
-#include <pinocchio/algorithm/jacobian.hpp>
-#include <pinocchio/algorithm/crba.hpp>
-#include <pinocchio/algorithm/rnea.hpp>
-#include <pinocchio/algorithm/aba.hpp>
-#include <pinocchio/algorithm/centroidal.hpp>
-
 namespace galileo
 {
     namespace legged
     {
         namespace contact
         {
-
             /**
              * @brief A struct for holding the contact mode of the robot.
              *
@@ -55,35 +42,35 @@ namespace galileo
                  */
                 bool &operator[](const EndEffector &ee)
                 {
-                    return combination_definition[ee.frame_name];
+                    return combination_definition[ee.frame_id];
                 }
 
                 /**
                  * @brief Gets the contact combination for a given end effector.
                  *
-                 * @param ee_name The name of the end effector to get the contact combination for.
+                 * @param ee_id The id of the end effector to get the contact combination for.
                  */
-                bool &operator[](const std::string &ee_name)
+                bool &operator[](pinocchio::FrameIndex ee_id)
                 {
-                    return combination_definition[ee_name];
+                    return combination_definition[ee_id];
                 }
 
                 const bool &at(const EndEffector &ee) const
                 {
-                    return combination_definition.at(ee.frame_name);
+                    return combination_definition.at(ee.frame_id);
                 }
 
-                const bool &at(const std::string &ee_name) const
+                const bool &at(pinocchio::FrameIndex ee_id) const
                 {
-                    return combination_definition.at(ee_name);
+                    return combination_definition.at(ee_id);
                 }
 
                 /**
                  * @brief Gets the contact surface for a given end effector in this mode.
                  *
-                 * @param ee_name The end effector to get the contact surface for.
+                 * @param ee_id The end effector id to get the contact surface for.
                  */
-                const environment::SurfaceID &getSurfaceID(const std::string &ee_name) const;
+                const environment::SurfaceID &getSurfaceID(pinocchio::FrameIndex ee_id) const;
 
                 /**
                  * @brief Gets the contact surface for a given end effector in this mode.
@@ -92,7 +79,7 @@ namespace galileo
                  */
                 const environment::SurfaceID &getSurfaceID(const EndEffector &ee) const
                 {
-                    return getSurfaceID(ee.frame_name);
+                    return getSurfaceID(ee.frame_id);
                 }
 
                 /**
@@ -107,21 +94,6 @@ namespace galileo
                  * @param validity Error code
                  */
                 void MakeValid(ContactModeValidity &validity);
-
-                /**
-                 * @brief creates the dynamics for this mode
-                 *
-                 */
-                void createModeDynamics(opt::Model model, RobotEndEffectors end_effectors, std::shared_ptr<opt::LeggedRobotStates> states);
-
-                /**
-                 * @brief Gets the dynamics for this mode
-                 *
-                 * @param f The dynamics function
-                 */
-                void getModeDynamics(casadi::Function &f);
-
-                casadi::Function ModeDynamics_;
             };
 
             /**
@@ -142,7 +114,7 @@ namespace galileo
                  *
                  * @param num_end_effectors The number of end effectors in the contact sequence.
                  */
-                ContactSequence(int num_end_effectors) : PhaseSequence(), num_end_effectors_(num_end_effectors) {}
+                ContactSequence(int num_end_effectors) : PhaseSequence<ContactMode>(), num_end_effectors_(num_end_effectors) {}
 
                 ~ContactSequence() {}
 
@@ -156,7 +128,7 @@ namespace galileo
                  * @param dt The time step of the phase.
                  */
                 int addPhase(const ContactMode &mode, int knot_points, double dt);
-
+                
             private:
                 /**
                  * @brief The number of end effectors in the contact sequence.

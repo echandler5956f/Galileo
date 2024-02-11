@@ -7,7 +7,7 @@ namespace galileo
         namespace environment
         {
 
-            SurfaceData CreateInfiniteGround()
+            SurfaceData createInfiniteGround()
             {
                 SurfaceData infinite_ground;
                 infinite_ground.origin_z_offset = 0;
@@ -19,12 +19,12 @@ namespace galileo
             }
 
             template <class T>
-            void PointViolation(const SurfaceData &region, const Eigen::Matrix<T, 2, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation)
+            void pointViolation(const SurfaceData &region, const Eigen::Matrix<T, 2, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation)
             {
                 ineq_violation = region.A * point - region.b;
             }
             template <class T>
-            void PointViolation(const SurfaceData &region, const Eigen::Matrix<T, 3, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation, Eigen::Matrix<T, 1, 1> &eq_violation)
+            void pointViolation(const SurfaceData &region, const Eigen::Matrix<T, 3, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation, Eigen::Matrix<T, 1, 1> &eq_violation)
             {
                 ineq_violation = region.A * point.head(2) - region.b;
                 eq_violation[0] = point.tail(1)[0] - region.origin_z_offset;
@@ -33,7 +33,7 @@ namespace galileo
             bool isInRegion(const SurfaceData &region, const Eigen::Vector2d &point)
             {
                 Eigen::VectorXd violation;
-                PointViolation(region, point, violation);
+                pointViolation(region, point, violation);
                 return (violation.array() <= Eigen::VectorXd::Zero(violation.size()).array()).all();
             }
 
@@ -41,7 +41,7 @@ namespace galileo
             {
                 Eigen::VectorXd ineq_violation;
                 Eigen::Matrix<double, 1, 1> eq_violation;
-                PointViolation(region, point, ineq_violation, eq_violation);
+                pointViolation(region, point, ineq_violation, eq_violation);
                 bool ineq_satisfied = (ineq_violation.array() <= Eigen::VectorXd::Zero(ineq_violation.size()).array()).all();
                 bool eq_satisfied = (eq_violation[0] <= 1e-6) && (eq_violation[0] >= -1e-6);
                 return ineq_satisfied && eq_satisfied;

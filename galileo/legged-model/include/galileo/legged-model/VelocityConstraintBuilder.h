@@ -2,6 +2,14 @@
 
 #include "galileo/opt/Constraint.h"
 #include "galileo/legged-model/ContactSequence.h"
+#include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/jacobian.hpp>
+#include <pinocchio/algorithm/crba.hpp>
+#include <pinocchio/algorithm/rnea.hpp>
+#include <pinocchio/algorithm/aba.hpp>
+#include <pinocchio/algorithm/centroidal.hpp>
 
 namespace galileo
 {
@@ -66,19 +74,19 @@ namespace galileo
             public:
                 VelocityConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
-                void BuildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data);
+                void buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data);
 
-                void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
+                void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
                 {
                 }
 
-                void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
+                void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
                 {
                 }
             };
 
             template <class ProblemData>
-            void VelocityConstraintBuilder<ProblemData>::BuildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
+            void VelocityConstraintBuilder<ProblemData>::buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
             {
                 casadi::SXVector G_vec;
                 casadi::SXVector upper_bound_vec;
@@ -94,9 +102,9 @@ namespace galileo
                 {
                     if (!mode[(*ee.second)])
                     {
-                        std::cout << "EE " << ee.first << " is not in contact" << std::endl;
+                        // std::cout << "EE " << ee.first << " is NOT in contact" << std::endl;
                         double liftoff_time = 0;
-                        double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->dt();
+                        double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->getDT();
                         FootstepDefinition footstep_definition;
                         footstep_definition.h_start = 0;
                         footstep_definition.h_end = 0;
@@ -116,7 +124,7 @@ namespace galileo
                             }
                         }
 
-                        for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->num_phases() - 1; i++)
+                        for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->getNumPhases(); i++)
                         {
                             // If the ee is in contact, we have found the phase where touchdown occurred.
                             if (problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.at(*ee.second))
@@ -147,14 +155,14 @@ namespace galileo
 
                         casadi::SX vel_bound = desired_velocity - problem_data.velocity_constraint_problem_data.corrector_kp * desired_height;
 
-                        Eigen::Matrix<galileo::opt::ADScalar, 3, 1, 0> foot_pos = problem_data.velocity_constraint_problem_data.ad_data->oMf[ee.second->frame_id].translation();
+                        Eigen::Matrix<galileo::opt::ADScalar, 3, 1, 0> foot_pos = problem_data.velocity_constraint_problem_data.ad_data->oMf[ee.first].translation();
 
                         casadi::SX cfoot_pos = casadi::SX(casadi::Sparsity::dense(foot_pos.rows(), 1));
                         pinocchio::casadi::copy(foot_pos, cfoot_pos);
 
                         auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                     *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                    ee.second->frame_id,
+                                                                    ee.first,
                                                                     pinocchio::LOCAL)
                                             .toVector();
 
@@ -169,13 +177,13 @@ namespace galileo
                     }
                     else
                     {
+                        // std::cout << "EE " << ee.second->frame_name << " IS in contact" << std::endl;
                         // add velocity = 0 as a constraint
                         auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                     *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                    ee.second->frame_id,
+                                                                    ee.first,
                                                                     pinocchio::LOCAL)
                                             .toVector();
-
                         casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
                         pinocchio::casadi::copy(foot_vel, cfoot_vel);
 
@@ -186,7 +194,6 @@ namespace galileo
                 }
                 // replace u with an SX vector the size of (sum dof of ee in contact during this knot index)
                 constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
-                std::cout << "G_velocity: " << constraint_data.G << std::endl;
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{casadi::SX::vertcat(lower_bound_vec)});
             }

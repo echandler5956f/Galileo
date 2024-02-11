@@ -19,13 +19,13 @@ namespace galileo
             struct EndEffector
             {
                 /**
-                 * @brief The name of the end effector frame in pinocchio. Used as the key pair in global end effector maps.
+                 * @brief The name of the end effector frame in pinocchio.
                  *
                  */
                 std::string frame_name;
 
                 /**
-                 * @brief The id of the frame in pinocchio.
+                 * @brief The id of the frame in pinocchio. Used as the key pair in global end effector maps.
                  *
                  */
                 pinocchio::FrameIndex frame_id;
@@ -47,13 +47,13 @@ namespace galileo
              * @brief Maps an end effector name to am End Effector ptr. We use a ptr so that there is only ever one instance of the end effector.
              *
              */
-            typedef std::map<std::string, std::shared_ptr<EndEffector>> RobotEndEffectors;
+            typedef std::map<pinocchio::FrameIndex, std::shared_ptr<EndEffector>> RobotEndEffectors;
 
             /**
              * @brief Maps the end effector name to the frame name.
              *
              */
-            typedef std::map<std::string, bool> ContactCombination;
+            typedef std::map<pinocchio::FrameIndex, bool> ContactCombination;
         }
     }
 }

@@ -2,6 +2,14 @@
 
 #include "galileo/opt/Constraint.h"
 #include "galileo/legged-model/ContactSequence.h"
+#include <pinocchio/algorithm/center-of-mass.hpp>
+#include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/jacobian.hpp>
+#include <pinocchio/algorithm/crba.hpp>
+#include <pinocchio/algorithm/rnea.hpp>
+#include <pinocchio/algorithm/aba.hpp>
+#include <pinocchio/algorithm/centroidal.hpp>
 
 namespace galileo
 {
@@ -30,7 +38,7 @@ namespace galileo
             public:
                 ContactConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
-                void BuildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
+                void buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
                 {
                     auto mode = getModeAtPhase(problem_data, phase_index);
 
@@ -56,7 +64,7 @@ namespace galileo
                             //@todo (akshay) : change this to data on num_DOF instead.
 
                             // auto foot_pos = casadi::SX::sym("foot_pos", 6);
-                            pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.second->frame_id];
+                            pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.first];
 
                             auto foot_pos = frame_omf_data.translation();
 
@@ -99,11 +107,11 @@ namespace galileo
 
             private:
 
-                void CreateFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
+                void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
                 {
                 }
 
-                void CreateBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
+                void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
                 {
                 }
 
