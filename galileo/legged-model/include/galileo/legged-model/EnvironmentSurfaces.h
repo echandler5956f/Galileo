@@ -17,10 +17,9 @@ namespace galileo
             struct SurfaceData
             {
                 /**
-                 * @brief Assume it is Z aligned, so, all we need is the height.
-                 *
+                 * @brief The transform of the surface in the global frame.
                  */
-                double origin_z_offset;
+                Eigen::Transform<double, 3, Eigen::Affine> surface_transform;
 
                 /**
                  * @brief The A and b values defining the surface 2d polytope in the ground frame.
@@ -45,7 +44,16 @@ namespace galileo
                  */
                 Eigen::Matrix<double, 3, 3> Rotation()
                 {
-                    return Eigen::Matrix<double, 3, 3>::Identity();
+                    return surface_transform.rotation().transpose();
+                }
+                
+                /**
+                 * @brief Get the Inverse of the translation; used to transform points from the global frame to the surface frame.
+                 * @param world_point The point to be transformed.
+                 */
+                Eigen::VectorXd WorldToSurface(Eigen::VectorXd world_point)
+                {
+                    return Rotation() * (world_point - surface_transform.translation());
                 }
             };
 
