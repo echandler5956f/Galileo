@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     initial_mode.combination_definition = robot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
 
-    robot.contact_sequence->addPhase(initial_mode, 20, 1.0);
+    robot.contact_sequence->addPhase(initial_mode, 20, 1.);
 
     // contact::ContactMode second_mode;
     // second_mode.combination_definition = robot.getContactCombination(0b10);
@@ -55,10 +55,10 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(q0_vec, cq0);
 
     /*ETH Weights*/
-    Eigen::VectorXd Q_diag(si->nx);
+    Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 200., 200., 200.,                         /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., 0.1, 0.1, 0.1,                               /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
@@ -70,15 +70,34 @@ int main(int argc, char **argv)
         10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.; /*Joint acceleration error weights*/
     Eigen::MatrixXd R_mat = R_diag.asDiagonal();
 
-    casadi::SX Q = casadi::SX::zeros(si->nx, si->nx);
+    casadi::SX Q = casadi::SX::zeros(si->ndx, si->ndx);
     casadi::SX R = casadi::SX::zeros(si->nu, si->nu);
 
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0.125, q0[2] + 0.});
+    casadi::SX target_rot = casadi::SX::eye(3);
+
+    pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
+    auto rot = oMf.rotation();
+    auto pos = oMf.translation();
+    casadi::SX crot = casadi::SX::zeros(3, 3);
+    casadi::SX cpos = casadi::SX::zeros(3, 1);
+    pinocchio::casadi::copy(rot, crot);
+    pinocchio::casadi::copy(pos, cpos);
+
+    casadi::SX rot_c = casadi::SX::mtimes(crot.T(), target_rot);
+
+    casadi::SX target_error_casadi = vertcat(casadi::SXVector{cpos - target_pos, casadi::SX::inv_skew(rot_c - rot_c.T()) / 2});
+
+    std::cout << "Target error: " << target_error_casadi << std::endl;
+
     casadi::SX X_ref = casadi::SX(X0);
-    X_ref(si->nh + si->ndh + 1) = 0.075;
-    casadi::SX x_error = robot.cx - X_ref;
+    X_ref(casadi::Slice(si->nh + si->ndh, si->nh + si->ndh + 3)) = target_pos;
+    casadi::SX X_error = vertcat(casadi::SXVector{robot.cx(casadi::Slice(0, si->nh + si->ndh)) - X_ref(casadi::Slice(0, si->nh + si->ndh)),
+                                                 target_error_casadi,
+                                                 robot.cx(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx)) - X_ref(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx))});
 
     pinocchio::computeTotalMass(robot.model, robot.data);
 
@@ -90,7 +109,7 @@ int main(int argc, char **argv)
     // casadi::Function L("L",
     //                    {robot.cx, robot.cu},
     //                     {
-    //                     casadi::SX::mtimes(x_error.T(), casadi::SX::mtimes(Q, x_error)) +
+    //                     casadi::SX::mtimes(X_error.T(), casadi::SX::mtimes(Q, X_error)) +
     //                     casadi::SX::mtimes(robot.cu.T(), casadi::SX::mtimes(R, robot.cu))
     //                    });
 
@@ -120,12 +139,12 @@ int main(int argc, char **argv)
 
     casadi::Function L("L",
                        {robot.cx, robot.cu},
-                       {active_terms_l[0] * 0.5 * casadi::SX::dot(x_error, casadi::SX::mtimes(Q, x_error)) +
+                       {active_terms_l[0] * 0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
                         active_terms_l[1] * 0.5 * casadi::SX::dot(u_error, casadi::SX::mtimes(R, u_error))});
 
     casadi::Function Phi("Phi",
                          {robot.cx},
-                         {active_terms_t[0] * casadi::SX::dot(x_error, casadi::SX::mtimes(Q, x_error))});
+                         {active_terms_t[0] * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
     casadi::Dict opts;
     opts["ipopt.linear_solver"] = "ma97";
@@ -162,7 +181,7 @@ int main(int argc, char **argv)
 
     casadi::MXVector sol = traj.optimize();
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0, 1.);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0, 1.);
     Eigen::MatrixXd new_sol = traj.getSolution(new_times);
 
     // opt::ConstraintData fri;

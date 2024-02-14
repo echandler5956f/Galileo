@@ -45,7 +45,6 @@ data = model.createData()
 new_times = np.genfromtxt('python/new_times.csv', delimiter=',')
 new_sol = np.genfromtxt('python/new_sol.csv', delimiter=',')
 new_times = np.reshape(np.diff(new_times), (new_times.shape[0] - 1, 1))
-print(new_times.shape)
 
 viz = MeshcatVisualizer(robot)
 viz.display(robot.q0)

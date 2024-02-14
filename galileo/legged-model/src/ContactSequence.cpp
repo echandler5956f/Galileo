@@ -55,6 +55,19 @@ namespace galileo
                 validity = ContactMode::ContactModeValidity::VALID;
             }
 
+            int ContactMode::numEndEffectorsInContact() const
+            {
+                int count = 0;
+                for (const auto &pair : combination_definition)
+                {
+                    if (pair.second) // if the end effector is in contact
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+
             int ContactSequence::addPhase(const ContactMode &mode, int knot_points, double dt)
             {
                 auto validity_mode = mode;
@@ -67,6 +80,16 @@ namespace galileo
                     throw std::runtime_error(std::string("Contact is not valid!"));
                 }
                 return commonAddPhase(mode, knot_points, dt);
+            }
+
+            int ContactSequence::numEndEffectorsInContactAtPhase(int phase_index) const
+            {
+                if (phase_index < 0 || size_t(phase_index) >= phase_sequence_.size())
+                {
+                    throw std::out_of_range("Phase index out of range");
+                }
+
+                return phase_sequence_[phase_index].mode.numEndEffectorsInContact();
             }
         }
     }

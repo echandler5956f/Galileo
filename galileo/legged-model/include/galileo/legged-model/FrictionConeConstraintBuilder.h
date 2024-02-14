@@ -127,8 +127,8 @@ namespace galileo
             {
                 uint num_constraints = getNumConstraintPerEEPerState(problem_data);
 
-                Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(2, casadi::inf);
-                Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(2, 0);
+                Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(problem_data.friction_cone_problem_data.contact_sequence->numEndEffectorsInContactAtPhase(phase_index), casadi::inf);
+                Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(problem_data.friction_cone_problem_data.contact_sequence->numEndEffectorsInContactAtPhase(phase_index), 0);
 
                 // Convert Eigen to casadi (see traj_test example)
                 casadi::SX upper_bound_casadi = casadi::SX(casadi::Sparsity::dense(upper_bound_vect.rows(), 1));
@@ -139,6 +139,7 @@ namespace galileo
 
                 upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{upper_bound_casadi});
                 lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{lower_bound_casadi});
+
             }
 
             template <class ProblemData>
@@ -160,6 +161,7 @@ namespace galileo
                     }
                 }
                 G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, u_in}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
+                std::cout << "G_FrictionCone: " << G << std::endl;
             }
 
             template <class ProblemData>

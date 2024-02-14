@@ -94,6 +94,8 @@ namespace galileo
                  * @param validity Error code
                  */
                 void MakeValid(ContactModeValidity &validity);
+
+                int numEndEffectorsInContact() const;
             };
 
             /**
@@ -128,7 +130,9 @@ namespace galileo
                  * @param dt The time step of the phase.
                  */
                 int addPhase(const ContactMode &mode, int knot_points, double dt);
-                
+
+                int numEndEffectorsInContactAtPhase(int phase_index) const;
+
             private:
                 /**
                  * @brief The number of end effectors in the contact sequence.
