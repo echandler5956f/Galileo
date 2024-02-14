@@ -160,7 +160,7 @@ namespace galileo
             for (int k = 0; k < knot_num + 1; ++k)
             {
                 dX0_var_vec.push_back(casadi::MX::sym("dX0_" + std::to_string(k), st_m->ndx, 1));
-                X0_var_vec.push_back(Fint(casadi::MXVector{x0_local, dX0_var_vec[k], 1.0}).at(0));
+                X0_var_vec.push_back(Fint(casadi::MXVector{x0_global_, dX0_var_vec[k], 1.0}).at(0));
             }
         }
 
@@ -382,9 +382,9 @@ namespace galileo
             casadi::MX xs_offset = processOffsetVector(X0_var_vec);
             casadi::MX dxs_offset = processOffsetVector(dX0_var_vec);
 
-            casadi::MXVector solmap_restult = sol_map_func(casadi::MXVector{xs, dxcs, dxs, us});
-            casadi::MX all_xs = solmap_restult.at(0);
-            casadi::MX all_us = solmap_restult.at(1);
+            casadi::MXVector solmap_result = sol_map_func(casadi::MXVector{xs, dxcs, dxs, us});
+            casadi::MX all_xs = solmap_result.at(0);
+            casadi::MX all_us = solmap_result.at(1);
 
             /*This section cannot get much faster, it is bounded by the time to evaluate the constraint*/
             casadi::MX col_con_mat = collocation_constraint_map(casadi::MXVector{xs, dxcs, dxs, us}).at(0);
@@ -410,22 +410,28 @@ namespace galileo
             g_range = tuple_size_t(g_size, g.size());
 
             /*where w of this segment starts*/
-            size_t w_size = w.size();
+            size_t w_it_size = w.size();
+            size_t w_size = 0;
+            /*Accumulate the size of each symbolic element in w*/
+            if (w_it_size != 0)
+                w_size = size_t(accumulate(w.begin(), w.end(), 0.0, [](int sum, const casadi::MX &item)
+                                    { return sum + item.size1() * item.size2(); }));
+
             /*Use move to avoid copying the vectors. Reserve space for w in advance outside of PseudospectralSegment.*/
             w.insert(w.end(), make_move_iterator(dX0_var_vec.begin()), make_move_iterator(dX0_var_vec.end()));
             w.insert(w.end(), make_move_iterator(dXc_var_vec.begin()), make_move_iterator(dXc_var_vec.end()));
             w.insert(w.end(), make_move_iterator(U_var_vec.begin()), make_move_iterator(U_var_vec.end()));
-
-            w_range = tuple_size_t(w_size, accumulate(w.begin() + w_size, w.end(), 0.0, [](int sum, const casadi::MX &item)
+                                                  
+            w_range = tuple_size_t(w_size, accumulate(w.begin(), w.end(), 0.0, [](int sum, const casadi::MX &item)
                                                       { return sum + item.size1() * item.size2(); }));
             get_sol_func = casadi::Function("func",
-                                            casadi::MXVector({vertcat(casadi::MXVector(w.begin() + w_size, w.begin() + w.size()))}),
+                                            casadi::MXVector({vertcat(w)}),
                                             casadi::MXVector({all_xs, all_us}));
         }
 
         casadi::MXVector PseudospectralSegment::extractSolution(casadi::MX &w) const
         {
-            return get_sol_func(casadi::MXVector{w(casadi::Slice(casadi_int(std::get<0>(w_range)), casadi_int(std::get<1>(w_range))))});
+            return get_sol_func(casadi::MXVector{w});
         }
 
         casadi::MX PseudospectralSegment::getInitialStateDeviant() const

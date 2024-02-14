@@ -28,7 +28,6 @@ namespace galileo
                 casadi::SX x;
                 casadi::SX u;
                 casadi::SX t;
-                int num_knots;
             };
 
             template <class ProblemData>

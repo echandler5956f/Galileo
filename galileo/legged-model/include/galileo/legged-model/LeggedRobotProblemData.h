@@ -22,10 +22,8 @@ namespace galileo
                                        contact::RobotEndEffectors robot_end_effectors,
                                        casadi::SX x,
                                        casadi::SX u,
-                                       casadi::SX t,
-                                       int num_knots)
+                                       casadi::SX t)
                 {
-                    this->phase_sequence = contact_sequence;
                     this->gp_data = gp_data_;
                     this->states = states_;
 
@@ -38,7 +36,6 @@ namespace galileo
                     this->friction_cone_problem_data.x = x;
                     this->friction_cone_problem_data.u = u;
                     this->friction_cone_problem_data.t = t;
-                    this->friction_cone_problem_data.num_knots = num_knots;
                     this->friction_cone_problem_data.mu = 0.7;
                     this->friction_cone_problem_data.approximation_order = FrictionConeProblemData::ApproximationOrder::FIRST_ORDER;
 
@@ -51,7 +48,6 @@ namespace galileo
                     this->contact_constraint_problem_data.x = x;
                     this->contact_constraint_problem_data.u = u;
                     this->contact_constraint_problem_data.t = t;
-                    this->contact_constraint_problem_data.num_knots = num_knots;
 
                     this->velocity_constraint_problem_data.environment_surfaces = environment_surfaces;
                     this->velocity_constraint_problem_data.contact_sequence = contact_sequence;
@@ -62,10 +58,11 @@ namespace galileo
                     this->velocity_constraint_problem_data.x = x;
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
-                    this->velocity_constraint_problem_data.num_knots = num_knots;
                     this->velocity_constraint_problem_data.max_footstep_offset_height = 0.1;
+                    this->velocity_constraint_problem_data.corrector_kp = 0.;
+                    this->velocity_constraint_problem_data.following_leeway = 0.05;
                 }
-                std::shared_ptr<contact::ContactSequence> phase_sequence;
+                std::shared_ptr<opt::PhaseSequence<contact::ContactMode>> phase_sequence;
                 std::shared_ptr<opt::GeneralProblemData> gp_data;
                 std::shared_ptr<opt::LeggedRobotStates> states;
                 FrictionConeProblemData friction_cone_problem_data;

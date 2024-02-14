@@ -23,10 +23,11 @@ namespace galileo
              * @brief Construct a new Trajectory Opt object.
              *
              * @param problem_ Problem data containing the objective function and dynamics
+             * @param phase_sequence Sequence of phases including dynamics and timing information
              * @param builders_ Constraint builders used to build the constraints
              * @param opts_ Options to pass to the solver
              */
-            TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_);
+            TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_);
 
             /**
              * @brief Initialize the finite elements.
@@ -112,9 +113,15 @@ namespace galileo
 
             /**
              * @brief Sequence of phases including dynamics and timing information
-             * 
+             *
              */
             std::shared_ptr<PhaseSequence<MODE_T>> sequence;
+
+            /**
+             * @brief Range of decision variables per phase.
+             *
+             */
+            std::vector<tuple_size_t> ranges_decision_variables;
 
             /**
              * @brief Vector of all decision variables.
@@ -171,13 +178,13 @@ namespace galileo
         };
 
         template <class ProblemData, class MODE_T>
-        TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_)
+        TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_)
         {
             this->problem = problem_;
             this->gp_data = problem_->gp_data;
             this->builders = builders_;
             this->state_indices = problem_->states;
-            this->sequence = problem->phase_sequence;
+            this->sequence = phase_sequence;
             this->opts = opts_;
         }
 
@@ -227,16 +234,16 @@ namespace galileo
             // Wx->w = x;
 
             std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
-            casadi::SX u_lower_bound = -casadi::inf * casadi::SX::ones(state_indices->nu, 1);
-            u_lower_bound(5) = 0.;
-            u_lower_bound(11) = 0.;
-            Wu->upper_bound = casadi::Function("u_ubound", {t}, {casadi::inf * casadi::SX::ones(state_indices->nu, 1)});
-            Wu->lower_bound = casadi::Function("u_lbound", {t}, {u_lower_bound});
-            casadi::SX u_guess = casadi::SX::zeros(state_indices->nu, 1);
-            u_guess(5) = 183.744;
-            u_guess(11) = 183.744;
-            Wu->initial_guess = casadi::Function("u_guess", {t}, {u_guess});
-            Wu->w = u;
+            // casadi::SX u_lower_bound = -casadi::inf * casadi::SX::ones(state_indices->nu, 1);
+            // u_lower_bound(5) = 0.;
+            // u_lower_bound(11) = 0.;
+            // Wu->upper_bound = casadi::Function("u_ubound", {t}, {casadi::inf * casadi::SX::ones(state_indices->nu, 1)});
+            // Wu->lower_bound = casadi::Function("u_lbound", {t}, {u_lower_bound});
+            // casadi::SX u_guess = casadi::SX::zeros(state_indices->nu, 1);
+            // u_guess(5) = 183.744;
+            // u_guess(11) = 183.744;
+            // Wu->initial_guess = casadi::Function("u_guess", {t}, {u_guess});
+            // Wu->w = u;
 
             /*END OF DUMMY DATA*/
 
@@ -258,11 +265,12 @@ namespace galileo
                 /*TODO; Replace this ugly constructor with ProblemData. Most of this info should be stored in there anyways*/
                 auto phase = sequence->phase_sequence_[i];
 
-                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, state_indices, d, phase.knot_points, phase.time_value/phase.knot_points);
+                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
                 segment->initializeLocalTimeVector(global_times);
                 segment->initializeKnotSegments(X0, prev_final_state);
                 segment->initializeExpressionGraph(G, Wx, Wu);
                 segment->evaluateExpressionGraph(J, w, g);
+                ranges_decision_variables.push_back(segment->get_range_idx_decision_variables());
 
                 trajectory.push_back(segment);
 
@@ -294,11 +302,9 @@ namespace galileo
                 /*Terminal cost*/
                 if (i == num_phases - 1)
                 {
-                    std::cout << "Adding terminal cost..." << std::endl;
                     J += gp_data->Phi(casadi::MXVector{prev_final_state}).at(0);
                 }
             }
-            printf("Finished initialization.\n");
             auto end_time = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end_time - start_time;
             std::cout << "Elapsed time for initialization: " << elapsed.count() << std::endl;
@@ -326,12 +332,22 @@ namespace galileo
             casadi::Dict stats = solver.stats();
             time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_hess_l"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
             time_just_ipopt += (double)stats["t_wall_total"] - time_from_funcs;
-            auto tmp = casadi::MX(result["x"]);
-            std::cout << "Extracting solution..." << std::endl;
+            auto full_sol = casadi::MX(result["x"]);
 
             std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
             std::cout << "Total seconds from Ipopt w/o function: " << time_just_ipopt << std::endl;
-            sol = trajectory[0]->extractSolution(tmp);
+            for (size_t i = 0; i < trajectory.size(); ++i)
+            {
+                auto seg_sol = full_sol(casadi::Slice(0, casadi_int(std::get<1>(ranges_decision_variables[i]))));
+                auto sol_i = trajectory[i]->extractSolution(seg_sol);
+                if (i == 0)
+                    sol = sol_i;
+                else
+                {
+                    sol[0] = horzcat(sol[0], sol_i[0]);
+                    sol[1] = horzcat(sol[1], sol_i[1]);
+                }
+            }
             return sol;
         }
 
@@ -343,7 +359,6 @@ namespace galileo
             auto solx = sol[0];
             int count = 0;
             Eigen::MatrixXd result(state_indices->nx, times.size());
-
             for (std::shared_ptr<Segment> seg : trajectory)
             {
                 std::shared_ptr<PseudospectralSegment> pseg = std::dynamic_pointer_cast<PseudospectralSegment>(seg);
@@ -356,7 +371,6 @@ namespace galileo
 
                 Eigen::VectorXd segment_times = getSegmentTimes(times, initial_time, end_time);
                 casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(count, count + degree * num_knots)));
-
                 for (Eigen::Index j = 0; j < segment_times.size(); ++j)
                 {
                     processSegmentTimes(l_times_vec, segment_times, solx_segment, degree, polynomial, result, i, j);
@@ -400,7 +414,7 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        std::vector<double> TrajectoryOpt<ProblemData,  MODE_T>::getGlobalTimes() const
+        std::vector<double> TrajectoryOpt<ProblemData, MODE_T>::getGlobalTimes() const
         {
             return global_times.get_elements();
         }

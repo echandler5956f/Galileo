@@ -21,7 +21,6 @@ namespace galileo
                 casadi::SX x;
                 casadi::SX u;
                 casadi::SX t;
-                int num_knots;
 
                 float mu;
 
@@ -126,9 +125,7 @@ namespace galileo
             template <class ProblemData>
             void FrictionConeConstraintBuilder<ProblemData>::createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
             {
-                uint num_points = problem_data.friction_cone_problem_data.num_knots;
-
-                uint num_constraints = num_points * getNumConstraintPerEEPerState(problem_data);
+                uint num_constraints = getNumConstraintPerEEPerState(problem_data);
 
                 Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(2, casadi::inf);
                 Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(2, 0);

@@ -27,10 +27,10 @@ namespace galileo
 
             casadi::SX createFootstepHeightFunction(casadi::SX &t, const FootstepDefinition &FS_def)
             {
-                casadi::SX x0(2);
+                casadi::SX x0(2, 1);
                 x0(0) = if_else(t < 0.5, casadi::SX(FS_def.h_start), casadi::SX(FS_def.h_max));
                 x0(1) = 0;
-                casadi::SX xf(2);
+                casadi::SX xf(2, 1);
                 xf(0) = if_else(t >= 0.5, FS_def.h_end, FS_def.h_max);
                 xf(1) = 0;
 
@@ -60,7 +60,6 @@ namespace galileo
                 casadi::SX x;
                 casadi::SX u;
                 casadi::SX t;
-                int num_knots;
 
                 double max_footstep_offset_height;
                 double corrector_kp;
@@ -102,7 +101,7 @@ namespace galileo
                 {
                     if (!mode[(*ee.second)])
                     {
-                        // std::cout << "EE " << ee.first << " is NOT in contact" << std::endl;
+                        std::cout << "EE " << ee.second->frame_name << " is NOT in contact" << std::endl;
                         double liftoff_time = 0;
                         double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->getDT();
                         FootstepDefinition footstep_definition;
@@ -123,7 +122,6 @@ namespace galileo
                                 break;
                             }
                         }
-
                         for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->getNumPhases(); i++)
                         {
                             // If the ee is in contact, we have found the phase where touchdown occurred.
@@ -135,7 +133,7 @@ namespace galileo
                                 footstep_definition.h_end = (*problem_data.velocity_constraint_problem_data.environment_surfaces)[surfaceID].origin_z_offset;
                                 break;
                                 // if touchdown is not found, we will assume that the ee is in contact at the end of the horizon.
-                                //  This is an odd and limiting assumption. Better behavior should be created.
+                                // This is an odd and limiting assumption. Better behavior should be created.
                             }
                         }
                         footstep_definition.h_max = std::max(footstep_definition.h_start, footstep_definition.h_end) + problem_data.velocity_constraint_problem_data.max_footstep_offset_height;
@@ -157,19 +155,17 @@ namespace galileo
 
                         Eigen::Matrix<galileo::opt::ADScalar, 3, 1, 0> foot_pos = problem_data.velocity_constraint_problem_data.ad_data->oMf[ee.first].translation();
 
-                        casadi::SX cfoot_pos = casadi::SX(casadi::Sparsity::dense(foot_pos.rows(), 1));
-                        pinocchio::casadi::copy(foot_pos, cfoot_pos);
+                        galileo::opt::ADScalar lin_z_foot_pos = foot_pos(2);
 
-                        auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
-                                                                    *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                    ee.first,
-                                                                    pinocchio::LOCAL)
-                                            .toVector();
+                        Eigen::Matrix<galileo::opt::ADScalar, 6, 1, 0> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
+                                                                                                              *(problem_data.velocity_constraint_problem_data.ad_data),
+                                                                                                              ee.first,
+                                                                                                              pinocchio::LOCAL)
+                                                                                      .toVector();
 
-                        casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
-                        pinocchio::casadi::copy(foot_vel, cfoot_vel);
+                        galileo::opt::ADScalar lin_z_foot_vel = foot_vel(2);
 
-                        casadi::SX vel_constraint_G = cfoot_vel - problem_data.velocity_constraint_problem_data.corrector_kp * cfoot_pos;
+                        casadi::SX vel_constraint_G = lin_z_foot_vel - problem_data.velocity_constraint_problem_data.corrector_kp * lin_z_foot_pos;
 
                         G_vec.push_back(vel_constraint_G);
                         lower_bound_vec.push_back(vel_bound - problem_data.velocity_constraint_problem_data.following_leeway);
@@ -177,13 +173,13 @@ namespace galileo
                     }
                     else
                     {
-                        // std::cout << "EE " << ee.second->frame_name << " IS in contact" << std::endl;
+                        std::cout << "EE " << ee.second->frame_name << " IS in contact" << std::endl;
                         // add velocity = 0 as a constraint
-                        auto foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
-                                                                    *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                    ee.first,
-                                                                    pinocchio::LOCAL)
-                                            .toVector();
+                        Eigen::Matrix<galileo::opt::ADScalar, 6, 1, 0> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
+                                                                                                              *(problem_data.velocity_constraint_problem_data.ad_data),
+                                                                                                              ee.first,
+                                                                                                              pinocchio::LOCAL)
+                                                                                      .toVector();
                         casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
                         pinocchio::casadi::copy(foot_vel, cfoot_vel);
 
@@ -192,7 +188,7 @@ namespace galileo
                         upper_bound_vec.push_back(casadi::SX::zeros(foot_vel.rows(), 1));
                     }
                 }
-                // replace u with an SX vector the size of (sum dof of ee in contact during this knot index)
+
                 constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{casadi::SX::vertcat(lower_bound_vec)});

@@ -5,7 +5,7 @@ project (examples)
 
 add_definitions(-D_GLIBCXX_PARALLEL)
 
-set(CMAKE_CXX_FLAGS "-g -O3 -fopenmp -lgomp")
+set(CMAKE_CXX_FLAGS "-O3 -fopenmp -lgomp")
 
 add_executable(simple_test src/simple_test.cpp)
 add_executable(model_building_test src/model_building_test.cpp)
