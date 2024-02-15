@@ -100,6 +100,12 @@ namespace galileo
 
             casadi::SX cdt;
 
+            /**
+             * @brief The number of end effectors in the robot.
+             *
+             */
+            int num_end_effectors_;
+
         private:
             casadi::SX customFint(casadi::SX x, casadi::SX dx, casadi::SX dt);
 
@@ -120,12 +126,6 @@ namespace galileo
              *
              */
             contact::RobotEndEffectors ees_;
-
-            /**
-             * @brief The number of end effectors in the robot.
-             *
-             */
-            int num_end_effectors_;
 
             opt::ConfigVectorAD q_AD;
 

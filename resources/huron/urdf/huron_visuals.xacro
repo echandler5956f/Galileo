@@ -1,0 +1,225 @@
+<?xml version="1.0"?>
+<robot 
+    xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- body link -->
+    <xacro:macro name="insert_mesh_base_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/base_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+
+    <!-- Battery -->
+    <xacro:macro name="insert_mesh_battery_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <box size="0.065 0.188 0.151" />
+        </geometry>
+        <material name="blue"/>
+    </xacro:macro>
+
+    <!-- Upper body visualization -->
+    <xacro:macro name="insert_mesh_upper_body_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <box size="0.065 0.188 0.25" />
+        </geometry>
+        <material name="blue"/>
+    </xacro:macro>
+
+    <!-- left hip yaw link -->
+    <xacro:macro name="insert_mesh_l_hip_yaw_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l_hip_yaw_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- left hip roll link -->
+    <xacro:macro name="insert_mesh_l_hip_roll_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l_hip_roll_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- left hip pitch link -->
+    <xacro:macro name="insert_mesh_l_hip_pitch_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l_hip_pitch_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- left knee pitch link -->
+    <xacro:macro name="insert_mesh_l_knee_pitch_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l_knee_pitch_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- left ankle pitch link -->
+    <xacro:macro name="insert_mesh_l_ankle_pitch_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l_ankle_pitch_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="">
+            <color rgba="0.89804 0.91765 0.92941 1" />
+        </material>
+    </xacro:macro>
+    <!-- left ankle roll link -->
+    <xacro:macro name="insert_mesh_l_ankle_roll_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l_ankle_roll_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="">
+            <color rgba="0.77647 0.75686 0.73725 1" />
+        </material>
+    </xacro:macro>
+
+    <!-- l1_foot_ft link -->
+    <xacro:macro name="insert_mesh_l1_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l1_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro> 
+    
+    
+    <!-- l2_foot_ft link  -->
+    <xacro:macro name="insert_mesh_l2_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l2_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro> 
+    
+    
+    <!-- l3_foot_ft link 3 -->
+    <xacro:macro name="insert_mesh_l3_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l3_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro> 
+       
+    
+    <!-- l4_foot_ft link 4 -->
+    <xacro:macro name="insert_mesh_l4_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/l4_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro>
+
+    <!-- right hip yaw link -->
+    <xacro:macro name="insert_mesh_r_hip_yaw_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r_hip_yaw_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- right hip roll link -->
+    <xacro:macro name="insert_mesh_r_hip_roll_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r_hip_roll_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- right hip pitch link -->
+    <xacro:macro name="insert_mesh_r_hip_pitch_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r_hip_pitch_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- right knee link -->
+    <xacro:macro name="insert_mesh_r_knee_pitch_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r_knee_pitch_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="grey"/>
+    </xacro:macro>
+    <!-- right ankle pitch link -->
+    <xacro:macro name="insert_mesh_r_ankle_pitch_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r_ankle_pitch_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="">
+            <color rgba="0.77647 0.75686 0.73725 1" />
+        </material>
+    </xacro:macro>
+    <!-- right ankle roll link -->
+    <xacro:macro name="insert_mesh_r_ankle_roll_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r_ankle_roll_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="">
+            <color rgba="0.77647 0.75686 0.73725 1" />
+        </material>
+    </xacro:macro>
+    
+    <!-- Right foot sensors -->
+    <!-- r1_foot_ft link -->
+    <xacro:macro name="insert_mesh_r1_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r1_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro> 
+    
+    
+    <!-- r2_foot_ft link  -->
+    <xacro:macro name="insert_mesh_r2_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r2_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro> 
+    
+    
+    <!-- r3_foot_ft link 3-->
+    <xacro:macro name="insert_mesh_r3_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r3_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro> 
+       
+    
+    <!-- r4_foot_ft link 4 -->
+    <xacro:macro name="insert_mesh_r4_foot_ft_link">
+        <origin xyz="0 0 0" rpy=" 0 0 0" />
+        <geometry>
+            <mesh filename="package://huron_description/meshes/r4_foot_ft_link.STL" scale="1 1 1" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro>
+
+
+    <!-- Foot base -->
+    <xacro:macro name="insert_mesh_foot_base_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <box size="0.078 0.005 0.231" />
+        </geometry>
+        <material name="green"/>
+    </xacro:macro>
+</robot>

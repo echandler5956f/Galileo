@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<robot 
+    xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- ros_control plugin -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/huron</robotNamespace>
+         </plugin>
+    </gazebo>
+    <gazebo>
+        <plugin name="ground_truth" filename="libgazebo_ros_p3d.so">
+            <frameName>map</frameName>
+            <bodyName>base_link</bodyName>
+            <topicName>/huron/odom</topicName>
+            <updateRate>100.0</updateRate>
+        </plugin>
+    </gazebo>
+
+    <!-- imu sensor -->
+    <gazebo reference="imu_link">
+        <gravity>true</gravity>
+        <sensor name="imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <topic>/huron/sensor/imu</topic>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>huron/sensor/imu</topicName>
+                <bodyName>imu_link</bodyName>
+                <updateRateHZ>10.0</updateRateHZ>
+                <gaussianNoise>0.0</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+                <frameName>imu_link</frameName>
+            </plugin>
+            <pose>0 0 0 0 0 0</pose>
+        </sensor>
+    </gazebo>
+
+  
+    <gazebo reference ="r_ankle_roll_joint">
+    	<provideFeedback>true</provideFeedback>
+    </gazebo>
+    
+    <gazebo>
+    <plugin name="r1_ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+        <updateRate>100.0</updateRate>
+        <topicName>/huron/sensor/r1_ft_sensor</topicName>
+        <jointName>r_ankle_roll_joint</jointName>
+        <gaussianNoise>0.0</gaussianNoise>
+    </plugin>
+    </gazebo>
+    
+   
+    <gazebo reference ="l_ankle_roll_joint">
+    	<provideFeedback>true</provideFeedback>
+    </gazebo>
+    
+    <gazebo>
+    <plugin name="l1_ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+        <updateRate>100.0</updateRate>
+        <topicName>/huron/sensor/l1_ft_sensor</topicName>
+        <jointName>l_ankle_roll_joint</jointName>
+        <gaussianNoise>0.0</gaussianNoise>
+    </plugin>
+    </gazebo>
+    
+    <gazebo reference = "l_hip_yaw_joint">
+    	<preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+    <gazebo reference = "l_hip_roll_joint">
+    	<preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+    <gazebo reference = "r_hip_yaw_joint">
+    	<preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+    <gazebo reference = "r_hip_roll_joint">
+    	<preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+    
+    <!-- World -->
+    <gazebo reference="world"></gazebo>
+    <!-- Map -->
+    <gazebo reference="map"></gazebo>
+    <!-- Base -->
+    <gazebo reference="base_link"></gazebo>
+    <!-- IMU -->
+    <gazebo reference="imu_link"></gazebo>
+    <!-- Body-->
+    <gazebo reference="base_footprint">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <!-- Battery -->
+    <gazebo reference="battery_link">
+        <material>Gazebo/SkyBlue</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <!-- Upper body visualization -->
+    <gazebo reference="upper_body_link">
+        <material>Gazebo/SkyBlue</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <!-- Left Leg -->
+    <gazebo reference="l_hip_yaw_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+
+    </gazebo>
+    <gazebo reference="l_hip_roll_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="l_hip_pitch_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="l_knee_pitch_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="l_ankle_pitch_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="l_ankle_roll_link">
+        <kp>1e15</kp>
+        <kd>1e13</kd>
+        <mu1>0.9</mu1>
+        <mu2>0.9</mu2>
+        <!-- <mu>0.9</mu> -->
+        <!--<maxContacts>30</maxContacts>-->
+        <fdir1>0 0 1</fdir1>
+        <!-- <maxVel>1.0</maxVel> -->
+        <!-- <minDepth>0.001</minDepth> -->
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    
+    <!-- Right Leg -->
+    <gazebo reference="r_hip_yaw_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="r_hip_roll_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="r_hip_pitch_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="r_knee_pitch_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="r_ankle_pitch_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Grey</material>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+    <gazebo reference="r_ankle_roll_link">
+        <kp>1e15</kp>
+        <kd>1e13</kd>
+        <mu1>0.9</mu1>
+        <mu2>0.9</mu2>
+        <!-- <mu>0.9</mu> -->
+        <!--<maxContacts>30</maxContacts>-->
+        <fdir1>0 0 1</fdir1>
+        <!--  <maxVel>1.0</maxVel>  -->
+        <!-- <minDepth>0.0001</minDepth> -->
+        <material>Gazebo/Blue</material>
+    </gazebo>   
+</robot>
