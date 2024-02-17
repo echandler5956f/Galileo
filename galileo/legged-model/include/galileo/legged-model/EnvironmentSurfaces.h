@@ -40,11 +40,11 @@ namespace galileo
                 Eigen::Vector2d polytope_local_chebyshev_center;
 
                 /**
-                 * @brief Get a "rotation" matrix R such that R * unit_surface_normal_in_global_frame = z_hat
+                 * @brief Get a "rotation" matrix R such that R * z_hat = unit_surface_normal_in_global_frame
                  */
                 Eigen::Matrix<double, 3, 3> Rotation()
                 {
-                    return surface_transform.rotation().transpose();
+                    return surface_transform.rotation();
                 }
                 
                 /**
@@ -53,7 +53,7 @@ namespace galileo
                  */
                 Eigen::VectorXd WorldToSurface(Eigen::VectorXd world_point)
                 {
-                    return Rotation() * (world_point - surface_transform.translation());
+                    return Rotation().transpose() * (world_point - surface_transform.translation());
                 }
             };
 
