@@ -6,7 +6,13 @@ namespace galileo
     {
         LagrangePolynomial::LagrangePolynomial(int d_, const std::string &scheme)
         {
-            d = d_;
+            if (d_ == 0)
+            {
+                piecewise_constant = true;
+                d = 1;
+            }
+            else
+                d = d_;
             /*Choose collocation points*/
             tau_root = casadi::collocation_points(d, scheme);
             tau_root.insert(tau_root.begin(), 0);
@@ -51,39 +57,46 @@ namespace galileo
         template <typename Scalar>
         Scalar LagrangePolynomial::barycentricInterpolation(double t, const std::vector<Scalar> terms) const
         {
-            std::vector<Scalar> w;
-            for (std::size_t j = 0; j < tau_root.size(); ++j)
+            if (piecewise_constant)
             {
-                w.push_back(1.0);
+                return terms[0];
             }
-
-            // Compute the barycentric weights
-            for (int j = 0; j < d; ++j)
+            else
             {
-                for (std::size_t r = 0; r < tau_root.size(); ++r)
+                /*Sometimes we get negatives here, but I don't think we should since tau_root is [0,1]? Yet, the interpolation seems to be correct..*/
+                // std::cout << "Interpolating at time " << t << std::endl;
+                std::vector<Scalar> w;
+                for (std::size_t j = 0; j < tau_root.size(); ++j)
                 {
-                    if (r != std::size_t(j))
+                    w.push_back(1.0);
+                }
+                // Compute the barycentric weights
+                for (int j = 0; j < d; ++j)
+                {
+                    for (std::size_t r = 0; r < tau_root.size(); ++r)
                     {
-                        w[j] *= (tau_root[j] - tau_root[r]);
+                        if (r != std::size_t(j))
+                        {
+                            w[j] *= (tau_root[j] - tau_root[r]);
+                        }
                     }
+                    w[j] = 1.0 / w[j];
                 }
-                w[j] = 1.0 / w[j];
-            }
-
-            // Compute the interpolated value
-            Scalar numerator = 0.0, denominator = 0.0;
-            for (std::size_t i = 0; i < tau_root.size(); ++i)
-            {
-                if (std::abs(t - tau_root[i]) < 1e-6)
+                // Compute the interpolated value
+                Scalar numerator = 0.0, denominator = 0.0;
+                for (std::size_t i = 0; i < tau_root.size(); ++i)
                 {
-                    return terms[i];
+                    if (std::abs(t - tau_root[i]) < 1e-6)
+                    {
+                        return terms[i];
+                    }
+                    Scalar term = w[i] / (t - tau_root[i]);
+                    numerator += term * terms[i];
+                    denominator += term;
                 }
-                Scalar term = w[i] / (t - tau_root[i]);
-                numerator += term * terms[i];
-                denominator += term;
-            }
 
-            return numerator / denominator;
+                return numerator / denominator;
+            }
         }
 
         template double LagrangePolynomial::barycentricInterpolation<double>(double t, const std::vector<double> terms) const;

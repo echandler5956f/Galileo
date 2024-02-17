@@ -7,11 +7,11 @@ import pinocchio as pin
 from meshcat_viewer_wrapper import MeshcatVisualizer
 from pinocchio.robot_wrapper import RobotWrapper
 
-with open('python/metadata.csv', 'r') as file:
+with open('examples/visualization/metadata.csv', 'r') as file:
     lines = file.readlines()
 
 # Parse the location
-location = lines[0].strip().split(': ')[1][3:]  # omit "../"
+location = lines[0].strip().split(': ')[1].replace("../", "", 2)
 
 # Parse the q0 array
 q0_str = lines[1].strip().split(': ')[1]
@@ -30,8 +30,8 @@ robot.q0 = q0
 model = robot.model
 data = model.createData()
 
-new_times = np.genfromtxt('python/new_times.csv', delimiter=',')
-new_sol = np.genfromtxt('python/new_sol.csv', delimiter=',')
+new_times = np.genfromtxt('examples/visualization/sol_times.csv', delimiter=',')
+new_sol = np.genfromtxt('examples/visualization/sol_states.csv', delimiter=',')
 new_times = np.reshape(np.diff(new_times), (new_times.shape[0] - 1, 1))
 
 viz = MeshcatVisualizer(robot)

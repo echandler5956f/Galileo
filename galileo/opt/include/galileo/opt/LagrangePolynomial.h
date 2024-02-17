@@ -39,6 +39,8 @@ namespace galileo
             template <typename Scalar>
             Scalar barycentricInterpolation(double t, const std::vector<Scalar> terms) const;
 
+            bool piecewise_constant = false;
+
             /**
              * @brief Degree of the polynomial.
              *

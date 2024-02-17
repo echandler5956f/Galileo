@@ -3,7 +3,7 @@
 int main(int argc, char **argv)
 {
     double q0[] = {
-        0, 0, 1.0627, 0, 0, 0, 1, 
+        0, 0, 1.0627, 0, 0, 0, 1,
         0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000};
 
     Eigen::Map<ConfigVector> q0_vec(q0, 19);
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 0.1, 0.1, 0.1,                         /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
@@ -119,19 +119,15 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 250;
+    opts["ipopt.max_iter"] = 5;
 
     std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
-
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
         std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
-
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
         std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
-
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
-
     std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
@@ -152,7 +148,9 @@ int main(int argc, char **argv)
     casadi::MXVector sol = traj.optimize();
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0, 1.);
-    Eigen::MatrixXd new_sol = traj.getSolution(new_times);
+    Eigen::MatrixXd new_sol_states;
+    Eigen::MatrixXd new_sol_input;
+    traj.getSolution(new_times, new_sol_states, new_sol_input);
 
     // opt::ConstraintData fri;
     // friction_cone_constraint_builder->buildConstraint(*legged_problem_data, 0, fri);
@@ -179,9 +177,9 @@ int main(int argc, char **argv)
     //     std::cout << "Actual force: " << dm_f << std::endl;
     // }
 
-    Eigen::MatrixXd subMatrix = new_sol.block(si->nh + si->ndh, 0, si->nq, new_sol.cols());
-
-    std::ofstream new_times_file("../python/new_times.csv");
+    Eigen::MatrixXd subMatrix = new_sol_states.block(si->nh + si->ndh, 0, si->nq, new_sol_states.cols());
+    // std::cout << subMatrix << std::endl;
+    std::ofstream new_times_file("../examples/visualization/sol_times.csv");
     if (new_times_file.is_open())
     {
         new_times_file << new_times.transpose().format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
@@ -189,14 +187,14 @@ int main(int argc, char **argv)
     }
 
     // Save new_sol to a CSV file
-    std::ofstream new_sol_file("../python/new_sol.csv");
-    if (new_sol_file.is_open())
+    std::ofstream new_sol_states_file("../examples/visualization/sol_states.csv");
+    if (new_sol_states_file.is_open())
     {
-        new_sol_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
-        new_sol_file.close();
+        new_sol_states_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
+        new_sol_states_file.close();
     }
 
-    std::ofstream file("../python/metadata.csv");
+    std::ofstream file("../../examples/visualization/metadata.csv");
     if (file.is_open())
     {
         file << "urdf location: " << huron_location << "\n";

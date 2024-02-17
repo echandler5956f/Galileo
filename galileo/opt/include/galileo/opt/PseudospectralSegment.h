@@ -118,6 +118,8 @@ namespace galileo
              */
             casadi::DM getLocalTimes() const;
 
+            casadi::DM getInputTimes() const;
+
             /**
              * @brief Fills the lower bounds on decision variable (lbw) and upper bounds on decision variable (ubw) vectors with values.
              *
@@ -188,9 +190,14 @@ namespace galileo
                 return std::make_shared<LagrangePolynomial>(U_poly);
             }
 
-            int getDegree() const
+            int getStateDegree() const
             {
                 return dX_poly.d;
+            }
+
+            int getInputDegree() const
+            {
+                return U_poly.d;
             }
 
             /**
