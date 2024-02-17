@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     initial_mode.combination_definition = robot.getContactCombination(0b1111);
     initial_mode.contact_surfaces = {0, 0, 0, 0};
 
-    robot.contact_sequence->addPhase(initial_mode, 20, 0.5);
+    robot.contact_sequence->addPhase(initial_mode, 20, 1.);
 
     contact::ContactMode second_mode;
     second_mode.combination_definition = robot.getContactCombination(0b1100);
@@ -47,13 +47,13 @@ int main(int argc, char **argv)
         }
     }
 
-    robot.contact_sequence->addPhase(second_mode, 20, 0.2);
+    // robot.contact_sequence->addPhase(second_mode, 20, 0.2);
 
     contact::ContactMode final_mode;
     final_mode.combination_definition = robot.getContactCombination(0b1111);
     final_mode.contact_surfaces = {0, 0, 0, 0};
 
-    robot.contact_sequence->addPhase(final_mode, 20, 0.5);
+    // robot.contact_sequence->addPhase(final_mode, 20, 0.5);
 
     // robot.contact_sequence->addPhase(second_mode, 20, 0.1);
     std::cout << "Filling dynamics" << std::endl;
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0.01, q0[1] - 0.01, q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0.05, q0[1] + 0., q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {};
+    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
                                                                                                            std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
@@ -159,11 +159,11 @@ int main(int argc, char **argv)
 
     TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
 
-    traj.initFiniteElements(3, X0);
+    traj.initFiniteElements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0., 1.2);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., 1.);
     Eigen::MatrixXd new_sol = traj.getSolution(new_times);
 
     // opt::ConstraintData fri;

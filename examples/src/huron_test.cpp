@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         }
     }
 
-    robot.contact_sequence->addPhase(second_mode, 20, 0.1);
+    // robot.contact_sequence->addPhase(second_mode, 20, 0.1);
 
     robot.fillModeDynamics();
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 200., 200., 200.,                         /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., 0.1, 0.1, 0.1,                         /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0.125, q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 
     casadi::MXVector sol = traj.optimize();
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(40, 0, 1.1);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0, 1.);
     Eigen::MatrixXd new_sol = traj.getSolution(new_times);
 
     // opt::ConstraintData fri;
