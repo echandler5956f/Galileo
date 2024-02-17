@@ -180,12 +180,22 @@ namespace galileo
                                                                                                               ee.first,
                                                                                                               pinocchio::LOCAL)
                                                                                       .toVector();
-                        casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
-                        pinocchio::casadi::copy(foot_vel, cfoot_vel);
+                        casadi::SX cfoot_vel;
+                        if (ee.second->is_6d)
+                        {
+                            cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
+                            pinocchio::casadi::copy(foot_vel, cfoot_vel);
+                        }
+                        else
+                        {
+                            Eigen::Matrix<galileo::opt::ADScalar, 3, 1, 0> foot_lin_vel = foot_vel.head(3);
+                            cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_lin_vel.rows(), 1));
+                            pinocchio::casadi::copy(foot_lin_vel, cfoot_vel);
+                        }
 
                         G_vec.push_back(cfoot_vel);
-                        lower_bound_vec.push_back(casadi::SX::zeros(foot_vel.rows(), 1));
-                        upper_bound_vec.push_back(casadi::SX::zeros(foot_vel.rows(), 1));
+                        lower_bound_vec.push_back(casadi::SX::zeros(cfoot_vel.size1(), 1));
+                        upper_bound_vec.push_back(casadi::SX::zeros(cfoot_vel.size1(), 1));
                     }
                 }
 

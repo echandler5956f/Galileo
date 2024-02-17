@@ -7,36 +7,24 @@ import pinocchio as pin
 from meshcat_viewer_wrapper import MeshcatVisualizer
 from pinocchio.robot_wrapper import RobotWrapper
 
+with open('python/metadata.csv', 'r') as file:
+    lines = file.readlines()
+
+# Parse the location
+location = lines[0].strip().split(': ')[1][3:]  # omit "../"
+
+# Parse the q0 array
+q0_str = lines[1].strip().split(': ')[1]
+q0 = np.array([float(x) for x in q0_str.split(', ')])
+
 builder = RobotWrapper.BuildFromURDF
 robot = builder(
-    "resources/urdf/huron_cheat.urdf",
+    location,
     ["resources"],
     None,
 )
 
-robot.q0 = np.array(
-    [
-        0,
-        0,
-        1.0627,
-        0,
-        0,
-        0,
-        1,
-        0.0000,
-        0.0000,
-        -0.3207,
-        0.7572,
-        -0.4365,
-        0.0000,
-        0.0000,
-        0.0000,
-        -0.3207,
-        0.7572,
-        -0.4365,
-        0.0000,
-    ]
-)
+robot.q0 = q0
 
 # The pinocchio model is what we are really interested by.
 model = robot.model
@@ -49,18 +37,8 @@ new_times = np.reshape(np.diff(new_times), (new_times.shape[0] - 1, 1))
 viz = MeshcatVisualizer(robot)
 viz.display(robot.q0)
 
-ee = ["r_foot_v_ft_link", "l_foot_v_ft_link"]
-
 def display_scene(q: np.ndarray, dt=1e-1):
-    """
-    Given the robot configuration, display:
-    - the robot
-    - a box representing endEffector_ID
-    - a box representing Mtarget
-    """
     pin.framesForwardKinematics(model, data, q)
-    viz.applyConfiguration(ee[0], data.oMf[model.getFrameId(ee[0])])
-    viz.applyConfiguration(ee[1], data.oMf[model.getFrameId(ee[1])])
     viz.display(q)
     time.sleep(dt)
 
@@ -70,4 +48,4 @@ def display_traj(qs: np.ndarray, dts: np.ndarray):
 
 while True:
     display_traj(new_sol, new_times)
-    time.sleep(5)
+    time.sleep(1)
