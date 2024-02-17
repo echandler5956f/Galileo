@@ -28,6 +28,9 @@ namespace galileo
                 // The number of standard deviations we consider in the window of the bell curve.
                 // Effectively, this defines the steepness fo the bell curve.
                 double window_sigma = 3.3; // 3.3
+
+                double liftoff_time;
+                double touchdown_time;
             };
 
             casadi::Function GetMappedBellCurve(casadi::SX &t, double window_sigma )
@@ -127,10 +130,10 @@ namespace galileo
                 }
 
 
-                casadi::SX GetFootstepVelocityInWorldFrame(const ProblemData &problem_data) const {
+                casadi::SX GetFootstepVelocityInWorldFrame(const ProblemData &problem_data, std::string ee_name) const {
                       Eigen::Matrix<galileo::opt::ADScalar, 6, 1, 0> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                                                               *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                                                              ee.first,
+                                                                                                              ee_name,
                                                                                                               pinocchio::LOCAL)
                                                                                       .toVector();
 
@@ -153,7 +156,7 @@ namespace galileo
             };
 
             template <class ProblemData>
-            FootstepDefinition VelocityConstraintBuilder<ProblemData>::BuildFootstepDefinition(const ProblemData &problem_data, int phase_index, std::shared_ptr<galileo::legged::contact::EndEffector> ee_ptr ) const{
+            FootstepDefinition VelocityConstraintBuilder<ProblemData>::BuildFootstepDefinition(const ProblemData &problem_data, int phase_index, std::shared_ptr<galileo::legged::contact::EndEffector> ee_ptr) const{
 
                         double liftoff_time = 0;
                         double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->dt();
@@ -162,16 +165,18 @@ namespace galileo
                         galileo::legged::environment::SurfaceID liftoff_surface_ID = 0;
                         galileo::legged::environment::SurfaceID touchdown_surface_ID = 0;
 
+                        contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
+
                         // When did the EE break contact?
                         for (int i = phase_index; i >= 0; i--)
                         {
                             contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
                             // If the ee is in contact, we have found the phase where liftoff occurred.
-                            if (mode_i.at(*ee.second))
+                            if (mode_i.at(*ee_ptr))
                             {
                                 int liftoff_index = i + 1;
                                 problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
-                                liftoff_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
+                                liftoff_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee_ptr);
                                 break;
                                 // if liftoff is not found, we will assume that the ee is in contact with SURFACE 0 at the start of the horizon.
                                 //  This is an odd and limiting assumption. Better behavior should be created.
@@ -181,24 +186,27 @@ namespace galileo
                         // When does it make contact again?
                         for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->num_phases() - 1; i++)
                         {
+                            contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
                             // If the ee is in contact, we have found the phase where touchdown occurred.
-                            if (problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.at(*ee.second))
+                            if (mode_i.at(*ee_ptr))
                             {
                                 int touchdown_index = i;
                                 problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
-                                touchdown_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
+                                touchdown_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee_ptr);
                                 break;
                                 // if liftoff is not found, we will assume that the ee is in contact with SURFACE 0 at the start of the horizon.
                                 //  This is an odd and limiting assumption. Better behavior should be created.
                             }
                         }
 
-                        FootstepDefinition footstep_definition;
                         footstep_definition.h_offset_P1 = problem_data.velocity_constraint_problem_data.ideal_offset_height;
                         footstep_definition.h_offset_P2 = problem_data.velocity_constraint_problem_data.ideal_offset_height;
 
                         footstep_definition.R_P1 = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurface(liftoff_surface_ID).Rotation();
                         footstep_definition.R_P2 = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurface(touchdown_surface_ID).Rotation();
+
+                        footstep_definition.liftoff_time = liftoff_time;    
+                        footstep_definition.touchdown_time = touchdown_time;
 
                         return footstep_definition;
 
@@ -213,8 +221,6 @@ namespace galileo
 
                 auto t = problem_data.velocity_constraint_problem_data.t;
 
-                contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
-
                 contact::ContactMode mode = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(phase_index).mode;
 
                 for (auto ee : problem_data.velocity_constraint_problem_data.robot_end_effectors)
@@ -222,7 +228,6 @@ namespace galileo
                     if (!mode[(*ee.second)])
                     {
                         FootstepDefinition footstep_definition = BuildFootstepDefinition(problem_data, phase_index, ee.second);
-
 
                         /**
                          * 
@@ -236,23 +241,23 @@ namespace galileo
                          * In essence, the velocity at t = 0 approximately is normal to the liftoff surface and at t = 1, approximately normal to the touchdown surface. 
                          * In the middle, it loosely follows an "ideal" trajectory. 
                         */
-                        casadi::SX cfoot_vel = GetFootstepVelocityInWorldFrame(problem_data);
+                        casadi::SX cfoot_vel = GetFootstepVelocityInWorldFrame(problem_data, ee.first);
                         casadi::SX cfoot_vel_in_liftoff_surface = GetFootstepVelocityInSurfaceFrame(cfoot_vel, footstep_definition.R_P1);
                         casadi::SX cfoot_vel_in_touchdown_surface = GetFootstepVelocityInSurfaceFrame(cfoot_vel, footstep_definition.R_P2);
 
                         // The velocity of the footstep in the direction of each of the surface normals
                         // At time 0, the velocity should be approximately normal to the liftoff surface 
                         // At time 1, the velocity should be approximately normal to the touchdown surface
-                        casadi::Function G_foot_vel = casadi::Function("G_foot_vel", {problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, 
-                                                                        {casadi::SX::vertcat(cfoot_vel_in_liftoff_surface, cfoot_vel_in_touchdown_surface)});
+                        casadi::Function G_foot_vel = casadi::Function("G_foot_vel",  casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, 
+                                                                         casadi::SXVector{casadi::SX::vertcat(cfoot_vel_in_liftoff_surface, cfoot_vel_in_touchdown_surface)} );
 
-                        G_vec.push_back(G_foot_vel(problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u));
+                        G_vec.push_back(G_foot_vel( casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u} ));
 
 
                         //Building the bounds. We want to approximately follow (\dot h1_desired) for a fraction of the trajectory, then (\dot h2_desired). 
 
                         // Map t to between 0 and 1. 0 is the time of liftoff, 1 is the time of touchdown.
-                        casadi::SX mapped_t = (t - liftoff_time) / (touchdown_time - liftoff_time);
+                        casadi::SX mapped_t = (t - footstep_definition.liftoff_time) / (footstep_definition.touchdown_time - footstep_definition.liftoff_time);
 
                         //Desired velocity normal to the liftoff surface as a function of time
                         casadi::Function desired_h1_dot;
@@ -260,8 +265,8 @@ namespace galileo
 
                         FootstepVelocityFunction(mapped_t, footstep_definition, desired_h1_dot, desired_h2_dot);
 
-                        casadi::SX ell_max = footstep_definition.max_following_leeway;
-                        casadi::SX ell_min = footstep_definition.min_following_leeway;
+                        casadi::SX ell_max = problem_data.velocity_constraint_problem_data.max_following_leeway;
+                        casadi::SX ell_min =  problem_data.velocity_constraint_problem_data.min_following_leeway;
                         casadi::SX ell_slope = (ell_max - ell_min) / 2;
 
                         // Linear interpolation between admissible error of velocity at t = [0, 1] 
@@ -283,22 +288,22 @@ namespace galileo
                         casadi::SX lower_admissible_error_h1_normal = quadratic_error_interpolation(mapped_t);
                         casadi::SX lower_admissible_error_h2_normal = quadratic_error_interpolation(1 - mapped_t);
 
-                        casadi::Function upper_bound = casadi::Function("upper_bound", {problem_data.velocity_constraint_problem_data.t}, 
-                                            {casadi::SX::vertcat(upper_admissible_error_h1_parallel, desired_h1_dot +  upper_admissible_error_h1_normal, upper_admissible_error_h2_parallel, desired_h2_dot + upper_admissible_error_h2_normal)});
+                        casadi::Function upper_bound = casadi::Function("upper_bound",  casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, 
+                                             casadi::SXVector{casadi::SX::vertcat( {admissible_error_h1_parallel, desired_h1_dot(mapped_t) +  admissible_error_h1_parallel, admissible_error_h1_parallel, desired_h2_dot(mapped_t) + upper_admissible_error_h2_normal} )});
 
-                        casadi::Function lower_bound = casadi::Function("lower_bound", {problem_data.velocity_constraint_problem_data.t}, 
-                                            {casadi::SX::vertcat(-upper_admissible_error_h1_parallel, desired_h1_dot -  lower_admissible_error_h1_normal, -upper_admissible_error_h2_parallel, desired_h2_dot - lower_admissible_error_h2_normal)});
+                        casadi::Function lower_bound = casadi::Function("lower_bound",  casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, 
+                                             casadi::SXVector{casadi::SX::vertcat( {-admissible_error_h1_parallel, desired_h1_dot(mapped_t) -  lower_admissible_error_h1_normal, -admissible_error_h1_parallel, desired_h2_dot(mapped_t) - lower_admissible_error_h2_normal} )});
 
-                        lower_bound_vec.push_back( upper_bound(mapped_t) );
-                        upper_bound_vec.push_back( lower_bound(mapped_t) );
+                        lower_bound_vec.push_back( upper_bound(problem_data.velocity_constraint_problem_data.t) );
+                        upper_bound_vec.push_back( lower_bound(problem_data.velocity_constraint_problem_data.t) );
                     }
                     else
                     {
-                        auto c_foot_vel = GetFootstepVelocityInWorldFrame(t, problem_data);
+                        auto cfoot_vel = GetFootstepVelocityInWorldFrame(problem_data, ee.first);
 
                         G_vec.push_back(cfoot_vel);
-                        lower_bound_vec.push_back(casadi::SX::zeros(foot_vel.rows(), 1));
-                        upper_bound_vec.push_back(casadi::SX::zeros(foot_vel.rows(), 1));
+                        lower_bound_vec.push_back(casadi::SX::zeros(cfoot_vel.rows(), 1));
+                        upper_bound_vec.push_back(casadi::SX::zeros(cfoot_vel.rows(), 1));
                     }
                 }
                 // replace u with an SX vector the size of (sum dof of ee in contact during this knot index)

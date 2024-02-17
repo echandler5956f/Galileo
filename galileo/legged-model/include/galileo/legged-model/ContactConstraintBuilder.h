@@ -3,6 +3,10 @@
 #include "galileo/opt/Constraint.h"
 #include "galileo/legged-model/ContactSequence.h"
 
+#include <casadi/casadi.hpp>
+#include <pinocchio/autodiff/casadi.hpp>
+#include <pinocchio/multibody/model.hpp>
+
 namespace galileo
 {
     namespace legged
@@ -52,10 +56,10 @@ namespace galileo
 
 
                             casadi::SX symbolic_b = casadi::SX(n_constraints, 1);
-                            pinocchio::casadi::copy(b, surface_data.b);
+                            pinocchio::casadi::copy(surface_data.b, symbolic_b);
 
                             casadi::SX symbolic_surface_translation(3,1); 
-                            pinnocchio::casadi::copy(surface_data.surface_transform.translation(), symbolic_surface_translation);
+                            pinocchio::casadi::copy(surface_data.surface_transform.translation(), symbolic_surface_translation);
 
                             casadi::SX symbolic_surface_rotation(3,3);
                             pinocchio::casadi::copy(surface_data.surface_transform.rotation(), symbolic_surface_rotation);

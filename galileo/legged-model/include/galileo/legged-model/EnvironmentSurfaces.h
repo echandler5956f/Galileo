@@ -42,7 +42,7 @@ namespace galileo
                 /**
                  * @brief Get a "rotation" matrix R such that R * z_hat = unit_surface_normal_in_global_frame
                  */
-                Eigen::Matrix<double, 3, 3> Rotation()
+                Eigen::Matrix<double, 3, 3> Rotation() const
                 {
                     return surface_transform.rotation();
                 }
@@ -51,7 +51,7 @@ namespace galileo
                  * @brief Get the Inverse of the translation; used to transform points from the global frame to the surface frame.
                  * @param world_point The point to be transformed.
                  */
-                Eigen::VectorXd WorldToSurface(Eigen::VectorXd world_point)
+                Eigen::VectorXd WorldToSurface(Eigen::VectorXd world_point) const
                 {
                     return Rotation().transpose() * (world_point - surface_transform.translation());
                 }
