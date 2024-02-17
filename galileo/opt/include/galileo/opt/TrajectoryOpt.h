@@ -10,6 +10,20 @@ namespace galileo
 {
     namespace opt
     {
+        struct constraint_evaluations_t
+        {
+            std::string name;
+            Eigen::Matrix3Xd evaluation_and_bounds;
+        };
+
+        struct solution_t
+        {
+            solution_t(Eigen::VectorXd times) { this->times = times;}
+            Eigen::VectorXd times;
+            Eigen::MatrixXd state_result;
+            Eigen::MatrixXd input_result;
+        };
+
         /**
          * @brief The trajectory optimization class. This class is responsible for
             initializing the finite elements, and optimizing the trajectory.
@@ -57,9 +71,11 @@ namespace galileo
              * @param state_result The resulting state at the specified times
              * @param input_result The resulting input at the specified times
              */
-            void getSolution(Eigen::VectorXd &times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+            void getSolution(solution_t &result);
 
-            Eigen::VectorXd getSegmentTimes(Eigen::VectorXd &times, double initial_time, double end_time) const;
+            std::vector<std::vector<constraint_evaluations_t>> getConstraintViolations(solution_t &sol) const;
+
+            tuple_size_t getSegmentTimes(Eigen::VectorXd &times, double initial_time, double end_time, Eigen::VectorXd &segment_times) const;
 
             void processSegmentTimes(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const;
 
@@ -69,6 +85,8 @@ namespace galileo
              *
              */
             std::vector<std::shared_ptr<Segment>> trajectory;
+
+            std::vector<tuple_size_t> segment_times_ranges;
 
             /**
              * @brief The solution vector.
@@ -93,6 +111,12 @@ namespace galileo
              *
              */
             std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders;
+
+            /**
+             * @brief Constraint datas for each phase.
+             *
+             */
+            std::vector<std::vector<std::shared_ptr<ConstraintData>>> constraint_datas_for_phase;
 
             /**
              * @brief Casadi solver options.
@@ -228,6 +252,7 @@ namespace galileo
                     builder->buildConstraint(*problem, i, *con_data);
                     G.push_back(con_data);
                 }
+                constraint_datas_for_phase.push_back(G);
                 auto phase = sequence->phase_sequence_[i];
 
                 std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
@@ -317,7 +342,67 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        void TrajectoryOpt<ProblemData, MODE_T>::getSolution(Eigen::VectorXd &times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        std::vector<std::vector<constraint_evaluations_t>> TrajectoryOpt<ProblemData, MODE_T>::getConstraintViolations(solution_t &result) const
+        {
+            auto clock_start_time = std::chrono::high_resolution_clock::now();
+            std::vector<std::vector<constraint_evaluations_t>> constraint_evaluations;
+            std::vector<constraint_evaluations_t> phase_constraint_evaluations;
+
+            casadi::DM dm_state_result = casadi::DM(casadi::Sparsity::dense(result.state_result.rows(), result.state_result.cols()));
+            casadi::DM dm_input_result = casadi::DM(casadi::Sparsity::dense(result.input_result.rows(), result.input_result.cols()));
+            casadi::DM dm_times = casadi::DM(result.times.rows(), result.times.cols());
+            pinocchio::casadi::copy(result.state_result, dm_state_result);
+            pinocchio::casadi::copy(result.input_result, dm_input_result);
+            pinocchio::casadi::copy(result.times, dm_times);
+
+            for (size_t i = 0; i < trajectory.size(); ++i)
+            {
+                phase_constraint_evaluations.clear();
+                auto G = constraint_datas_for_phase[i];
+                auto seg = trajectory[i];
+                for (size_t j = 0; j < G.size(); ++j)
+                {
+                    std::shared_ptr<ConstraintData> con_data = G[j];
+                    tuple_size_t seg_range = segment_times_ranges[i];
+                    casadi_int start_idx = casadi_int(std::get<0>(seg_range));
+                    casadi_int end_idx = casadi_int(std::get<1>(seg_range));
+                    std::cout << "Start idx: " << start_idx << " End idx: " << end_idx << std::endl;
+                    std::cout << "State result rows: " << dm_state_result.size1() << " State result cols: " << dm_state_result.size2() << std::endl;
+
+                    std::vector<double> con_eval = con_data->G.map(end_idx - start_idx)(casadi::DMVector{
+                        dm_state_result(casadi::Slice(0, dm_state_result.rows()), casadi::Slice(start_idx, end_idx)), 
+                        dm_input_result(casadi::Slice(0, dm_input_result.rows()), casadi::Slice(start_idx, end_idx))}).at(0).get_elements();
+                    std::cout << "con_eval: " << con_eval.size() << std::endl;
+                    std::vector<double> con_lb = con_data->lower_bound.map(end_idx - start_idx)(casadi::DMVector{
+                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0).get_elements();
+                    std::cout << "con_lb: " << con_lb.size() << std::endl;
+                    std::vector<double> con_ub = con_data->upper_bound.map(end_idx - start_idx)(casadi::DMVector{
+                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0).get_elements();
+                    std::cout << "con_ub: " << con_ub.size() << std::endl;
+                    Eigen::VectorXd eval = Eigen::Map<Eigen::VectorXd>(con_eval.data(), con_eval.size(), 1);
+                    Eigen::VectorXd lb = Eigen::Map<Eigen::VectorXd>(con_lb.data(), con_lb.size(), 1);
+                    Eigen::VectorXd ub = Eigen::Map<Eigen::VectorXd>(con_ub.data(), con_ub.size(), 1);
+
+                    constraint_evaluations_t con_evals;
+                    con_evals.name = con_data->G.name();
+                    con_evals.evaluation_and_bounds = Eigen::MatrixXd(3, con_eval.size());
+                    con_evals.evaluation_and_bounds.row(0) = eval.transpose();
+                    con_evals.evaluation_and_bounds.row(1) = lb.transpose();
+                    con_evals.evaluation_and_bounds.row(2) = ub.transpose();
+
+                    phase_constraint_evaluations.push_back(con_evals);
+                }
+
+                constraint_evaluations.push_back(phase_constraint_evaluations);
+            }
+            auto clock_end_time = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = clock_end_time - clock_start_time;
+            std::cout << "Elapsed time to get constraint evaluations at solution: " << elapsed.count() << std::endl;
+            return constraint_evaluations;
+        }
+
+        template <class ProblemData, class MODE_T>
+        void TrajectoryOpt<ProblemData, MODE_T>::getSolution(solution_t &result)
         {
             auto clock_start_time = std::chrono::high_resolution_clock::now();
             int i = 0;
@@ -325,8 +410,9 @@ namespace galileo
             auto solu = sol[1];
             int state_count = 0;
             int input_count = 0;
-            state_result = Eigen::MatrixXd(state_indices->nx, times.size());
-            input_result = Eigen::MatrixXd(state_indices->nu, times.size());
+            result.state_result = Eigen::MatrixXd(state_indices->nx, result.times.size());
+            result.input_result = Eigen::MatrixXd(state_indices->nu, result.times.size());
+            std::vector<Eigen::VectorXd> all_segment_times;
             for (std::shared_ptr<Segment> seg : trajectory)
             {
                 /*TODO: Find another solution that avoids dynamic cast*/
@@ -341,14 +427,16 @@ namespace galileo
                 auto state_polynomial = pseg->get_dXPoly();
                 int input_degree = pseg->getInputDegree();
                 auto input_polynomial = pseg->get_UPoly();
-                Eigen::VectorXd segment_times = getSegmentTimes(times, initial_time, end_time);
+                Eigen::VectorXd segment_times;
+                tuple_size_t segment_indices = getSegmentTimes(result.times, initial_time, end_time, segment_times);
+                segment_times_ranges.push_back(segment_indices);
                 casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(state_count, state_count + state_degree * num_knots)));
                 casadi::DM solu_segment = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(input_count, input_count + input_degree * num_knots)));
                 /*This loop is the bottleneck and could easily be vectorized if computation speed is a concern*/
                 for (Eigen::Index j = 0; j < segment_times.size(); ++j)
                 {
-                    processSegmentTimes(state_times_vec, segment_times, solx_segment, state_degree, state_polynomial, state_result, i, j);
-                    processSegmentTimes(input_times_vec, segment_times, solu_segment, input_degree + 1, input_polynomial, input_result, i, j);
+                    processSegmentTimes(state_times_vec, segment_times, solx_segment, state_degree, state_polynomial, result.state_result, i, j);
+                    processSegmentTimes(input_times_vec, segment_times, solu_segment, input_degree + 1, input_polynomial, result.input_result, i, j);
                     ++i;
                 }
                 state_count += state_degree * num_knots;
@@ -360,13 +448,13 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        Eigen::VectorXd TrajectoryOpt<ProblemData, MODE_T>::getSegmentTimes(Eigen::VectorXd &times, double initial_time, double end_time) const
+        tuple_size_t TrajectoryOpt<ProblemData, MODE_T>::getSegmentTimes(Eigen::VectorXd &times, double initial_time, double end_time, Eigen::VectorXd &segment_times) const
         {
             auto start_it = std::lower_bound(times.data(), times.data() + times.size(), initial_time);
             auto end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
-            Eigen::VectorXd segment_times(end_it - start_it);
+            segment_times = Eigen::VectorXd(end_it - start_it);
             std::copy(start_it, end_it, segment_times.data());
-            return segment_times;
+            return std::make_tuple(std::distance(times.data(), start_it), std::distance(times.data(), end_it));
         }
 
         template <class ProblemData, class MODE_T>

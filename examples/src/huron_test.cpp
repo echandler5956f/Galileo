@@ -133,51 +133,25 @@ int main(int argc, char **argv)
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
                                                                                                            std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
 
-    // std::vector<opt::ConstraintData> constraint_datas;
-    // for (auto builder : builders)
-    // {
-    //     opt::ConstraintData some_data;
-    //     builder->buildConstraint(*legged_problem_data, 0, some_data);
-    //     constraint_datas.push_back(some_data);
-    // }
-
     TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
 
     traj.initFiniteElements(1, X0);
-
     casadi::MXVector sol = traj.optimize();
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0, 1.);
-    Eigen::MatrixXd new_sol_states;
-    Eigen::MatrixXd new_sol_input;
-    traj.getSolution(new_times, new_sol_states, new_sol_input);
+    solution_t new_sol = solution_t(new_times);
+    traj.getSolution(new_sol);
+    auto cons = traj.getConstraintViolations(new_sol);
 
-    // opt::ConstraintData fri;
-    // friction_cone_constraint_builder->buildConstraint(*legged_problem_data, 0, fri);
-    // auto force_function = fri.G;
-    // opt::ConstraintData vel;
-    // velocity_constraint_builder->buildConstraint(*legged_problem_data, 0, vel);
-    // auto vel_function = vel.G;
+    for (auto con : cons)
+    {
+        for (auto c : con)
+        {
+            std::cout << c.name << std::endl;
+        }
+    }
 
-    // auto solu = sol[1];
-    // auto dm_u = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(0, solu.columns())));
-    // std::cout << dm_u.get_elements() << std::endl;
-
-    // for (int k = 0; k < new_sol.cols(); ++k)
-    // {
-    //     casadi::SX tmp_x(si->nx);
-    //     casadi::SX tmp_u = casadi::SX::zeros(si->nu, 1);
-    //     pinocchio::casadi::copy(new_sol.block(0, k, si->nx, 1), tmp_x);
-    //     std::cout << "State: " << tmp_x << std::endl;
-    //     casadi::SX tmp_v = vel_function(casadi::SXVector{tmp_x, tmp_u}).at(0);
-    //     std::cout << "Velocity: " << tmp_v << std::endl;
-    //     casadi::SX tmp_f = force_function(casadi::SXVector{tmp_x, dm_u(casadi::Slice(0, si->nu), k)}).at(0);
-    //     std::cout << "Lower bound force: " << fri.lower_bound(casadi::DMVector{0}) << " Force: " << tmp_f << " Upper bound force: " << fri.upper_bound(casadi::DMVector{0}) << std::endl;
-    //     auto dm_f = si->get_f<casadi::DM>(dm_u(casadi::Slice(0, si->nu), k), robot.cmodel.getFrameId("l_foot_v_ft_link", pinocchio::BODY));
-    //     std::cout << "Actual force: " << dm_f << std::endl;
-    // }
-
-    Eigen::MatrixXd subMatrix = new_sol_states.block(si->nh + si->ndh, 0, si->nq, new_sol_states.cols());
+    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
     // std::cout << subMatrix << std::endl;
     std::ofstream new_times_file("../examples/visualization/sol_times.csv");
     if (new_times_file.is_open())

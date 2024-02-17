@@ -164,9 +164,8 @@ int main(int argc, char **argv)
     casadi::MXVector sol = traj.optimize();
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., 1.);
-    Eigen::MatrixXd new_sol_states;
-    Eigen::MatrixXd new_sol_input;
-    traj.getSolution(new_times, new_sol_states, new_sol_input);
+    solution_t new_sol = solution_t(new_times);
+    traj.getSolution(new_sol);
 
     // opt::ConstraintData fri;
     // friction_cone_constraint_builder->buildConstraint(*legged_problem_data, 0, fri);
@@ -193,7 +192,7 @@ int main(int argc, char **argv)
     //     std::cout << "Actual force: " << dm_f << std::endl;
     // }
 
-    Eigen::MatrixXd subMatrix = new_sol_states.block(si->nh + si->ndh, 0, si->nq, new_sol_states.cols());
+    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
 
     std::ofstream new_times_file("../examples/visualization/sol_times.csv");
     if (new_times_file.is_open())
