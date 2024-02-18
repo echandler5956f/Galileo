@@ -58,7 +58,7 @@ namespace galileo
             Uc.clear();
 
             dX_poly = LagrangePolynomial(d);
-            U_poly = LagrangePolynomial(1);
+            U_poly = LagrangePolynomial(0);
 
             for (int j = 0; j < dX_poly.d; ++j)
             {
@@ -273,12 +273,10 @@ namespace galileo
                 assert(g_data->G.n_in() == 2 && "G must have 2 inputs");
                 g_data->G.assert_size_in(0, st_m->nx, 1);
                 g_data->G.assert_size_in(1, st_m->nu, 1);
-                /*TODO: Add assertions to check the bounds functions here!!!*/
                 assert(g_data->lower_bound.n_in() == 1 && "G lower_bound must have 1 inputs");
                 assert(g_data->lower_bound.n_out() == 1 && "G lower_bound must have 1 output");
                 g_data->lower_bound.assert_size_in(0, 1, 1);
-
-                auto tmap = casadi::Function("fg",
+                auto tmap = casadi::Function(g_data->G.name() + "_map",
                                              casadi::SXVector{X0, vertcat(dXc), dX0, vertcat(Uc)},
                                              casadi::SXVector{vertcat(g_data->G.map(dX_poly.d, "serial")((casadi::SXVector{horzcat(x_at_c), horzcat(u_at_c)})))})
                                 .map(knot_num, "serial");
@@ -457,6 +455,11 @@ namespace galileo
         casadi::DM PseudospectralSegment::getLocalTimes() const
         {
             return local_times;
+        }
+
+        casadi::DM PseudospectralSegment::getInputTimes() const
+        {
+            return u_times;
         }
 
         void PseudospectralSegment::fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw)
