@@ -23,6 +23,7 @@ namespace galileo
 
             /**
              * @brief Construct a new Lagrange Polynomial object. Compute and store the coefficients for a given degree and collocation scheme.
+             * Use d_ = 0 for a piecewise constant polynomial.
              *
              * @param d_ Degree of the polynomial
              * @param scheme Collocation scheme: "radau" or "legendre"
@@ -34,7 +35,7 @@ namespace galileo
              *
              * @param t Time to interpolate at
              * @param terms Terms at knot points to use for interpolation
-             * @return const casadi::SX Resultant expression for the symbolic interpolated value
+             * @return Scalar Interpolated value
              */
             template <typename Scalar>
             Scalar barycentricInterpolation(double t, const std::vector<Scalar> terms) const;

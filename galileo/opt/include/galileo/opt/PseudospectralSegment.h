@@ -180,16 +180,31 @@ namespace galileo
              */
             tuple_size_t get_range_idx_decision_bounds() const;
 
+            /**
+             * @brief Get the dXPoly object.
+             *
+             * @return const std::shared_ptr<LagrangePolynomial>
+             */
             const std::shared_ptr<LagrangePolynomial> get_dXPoly() const
             {
                 return std::make_shared<LagrangePolynomial>(dX_poly);
             }
 
+            /**
+             * @brief Get the UPoly object
+             *
+             * @return const std::shared_ptr<LagrangePolynomial>
+             */
             const std::shared_ptr<LagrangePolynomial> get_UPoly() const
             {
                 return std::make_shared<LagrangePolynomial>(U_poly);
             }
 
+            /**
+             * @brief Get the degree
+             *
+             * @return int The degree
+             */
             int getStateDegree() const
             {
                 return dX_poly.d;
@@ -203,7 +218,7 @@ namespace galileo
             /**
              * @brief Get the knot num
              *
-             * @return int
+             * @return int The knot num
              */
             int getKnotNum() const
             {

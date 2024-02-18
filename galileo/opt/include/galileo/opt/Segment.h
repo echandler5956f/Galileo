@@ -11,9 +11,17 @@ namespace galileo
 
         using tuple_size_t = std::tuple<size_t, size_t>;
 
+        /**
+         * @brief Base class for a segment used in TrajectoryOpt.
+         *
+         */
         class Segment
         {
         public:
+            /**
+             * @brief Destroy the Segment object
+             *
+             */
             virtual ~Segment() = default;
 
             /**

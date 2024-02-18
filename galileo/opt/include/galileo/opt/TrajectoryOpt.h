@@ -60,6 +60,8 @@ namespace galileo
 
             /**
              * @brief Get the times where the decision variables are evaluated.
+             * 
+             * @return std::vector<double> The times
              */
             std::vector<double> getGlobalTimes() const;
 
@@ -75,8 +77,28 @@ namespace galileo
 
             std::vector<std::vector<constraint_evaluations_t>> getConstraintViolations(solution_t &sol) const;
 
+            /**
+             * @brief Get the Segment times from the global times.
+             * 
+             * @param times The times to evaluate the solution at
+             * @param initial_time The initial time of the segment
+             * @param end_time The end time of the segment
+             * @return Eigen::VectorXd The segment times
+             */
             tuple_size_t getSegmentTimes(Eigen::VectorXd &times, double initial_time, double end_time, Eigen::VectorXd &segment_times) const;
 
+            /**
+             * @brief Process the segment times and interpolate the solution.
+             * 
+             * @param l_times_vec Local times vector
+             * @param segment_times The segment times
+             * @param solx_segment The solution at the segment
+             * @param degree The degree of the polynomial
+             * @param poly The Lagrange polynomial
+             * @param result The result matrix
+             * @param i The row index of the result matrix
+             * @param j The column index of the result matrix
+             */
             void processSegmentTimes(std::vector<double> &l_times_vec, Eigen::VectorXd &segment_times, casadi::DM &solx_segment, int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, int i, int j) const;
 
         private:
