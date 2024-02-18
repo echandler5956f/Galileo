@@ -21,7 +21,6 @@ namespace galileo
                 allowing for states to lie on a manifold. Fint is the function which maps these
                 deviations back to the actual state space
              * @param Fdif_ Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
-             * @param F_ Dynamics of the system
              * @param L_ Running cost
              * @param Phi_ Terminal cost
              */
