@@ -402,7 +402,7 @@
     <parent link="world"/>
     <child link="base"/>
   </joint> -->
-  <joint name="world_fixed" type="floating">
+  <joint name="world_fixed" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="world"/>
     <child link="base"/>

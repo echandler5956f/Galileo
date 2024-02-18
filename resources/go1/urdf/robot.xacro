@@ -21,7 +21,7 @@
     <!-- Debug mode will hung up the robot, use "true" or "false" to switch it. -->
     <link name="world"/>
     
-    <joint name="world_fixed" type="floating">
+    <joint name="world_fixed" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <parent link="world"/>
         <child link="base"/>

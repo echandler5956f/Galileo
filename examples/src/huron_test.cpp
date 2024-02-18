@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0.125, q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0.2, q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
         new_sol_states_file.close();
     }
 
-    std::ofstream file("../../examples/visualization/metadata.csv");
+    std::ofstream file("../examples/visualization/metadata.csv");
     if (file.is_open())
     {
         file << "urdf location: " << huron_location << "\n";
