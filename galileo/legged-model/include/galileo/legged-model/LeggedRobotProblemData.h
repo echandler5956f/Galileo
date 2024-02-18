@@ -58,9 +58,9 @@ namespace galileo
                     this->velocity_constraint_problem_data.x = x;
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
-                    this->velocity_constraint_problem_data.max_footstep_offset_height = 0.075;
-                    this->velocity_constraint_problem_data.corrector_kp = 1000.;
-                    this->velocity_constraint_problem_data.following_leeway = 0.01;
+                    this->velocity_constraint_problem_data.ideal_offset_height = 0.2;
+                    this->velocity_constraint_problem_data.max_following_leeway = 0.5;
+                    this->velocity_constraint_problem_data.min_following_leeway = 1e-5;
                 }
                 std::shared_ptr<opt::PhaseSequence<contact::ContactMode>> phase_sequence;
                 std::shared_ptr<opt::GeneralProblemData> gp_data;

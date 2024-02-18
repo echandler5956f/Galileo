@@ -251,7 +251,7 @@ namespace galileo
                     return Eigen::Matrix<double, 3, 3>::Zero();
                 }
 
-                return (*problem_data.friction_cone_problem_data.environment_surfaces)[contact_surface_id].rotation();
+                return (*problem_data.friction_cone_problem_data.environment_surfaces)[contact_surface_id].Rotation().transpose();
             }
 
             template <class ProblemData>

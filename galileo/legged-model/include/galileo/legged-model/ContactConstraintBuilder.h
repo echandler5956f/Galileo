@@ -44,8 +44,6 @@ namespace galileo
                     casadi::SXVector G_vec;
                     casadi::SXVector upper_bound_vec;
                     casadi::SXVector lower_bound_vec;
-                    casadi::SXVector sx_foot_placement;
-
                     for (auto ee : problem_data.contact_constraint_problem_data.robot_end_effectors)
                     {
                         if (mode[(*ee.second)])
@@ -54,40 +52,49 @@ namespace galileo
 
                             auto surface_data = (*problem_data.contact_constraint_problem_data.environment_surfaces)[surface];
 
-                            Eigen::MatrixXd A = surface_data.A;
-                            Eigen::VectorXd b = surface_data.b;
-                            Eigen::VectorXd lower_bound_region_constraint = Eigen::VectorXd::Constant(b.rows(), -std::numeric_limits<double>::infinity());
+                            //Get surface data, Copy into symbolic Casadi Expr.
+                            int n_constraints = surface_data.A.rows();
+                            casadi::SX symbolic_A = casadi::SX(n_constraints, 2);
+                            pinocchio::casadi::copy(surface_data.A, symbolic_A);
 
-                            double height = surface_data.origin_z_offset;
 
-                            //@todo (akshay) : change this to data on num_DOF instead.
+                            casadi::SX symbolic_b = casadi::SX(n_constraints, 1);
+                            pinocchio::casadi::copy(surface_data.b, symbolic_b);
 
-                            // auto foot_pos = casadi::SX::sym("foot_pos", 6);
+                            casadi::SX symbolic_surface_translation(3,1); 
+                            pinocchio::casadi::copy(surface_data.surface_transform.translation(), symbolic_surface_translation);
+
+                            casadi::SX symbolic_surface_rotation(3,3);
+                            pinocchio::casadi::copy(surface_data.surface_transform.rotation(), symbolic_surface_rotation);
+
+                            // Defined Bounds
+                            casadi::SX lower_bound = casadi::SX(n_constraints, 1);
+                            pinocchio::casadi::copy(
+                                Eigen::VectorXd::Constant(n_constraints, -std::numeric_limits<double>::infinity()), 
+                                lower_bound);
+
+                            casadi::SX upper_bound = casadi::SX(n_constraints, 1);
+                            pinocchio::casadi::copy(
+                                Eigen::VectorXd::Constant(n_constraints, -std::numeric_limits<double>::infinity()), 
+                                upper_bound);
+
+
+                            // Get foot position in global frame
                             pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.first];
-
                             auto foot_pos = frame_omf_data.translation();
+                            casadi::SX c_foot_pos_in_world = casadi::SX::sym("foot_pos", 3);
+                            pinocchio::casadi::copy(foot_pos, c_foot_pos_in_world);
 
-                            casadi::SX cfootpos = casadi::SX::sym("foot_pos", 3);
-                            pinocchio::casadi::copy(foot_pos, cfootpos);
+                            // Get foot position in surface frame
+                            auto foot_pos_offset =  (c_foot_pos_in_world - symbolic_surface_translation);
+                            auto foot_pos_in_surface = casadi::SX::mtimes(symbolic_surface_rotation, foot_pos_offset); 
 
-                            casadi::SX symbolic_A = casadi::SX(casadi::Sparsity::dense(A.rows(), 1));
+                            casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_A, foot_pos_in_surface(casadi::Slice(1, 2))) - symbolic_b;
 
-                            pinocchio::casadi::copy(A, symbolic_A);
-                            casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_A, cfootpos(casadi::Slice(1, 2)));
+                            G_vec.push_back( evaluated_vector );
 
-                            casadi::SX symbolic_b = casadi::SX(b.rows(), 1);
-                            casadi::SX symbolic_lower_bound_region_constraint = casadi::SX(lower_bound_region_constraint.rows(), 1);
-                            pinocchio::casadi::copy(b, symbolic_b);
-                            pinocchio::casadi::copy(lower_bound_region_constraint, symbolic_lower_bound_region_constraint);
-                            casadi::SX symbolic_height = height;
-                            casadi::SX upper_bound = casadi::SX::vertcat({symbolic_b, symbolic_height});
-                            casadi::SX lower_bound = casadi::SX::vertcat({symbolic_lower_bound_region_constraint, symbolic_height});
-
-                            G_vec.push_back(casadi::SX::vertcat({evaluated_vector, cfootpos(0)}));
-                            lower_bound_vec.push_back(lower_bound);
-                            upper_bound_vec.push_back(upper_bound);
-
-                            sx_foot_placement.push_back(cfootpos);
+                            lower_bound_vec.push_back( lower_bound );
+                            upper_bound_vec.push_back( upper_bound );
                         }
                     }
 

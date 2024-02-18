@@ -17,10 +17,9 @@ namespace galileo
             struct SurfaceData
             {
                 /**
-                 * @brief Assume it is Z aligned, so, all we need is the height.
-                 *
+                 * @brief The transform of the surface in the global frame.
                  */
-                double origin_z_offset;
+                Eigen::Transform<double, 3, Eigen::Affine> surface_transform;
 
                 /**
                  * @brief The A and b values defining the surface 2d polytope in the ground frame.
@@ -41,11 +40,20 @@ namespace galileo
                 Eigen::Vector2d polytope_local_chebyshev_center;
 
                 /**
-                 * @brief Get a "rotation" matrix R such that R * unit_surface_normal_in_global_frame = z_hat
+                 * @brief Get a "rotation" matrix R such that R * z_hat = unit_surface_normal_in_global_frame
                  */
-                Eigen::Matrix<double, 3, 3> rotation()
+                Eigen::Matrix<double, 3, 3> Rotation() const
                 {
-                    return Eigen::Matrix<double, 3, 3>::Identity();
+                    return surface_transform.rotation();
+                }
+                
+                /**
+                 * @brief Get the Inverse of the translation; used to transform points from the global frame to the surface frame.
+                 * @param world_point The point to be transformed.
+                 */
+                Eigen::VectorXd WorldToSurface(Eigen::VectorXd world_point) const
+                {
+                    return Rotation().transpose() * (world_point - surface_transform.translation());
                 }
             };
 
@@ -159,6 +167,14 @@ namespace galileo
                  * @return std::vector<SurfaceID> The IDs of the surfaces underneath the end effector.
                  */
                 std::vector<SurfaceID> getSurfacesUnder(const Eigen::Vector2d &ee_pos) const;
+
+                /**
+                 * @brief Get the surface data from the ID.
+                 * 
+                 * @param ID The ID of the surface.
+                 * @return SurfaceData The surface data of the surface.
+                 */
+                SurfaceData getSurfaceFromID(const SurfaceID ID) const;
 
                 /**
                  * @brief Get the surface data from the IDs.

@@ -10,7 +10,7 @@ namespace galileo
             SurfaceData createInfiniteGround()
             {
                 SurfaceData infinite_ground;
-                infinite_ground.origin_z_offset = 0;
+                infinite_ground.surface_transform = Eigen::Transform<double, 3, Eigen::Affine>::Identity();
                 infinite_ground.A = {0, 0};
 
                 infinite_ground.b = Eigen::VectorXd::Zero(1);
@@ -26,8 +26,9 @@ namespace galileo
             template <class T>
             void pointViolation(const SurfaceData &region, const Eigen::Matrix<T, 3, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation, Eigen::Matrix<T, 1, 1> &eq_violation)
             {
-                ineq_violation = region.A * point.head(2) - region.b;
-                eq_violation[0] = point.tail(1)[0] - region.origin_z_offset;
+                auto point_in_surface = region.WorldToSurface(point);
+                ineq_violation = region.A * point_in_surface.head(2) - region.b;
+                eq_violation = point_in_surface.tail(1);
             }
 
             bool isInRegion(const SurfaceData &region, const Eigen::Vector2d &point)
@@ -55,8 +56,8 @@ namespace galileo
 
                 Eigen::Vector3d c_center;
                 c_center.head(2) = surface_data.polytope_local_chebyshev_center;
-                c_center.tail(1)[0] = surface_data.origin_z_offset;
-                return c_center;
+                c_center.tail(1)[0] = 0;
+                return surface_data.surface_transform * c_center;
             }
 
             // Eigen::VectorXd CalculateCenter(const Eigen::MatrixXd &A, const Eigen::VectorXd &b)
@@ -92,13 +93,17 @@ namespace galileo
                 return surface_indeces;
             }
 
-            std::vector<SurfaceData> EnvironmentSurfaces::getSurfacesFromIDs(const std::vector<int> indices) const
+            SurfaceData EnvironmentSurfaces::getSurfaceFromID(const SurfaceID ID) const
             {
+                return (*this)[ID];
+            }
 
+            std::vector<SurfaceData> EnvironmentSurfaces::getSurfacesFromIDs(const std::vector<int> IDs) const
+            {
                 std::vector<SurfaceData> surfaces;
-                for (std::size_t i = 0; i < indices.size(); i++)
+                for (auto i : IDs)
                 {
-                    surfaces.push_back((*this)[indices[i]]);
+                    surfaces.push_back(getSurfaceFromID(i));
                 }
                 return surfaces;
             }
