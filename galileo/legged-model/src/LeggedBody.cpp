@@ -13,7 +13,7 @@ namespace galileo
             {
                 ee_name_vect[i] = end_effector_names[i];
             }
-            pinocchio::urdf::buildModel(location, model);
+            pinocchio::urdf::buildModel(location, pinocchio::JointModelFreeFlyer(), model);
             data = opt::Data(model);
             cmodel = model.cast<opt::ADScalar>();
             cdata = opt::ADData(cmodel);

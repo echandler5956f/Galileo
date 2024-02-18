@@ -388,19 +388,14 @@ namespace galileo
                     tuple_size_t seg_range = segment_times_ranges[i];
                     casadi_int start_idx = casadi_int(std::get<0>(seg_range));
                     casadi_int end_idx = casadi_int(std::get<1>(seg_range));
-                    std::cout << "Start idx: " << start_idx << " End idx: " << end_idx << std::endl;
-                    std::cout << "State result rows: " << dm_state_result.size1() << " State result cols: " << dm_state_result.size2() << std::endl;
 
                     std::vector<double> con_eval = con_data->G.map(end_idx - start_idx)(casadi::DMVector{
                         dm_state_result(casadi::Slice(0, dm_state_result.rows()), casadi::Slice(start_idx, end_idx)), 
                         dm_input_result(casadi::Slice(0, dm_input_result.rows()), casadi::Slice(start_idx, end_idx))}).at(0).get_elements();
-                    std::cout << "con_eval: " << con_eval.size() << std::endl;
                     std::vector<double> con_lb = con_data->lower_bound.map(end_idx - start_idx)(casadi::DMVector{
                         dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0).get_elements();
-                    std::cout << "con_lb: " << con_lb.size() << std::endl;
                     std::vector<double> con_ub = con_data->upper_bound.map(end_idx - start_idx)(casadi::DMVector{
                         dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0).get_elements();
-                    std::cout << "con_ub: " << con_ub.size() << std::endl;
                     Eigen::VectorXd eval = Eigen::Map<Eigen::VectorXd>(con_eval.data(), con_eval.size(), 1);
                     Eigen::VectorXd lb = Eigen::Map<Eigen::VectorXd>(con_lb.data(), con_lb.size(), 1);
                     Eigen::VectorXd ub = Eigen::Map<Eigen::VectorXd>(con_ub.data(), con_ub.size(), 1);

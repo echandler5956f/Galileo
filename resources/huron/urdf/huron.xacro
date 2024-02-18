@@ -17,10 +17,21 @@
         <parent link="world"/>
         <child link="base_link"/>
     </joint> -->
-    <link name="base_link"></link>
+    <link name="world"></link>
+
+    <!-- floating link -->
+    <!-- <xacro:huron_floating parent="world" child="base"/> -->
+
+    <joint name="world_fixed" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="world"/>
+        <child link="base"/>
+    </joint>
+    
+    <link name="base"></link>
     <joint name="base_fixed" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 0"/>
-        <parent link="base_link"/>
+        <parent link="base"/>
         <child link="base_footprint"/>
     </joint>
     <!-- base_link -->

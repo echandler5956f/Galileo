@@ -1,2 +1,2 @@
-urdf location: ../../resources/huron/urdf/huron_cheat.urdf
+urdf location: ../resources/huron/urdf/huron.urdf
 q0: 0, 0, 1.0627, 0, 0, 0, 1, 0, 0, -0.3207, 0.7572, -0.4365, 0, 0, 0, -0.3207, 0.7572, -0.4365, 0

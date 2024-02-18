@@ -21,7 +21,7 @@ builder = RobotWrapper.BuildFromURDF
 robot = builder(
     location,
     ["resources"],
-    None,
+    pin.JointModelFreeFlyer(),
 )
 
 robot.q0 = q0
