@@ -93,13 +93,17 @@ namespace galileo
                 return surface_indeces;
             }
 
-            std::vector<SurfaceData> EnvironmentSurfaces::getSurfacesFromIDs(const std::vector<int> indices) const
+            SurfaceData EnvironmentSurfaces::getSurfaceFromID(const SurfaceID ID) const
             {
+                return (*this)[ID];
+            }
 
+            std::vector<SurfaceData> EnvironmentSurfaces::getSurfacesFromIDs(const std::vector<int> IDs) const
+            {
                 std::vector<SurfaceData> surfaces;
-                for (std::size_t i = 0; i < indices.size(); i++)
+                for (auto i : IDs)
                 {
-                    surfaces.push_back((*this)[indices[i]]);
+                    surfaces.push_back(getSurfaceFromID(i));
                 }
                 return surfaces;
             }

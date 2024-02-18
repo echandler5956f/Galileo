@@ -169,6 +169,14 @@ namespace galileo
                 std::vector<SurfaceID> getSurfacesUnder(const Eigen::Vector2d &ee_pos) const;
 
                 /**
+                 * @brief Get the surface data from the ID.
+                 * 
+                 * @param ID The ID of the surface.
+                 * @return SurfaceData The surface data of the surface.
+                 */
+                SurfaceData getSurfaceFromID(const SurfaceID ID) const;
+
+                /**
                  * @brief Get the surface data from the IDs.
                  *
                  * @param IDs The IDs of the surfaces.
