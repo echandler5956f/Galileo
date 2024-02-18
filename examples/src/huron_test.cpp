@@ -148,6 +148,7 @@ int main(int argc, char **argv)
         for (auto c : con)
         {
             std::cout << c.name << std::endl;
+            std::cout << c.evaluation_and_bounds << std::endl;
         }
     }
 

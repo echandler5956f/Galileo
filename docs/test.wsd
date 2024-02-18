@@ -1,0 +1,55 @@
+@startuml
+
+class GeneralProblemData {
+    Fint : casadi::Function
+    Fdif : casadi::Function
+    F : casadi::Function
+    L : casadi::Function
+    Phi : casadi::Function
+}
+
+abstract BaseProblemData {
+}
+
+class LeggedProblemData {
+}
+
+class FrictionConeProblemData {
+}
+
+class ContactProblemData {
+}
+
+BaseProblemData <|-- LeggedProblemData
+BaseProblemData *-- GeneralProblemData
+LeggedProblemData *-- FrictionConeProblemData
+LeggedProblemData *-- ContactProblemData
+
+class ConstraintData {
+}
+
+abstract ConstraintBuilder< <ProblemData> > {
+    BuildConstraints(ProblemData problem_data, ConstraintData &constraint_data)
+    virtual CreateFunction(ProblemData problem_data)
+}
+
+class FrictionConeConstraintBuilder< <ProblemData> > {
+    BuildConstraints(ProblemData problem_data)
+    CreateFunction(ProblemData problem_data)
+}
+
+class ContactConstraintBuilder< <ProblemData> > {
+    BuildConstraints(ProblemData problem_data)
+    CreateFunction(ProblemData problem_data)
+}
+
+ConstraintBuilder <|-- FrictionConeConstraintBuilder
+ConstraintBuilder <|-- ContactConstraintBuilder
+
+ConstraintBuilder *--  ConstraintData
+
+class TrajectoryOpt < <ProblemData, PhaseSegment> > {
+    TrajectoryOpt(ProblemData *problem_data, vector<ConstraintBuilder> constraint_builders)
+}
+
+@enduml
