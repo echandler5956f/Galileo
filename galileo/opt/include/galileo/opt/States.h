@@ -15,6 +15,10 @@ namespace galileo
         class States
         {
         public:
+            /**
+             * @brief Destroy the States object.
+             * 
+             */
             virtual ~States() = default;
 
             /**

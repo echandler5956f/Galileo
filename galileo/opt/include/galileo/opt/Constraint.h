@@ -62,24 +62,11 @@ namespace galileo
 
         /**
          * @brief Results that describe a "built" constraint.
-         * This contains the constraint Function, Bounds, etcetera.
+         * This contains the constraint Function, Bounds, etc.
          *
          */
         struct ConstraintData
         {
-
-            /**
-             * @brief If global is true, use a map to apply the constraints across all knot points AND collocation points, and do not check flags.
-             *
-             */
-            bool global;
-
-            /**
-             * @brief If global is false, apply the constraints at these knot points (NOT collocation points) indices.
-             *
-             */
-            Eigen::VectorXi apply_at;
-
             /**
              * @brief Upper bounds of the constraint function.
              *
@@ -140,13 +127,13 @@ namespace galileo
         {
         public:
             /**
-             * @brief Construct a new Constraint Builder object
+             * @brief Construct a new Constraint Builder object.
              *
              */
             ConstraintBuilder() {}
 
             /**
-             * @brief Destroy the Constraint Builder object
+             * @brief Destroy the Constraint Builder object.
              *
              */
             virtual ~ConstraintBuilder() = default;
@@ -155,7 +142,7 @@ namespace galileo
              * @brief Build constraint data for a given problem data.
              *
              * @param problem_data Problem specific data
-             * @param phase_index index to build constraint data for
+             * @param phase_index Index to build constraint data for
              * @param constraint_data Constraint specific data
              */
             virtual void buildConstraint(const ProblemData &problem_data, int phase_index, ConstraintData &constraint_data)
@@ -165,20 +152,20 @@ namespace galileo
             }
 
             /**
-             * @brief Generate bounds for a vector of points
+             * @brief Generate bounds for a vector of points.
              *
              * @param problem_data Problem specific data
-             * @param phase_index index to build constraint data for
+             * @param phase_index Index to build constraint data for
              * @param upper_bound Upper bound function to return
              * @param lower_bound Lower bound function to return
              */
             virtual void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
 
             /**
-             * @brief Generate a function to evaluate each point
+             * @brief Generate a function to evaluate each point.
              *
              * @param problem_data Problem specific data
-             * @param phase_index index to build constraint data for
+             * @param phase_index Index to build constraint data for
              * @param G The constraint function to return
              */
             virtual void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const = 0;
