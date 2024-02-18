@@ -10,6 +10,10 @@ namespace galileo
         namespace constraints
         {
 
+            /**
+             * @brief A struct for holding the data required to build the Friction Cone Constraint.
+             *
+             */
             struct FrictionConeProblemData
             {
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;

@@ -95,6 +95,11 @@ namespace galileo
                  */
                 void MakeValid(ContactModeValidity &validity);
 
+                /**
+                 * @brief Returns the number of end effectors in contact.
+                 * 
+                 * @return int The number of end effectors in contact.
+                 */
                 int numEndEffectorsInContact() const;
             };
 
@@ -118,8 +123,17 @@ namespace galileo
                  */
                 ContactSequence(int num_end_effectors) : PhaseSequence<ContactMode>(), num_end_effectors_(num_end_effectors) {}
 
+                /**
+                 * @brief Destroy the Contact Sequence object.
+                 *
+                 */
                 ~ContactSequence() {}
 
+                /**
+                 * @brief Gets the number of end effectors in the contact sequence.
+                 * 
+                 * @return const int& The number of end effectors in the contact sequence.
+                 */
                 const int &num_end_effectors() { return num_end_effectors_; }
 
                 /**
@@ -131,6 +145,12 @@ namespace galileo
                  */
                 int addPhase(const ContactMode &mode, int knot_points, double dt);
 
+                /**
+                 * @brief Gets the number of end effectors in contact at a given phase.
+                 * 
+                 * @param phase_index The index of the phase to get the number of end effectors in contact for.
+                 * @return int The number of end effectors in contact at the given phase.
+                 */
                 int numEndEffectorsInContactAtPhase(int phase_index) const;
 
             private:

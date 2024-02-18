@@ -17,9 +17,11 @@ namespace galileo
         {
         public:
             /**
-             * @brief Construct a new Legged Robot State object
+             * @brief Construct a new Legged Robot State object.
              *
-             * @param nq_nv The number of position and velocity variables.
+             * @param nq_ The number of position variables.
+             * @param nv_ The number of velocity variables.
+             * @param ees The end effectors.
              */
             LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees);
 

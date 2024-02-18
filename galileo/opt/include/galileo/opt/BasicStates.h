@@ -16,7 +16,8 @@ namespace galileo
             /**
              * @brief Construct a new Test State object
              *
-             * @param args The number of position and velocity variables.
+             * @param nx Number of state variables
+             * @param nu Number of control variables
              */
             BasicStates(int nx, int nu)
             {

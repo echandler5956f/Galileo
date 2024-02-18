@@ -31,6 +31,10 @@ namespace galileo
              */
             PhaseSequence() {}
 
+            /**
+             * @brief Destroy the Phase Sequence object.
+             *
+             */
             ~PhaseSequence() = default;
 
             /**
@@ -70,7 +74,7 @@ namespace galileo
              *
              * @param t The time for which to retrieve the phase index.
              * @param error_status A reference to a PHASE_SEQUENCE_ERROR enum that will be updated with the error status.
-             * @return The phase index at the given time.
+             * @return The phase index at the specified time.
              */
             int getPhaseIndexAtTime(double t, PHASE_SEQUENCE_ERROR &error_status) const;
 
@@ -108,6 +112,10 @@ namespace galileo
              * @brief Get the time at a given phase index.
              *
              * This function retrieves the time at a specified phase index.
+             *
+             * @param phase_idx The index of the phase.
+             * @param t [out] The time at the specified phase index.
+             * @param error_status [out] The error status of the operation.
              */
             void getTimeAtPhase(int phase_idx, double &t, PHASE_SEQUENCE_ERROR &error_status) const;
 
@@ -129,10 +137,25 @@ namespace galileo
              */
             int getNumPhases() const { return phase_sequence_.size(); }
 
+            /**
+             * @brief Get the time step used for the Phase sequence.
+             *
+             * @return const double& The time step.
+             */
             const double &getDT() { return dt_; }
 
+            /**
+             * @brief Get the total number of knots in the Phase sequence.
+             *
+             * @return const int& The total number of knots.
+             */
             const int &getTotalKnots() { return total_knots_; }
 
+            /**
+             * @brief Get the Phase sequence.
+             *
+             * @return const std::vector<Phase>& The Phase sequence.
+             */
             const std::vector<Phase> &getPhaseSequence() { return phase_sequence_; }
 
             /**
@@ -164,8 +187,17 @@ namespace galileo
              */
             struct GlobalPhaseOffset
             {
-                double t0_offset; /**< Time offset */
-                int knot0_offset; /**< Knot offset */
+                /**
+                 * @brief Time offset.
+                 *
+                 */
+                double t0_offset;
+
+                /**
+                 * @brief Knot offset.
+                 *
+                 */
+                int knot0_offset;
             };
 
             /**
@@ -187,7 +219,7 @@ namespace galileo
         };
 
         template <typename MODE_T>
-        int PhaseSequence<MODE_T>::commonAddPhase(const MODE_T &mode,  int knot_points, double dt)
+        int PhaseSequence<MODE_T>::commonAddPhase(const MODE_T &mode, int knot_points, double dt)
         {
             Phase new_phase;
             GlobalPhaseOffset new_phase_offset;
