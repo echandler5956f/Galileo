@@ -145,8 +145,12 @@ int main(int argc, char **argv)
     {
         for (auto c : con)
         {
-            std::cout << c.name << std::endl;
-            std::cout << c.evaluation_and_bounds << std::endl;
+            std::cout << c.name << ": " << std::endl;
+            std::cout << c.evaluation_and_bounds.row(0) << std::endl;
+            std::cout << c.name << " lower bound: " << std::endl;
+            std::cout << c.evaluation_and_bounds.row(1) << std::endl;
+            std::cout << c.name << " upper bound: " << std::endl;
+            std::cout << c.evaluation_and_bounds.row(2) << std::endl;
         }
     }
 

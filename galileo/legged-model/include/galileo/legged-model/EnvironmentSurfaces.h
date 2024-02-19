@@ -19,7 +19,7 @@ namespace galileo
                 /**
                  * @brief The transform of the surface in the global frame.
                  */
-                Eigen::Transform<double, 3, Eigen::Affine> surface_transform;
+                Eigen::Transform<double, 3, Eigen::Affine> surface_transform  = Eigen::Transform<double, 3, Eigen::Affine>::Identity();
 
                 /**
                  * @brief The A and b values defining the surface 2d polytope in the ground frame.
