@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // robot.contact_sequence->addPhase(second_mode, 20, 0.1);
+    robot.contact_sequence->addPhase(second_mode, 20, 0.1);
 
     robot.fillModeDynamics();
 
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0.2, q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -90,8 +90,6 @@ int main(int argc, char **argv)
     casadi::SX rot_c = casadi::SX::mtimes(crot.T(), target_rot);
 
     casadi::SX target_error_casadi = vertcat(casadi::SXVector{cpos - target_pos, casadi::SX::inv_skew(rot_c - rot_c.T()) / 2});
-
-    std::cout << "Target error: " << target_error_casadi << std::endl;
 
     casadi::SX X_ref = casadi::SX(X0);
     X_ref(casadi::Slice(si->nh + si->ndh, si->nh + si->ndh + 3)) = target_pos;
@@ -138,7 +136,7 @@ int main(int argc, char **argv)
     traj.initFiniteElements(1, X0);
     casadi::MXVector sol = traj.optimize();
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0, 1.);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0, 1.1);
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
     auto cons = traj.getConstraintViolations(new_sol);
