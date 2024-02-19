@@ -7,7 +7,7 @@ option(BUILD_SIMPLE_TESTS "Build the simple test examples" OFF)
 
 add_definitions(-D_GLIBCXX_PARALLEL)
 
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -lgomp")
+set(CMAKE_CXX_FLAGS "-g -O3 -fopenmp -lgomp")
 
 # Find the OpenMP package
 find_package(OpenMP)

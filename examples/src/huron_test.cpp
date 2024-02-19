@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         }
     }
 
-    robot.contact_sequence->addPhase(second_mode, 20, 0.1);
+    robot.contact_sequence->addPhase(second_mode, 20, 0.25);
 
     robot.fillModeDynamics();
 
