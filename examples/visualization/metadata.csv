@@ -1,2 +1,2 @@
-urdf location: ../resources/huron/urdf/huron.urdf
-q0: 0, 0, 1.0627, 0, 0, 0, 1, 0, 0, -0.3207, 0.7572, -0.4365, 0, 0, 0, -0.3207, 0.7572, -0.4365, 0
+urdf location: ../resources/atlas/atlas_minimal_contact.urdf
+q0: 0, 0, 0.95, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

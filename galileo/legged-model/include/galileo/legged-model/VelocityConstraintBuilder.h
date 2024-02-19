@@ -313,6 +313,7 @@ namespace galileo
                 constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{vertcat(G_vec)});
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{vertcat(upper_bound_vec)});
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.velocity_constraint_problem_data.t}, casadi::SXVector{vertcat(lower_bound_vec)});
+                std::cout << "G_Velocity: " << constraint_data.G << std::endl;
             }
 
         }
