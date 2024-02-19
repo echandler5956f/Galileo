@@ -47,7 +47,13 @@ int main(int argc, char **argv)
         }
     }
 
-    robot.contact_sequence->addPhase(second_mode, 20, 0.25);
+    robot.contact_sequence->addPhase(second_mode, 10, 0.25);
+
+    contact::ContactMode final_mode;
+    final_mode.combination_definition = robot.getContactCombination(0b11);
+    final_mode.contact_surfaces = {0, 0};
+
+    robot.contact_sequence->addPhase(final_mode, 20, 0.25);
 
     robot.fillModeDynamics();
 
@@ -136,7 +142,8 @@ int main(int argc, char **argv)
     traj.initFiniteElements(1, X0);
     casadi::MXVector sol = traj.optimize();
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0, 1.1);
+    std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0., robot.contact_sequence->getDT());
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
     auto cons = traj.getConstraintViolations(new_sol);
@@ -146,11 +153,8 @@ int main(int argc, char **argv)
         for (auto c : con)
         {
             std::cout << c.name << ": " << std::endl;
-            std::cout << c.evaluation_and_bounds.row(0) << std::endl;
-            std::cout << c.name << " lower bound: " << std::endl;
-            std::cout << c.evaluation_and_bounds.row(1) << std::endl;
-            std::cout << c.name << " upper bound: " << std::endl;
-            std::cout << c.evaluation_and_bounds.row(2) << std::endl;
+            auto evaled = c.evaluation_and_bounds.transpose();
+            std::cout << evaled << std::endl;
         }
     }
 

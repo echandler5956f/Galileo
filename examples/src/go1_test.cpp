@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     robot.contact_sequence->addPhase(initial_mode, 20, 1.);
 
     contact::ContactMode second_mode;
-    second_mode.combination_definition = robot.getContactCombination(0b1100);
+    second_mode.combination_definition = robot.getContactCombination(0b1101);
     second_mode.contact_surfaces.resize(second_mode.combination_definition.size());
 
     // Set the surfaces for the end effectors that are in contact
@@ -47,15 +47,14 @@ int main(int argc, char **argv)
         }
     }
 
-    // robot.contact_sequence->addPhase(second_mode, 20, 0.2);
+    robot.contact_sequence->addPhase(second_mode, 20, 0.25);
 
     contact::ContactMode final_mode;
     final_mode.combination_definition = robot.getContactCombination(0b1111);
     final_mode.contact_surfaces = {0, 0, 0, 0};
 
-    // robot.contact_sequence->addPhase(final_mode, 20, 0.5);
+    robot.contact_sequence->addPhase(final_mode, 20, 0.25);
 
-    // robot.contact_sequence->addPhase(second_mode, 20, 0.1);
     std::cout << "Filling dynamics" << std::endl;
     robot.fillModeDynamics();
 
@@ -66,7 +65,7 @@ int main(int argc, char **argv)
     Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 200., 200., 200.,                         /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., .1, .1, .1,                         /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
@@ -86,7 +85,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0.05, q0[1] + 0., q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -112,10 +111,10 @@ int main(int argc, char **argv)
     pinocchio::computeTotalMass(robot.model, robot.data);
 
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
-    U_ref(2) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
-    U_ref(5) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
-    U_ref(8) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
-    U_ref(11) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
+    // U_ref(2) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
+    // U_ref(5) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
+    // U_ref(8) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
+    // U_ref(11) = 9.81 * robot.data.mass[0] / robot.num_end_effectors_;
     casadi::SX u_error = robot.cu - U_ref;
 
     casadi::Function L("L",
@@ -149,48 +148,28 @@ int main(int argc, char **argv)
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
                                                                                                            std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
 
-    // std::vector<opt::ConstraintData> constraint_datas;
-    // for (auto builder : builders)
-    // {
-    //     opt::ConstraintData some_data;
-    //     builder->buildConstraint(*legged_problem_data, 0, some_data);
-    //     constraint_datas.push_back(some_data);
-    // }
-
     TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
 
     traj.initFiniteElements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., 1.);
+    std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0., robot.contact_sequence->getDT());
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
 
-    // opt::ConstraintData fri;
-    // friction_cone_constraint_builder->buildConstraint(*legged_problem_data, 0, fri);
-    // auto force_function = fri.G;
-    // opt::ConstraintData vel;
-    // velocity_constraint_builder->buildConstraint(*legged_problem_data, 0, vel);
-    // auto vel_function = vel.G;
+     auto cons = traj.getConstraintViolations(new_sol);
 
-    // auto solu = sol[1];
-    // auto dm_u = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(0, solu.columns())));
-    // std::cout << dm_u.get_elements() << std::endl;
-
-    // for (int k = 0; k < new_sol.cols(); ++k)
-    // {
-    //     casadi::SX tmp_x(si->nx);
-    //     casadi::SX tmp_u = casadi::SX::zeros(si->nu, 1);
-    //     pinocchio::casadi::copy(new_sol.block(0, k, si->nx, 1), tmp_x);
-    //     std::cout << "State: " << tmp_x << std::endl;
-    //     casadi::SX tmp_v = vel_function(casadi::SXVector{tmp_x, tmp_u}).at(0);
-    //     std::cout << "Velocity: " << tmp_v << std::endl;
-    //     casadi::SX tmp_f = force_function(casadi::SXVector{tmp_x, dm_u(casadi::Slice(0, si->nu), k)}).at(0);
-    //     std::cout << "Lower bound force: " << fri.lower_bound(casadi::DMVector{0}) << " Force: " << tmp_f << " Upper bound force: " << fri.upper_bound(casadi::DMVector{0}) << std::endl;
-    //     auto dm_f = si->get_f<casadi::DM>(dm_u(casadi::Slice(0, si->nu), k), robot.cmodel.getFrameId("l_foot_v_ft_link", pinocchio::BODY));
-    //     std::cout << "Actual force: " << dm_f << std::endl;
-    // }
+    for (auto con : cons)
+    {
+        for (auto c : con)
+        {
+            std::cout << c.name << ": " << std::endl;
+            auto evaled = c.evaluation_and_bounds.transpose();
+            std::cout << evaled << std::endl;
+        }
+    }
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
 
