@@ -170,6 +170,17 @@ namespace galileo
         template const casadi::MX LeggedRobotStates::get_tau<casadi::MX>(const casadi::MX &u, pinocchio::FrameIndex ee_id);
 
         template <typename Sym>
+        const Sym LeggedRobotStates::get_wrench(const Sym &u, pinocchio::FrameIndex ee_id)
+        {
+            casadi_assert(u.size1() == this->nu, "Invalid input size");
+            return u(casadi::Slice(std::get<0>(this->frame_id_to_index_range[ee_id]), std::get<1>(this->frame_id_to_index_range[ee_id])));
+        }
+
+        template const casadi::DM LeggedRobotStates::get_wrench<casadi::DM>(const casadi::DM &u, pinocchio::FrameIndex ee_id);
+        template const casadi::SX LeggedRobotStates::get_wrench<casadi::SX>(const casadi::SX &u, pinocchio::FrameIndex ee_id);
+        template const casadi::MX LeggedRobotStates::get_wrench<casadi::MX>(const casadi::MX &u, pinocchio::FrameIndex ee_id);
+
+        template <typename Sym>
         const Sym LeggedRobotStates::get_all_wrenches(const Sym &u)
         {
             casadi_assert(u.size1() == this->nu, "Invalid input size");

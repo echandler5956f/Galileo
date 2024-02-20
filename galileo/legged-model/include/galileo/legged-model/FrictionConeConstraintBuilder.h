@@ -131,19 +131,43 @@ namespace galileo
             {
                 uint num_constraints = getNumConstraintPerEEPerState(problem_data);
 
-                Eigen::VectorXd upper_bound_vect = Eigen::VectorXd::Constant(problem_data.friction_cone_problem_data.contact_sequence->numEndEffectorsInContactAtPhase(phase_index), casadi::inf);
-                Eigen::VectorXd lower_bound_vect = Eigen::VectorXd::Constant(problem_data.friction_cone_problem_data.contact_sequence->numEndEffectorsInContactAtPhase(phase_index), 0);
+                const contact::ContactMode mode = getModeAtPhase(problem_data, phase_index);
 
-                // Convert Eigen to casadi (see traj_test example)
-                casadi::SX upper_bound_casadi = casadi::SX(casadi::Sparsity::dense(upper_bound_vect.rows(), 1));
-                pinocchio::casadi::copy(upper_bound_vect, upper_bound_casadi);
+                casadi::SXVector lower_bound_vec;
+                casadi::SXVector upper_bound_vec;
 
-                casadi::SX lower_bound_casadi = casadi::SX(casadi::Sparsity::dense(lower_bound_vect.rows(), 1));
-                pinocchio::casadi::copy(lower_bound_vect, lower_bound_casadi);
+                for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
+                {
+                    auto it = mode.combination_definition.find(end_effector.first);
+                    bool dof6 = end_effector.second->is_6d;
+                    /* If the end effector is not in contact*/
+                    if (it != mode.combination_definition.end() && !it->second)
+                    {
+                        std::cout << "End Effector " << end_effector.first << " is not in contact" << std::endl;
+                        if (dof6)
+                        {
+                            lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6)}));
+                            upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6)}));
+                        }
+                        else
+                        {
+                            lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3)}));
+                            upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3)}));
+                        }
+                    }
+                    /* If the end effector is in contact*/
+                    else
+                    {
+                        std::cout << "End Effector " << end_effector.first << " is in contact" << std::endl;
+                        lower_bound_vec.push_back(casadi::SX::zeros(1));
+                        upper_bound_vec.push_back(casadi::inf);
+                    }
+                }
 
-                upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{upper_bound_casadi});
-                lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{lower_bound_casadi});
-
+                lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{vertcat(lower_bound_vec)});
+                upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{vertcat(upper_bound_vec)});
+                std::cout << "Friction Cone Lower Bound at Phase " << phase_index << ": " << lower_bound << std::endl;
+                std::cout << "Friction Cone Upper Bound at Phase " << phase_index << ": " << upper_bound << std::endl;
             }
 
             template <class ProblemData>
@@ -154,7 +178,7 @@ namespace galileo
                 // Possibly, this would mean creating a map.
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
                 casadi::SXVector G_vec;
-                casadi::SX u_in = casadi::SX::sym( "u", problem_data.friction_cone_problem_data.states->nu);
+                casadi::SX u_in = casadi::SX::sym("u", problem_data.friction_cone_problem_data.states->nu);
                 for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
                     casadi::SX G_out;
@@ -165,7 +189,7 @@ namespace galileo
                     }
                 }
                 G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, u_in}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
-                std::cout << "G_FrictionCone: " << G << std::endl;
+                std::cout << "G_FrictionCone at Phase " << phase_index << ": " << G << std::endl;
             }
 
             template <class ProblemData>
@@ -197,25 +221,20 @@ namespace galileo
                 {
                     // SET ALL ZEROS CASADI FUNCTION
                     //  Function = Eigen::MatrixXd::Zero(num_contraint_per_ee_per_point, 3) * GRF
-                    G_out = casadi::SX(0);
+                    G_out = problem_data.friction_cone_problem_data.states->get_wrench(u_in, EndEffectorID);
                     return;
                 }
-
-                auto u_ee = problem_data.friction_cone_problem_data.states->get_f(u_in, EndEffectorID);
+                casadi::SX u_ee = problem_data.friction_cone_problem_data.states->get_f(u_in, EndEffectorID);
 
                 Eigen::Matrix<double, 3, 3> rotation = getContactSurfaceRotationAtMode(EndEffectorID, problem_data, mode);
-
                 Eigen::MatrixXd cone_constraint_approximation = getConeConstraintApproximation(problem_data);
-
                 Eigen::MatrixXd rotated_cone_constraint = cone_constraint_approximation * rotation;
-
                 FrictionConeProblemData::ApproximationOrder approximation_order = problem_data.friction_cone_problem_data.approximation_order;
-
                 casadi::SX symbolic_rotated_cone_constraint = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
                 pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
 
                 // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
-                auto evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u_ee);
+                casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u_ee);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
                     //@todo (ethan)
