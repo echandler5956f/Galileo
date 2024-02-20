@@ -25,6 +25,7 @@ Features:
 <p align="center">
   <a href="#install">Install</a> •
   <a href="#run">Run</a> •
+  <a href="#visualize">Visualize</a> •
   <a href="#develop">Develop</a> •
   <a href="#contribute">Contribute</a> •
   <a href="#publications">Publications</a> •
@@ -160,17 +161,20 @@ from within the build directory.
 We created a `test-installs` folder with some simple scripts to test your [CasADi] + [pinocchio] install. Be sure to take a look if you are running into trouble. To test the actual library, please refer to the `examples` folder. If you have already built the repo from source, you can test it by running
 
 ```bash
-build/examples/simple_test
+build/examples/huron_test
 ```
 or
 ```bash
-build/examples/model_building_test
-```
-or
-```bash
-build/examples/traj_test
+build/examples/go1_test
 ```
 in the main repo directory.
+
+## Visualize
+
+The solutions output by Galileo can be easily visualized using our Meshcat interface, modified from [JNRH]. Please follow the install instructions in the `python` folder to acquire the appropriate packages. Then, the solutions from the `examples` folder can be visualized via
+```bash
+python3 examples/visualization/visualize_traj.py
+```
 
 ## Documentation
 
@@ -233,3 +237,4 @@ Coming soon (ICRA 2025?).
 [OpenMP]: https://www.openmp.org/
 [HSL]: https://www.hsl.rl.ac.uk/
 [ThirdParty-HSL]: https://github.com/coin-or-tools/ThirdParty-HSL
+[JNRH]: https://github.com/nmansard/jnrh2023
