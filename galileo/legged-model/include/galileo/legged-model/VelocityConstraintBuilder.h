@@ -55,7 +55,7 @@ namespace galileo
             }
 
 
-            casadi::Functiom getSigmoid(casadi::SX& t, double sigmoid_scaling)
+            casadi::Function getSigmoid(casadi::SX& t, double sigmoid_scaling)
             {
                 casadi::Function sigmoid = casadi::Function("sigmoid", casadi::SXVector{t}, casadi::SXVector{1 / (1 + exp(-sigmoid_scaling * (t - 0.5)))});
                 casadi::Function fixed_sigmoid = casadi::Function("fixed_sigmoid", casadi::SXVector{t}, 
@@ -89,6 +89,9 @@ namespace galileo
 
                 double max_following_leeway_normal = 0.5;
                 double min_following_leeway_normal = 1e-5;
+
+                // How tightly thhe bell curve trajectory is followed. The higher the value, the more tightly the trajectory is followed.
+                double sigmoid_scaling = 15.0;
             };
 
             /**
@@ -237,6 +240,8 @@ namespace galileo
                 std::cout << "liftoff_time: " << footstep_definition.liftoff_time << std::endl;
                 std::cout << "touchdown_time: " << footstep_definition.touchdown_time << std::endl;
 
+                footstep_definition.sigmoid_scaling = problem_data.velocity_constraint_problem_data.sigmoid_scaling;
+
                 return footstep_definition;
             }
 
@@ -321,7 +326,7 @@ namespace galileo
                         //  This is the "magnitude" of the offset from h_dot_desired. The actual bound is h_dot_desired - lower_admissible_error_h_normal
                         casadi::Function quadratic_error_interpolation = casadi::Function("quadratic_error_interpolation", {t}, {casadi::SX(ell_slope_normal * pow(2*t, 2) + ell_min_normal)});
 
-                        casadi::Function sigmoid = getSigmoid(t, problem_data.velocity_constraint_problem_data.velocity_constraint_problem_data.sigmoid_scaling);
+                        casadi::Function sigmoid = getSigmoid(t, problem_data.velocity_constraint_problem_data.sigmoid_scaling);
                         casadi::SX max_error_offset = desired_h1_dot(casadi::SXVector{footstep_definition.h1_window_duration/2 });
                         casadi::SX lower_admissible_error_h1_normal = max_error_offset * sigmoid(t).at(0);
                         casadi::SX lower_admissible_error_h2_normal = max_error_offset * sigmoid(1 - t).at(0);
