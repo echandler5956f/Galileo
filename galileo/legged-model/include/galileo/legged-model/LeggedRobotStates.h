@@ -173,6 +173,17 @@ namespace galileo
             const Sym get_tau(const Sym &u, pinocchio::FrameIndex ee_id);
 
             /**
+             * @brief Get the contact wrench: 6 x 1.
+             * 
+             * @tparam Sym The type of the input
+             * @param u The input
+             * @param ee_id The end effector id
+             * @return const Sym The contact wrench
+             */
+            template <class Sym>
+            const Sym get_wrench(const Sym &u, pinocchio::FrameIndex ee_id);
+
+            /**
              * @brief Get all wrenches: nF x 1.
              *
              * @tparam Sym The type of the input

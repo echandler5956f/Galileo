@@ -58,7 +58,7 @@ namespace galileo
             Uc.clear();
 
             dX_poly = LagrangePolynomial(d);
-            U_poly = LagrangePolynomial(0);
+            U_poly = LagrangePolynomial(d);
 
             for (int j = 0; j < dX_poly.d; ++j)
             {
@@ -191,8 +191,8 @@ namespace galileo
                 }
                 /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j] if the states are already Euclidean*/
                 casadi::SX x_c = Fint(casadi::SXVector{X0, dXc[j], dt_j}).at(0);
-                // casadi::SX u_c = U_poly.lagrange_interpolation(dX_poly.tau_root[j], Uc);
-                casadi::SX u_c = Uc[0];
+                casadi::SX u_c = U_poly.barycentricInterpolation(dX_poly.tau_root[j], Uc);
+                // casadi::SX u_c = Uc[0];
 
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);

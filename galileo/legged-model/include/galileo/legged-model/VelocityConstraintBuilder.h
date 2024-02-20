@@ -30,8 +30,8 @@ namespace galileo
                 // A value between 0 and 1 that determines the window of time on which the footstep has velocitty along basis n.
                 //  We consider the total spatial velocity to be some [n1 n2] * [v1; v2].
                 //  At t = h_1_window_duration, the velocity v1 is 0.  at t = 1 - h2_window_duration, the velocity v2 is 0.
-                double h1_window_duration = 0.65;
-                double h2_window_duration = 0.65;
+                double h1_window_duration = 0.5;
+                double h2_window_duration = 0.5;
 
                 // The number of standard deviations we consider in the window of the bell curve.
                 // Effectively, this defines the steepness fo the bell curve.
@@ -47,7 +47,7 @@ namespace galileo
                 casadi::Function bell_curve = casadi::Function("bell_curve", casadi::SXVector{t}, casadi::SXVector{exp(-pow((t), 2) / (2))});
                 // The bell curve mapped such that the mean is at 0.5, mu - window_sigma is at 0 and mu + window_sigma is at 1. Standard deviation is assumed to be 1
                 casadi::Function mapped_bell_curve = casadi::Function("mapped_bell_curve", {t},
-                                                                      {2 * window_sigma * bell_curve(casadi::SXVector{(t - 0.5) * (2 * window_sigma)}).at(0) / (sqrt(2 * M_PI))});
+                                                                      {2 * window_sigma * bell_curve(casadi::SXVector{(t - 0.5) * (2 * window_sigma)}).at(0) / (sqrt(2 * casadi::pi))});
                 return mapped_bell_curve;
             }
 
@@ -121,20 +121,20 @@ namespace galileo
                     h1_dot_desired = casadi::Function("h1_dot_desired", {t}, {FS_def.h_offset_P1 * mapped_bell_curve(casadi::SXVector{t / FS_def.h1_window_duration}).at(0)});
                     h2_dot_desired = casadi::Function("h2_dot_desired", {t}, {FS_def.h_offset_P2 * mapped_bell_curve(casadi::SXVector{(1 - t) / FS_def.h2_window_duration}).at(0)});
 
-                    std::cout << "h1_dot_desired: " << h1_dot_desired << std::endl;
-                    double starting_time = 0.;
-                    for (int i = 0; i < 10; i++)
-                    {
-                        std::cout << "h1_dot_desired(" << starting_time << "): " << h1_dot_desired(casadi::SXVector{starting_time}).at(0) << std::endl;
-                        starting_time += 0.1;
-                    }
-                    std::cout << "h2_dot_desired: " << h2_dot_desired << std::endl;
-                    starting_time = 0.;
-                    for (int i = 0; i < 10; i++)
-                    {
-                        std::cout << "hd_dot_desired(" << starting_time << "): " << h2_dot_desired(casadi::SXVector{starting_time}).at(0) << std::endl;
-                        starting_time += 0.1;
-                    }
+                    // std::cout << "h1_dot_desired: " << h1_dot_desired << std::endl;
+                    // double starting_time = 0.;
+                    // for (int i = 0; i < 10; i++)
+                    // {
+                    //     std::cout << "h1_dot_desired(" << starting_time << "): " << h1_dot_desired(casadi::SXVector{starting_time}).at(0) << std::endl;
+                    //     starting_time += 0.1;
+                    // }
+                    // std::cout << "h2_dot_desired: " << h2_dot_desired << std::endl;
+                    // starting_time = 0.;
+                    // for (int i = 0; i < 10; i++)
+                    // {
+                    //     std::cout << "hd_dot_desired(" << starting_time << "): " << h2_dot_desired(casadi::SXVector{starting_time}).at(0) << std::endl;
+                    //     starting_time += 0.1;
+                    // }
                 }
 
                 casadi::SX getFootstepVelocityInWorldFrame(const ProblemData &problem_data, pinocchio::FrameIndex frame_id) const
@@ -142,7 +142,7 @@ namespace galileo
                     Eigen::Matrix<galileo::opt::ADScalar, 6, 1, 0> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                                                           *(problem_data.velocity_constraint_problem_data.ad_data),
                                                                                                           frame_id,
-                                                                                                          pinocchio::WORLD)
+                                                                                                          pinocchio::LOCAL)
                                                                                   .toVector();
 
                     casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
@@ -207,20 +207,20 @@ namespace galileo
                         //  This is an odd and limiting assumption. Better behavior should be created.
                     }
                 }
-                std::cout << "liftoff_surface_ID: " << liftoff_surface_ID << std::endl;
-                std::cout << "touchdown_surface_ID: " << touchdown_surface_ID << std::endl;
+                // std::cout << "liftoff_surface_ID: " << liftoff_surface_ID << std::endl;
+                // std::cout << "touchdown_surface_ID: " << touchdown_surface_ID << std::endl;
                 footstep_definition.h_offset_P1 = problem_data.velocity_constraint_problem_data.ideal_offset_height;
                 footstep_definition.h_offset_P2 = problem_data.velocity_constraint_problem_data.ideal_offset_height;
 
                 footstep_definition.R_P1 = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(liftoff_surface_ID).Rotation();
                 footstep_definition.R_P2 = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(touchdown_surface_ID).Rotation();
-                std::cout << "R_P1: " << footstep_definition.R_P1 << std::endl;
-                std::cout << "R_P2: " << footstep_definition.R_P2 << std::endl;
+                // std::cout << "R_P1: " << footstep_definition.R_P1 << std::endl;
+                // std::cout << "R_P2: " << footstep_definition.R_P2 << std::endl;
 
                 footstep_definition.liftoff_time = liftoff_time;
                 footstep_definition.touchdown_time = touchdown_time;
-                std::cout << "liftoff_time: " << footstep_definition.liftoff_time << std::endl;
-                std::cout << "touchdown_time: " << footstep_definition.touchdown_time << std::endl;
+                // std::cout << "liftoff_time: " << footstep_definition.liftoff_time << std::endl;
+                // std::cout << "touchdown_time: " << footstep_definition.touchdown_time << std::endl;
 
                 return footstep_definition;
             }
@@ -255,11 +255,11 @@ namespace galileo
                          * In the middle, it loosely follows an "ideal" trajectory.
                          */
                         casadi::SX cfoot_vel = getFootstepVelocityInWorldFrame(problem_data, ee.first)(casadi::Slice(0, 3), 0);
-                        std::cout << "cfoot_vel.size(): " << cfoot_vel.size() << std::endl;
+                        // std::cout << "cfoot_vel.size(): " << cfoot_vel.size() << std::endl;
                         casadi::SX cfoot_vel_in_liftoff_surface = getFootstepVelocityInSurfaceFrame(cfoot_vel, footstep_definition.R_P1);
-                        std::cout << "cfoot_vel_in_liftoff_surface.size(): " << cfoot_vel_in_liftoff_surface.size() << std::endl;
+                        // std::cout << "cfoot_vel_in_liftoff_surface.size(): " << cfoot_vel_in_liftoff_surface.size() << std::endl;
                         casadi::SX cfoot_vel_in_touchdown_surface = getFootstepVelocityInSurfaceFrame(cfoot_vel, -footstep_definition.R_P2);
-                        std::cout << "cfoot_vel_in_touchdown_surface.size(): " << cfoot_vel_in_touchdown_surface.size() << std::endl;
+                        // std::cout << "cfoot_vel_in_touchdown_surface.size(): " << cfoot_vel_in_touchdown_surface.size() << std::endl;
 
                         // The velocity of the footstep in the direction of each of the surface normals
                         // At time 0, the velocity should be approximately normal to the liftoff surface
@@ -304,28 +304,19 @@ namespace galileo
 
                         // The lower bound of the velocity normal to the surfaces. We want this to evolve slower, so that the velocity is "encouraged" to be positive
                         //  This is the "magnitude" of the offset from h_dot_desired. The actual bound is h_dot_desired - lower_admissible_error_h_normal
-                        casadi::Function quadratic_error_interpolation = casadi::Function("quadratic_error_interpolation", {t}, {casadi::SX(ell_slope_normal * pow(2*t, 2) + ell_min_normal)});
+                        casadi::Function quadratic_error_interpolation = casadi::Function("quadratic_error_interpolation", {t}, {casadi::SX(ell_slope_normal * pow(2 * t, 2) + ell_min_normal)});
                         casadi::SX lower_admissible_error_h1_normal = quadratic_error_interpolation(t).at(0);
                         casadi::SX lower_admissible_error_h2_normal = quadratic_error_interpolation(1 - t).at(0);
                         //  casadi::SX lower_admissible_error_h1_normal = upper_admissible_error_h1_normal;
                         // casadi::SX lower_admissible_error_h2_normal = upper_admissible_error_h2_normal;
-                        std::cout << "admissible_error_h1_parallel: " << admissible_error_h1_parallel << std::endl;
-                        std::cout << "desired_h1_dot + upper_admissible_error_h1_normal: " << desired_h1_dot(t).at(0) + upper_admissible_error_h1_normal << std::endl;
-                        std::cout << "admissible_error_h2_parallel: " << admissible_error_h2_parallel << std::endl;
-                        std::cout << "desired_h2_dot + upper_admissible_error_h2_normal: " << desired_h2_dot(t).at(0) + upper_admissible_error_h2_normal << std::endl;
-                        std::cout << "upper_admissible_error_h1_normal: " << upper_admissible_error_h1_normal << std::endl;
-                        std::cout << "upper_admissible_error_h2_normal: " << upper_admissible_error_h2_normal << std::endl;
-                        std::cout << "lower_admissible_error_h1_normal: " << lower_admissible_error_h1_normal << std::endl;
-                        std::cout << "lower_admissible_error_h2_normal: " << lower_admissible_error_h2_normal << std::endl;
-
-                        casadi::Function upper_bound = casadi::Function("upper_bound", casadi::SXVector{t},
-                                                                        casadi::SXVector{vertcat(casadi::SXVector{
-                                                                            admissible_error_h1_parallel,
-                                                                            admissible_error_h1_parallel,
-                                                                            desired_h1_dot(t).at(0) + upper_admissible_error_h1_normal,
-                                                                            admissible_error_h2_parallel,
-                                                                            admissible_error_h2_parallel,
-                                                                            desired_h2_dot(t).at(0) + upper_admissible_error_h2_normal})});
+                        // std::cout << "admissible_error_h1_parallel: " << admissible_error_h1_parallel << std::endl;
+                        // std::cout << "desired_h1_dot + upper_admissible_error_h1_normal: " << desired_h1_dot(t).at(0) + upper_admissible_error_h1_normal << std::endl;
+                        // std::cout << "admissible_error_h2_parallel: " << admissible_error_h2_parallel << std::endl;
+                        // std::cout << "desired_h2_dot + upper_admissible_error_h2_normal: " << desired_h2_dot(t).at(0) + upper_admissible_error_h2_normal << std::endl;
+                        // std::cout << "upper_admissible_error_h1_normal: " << upper_admissible_error_h1_normal << std::endl;
+                        // std::cout << "upper_admissible_error_h2_normal: " << upper_admissible_error_h2_normal << std::endl;
+                        // std::cout << "lower_admissible_error_h1_normal: " << lower_admissible_error_h1_normal << std::endl;
+                        // std::cout << "lower_admissible_error_h2_normal: " << lower_admissible_error_h2_normal << std::endl;
 
                         casadi::Function lower_bound = casadi::Function("lower_bound", casadi::SXVector{t},
                                                                         casadi::SXVector{vertcat(casadi::SXVector{
@@ -335,6 +326,15 @@ namespace galileo
                                                                             -admissible_error_h2_parallel,
                                                                             -admissible_error_h2_parallel,
                                                                             desired_h2_dot(t).at(0) - lower_admissible_error_h2_normal})});
+
+                        casadi::Function upper_bound = casadi::Function("upper_bound", casadi::SXVector{t},
+                                                                        casadi::SXVector{vertcat(casadi::SXVector{
+                                                                            admissible_error_h1_parallel,
+                                                                            admissible_error_h1_parallel,
+                                                                            desired_h1_dot(t).at(0) + upper_admissible_error_h1_normal,
+                                                                            admissible_error_h2_parallel,
+                                                                            admissible_error_h2_parallel,
+                                                                            desired_h2_dot(t).at(0) + upper_admissible_error_h2_normal})});
 
                         lower_bound_vec.push_back(lower_bound(mapped_t).at(0));
                         upper_bound_vec.push_back(upper_bound(mapped_t).at(0));
@@ -358,11 +358,11 @@ namespace galileo
                 }
                 // replace u with an SX vector the size of (sum dof of ee in contact during this knot index)
                 constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{vertcat(G_vec)});
-                constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(upper_bound_vec)});
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(lower_bound_vec)});
-                std::cout << "G_Velocity: " << constraint_data.G << std::endl;
-                std::cout << "upper_bound: " << constraint_data.upper_bound << std::endl;
-                std::cout << "lower_bound: " << constraint_data.lower_bound << std::endl;
+                constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(upper_bound_vec)});
+                std::cout << "G_Velocity at Phase " << phase_index << ": " << constraint_data.G << std::endl;
+                std::cout << "lower_bound at Phase " << phase_index << ": " << constraint_data.lower_bound << std::endl;
+                std::cout << "upper_bound at Phase " << phase_index << ": " << constraint_data.upper_bound << std::endl;
             }
 
         }

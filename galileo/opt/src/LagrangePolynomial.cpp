@@ -63,8 +63,8 @@ namespace galileo
             }
             else
             {
-                /*Sometimes we get negatives here, but I don't think we should since tau_root is [0,1]? Yet, the interpolation seems to be correct..*/
-                // std::cout << "Interpolating at time " << t << std::endl;
+                assert(terms.size() == tau_root.size());
+                assert(t >= 0 && t <= 1);
                 std::vector<Scalar> w;
                 for (std::size_t j = 0; j < tau_root.size(); ++j)
                 {
