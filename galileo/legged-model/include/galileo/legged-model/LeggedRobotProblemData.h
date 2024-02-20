@@ -3,6 +3,7 @@
 #include "galileo/legged-model/FrictionConeConstraintBuilder.h"
 #include "galileo/legged-model/ContactConstraintBuilder.h"
 #include "galileo/legged-model/VelocityConstraintBuilder.h"
+#include "galileo/legged-model/JointLimitBuilder.h"
 
 namespace galileo
 {
@@ -59,12 +60,23 @@ namespace galileo
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
 
-                    this->velocity_constraint_problem_data.ideal_offset_height = 0.3;
+                    this->velocity_constraint_problem_data.ideal_offset_height = 0.1;
                     this->velocity_constraint_problem_data.max_following_leeway_planar = 0.5;
                     this->velocity_constraint_problem_data.min_following_leeway_planar = 0.;
 
                     this->velocity_constraint_problem_data.max_following_leeway_normal = 0.5;
                     this->velocity_constraint_problem_data.min_following_leeway_normal = this->velocity_constraint_problem_data.ideal_offset_height * 0.015;
+
+                    this->joint_limit_problem_data.environment_surfaces = environment_surfaces;
+                    this->joint_limit_problem_data.contact_sequence = contact_sequence;
+                    this->joint_limit_problem_data.states = states;
+                    this->joint_limit_problem_data.ad_model = ad_model;
+                    this->joint_limit_problem_data.ad_data = ad_data;
+                    this->joint_limit_problem_data.robot_end_effectors = robot_end_effectors;
+                    this->joint_limit_problem_data.x = x;
+                    this->joint_limit_problem_data.u = u;
+                    this->joint_limit_problem_data.t = t;
+
                 }
                 std::shared_ptr<opt::PhaseSequence<contact::ContactMode>> phase_sequence;
                 std::shared_ptr<opt::GeneralProblemData> gp_data;
@@ -72,6 +84,7 @@ namespace galileo
                 FrictionConeProblemData friction_cone_problem_data;
                 ContactConstraintProblemData contact_constraint_problem_data;
                 VelocityConstraintProblemData velocity_constraint_problem_data;
+                JointLimitProblemData joint_limit_problem_data;
             };
         }
     }

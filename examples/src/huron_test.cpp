@@ -11,6 +11,8 @@ int main(int argc, char **argv)
     LeggedBody robot(huron_location, num_ees, end_effector_names);
     std::shared_ptr<LeggedRobotStates> si = robot.si;
 
+    std::cout << robot.model.names << std::endl;
+
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     int j = 0;
     for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
@@ -47,13 +49,13 @@ int main(int argc, char **argv)
         }
     }
 
-    robot.contact_sequence->addPhase(second_mode, 10, 0.25);
+    // robot.contact_sequence->addPhase(second_mode, 20, 0.25);
 
     contact::ContactMode final_mode;
     final_mode.combination_definition = robot.getContactCombination(0b11);
     final_mode.contact_surfaces = {0, 0};
 
-    robot.contact_sequence->addPhase(final_mode, 20, 0.25);
+    // robot.contact_sequence->addPhase(final_mode, 20, 0.25);
 
     robot.fillModeDynamics();
 
@@ -82,7 +84,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0.2, q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -106,8 +108,8 @@ int main(int argc, char **argv)
     pinocchio::computeTotalMass(robot.model, robot.data);
 
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
-    U_ref(5) = 9.81 * robot.data.mass[0] / 2;
-    U_ref(11) = 9.81 * robot.data.mass[0] / 2;
+    // U_ref(5) = 9.81 * robot.data.mass[0] / 2;
+    // U_ref(11) = 9.81 * robot.data.mass[0] / 2;
     casadi::SX u_error = robot.cu - U_ref;
 
     casadi::Function L("L",
@@ -132,7 +134,9 @@ int main(int argc, char **argv)
         std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
-    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
+    std::shared_ptr<JointLimitConstraintBuilder<LeggedRobotProblemData>> joint_limit_constraint_builder =
+        std::make_shared<JointLimitConstraintBuilder<LeggedRobotProblemData>>();
+    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder, joint_limit_constraint_builder};
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
                                                                                                            std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
