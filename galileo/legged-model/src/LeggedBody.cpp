@@ -33,6 +33,29 @@ namespace galileo
             createGeneralFunctions();
         }
 
+        std::vector<pinocchio::JointIndex> getJointIndicesFromRootToFrame(const pinocchio::Model &model, pinocchio::FrameIndex frame_id)
+        {
+            std::vector<pinocchio::JointIndex> joint_indices;
+
+            // Get the joint of the frame
+            pinocchio::JointIndex joint_id = model.frames[frame_id].parentJoint;
+
+            // Go up the tree until we reach the root
+            while (model.parents[joint_id] > 0)
+            {
+                // Add the joint to the list
+                joint_indices.push_back(joint_id);
+
+                // Go to the parent joint
+                joint_id = model.parents[joint_id];
+            }
+
+            // Reverse the list to get the joints from the root to the frame
+            std::reverse(joint_indices.begin(), joint_indices.end());
+
+            return joint_indices;
+        }
+
         void LeggedBody::setEndEffectors(const std::vector<std::string> &ee_names)
         {
             std::vector<pinocchio::FrameIndex> ee_ids;
@@ -46,11 +69,16 @@ namespace galileo
                 pinocchio::FrameIndex frame_id = model.getFrameId(ee_name);
                 ee_obj_ptr->frame_id = frame_id;
 
-                Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> matrix(6, model.nv);
-                matrix.setZero();
-                pinocchio::computeFrameJacobian(model, data, pinocchio::neutral(model), frame_id, pinocchio::LOCAL, matrix);
-                Eigen::FullPivLU<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> lu_decomp(matrix);
-                ee_obj_ptr->is_6d = lu_decomp.rank() == 6;
+                // Get the joint indices from the root to the end effector
+                std::vector<pinocchio::JointIndex> joint_indices = getJointIndicesFromRootToFrame(model, frame_id);
+
+                // Compute the total number of degrees of freedom
+                int dof = 0;
+                for (const auto &joint_index : joint_indices)
+                {
+                    dof += model.joints[joint_index].nq();
+                }
+                ee_obj_ptr->is_6d = dof == 6;
                 ee_obj_ptr->local_ee_idx = i;
 
                 ees_.insert({frame_id, ee_obj_ptr});

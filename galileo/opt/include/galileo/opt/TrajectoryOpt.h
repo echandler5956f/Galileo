@@ -440,19 +440,19 @@ namespace galileo
                 double end_time = state_times_vec[state_times_vec.size() - 1];
                 int num_knots = pseg->getKnotNum();
                 /*Add one to the state degree because we are including x0*/
-                int state_degree = pseg->getStateDegree() + 1;
+                int state_degree = pseg->getStateDegree();
                 auto state_polynomial = pseg->get_dXPoly();
                 int input_degree = pseg->getInputDegree();
                 auto input_polynomial = pseg->get_UPoly();
                 Eigen::VectorXd segment_times;
                 tuple_size_t segment_indices = getSegmentTimes(result.times, initial_time, end_time, segment_times);
                 segment_times_ranges.push_back(segment_indices);
-                casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(state_count, state_count + state_degree * num_knots)));
+                casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(state_count, state_count + (state_degree + 1) * num_knots)));
                 casadi::DM solu_segment = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(input_count, input_count + input_degree * num_knots)));
                 /*This loop is the bottleneck and could easily be vectorized if computation speed is a concern*/
                 for (Eigen::Index j = 0; j < segment_times.size(); ++j)
                 {
-                    processSegmentTimes(state_times_vec, segment_times, solx_segment, state_degree, state_polynomial, result.state_result, i, j);
+                    processSegmentTimes(state_times_vec, segment_times, solx_segment, state_degree + 1, state_polynomial, result.state_result, i, j);
                     processSegmentTimes(input_times_vec, segment_times, solu_segment, input_degree + 1, input_polynomial, result.input_result, i, j);
                     ++i;
                 }
@@ -486,7 +486,7 @@ namespace galileo
             {
                 sol_segment_vec.push_back(sol_knot_segment(casadi::Slice(0, sol_knot_segment.rows()), k));
             }
-            double scaled_time = (segment_times[j] - l_times_vec[index * degree]) / (l_times_vec[(index * degree) + degree] - l_times_vec[index * degree]);
+            double scaled_time = (segment_times[j] - l_times_vec[index * degree - 1]) / (l_times_vec[(index * degree) + degree - 1] - l_times_vec[index * degree - 1]);
             std::vector<double> tmp = poly->barycentricInterpolation(scaled_time, sol_segment_vec).get_elements();
             for (std::size_t k = 0; k < tmp.size(); ++k)
             {
