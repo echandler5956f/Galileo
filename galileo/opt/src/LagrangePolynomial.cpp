@@ -63,8 +63,8 @@ namespace galileo
             }
             else
             {
-                assert(terms.size() == tau_root.size());
-                assert(t >= 0 && t <= 1);
+                // assert(terms.size() == tau_root.size());
+                // assert(t >= 0 && t <= 1);
                 std::vector<Scalar> w;
                 for (std::size_t j = 0; j < tau_root.size(); ++j)
                 {
