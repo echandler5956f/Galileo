@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 200., 200., 200., 200.,                            /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., 200., 200., 200.,                            /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
