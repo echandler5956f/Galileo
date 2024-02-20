@@ -54,15 +54,12 @@ namespace galileo
                 return mapped_bell_curve;
             }
 
-
-            casadi::Function getSigmoid(casadi::SX& t, double sigmoid_scaling)
+            casadi::Function getSigmoid(casadi::SX &t, double sigmoid_scaling)
             {
                 casadi::Function sigmoid = casadi::Function("sigmoid", casadi::SXVector{t}, casadi::SXVector{1 / (1 + exp(-sigmoid_scaling * (t - 0.5)))});
-                casadi::Function fixed_sigmoid = casadi::Function("fixed_sigmoid", casadi::SXVector{t}, 
-                                                                casadi::SXVector{
-                                                                        sigmoid(casadi::SXVector{t}) - sigmoid(casadi::SXVector{0}) 
-                                                                        }
-                                                                );
+                casadi::Function fixed_sigmoid = casadi::Function("fixed_sigmoid", casadi::SXVector{t},
+                                                                  casadi::SXVector{
+                                                                      sigmoid(casadi::SXVector{t}).at(0) - sigmoid(casadi::SXVector{0}).at(0)});
                 return sigmoid;
             }
 
@@ -324,10 +321,10 @@ namespace galileo
 
                         // The lower bound of the velocity normal to the surfaces. We want this to evolve slower, so that the velocity is "encouraged" to be positive
                         //  This is the "magnitude" of the offset from h_dot_desired. The actual bound is h_dot_desired - lower_admissible_error_h_normal
-                        casadi::Function quadratic_error_interpolation = casadi::Function("quadratic_error_interpolation", {t}, {casadi::SX(ell_slope_normal * pow(2*t, 2) + ell_min_normal)});
+                        casadi::Function quadratic_error_interpolation = casadi::Function("quadratic_error_interpolation", {t}, {casadi::SX(ell_slope_normal * pow(2 * t, 2) + ell_min_normal)});
 
                         casadi::Function sigmoid = getSigmoid(t, problem_data.velocity_constraint_problem_data.sigmoid_scaling);
-                        casadi::SX max_error_offset = desired_h1_dot(casadi::SXVector{footstep_definition.h1_window_duration/2 });
+                        casadi::SX max_error_offset = desired_h1_dot(casadi::SXVector{footstep_definition.h1_window_duration / 2}).at(0);
                         casadi::SX lower_admissible_error_h1_normal = max_error_offset * sigmoid(t).at(0);
                         casadi::SX lower_admissible_error_h2_normal = max_error_offset * sigmoid(1 - t).at(0);
                         //  casadi::SX lower_admissible_error_h1_normal = upper_admissible_error_h1_normal;
