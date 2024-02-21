@@ -9,11 +9,13 @@ namespace galileo
         struct constraint_evaluations_t
         {
             std::string name;
+            Eigen::VectorXd times;
             Eigen::Matrix3Xd evaluation_and_bounds;
         };
 
         struct solution_t
         {
+            solution_t() {}
             solution_t(Eigen::VectorXd times_) { this->times = times_; }
             Eigen::VectorXd times;
             Eigen::MatrixXd state_result;

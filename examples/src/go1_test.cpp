@@ -163,54 +163,20 @@ int main(int argc, char **argv)
 
     auto cons = traj.getConstraintViolations(new_sol);
 
-    for (auto con : cons)
-    {
-        for (auto c : con)
-        {
-            std::cout << c.name << ": " << std::endl;
-            auto evaled = c.evaluation_and_bounds.transpose();
-            std::cout << evaled << std::endl;
-        }
-    }
-
-    // std::cout << "Solution States: " << new_sol.state_result << std::endl;
-    // std::cout << "Solution Input: " << new_sol.input_result << std::endl;
+    GNUPlotInterface plotter(new_sol, cons);
+    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
+                         {},
+                         {"Positions", "Orientations"},
+                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                         {},
+                         {{}});
+    plotter.PlotConstraints();
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-
-    std::ofstream new_times_file("../examples/visualization/sol_times.csv");
-    if (new_times_file.is_open())
-    {
-        new_times_file << new_times.transpose().format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
-        new_times_file.close();
-    }
-
-    // Save new_sol to a CSV file
-    std::ofstream new_sol_states_file("../examples/visualization/sol_states.csv");
-    if (new_sol_states_file.is_open())
-    {
-        new_sol_states_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
-        new_sol_states_file.close();
-    }
-
-    std::ofstream file("../examples/visualization/metadata.csv");
-    if (file.is_open())
-    {
-        file << "urdf location: " << go1_location << "\n";
-
-        file << "q0: ";
-        for (int i = 0; i < q0_vec.size(); ++i)
-        {
-            file << q0_vec[i];
-            if (i != q0_vec.size() - 1) // not the last element
-            {
-                file << ", ";
-            }
-        }
-        file << "\n";
-
-        file.close();
-    }
+    MeshcatInterface meshcat("../examples/visualization/");
+    meshcat.WriteTimes(new_times, "sol_times.csv");
+    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
 
     return 0;
 }

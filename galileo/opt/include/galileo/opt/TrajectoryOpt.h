@@ -389,6 +389,7 @@ namespace galileo
 
                     constraint_evaluations_t con_evals;
                     con_evals.name = con_data->G.name();
+                    con_evals.times = result.times.block(std::get<0>(seg_range), 0, std::get<1>(seg_range) - std::get<0>(seg_range), 1);
                     con_evals.evaluation_and_bounds = Eigen::MatrixXd(3, con_eval.size());
                     con_evals.evaluation_and_bounds.row(0) = eval.transpose();
                     con_evals.evaluation_and_bounds.row(1) = lb.transpose();
