@@ -1,28 +1,15 @@
 #pragma once
 
+#include "galileo/opt/Solution.h"
 #include "galileo/opt/Segment.h"
 #include "galileo/opt/PseudospectralSegment.h"
 #include "galileo/opt/PhaseSequence.h"
-#include <Eigen/Dense>
 #include <chrono>
 
 namespace galileo
 {
     namespace opt
     {
-        struct constraint_evaluations_t
-        {
-            std::string name;
-            Eigen::Matrix3Xd evaluation_and_bounds;
-        };
-
-        struct solution_t
-        {
-            solution_t(Eigen::VectorXd times) { this->times = times;}
-            Eigen::VectorXd times;
-            Eigen::MatrixXd state_result;
-            Eigen::MatrixXd input_result;
-        };
 
         /**
          * @brief The trajectory optimization class. This class is responsible for
