@@ -146,13 +146,13 @@ namespace galileo
                         std::cout << "End Effector " << end_effector.first << " is not in contact" << std::endl;
                         if (dof6)
                         {
-                            lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6)}));
-                            upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6)}));
+                            lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6, 1)}));
+                            upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6, 1)}));
                         }
                         else
                         {
-                            lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3)}));
-                            upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3)}));
+                            lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3, 1)}));
+                            upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3, 1)}));
                         }
                     }
                     /* If the end effector is in contact*/
