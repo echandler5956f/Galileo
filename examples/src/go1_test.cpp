@@ -22,38 +22,34 @@ int main(int argc, char **argv)
     std::shared_ptr<environment::EnvironmentSurfaces> surfaces = std::make_shared<environment::EnvironmentSurfaces>();
     surfaces->push_back(environment::createInfiniteGround());
 
-    contact::ContactMode initial_mode;
-    initial_mode.combination_definition = robot.getContactCombination(0b1111);
-    initial_mode.contact_surfaces = {0, 0, 0, 0};
+    std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
+    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05};
+    std::vector<int> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
 
-    robot.contact_sequence->addPhase(initial_mode, 20, 1.);
+    // std::vector<int> knot_num = {20, 20, 20, 20, 20};
+    // std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3};
+    // std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // static walk
 
-    contact::ContactMode second_mode;
-    second_mode.combination_definition = robot.getContactCombination(0b1101);
-    second_mode.contact_surfaces.resize(second_mode.combination_definition.size());
-
-    // Set the surfaces for the end effectors that are in contact
-    int i = 0;
-    for (auto combo : second_mode.combination_definition)
+    int num_steps = 1;
+    for (int i = 0; i < num_steps; ++i)
     {
-        if (combo.second) // If the end effector is in contact
+        for (size_t j = 0; j < mask_vec.size(); ++j)
         {
-            // Set the surface for this end effector
-            second_mode.contact_surfaces[i] = 0;
-        }
-        else
-        {
-            second_mode.contact_surfaces[i] = environment::NO_SURFACE;
+            contact::ContactMode mode;
+            mode.combination_definition = robot.getContactCombination(mask_vec[j]);
+            mode.contact_surfaces.resize(mode.combination_definition.size());
+            int k = 0;
+            for (auto combo : mode.combination_definition)
+            {
+                if (combo.second)
+                    mode.contact_surfaces[k] = 0;
+                else
+                    mode.contact_surfaces[k] = environment::NO_SURFACE;
+                ++k;
+            }
+            robot.contact_sequence->addPhase(mode, knot_num[j], knot_time[j]);
         }
     }
-
-    robot.contact_sequence->addPhase(second_mode, 20, 0.25);
-
-    contact::ContactMode final_mode;
-    final_mode.combination_definition = robot.getContactCombination(0b1111);
-    final_mode.contact_surfaces = {0, 0, 0, 0};
-
-    robot.contact_sequence->addPhase(final_mode, 20, 0.25);
 
     std::cout << "Filling dynamics" << std::endl;
     robot.fillModeDynamics();
@@ -65,7 +61,7 @@ int main(int argc, char **argv)
     Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., .1, .1, .1,                         /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., .1, .1, .1,                               /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
@@ -85,7 +81,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0.25, q0[1] + 0., q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -127,8 +123,8 @@ int main(int argc, char **argv)
                          {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
     casadi::Dict opts;
-    // opts["ipopt.linear_solver"] = "ma97";
-    // opts["ipopt.ma97_order"] = "metis";
+    opts["ipopt.linear_solver"] = "ma97";
+    opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 250;
 
@@ -159,17 +155,17 @@ int main(int argc, char **argv)
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
 
-     auto cons = traj.getConstraintViolations(new_sol);
+    //  auto cons = traj.getConstraintViolations(new_sol);
 
-    for (auto con : cons)
-    {
-        for (auto c : con)
-        {
-            std::cout << c.name << ": " << std::endl;
-            auto evaled = c.evaluation_and_bounds.transpose();
-            std::cout << evaled << std::endl;
-        }
-    }
+    // for (auto con : cons)
+    // {
+    //     for (auto c : con)
+    //     {
+    //         std::cout << c.name << ": " << std::endl;
+    //         auto evaled = c.evaluation_and_bounds.transpose();
+    //         std::cout << evaled << std::endl;
+    //     }
+    // }
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
 
