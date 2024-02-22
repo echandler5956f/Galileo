@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0.1, q0[1] + 0., q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -157,9 +157,15 @@ int main(int argc, char **argv)
     casadi::MXVector sol = traj.optimize();
 
     std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0., robot.contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., robot.contact_sequence->getDT());
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
+
+    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
+    MeshcatInterface meshcat("../examples/visualization/");
+    meshcat.WriteTimes(new_times, "sol_times.csv");
+    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
 
     auto cons = traj.getConstraintViolations(new_sol);
 
@@ -170,13 +176,7 @@ int main(int argc, char **argv)
                          {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
                          {},
                          {{}});
-    plotter.PlotConstraints();
-
-    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-    MeshcatInterface meshcat("../examples/visualization/");
-    meshcat.WriteTimes(new_times, "sol_times.csv");
-    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
-    meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
+    // plotter.PlotConstraints();
 
     return 0;
 }

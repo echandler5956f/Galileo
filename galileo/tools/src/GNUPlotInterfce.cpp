@@ -24,7 +24,7 @@ namespace galileo
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + state_title_names[i] + "'\n";
-                std::string ss = "plot";
+                std::string ss = "plot ";
                 for (size_t j = 0; j < state_names[i].size(); ++j)
                 {
                     if (j != 0)
@@ -34,6 +34,7 @@ namespace galileo
                     ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + state_names[i][j] + "'";
                 }
                 ss += "\n";
+                std::cout << "ss: " << ss << std::endl;
                 gp << ss;
                 Eigen::MatrixXd block = solution.state_result.block(std::get<0>(state_groups[i]), 0, std::get<1>(state_groups[i]), solution.state_result.cols());
                 for (Eigen::Index j = 0; j < block.rows(); ++j)
@@ -43,31 +44,32 @@ namespace galileo
                     gp.send1d(std::make_tuple(std_times, std_row_vector));
                 }
             }
-            for (size_t i = 0; i < input_groups.size(); ++i)
-            {
-                Gnuplot gp;
-                gp << "set xlabel 'Time'\n";
-                gp << "set ylabel 'Values'\n";
-                gp << "set title '" + input_title_names[i] + "'\n";
-                std::string ss = "plot";
-                for (size_t j = 0; j < input_names[i].size(); ++j)
-                {
-                    if (j != 0)
-                    {
-                        ss += ", ";
-                    }
-                    ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + input_names[i][j] + "'";
-                }
-                ss += "\n";
-                gp << ss;
-                Eigen::MatrixXd block = solution.input_result.block(std::get<0>(input_groups[i]), 0, std::get<1>(input_groups[i]), solution.input_result.cols());
-                for (Eigen::Index j = 0; j < block.rows(); ++j)
-                {
-                    Eigen::MatrixXd rowMatrix = block.row(j).matrix();
-                    std::vector<double> std_row_vector(rowMatrix.data(), rowMatrix.data() + rowMatrix.size());
-                    gp.send1d(std::make_tuple(std_times, std_row_vector));
-                }
-            }
+            // for (size_t i = 0; i < input_groups.size(); ++i)
+            // {
+            //     Gnuplot gp;
+            //     gp << "set xlabel 'Time'\n";
+            //     gp << "set ylabel 'Values'\n";
+            //     gp << "set title '" + input_title_names[i] + "'\n";
+            //     std::string ss = "plot ";
+            //     for (size_t j = 0; j < input_names[i].size(); ++j)
+            //     {
+            //         if (j != 0)
+            //         {
+            //             ss += ", ";
+            //         }
+            //         ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + input_names[i][j] + "'";
+            //     }
+            //     ss += "\n";
+            //     std::cout << "ss: " << ss << std::endl;
+            //     gp << ss;
+            //     Eigen::MatrixXd block = solution.input_result.block(std::get<0>(input_groups[i]), 0, std::get<1>(input_groups[i]), solution.input_result.cols());
+            //     for (Eigen::Index j = 0; j < block.rows(); ++j)
+            //     {
+            //         Eigen::MatrixXd rowMatrix = block.row(j).matrix();
+            //         std::vector<double> std_row_vector(rowMatrix.data(), rowMatrix.data() + rowMatrix.size());
+            //         gp.send1d(std::make_tuple(std_times, std_row_vector));
+            //     }
+            // }
         }
 
         void GNUPlotInterface::PlotConstraints()
@@ -96,17 +98,18 @@ namespace galileo
                     }
                 }
             }
-
+            std::cout << "New constraints size: " << new_constraints.size() << std::endl;
             // Plot each group of constraints on the same graph
             for (size_t i = 0; i < new_constraints.size(); ++i)
             {
+                std::cout << "Plotting constraint: " << new_constraints[i].name << std::endl;
                 std::vector<double> std_times(new_constraints[i].times.data(), new_constraints[i].times.data() + new_constraints[i].times.size());
                 Gnuplot gp;
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + new_constraints[i].name + "'\n";
-                std::string ss = "plot";
-                std::string tmp_name ;
+                std::string ss = "plot ";
+                std::string tmp_name;
                 for (size_t j = 0; j < 3; ++j)
                 {
                     if (j == 0)
