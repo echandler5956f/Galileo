@@ -127,8 +127,8 @@ int main(int argc, char **argv)
                          {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
     casadi::Dict opts;
-    opts["ipopt.linear_solver"] = "ma97";
-    opts["ipopt.ma97_order"] = "metis";
+    // opts["ipopt.linear_solver"] = "ma97";
+    // opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 250;
 

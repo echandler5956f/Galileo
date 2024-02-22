@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     initial_mode.combination_definition = robot.getContactCombination(0b11);
     initial_mode.contact_surfaces = {0, 0};
 
-    robot.contact_sequence->addPhase(initial_mode, 20, 1.);
+    robot.contact_sequence->addPhase(initial_mode, 4, 1.);
 
     contact::ContactMode second_mode;
     second_mode.combination_definition = robot.getContactCombination(0b10);
@@ -47,13 +47,13 @@ int main(int argc, char **argv)
         }
     }
 
-    robot.contact_sequence->addPhase(second_mode, 10, 0.25);
+    robot.contact_sequence->addPhase(second_mode, 4, 0.25);
 
     contact::ContactMode final_mode;
     final_mode.combination_definition = robot.getContactCombination(0b11);
     final_mode.contact_surfaces = {0, 0};
 
-    robot.contact_sequence->addPhase(final_mode, 20, 0.25);
+    robot.contact_sequence->addPhase(final_mode, 4, 0.25);
 
     robot.fillModeDynamics();
 
@@ -120,8 +120,8 @@ int main(int argc, char **argv)
                          {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
     casadi::Dict opts;
-    opts["ipopt.linear_solver"] = "ma97";
-    opts["ipopt.ma97_order"] = "metis";
+    // opts["ipopt.linear_solver"] = "ma97";
+    // opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 250;
 

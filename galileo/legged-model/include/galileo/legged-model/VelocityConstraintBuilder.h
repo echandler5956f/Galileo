@@ -142,7 +142,7 @@ namespace galileo
                     Eigen::Matrix<galileo::opt::ADScalar, 6, 1, 0> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                                                           *(problem_data.velocity_constraint_problem_data.ad_data),
                                                                                                           frame_id,
-                                                                                                          pinocchio::WORLD)
+                                                                                                          pinocchio::LOCAL)
                                                                                   .toVector();
 
                     casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
