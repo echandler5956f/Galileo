@@ -117,6 +117,8 @@ namespace galileo
                 }
             }
 
+            std::cout << "Here" << std::endl;
+
             // Convert the map to a vector
             std::vector<opt::constraint_evaluations_t> new_constraints;
             for (auto &pair : constraint_map)
