@@ -130,6 +130,14 @@ namespace galileo
                 ~ContactSequence() {}
 
                 /**
+                 * @brief Gets an identifier which represents the mode of the phase. This lets us know if two modes are identical.
+                 * 
+                 * @param phase_index The index of the phase to get the mode ID for.
+                 * @return const int The mode ID of the phase.
+                 */
+                int modeIDFromPhaseIndex(int phase_index) const;
+
+                /**
                  * @brief Gets the number of end effectors in the contact sequence.
                  * 
                  * @return const int& The number of end effectors in the contact sequence.

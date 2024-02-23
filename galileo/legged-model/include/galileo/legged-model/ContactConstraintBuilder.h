@@ -52,32 +52,30 @@ namespace galileo
 
                             auto surface_data = (*problem_data.contact_constraint_problem_data.environment_surfaces)[surface];
 
-                            //Get surface data, Copy into symbolic Casadi Expr.
+                            // Get surface data, Copy into symbolic Casadi Expr.
                             int n_constraints = surface_data.A.rows();
                             casadi::SX symbolic_A = casadi::SX(n_constraints, 2);
                             pinocchio::casadi::copy(surface_data.A, symbolic_A);
 
-
                             casadi::SX symbolic_b = casadi::SX(n_constraints, 1);
                             pinocchio::casadi::copy(surface_data.b, symbolic_b);
 
-                            casadi::SX symbolic_surface_translation(3,1); 
+                            casadi::SX symbolic_surface_translation(3, 1);
                             pinocchio::casadi::copy(surface_data.surface_transform.translation(), symbolic_surface_translation);
 
-                            casadi::SX symbolic_surface_rotation(3,3);
+                            casadi::SX symbolic_surface_rotation(3, 3);
                             pinocchio::casadi::copy(surface_data.surface_transform.rotation(), symbolic_surface_rotation);
 
                             // Defined Bounds
                             casadi::SX lower_bound = casadi::SX(n_constraints, 1);
                             pinocchio::casadi::copy(
-                                Eigen::VectorXd::Constant(n_constraints, -std::numeric_limits<double>::infinity()), 
+                                Eigen::VectorXd::Constant(n_constraints, -std::numeric_limits<double>::infinity()),
                                 lower_bound);
 
                             casadi::SX upper_bound = casadi::SX(n_constraints, 1);
                             pinocchio::casadi::copy(
-                                Eigen::VectorXd::Constant(n_constraints, -std::numeric_limits<double>::infinity()), 
+                                Eigen::VectorXd::Constant(n_constraints, -std::numeric_limits<double>::infinity()),
                                 upper_bound);
-
 
                             // Get foot position in global frame
                             pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.first];
@@ -86,15 +84,15 @@ namespace galileo
                             pinocchio::casadi::copy(foot_pos, c_foot_pos_in_world);
 
                             // Get foot position in surface frame
-                            auto foot_pos_offset =  (c_foot_pos_in_world - symbolic_surface_translation);
-                            auto foot_pos_in_surface = casadi::SX::mtimes(symbolic_surface_rotation, foot_pos_offset); 
+                            auto foot_pos_offset = (c_foot_pos_in_world - symbolic_surface_translation);
+                            auto foot_pos_in_surface = casadi::SX::mtimes(symbolic_surface_rotation, foot_pos_offset);
 
                             casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_A, foot_pos_in_surface(casadi::Slice(1, 2))) - symbolic_b;
 
-                            G_vec.push_back( evaluated_vector );
+                            G_vec.push_back(evaluated_vector);
 
-                            lower_bound_vec.push_back( lower_bound );
-                            upper_bound_vec.push_back( upper_bound );
+                            lower_bound_vec.push_back(lower_bound);
+                            upper_bound_vec.push_back(upper_bound);
                         }
                     }
 
@@ -109,18 +107,13 @@ namespace galileo
                                                                    casadi::SXVector{problem_data.contact_constraint_problem_data.t},
                                                                    casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
 
+                    // int num_ee = problem_data.friction_cone_problem_data.contact_sequence->num_end_effectors();
+                    // std::bitset<32> bin_bitset(problem_data.friction_cone_problem_data.contact_sequence->modeIDFromPhaseIndex(phase_index));
+                    // std::string tmp = bin_bitset.to_string();
+                    constraint_data.metadata.name = "Contact Constraint";
                 }
 
             private:
-
-                void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
-                {
-                }
-
-                void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
-                {
-                }
-
                 /**
                  * @brief getModeAtKnot gets the contact mode at the current phase
                  */

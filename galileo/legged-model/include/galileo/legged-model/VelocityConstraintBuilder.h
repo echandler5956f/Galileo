@@ -103,14 +103,6 @@ namespace galileo
 
                 void buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data);
 
-                void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
-                {
-                }
-
-                void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const
-                {
-                }
-
                 /**
                  * @brief The velocity of the footstep in the direction of the surface normals.
                  *
@@ -347,6 +339,39 @@ namespace galileo
                 constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{vertcat(G_vec)});
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(lower_bound_vec)});
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(upper_bound_vec)});
+
+                int num_ee = problem_data.friction_cone_problem_data.contact_sequence->num_end_effectors();
+                std::bitset<32> bin_bitset(problem_data.friction_cone_problem_data.contact_sequence->modeIDFromPhaseIndex(phase_index));
+                std::string tmp = bin_bitset.to_string();
+                constraint_data.metadata.name = "Velocity Constraint";
+                int i = 0;
+                for (auto ee : problem_data.velocity_constraint_problem_data.robot_end_effectors)
+                {
+                    if (mode[(*ee.second)])
+                    {
+                        constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " +  ee.second->frame_name);
+                        if (ee.second->is_6d)
+                        {
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
+                            constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz", "wx", "wy", "wz"});
+                            i += 6;
+                        }
+                        else
+                        {
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
+                            constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
+                            i += 3;
+                        }
+                    }
+                    else
+                    {
+                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
+                        constraint_data.metadata.plot_names.push_back({"lo-Vx", "lo-Vy", "lo-Vz", "td-Vx", "td-Vy", "td-Vz"});
+                        i += 6;
+                    }
+                }
+
                 std::cout << "G_Velocity at Phase " << phase_index << ": " << constraint_data.G << std::endl;
                 std::cout << "lower_bound at Phase " << phase_index << ": " << constraint_data.lower_bound << std::endl;
                 std::cout << "upper_bound at Phase " << phase_index << ": " << constraint_data.upper_bound << std::endl;

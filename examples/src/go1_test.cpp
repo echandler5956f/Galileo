@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 200., 200., 200.,                            /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., 200., 200., 200.,                         /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0.1, q0[1] + 0., q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 250;
+    opts["ipopt.max_iter"] = 2;
 
     std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
 
@@ -152,65 +152,32 @@ int main(int argc, char **argv)
 
     TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
 
-    traj.initFiniteElements(3, X0);
+    traj.initFiniteElements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 
     std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(50, 0., robot.contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., robot.contact_sequence->getDT());
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
 
+    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
+    MeshcatInterface meshcat("../examples/visualization/");
+    meshcat.WriteTimes(new_times, "sol_times.csv");
+    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
+
     auto cons = traj.getConstraintViolations(new_sol);
 
-    for (auto con : cons)
-    {
-        for (auto c : con)
-        {
-            std::cout << c.name << ": " << std::endl;
-            auto evaled = c.evaluation_and_bounds.transpose();
-            std::cout << evaled << std::endl;
-        }
-    }
+    GNUPlotInterface plotter(new_sol, cons);
+    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
+                         {},
+                         {"Positions", "Orientations"},
+                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                         {},
+                         {});
 
-    // std::cout << "Solution States: " << new_sol.state_result << std::endl;
-    // std::cout << "Solution Input: " << new_sol.input_result << std::endl;
-
-    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-
-    std::ofstream new_times_file("../examples/visualization/sol_times.csv");
-    if (new_times_file.is_open())
-    {
-        new_times_file << new_times.transpose().format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
-        new_times_file.close();
-    }
-
-    // Save new_sol to a CSV file
-    std::ofstream new_sol_states_file("../examples/visualization/sol_states.csv");
-    if (new_sol_states_file.is_open())
-    {
-        new_sol_states_file << subMatrix.format(Eigen::IOFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n"));
-        new_sol_states_file.close();
-    }
-
-    std::ofstream file("../examples/visualization/metadata.csv");
-    if (file.is_open())
-    {
-        file << "urdf location: " << go1_location << "\n";
-
-        file << "q0: ";
-        for (int i = 0; i < q0_vec.size(); ++i)
-        {
-            file << q0_vec[i];
-            if (i != q0_vec.size() - 1) // not the last element
-            {
-                file << ", ";
-            }
-        }
-        file << "\n";
-
-        file.close();
-    }
+    plotter.PlotConstraints();
 
     return 0;
 }
