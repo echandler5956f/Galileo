@@ -170,10 +170,10 @@ int main(int argc, char **argv)
     auto cons = traj.getConstraintViolations(new_sol);
 
     GNUPlotInterface plotter(new_sol, cons);
-    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb), std::make_tuple(si->nh + si->ndh + si->nqb, si->nh + si->ndh + si->nqb + 3)},
+    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
                          {},
-                         {"Positions", "Orientations", "Joint Positions"},
-                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}, {"J1", "J2", "J3"}},
+                         {"Positions", "Orientations"},
+                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
                          {},
                          {{}});
 

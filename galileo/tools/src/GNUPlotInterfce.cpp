@@ -17,9 +17,12 @@ namespace galileo
                                             std::vector<std::string> input_title_names, std::vector<std::vector<std::string>> input_names)
         {
             std::vector<double> std_times(solution.times.data(), solution.times.data() + solution.times.size());
+
+            Gnuplot gp;  // Create a single Gnuplot process here
+
             for (size_t i = 0; i < state_groups.size(); ++i)
             {
-                Gnuplot gp;
+                gp << "set term wxt " << i << "\n";  // Create a new window for each plot
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + state_title_names[i] + "'\n";
@@ -42,9 +45,10 @@ namespace galileo
                     gp.send1d(std::make_tuple(std_times, std_col_vector));
                 }
             }
+
             for (size_t i = 0; i < input_groups.size(); ++i)
             {
-                Gnuplot gp;
+                gp << "set term wxt " << (i + state_groups.size()) << "\n";  // Create a new window for each plot
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + input_title_names[i] + "'\n";
