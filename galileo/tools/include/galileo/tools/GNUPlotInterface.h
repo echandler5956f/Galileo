@@ -4,6 +4,9 @@
 #include "galileo/opt/Solution.h"
 #include <iostream>
 #include <vector>
+#include <cstdlib> // for rand()
+#include <sstream> // for std::stringstream
+#include <iomanip> // for std::setw and std::setfill
 
 namespace galileo
 {

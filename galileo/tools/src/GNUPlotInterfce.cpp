@@ -134,6 +134,7 @@ namespace galileo
                     gp << "set xlabel 'Time'\n";
                     gp << "set ylabel 'Values'\n";
                     gp << "set title '" + new_constraints[i].metadata.plot_titles[j] + "'\n";
+                    gp << "set style fill transparent solid 0.5 noborder\n";
                     std::string ss = "plot ";
                     for (size_t k = 0; k < new_constraints[i].metadata.plot_names[j].size(); ++k)
                     {
@@ -141,9 +142,21 @@ namespace galileo
                         {
                             ss += ", ";
                         }
+                        // Generate random values for the red, green, and blue components
+                        int red = rand() % 256;
+                        int green = rand() % 256;
+                        int blue = rand() % 256;
+
+                        // Convert the RGB values to hexadecimal
+                        std::stringstream color;
+                        color << "rgb '#" << std::setw(2) << std::setfill('0') << std::hex << red
+                              << std::setw(2) << std::setfill('0') << std::hex << green
+                              << std::setw(2) << std::setfill('0') << std::hex << blue << "'";
+
                         ss += "'-' with linespoints linestyle " + std::to_string(3 * k + 1) + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Evaluation', ";
                         ss += "'-' with linespoints linestyle " + std::to_string(3 * k + 2) + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Lower Bound', ";
-                        ss += "'-' with linespoints linestyle " + std::to_string(3 * k + 3) + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Upper Bound'";
+                        ss += "'-' with linespoints linestyle " + std::to_string(3 * k + 3) + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Upper Bound', ";
+                        ss += "'-' with filledcurves lc " + color.str() + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Bounds'";
                     }
                     ss += "\n";
                     gp << ss;
@@ -162,6 +175,9 @@ namespace galileo
                         colMatrix = block_ub.col(k).matrix();
                         std::vector<double> std_col_vector_ub(colMatrix.data(), colMatrix.data() + colMatrix.size());
                         gp.send1d(std::make_tuple(std_times, std_col_vector_ub));
+
+                        // Send the data for the filled curves
+                        gp.send1d(std::make_tuple(std_times, std_col_vector_lb, std_col_vector_ub));
                     }
                     ++window_index;
                 }
