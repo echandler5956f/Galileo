@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 250;
+    opts["ipopt.max_iter"] = 2;
 
     std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
 
@@ -162,20 +162,21 @@ int main(int argc, char **argv)
     traj.getSolution(new_sol);
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-    MeshcatInterface meshcat("../examples/visualization/");
-    meshcat.WriteTimes(new_times, "sol_times.csv");
-    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
-    meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
+    // MeshcatInterface meshcat("../examples/visualization/");
+    // meshcat.WriteTimes(new_times, "sol_times.csv");
+    // meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    // meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
 
     auto cons = traj.getConstraintViolations(new_sol);
 
     GNUPlotInterface plotter(new_sol, cons);
-    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
+    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb), std::make_tuple(si->nh + si->ndh + si->nqb, si->nh + si->ndh + si->nqb + 3)},
                          {},
-                         {"Positions", "Orientations"},
-                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                         {"Positions", "Orientations", "Joint Positions"},
+                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}, {"J1", "J2", "J3"}},
                          {},
                          {{}});
+
     // plotter.PlotConstraints();
 
     return 0;

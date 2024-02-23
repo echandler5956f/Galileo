@@ -2,6 +2,8 @@
 
 #include "third-party/gnuplot-iostream/gnuplot-iostream.h"
 #include "galileo/opt/Solution.h"
+#include <iostream>
+#include <vector>
 
 namespace galileo
 {

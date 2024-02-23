@@ -6,11 +6,10 @@ namespace galileo
     {
         GNUPlotInterface::GNUPlotInterface(opt::solution_t solution_, std::vector<std::vector<opt::constraint_evaluations_t>> constraint_evaluations_)
         {
-            this->solution = solution_;
+            this->solution.state_result = solution_.state_result.transpose();
+            this->solution.input_result = solution_.input_result.transpose();
+            this->solution.times = solution_.times;
             this->constraint_evaluations = constraint_evaluations_;
-            std::cout << "Solution state size: " << solution.state_result.rows() << "x" << solution.state_result.cols() << std::endl;
-            std::cout << "Solution input size: " << solution.input_result.rows() << "x" << solution.input_result.cols() << std::endl;
-            std::cout << "Solution time size: " << solution.times.size() << std::endl;
         }
 
         void GNUPlotInterface::PlotSolution(std::vector<tuple_size_t> state_groups, std::vector<tuple_size_t> input_groups,
@@ -34,42 +33,40 @@ namespace galileo
                     ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + state_names[i][j] + "'";
                 }
                 ss += "\n";
-                std::cout << "ss: " << ss << std::endl;
                 gp << ss;
-                Eigen::MatrixXd block = solution.state_result.block(std::get<0>(state_groups[i]), 0, std::get<1>(state_groups[i]), solution.state_result.cols());
-                for (Eigen::Index j = 0; j < block.rows(); ++j)
+                Eigen::MatrixXd block = solution.state_result.block(0, std::get<0>(state_groups[i]), solution.state_result.rows(), std::get<1>(state_groups[i]) - std::get<0>(state_groups[i]));
+                for (Eigen::Index j = 0; j < block.cols(); ++j)
                 {
-                    Eigen::MatrixXd rowMatrix = block.row(j).matrix();
-                    std::vector<double> std_row_vector(rowMatrix.data(), rowMatrix.data() + rowMatrix.size());
-                    gp.send1d(std::make_tuple(std_times, std_row_vector));
+                    Eigen::VectorXd colMatrix = block.col(j).matrix();
+                    std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
+                    gp.send1d(std::make_tuple(std_times, std_col_vector));
                 }
             }
-            // for (size_t i = 0; i < input_groups.size(); ++i)
-            // {
-            //     Gnuplot gp;
-            //     gp << "set xlabel 'Time'\n";
-            //     gp << "set ylabel 'Values'\n";
-            //     gp << "set title '" + input_title_names[i] + "'\n";
-            //     std::string ss = "plot ";
-            //     for (size_t j = 0; j < input_names[i].size(); ++j)
-            //     {
-            //         if (j != 0)
-            //         {
-            //             ss += ", ";
-            //         }
-            //         ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + input_names[i][j] + "'";
-            //     }
-            //     ss += "\n";
-            //     std::cout << "ss: " << ss << std::endl;
-            //     gp << ss;
-            //     Eigen::MatrixXd block = solution.input_result.block(std::get<0>(input_groups[i]), 0, std::get<1>(input_groups[i]), solution.input_result.cols());
-            //     for (Eigen::Index j = 0; j < block.rows(); ++j)
-            //     {
-            //         Eigen::MatrixXd rowMatrix = block.row(j).matrix();
-            //         std::vector<double> std_row_vector(rowMatrix.data(), rowMatrix.data() + rowMatrix.size());
-            //         gp.send1d(std::make_tuple(std_times, std_row_vector));
-            //     }
-            // }
+            for (size_t i = 0; i < input_groups.size(); ++i)
+            {
+                Gnuplot gp;
+                gp << "set xlabel 'Time'\n";
+                gp << "set ylabel 'Values'\n";
+                gp << "set title '" + input_title_names[i] + "'\n";
+                std::string ss = "plot ";
+                for (size_t j = 0; j < input_names[i].size(); ++j)
+                {
+                    if (j != 0)
+                    {
+                        ss += ", ";
+                    }
+                    ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + input_names[i][j] + "'";
+                }
+                ss += "\n";
+                gp << ss;
+                Eigen::MatrixXd block = solution.input_result.block(0, std::get<0>(input_groups[i]), solution.input_result.rows(), std::get<1>(input_groups[i]) - std::get<0>(input_groups[i]));
+                for (Eigen::Index j = 0; j < block.cols(); ++j)
+                {
+                    Eigen::VectorXd colMatrix = block.col(j).matrix();
+                    std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
+                    gp.send1d(std::make_tuple(std_times, std_col_vector));
+                }
+            }
         }
 
         void GNUPlotInterface::PlotConstraints()
