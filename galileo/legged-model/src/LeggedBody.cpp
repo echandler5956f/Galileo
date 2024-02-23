@@ -190,7 +190,7 @@ namespace galileo
                                              si->get_v(cx2) - si->get_v(cx))});
         }
 
-        void LeggedBody::fillModeDynamics()
+        void LeggedBody::fillModeDynamics(bool print_ees_info)
         {
             casadi::SXVector foot_forces;
             casadi::SXVector foot_poss;
@@ -205,9 +205,11 @@ namespace galileo
 
                 for (auto ee : mode.combination_definition)
                 {
+                    std::string print_info;
+                    auto end_effector_ptr = ees_[ee.first];
                     if (ee.second)
                     {
-                        auto end_effector_ptr = ees_[ee.first];
+                        print_info = "At phase " + std::to_string(i) + " " + end_effector_ptr->frame_name + " is in contact.";
                         auto foot_pos = cdata.oMf[end_effector_ptr->frame_id].translation() - cdata.com[0];
 
                         casadi::SX cfoot_pos(3, 1);
@@ -229,6 +231,11 @@ namespace galileo
                         foot_poss.push_back(cfoot_pos);
                         foot_taus.push_back(ctau_ee);
                     }
+                    else
+                        print_info = "At phase " + std::to_string(i) + " " + end_effector_ptr->frame_name + " is NOT in contact.";
+
+                    if (print_ees_info)
+                        std::cout << print_info << std::endl;
                 }
 
                 casadi::SX total_f_input = casadi::SX::zeros(3, 1);

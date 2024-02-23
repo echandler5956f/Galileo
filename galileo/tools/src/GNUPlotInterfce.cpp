@@ -24,6 +24,7 @@ namespace galileo
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + state_title_names[i] + "'\n";
+                gp << "set key outside\n"; // Move the legend outside of the plot
                 std::string ss = "plot ";
                 for (size_t j = 0; j < state_names[i].size(); ++j)
                 {
@@ -51,6 +52,7 @@ namespace galileo
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + input_title_names[i] + "'\n";
+                gp << "set key outside\n"; // Move the legend outside of the plot
                 std::string ss = "plot ";
                 for (size_t j = 0; j < input_names[i].size(); ++j)
                 {
@@ -117,8 +119,6 @@ namespace galileo
                 }
             }
 
-            std::cout << "Here" << std::endl;
-
             // Convert the map to a vector
             std::vector<opt::constraint_evaluations_t> new_constraints;
             for (auto &pair : constraint_map)
@@ -137,6 +137,7 @@ namespace galileo
                     gp << "set ylabel 'Values'\n";
                     gp << "set title '" + new_constraints[i].metadata.plot_titles[j] + "'\n";
                     gp << "set style fill transparent solid 0.5 noborder\n";
+                    gp << "set key outside\n"; // Move the legend outside of the plot
                     std::string ss = "plot ";
                     for (size_t k = 0; k < new_constraints[i].metadata.plot_names[j].size(); ++k)
                     {

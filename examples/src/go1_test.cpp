@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     }
 
     std::cout << "Filling dynamics" << std::endl;
-    robot.fillModeDynamics();
+    robot.fillModeDynamics(true);
 
     casadi::SX cq0(robot.model.nq);
     pinocchio::casadi::copy(q0_vec, cq0);
@@ -109,10 +109,10 @@ int main(int argc, char **argv)
     // U_ref(5) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     // U_ref(8) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     // U_ref(11) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
-    std::cout << "num_end_effectors: " << robot.num_end_effectors_ << std::endl;
-    std::cout << "mass: " << robot.cdata.mass[0] << std::endl;
-    std::cout << "nu: " << si->nu << std::endl;
-    std::cout << "nF: " << robot.si->nF << std::endl;
+    // std::cout << "num_end_effectors: " << robot.num_end_effectors_ << std::endl;
+    // std::cout << "mass: " << robot.cdata.mass[0] << std::endl;
+    // std::cout << "nu: " << si->nu << std::endl;
+    // std::cout << "nF: " << robot.si->nF << std::endl;
     casadi::SX u_error = robot.cu - U_ref;
 
     casadi::Function L("L",
@@ -152,8 +152,8 @@ int main(int argc, char **argv)
 
     casadi::MXVector sol = traj.optimize();
 
-    std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
+    // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(200, 0., robot.contact_sequence->getDT());
     
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);

@@ -442,7 +442,7 @@ namespace galileo
                     processSegmentTimes(input_times_vec, segment_times, solu_segment, input_degree + 1, input_polynomial, result.input_result, i, j);
                     ++i;
                 }
-                state_count += state_degree * num_knots;
+                state_count += (state_degree + 1) * num_knots;
                 input_count += input_degree * num_knots;
             }
             auto clock_end_time = std::chrono::high_resolution_clock::now();

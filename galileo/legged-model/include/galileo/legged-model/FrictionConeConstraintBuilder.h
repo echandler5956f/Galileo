@@ -87,10 +87,10 @@ namespace galileo
                  *
                  * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
                  * @param phase_index the index of the hase
-                 * @param upper_bound Lower bound of the constraint at each point
-                 * @param lower_bound Upper bound of the constraint at each point
+                 * @param lower_bound Lower bound of the constraint at each point
+                 * @param upper_bound Upper bound of the constraint at each point
                  */
-                void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const;
+                void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &lower_bound, casadi::Function &upper_bound) const;
 
                 /**
                  * @brief Generate a function to evaluate each point
@@ -139,7 +139,7 @@ namespace galileo
             template <class ProblemData>
             void FrictionConeConstraintBuilder<ProblemData>::buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
             {
-                createBounds(problem_data, phase_index, constraint_data.upper_bound, constraint_data.lower_bound);
+                createBounds(problem_data, phase_index, constraint_data.lower_bound, constraint_data.upper_bound);
                 createFunction(problem_data, phase_index, constraint_data.G);
 
                 // int num_ee = problem_data.friction_cone_problem_data.contact_sequence->num_end_effectors();
@@ -149,7 +149,7 @@ namespace galileo
             }
 
             template <class ProblemData>
-            void FrictionConeConstraintBuilder<ProblemData>::createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const
+            void FrictionConeConstraintBuilder<ProblemData>::createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &lower_bound, casadi::Function &upper_bound) const
             {
                 uint num_constraints = getNumConstraintPerEEPerState(problem_data);
 
@@ -165,7 +165,6 @@ namespace galileo
                     /* If the end effector is not in contact*/
                     if (it != mode.combination_definition.end() && !it->second)
                     {
-                        std::cout << "End Effector " << end_effector.first << " is not in contact" << std::endl;
                         if (dof6)
                         {
                             lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6, 1)}));
@@ -180,7 +179,6 @@ namespace galileo
                     /* If the end effector is in contact*/
                     else
                     {
-                        std::cout << "End Effector " << end_effector.first << " is in contact" << std::endl;
                         lower_bound_vec.push_back(casadi::SX::zeros(1));
                         upper_bound_vec.push_back(casadi::inf);
                     }
@@ -188,8 +186,8 @@ namespace galileo
 
                 lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{vertcat(lower_bound_vec)});
                 upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{vertcat(upper_bound_vec)});
-                std::cout << "Friction Cone Lower Bound at Phase " << phase_index << ": " << lower_bound << std::endl;
-                std::cout << "Friction Cone Upper Bound at Phase " << phase_index << ": " << upper_bound << std::endl;
+                // std::cout << "G_FrictionCone Lower Bound at Phase " << phase_index << ": " << lower_bound << std::endl;
+                // std::cout << "G_FrictionCone Upper Bound at Phase " << phase_index << ": " << upper_bound << std::endl;
             }
 
             template <class ProblemData>
@@ -211,7 +209,7 @@ namespace galileo
                     }
                 }
                 G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, u_in}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
-                std::cout << "G_FrictionCone at Phase " << phase_index << ": " << G << std::endl;
+                // std::cout << "G_FrictionCone Evaluation at Phase " << phase_index << ": " << G << std::endl;
             }
 
             template <class ProblemData>

@@ -50,33 +50,34 @@ namespace galileo
 
             /**
              * @brief Create the generalized dynamics, fint, and fdiff functions.
-             * 
+             *
              */
             void createGeneralFunctions();
 
             /**
              * @brief Create the phase-invariant centroidal momentum dynamics (summed wrenches).
-             * 
+             *
              */
             void createGeneralDynamics();
 
             /**
              * @brief Create the state integrator function to translate from the tangent space to the state space.
-             * 
+             *
              */
             void createFint();
 
             /**
              * @brief Create the state derivative function to translate from the state space to the tangent space.
-             * 
+             *
              */
             void createFdiff();
 
             /**
              * @brief Create the mode dynamics for each mode using the General Dynamics.
-             * 
+             *
+             *  @param print_ees_info Whether to print the end effector contact information.
              */
-            void fillModeDynamics();
+            void fillModeDynamics(bool print_ees_info = false);
 
             /**
              * @brief Get the Contact Combination object from a binary combination mask.
@@ -94,85 +95,85 @@ namespace galileo
 
             /**
              * @brief The pinocchio model of the robot.
-             * 
+             *
              */
             opt::Model model;
 
             /**
              * @brief The pinocchio data of the robot.
-             * 
+             *
              */
             opt::Data data;
 
             /**
              * @brief The symbolic model of the robot.
-             * 
+             *
              */
             opt::ADModel cmodel;
 
             /**
              * @brief The symbolic data of the robot.
-             * 
+             *
              */
             opt::ADData cdata;
 
             /**
              * @brief The state indices helper for the robot.
-             * 
+             *
              */
             std::shared_ptr<opt::LeggedRobotStates> si;
 
             /**
              * @brief The contact sequence of the robot.
-             * 
+             *
              */
             std::shared_ptr<contact::ContactSequence> contact_sequence;
 
             /**
              * @brief The general dynamics function.
-             * 
+             *
              */
             casadi::Function general_dynamics;
 
             /**
              * @brief The state integrator function.
-             * 
+             *
              */
             casadi::Function fint;
 
             /**
              * @brief The state derivative function.
-             * 
+             *
              */
             casadi::Function fdif;
 
             /**
              * @brief The symbolic state.
-             * 
+             *
              */
             casadi::SX cx;
 
             /**
              * @brief The symbolic state deviant.
-             * 
+             *
              */
             casadi::SX cdx;
 
             /**
              * @brief The actual symbolic input.
-             * 
+             *
              */
             casadi::SX cu;
 
             /**
              * @brief The generalized symbolic input (summed wrenches, used for the centroidal dynamics).
-             * 
+             *
              */
             casadi::SX cu_general;
 
             /**
              * @brief The symbolic time.
-             * 
+             *
              */
             casadi::SX cdt;
 
@@ -185,7 +186,7 @@ namespace galileo
         private:
             /**
              * @brief Helper function to create the integrator function.
-             * 
+             *
              * @param x The state.
              * @param dx The state deviant.
              * @param dt The time step.
@@ -213,13 +214,13 @@ namespace galileo
 
             /**
              * @brief Eigen representations of the symbolic joint variables (used for pinocchio).
-             * 
+             *
              */
             opt::ConfigVectorAD q_AD;
 
             /**
              * @brief Eigen representations of the symbolic joint velocities (used for pinocchio).
-             * 
+             *
              */
             opt::TangentVectorAD v_AD;
         };

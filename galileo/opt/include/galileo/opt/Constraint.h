@@ -68,26 +68,26 @@ namespace galileo
         struct ConstraintData
         {
             /**
-             * @brief Upper bounds of the constraint function.
-             *
-             */
-            casadi::Function upper_bound;
-
-            /**
              * @brief Lower bounds of the constraint function.
              *
              */
             casadi::Function lower_bound;
 
             /**
+             * @brief Upper bounds of the constraint function.
+             *
+             */
+            casadi::Function upper_bound;
+
+            /**
              * @brief Constraint function.
-             * 
+             *
              */
             casadi::Function G;
 
             /**
              * @brief Metadata for the constraint.
-             * 
+             *
              */
             constraint_metadata_t metadata;
         };
@@ -98,18 +98,17 @@ namespace galileo
          */
         struct DecisionData
         {
+            /**
+             * @brief Lower bound on decision variables.
+             *
+             */
+            casadi::Function lower_bound;
 
             /**
              * @brief Upper bound on decision variables.
              *
              */
             casadi::Function upper_bound;
-
-            /**
-             * @brief Lower bound on decision variables.
-             *
-             */
-            casadi::Function lower_bound;
 
             /**
              * @brief Initial guess function for state and input as a function of time. Note that an inverse law for Fint will be used to generate the initial guess for the states.

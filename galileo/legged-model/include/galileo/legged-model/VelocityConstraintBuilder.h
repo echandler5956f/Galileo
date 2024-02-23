@@ -372,9 +372,9 @@ namespace galileo
                     }
                 }
 
-                std::cout << "G_Velocity at Phase " << phase_index << ": " << constraint_data.G << std::endl;
-                std::cout << "lower_bound at Phase " << phase_index << ": " << constraint_data.lower_bound << std::endl;
-                std::cout << "upper_bound at Phase " << phase_index << ": " << constraint_data.upper_bound << std::endl;
+                // std::cout << "G_Velocity Evaluation at Phase " << phase_index << ": " << constraint_data.G << std::endl;
+                // std::cout << "G_Velocity Lower Bound at Phase " << phase_index << ": " << constraint_data.lower_bound << std::endl;
+                // std::cout << "G_Velocity Upper Bound at Phase " << phase_index << ": " << constraint_data.upper_bound << std::endl;
             }
 
         }
