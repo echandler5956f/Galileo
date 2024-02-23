@@ -162,10 +162,10 @@ int main(int argc, char **argv)
     traj.getSolution(new_sol);
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-    // MeshcatInterface meshcat("../examples/visualization/");
-    // meshcat.WriteTimes(new_times, "sol_times.csv");
-    // meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
-    // meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
+    MeshcatInterface meshcat("../examples/visualization/");
+    meshcat.WriteTimes(new_times, "sol_times.csv");
+    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
 
     auto cons = traj.getConstraintViolations(new_sol);
 
@@ -175,9 +175,9 @@ int main(int argc, char **argv)
                          {"Positions", "Orientations"},
                          {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
                          {},
-                         {{}});
+                         {});
 
-    // plotter.PlotConstraints();
+    plotter.PlotConstraints();
 
     return 0;
 }

@@ -18,11 +18,9 @@ namespace galileo
         {
             std::vector<double> std_times(solution.times.data(), solution.times.data() + solution.times.size());
 
-            Gnuplot gp;  // Create a single Gnuplot process here
-
             for (size_t i = 0; i < state_groups.size(); ++i)
             {
-                gp << "set term wxt " << i << "\n";  // Create a new window for each plot
+                gp << "set term wxt " << window_index << "\n"; // Create a new window for each plot
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + state_title_names[i] + "'\n";
@@ -44,11 +42,12 @@ namespace galileo
                     std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
                     gp.send1d(std::make_tuple(std_times, std_col_vector));
                 }
+                ++window_index;
             }
 
             for (size_t i = 0; i < input_groups.size(); ++i)
             {
-                gp << "set term wxt " << (i + state_groups.size()) << "\n";  // Create a new window for each plot
+                gp << "set term wxt " << window_index << "\n"; // Create a new window for each plot
                 gp << "set xlabel 'Time'\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + input_title_names[i] + "'\n";
@@ -70,69 +69,101 @@ namespace galileo
                     std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
                     gp.send1d(std::make_tuple(std_times, std_col_vector));
                 }
+                ++window_index;
             }
         }
 
         void GNUPlotInterface::PlotConstraints()
         {
-            std::vector<opt::constraint_evaluations_t> new_constraints;
-            std::map<std::string, opt::constraint_evaluations_t *> constraint_map;
+            std::map<std::string, opt::constraint_evaluations_t> constraint_map;
 
             for (auto &cons_in_phase : constraint_evaluations)
             {
                 for (auto &constraint : cons_in_phase)
                 {
-                    if (constraint_map.count(constraint.name) == 0)
+                    for (size_t i = 0; i < constraint.metadata.plot_titles.size(); ++i)
                     {
-                        // This is a new constraint, add it to new_constraints and constraint_map
-                        new_constraints.push_back(constraint);
-                        constraint_map[constraint.name] = &new_constraints.back();
-                    }
-                    else
-                    {
-                        // This is an existing constraint, append the times and evaluation_and_bounds data
-                        opt::constraint_evaluations_t *existing_constraint = constraint_map[constraint.name];
-                        existing_constraint->times.conservativeResize(existing_constraint->times.size() + constraint.times.size());
-                        existing_constraint->times.tail(constraint.times.size()) = constraint.times;
-                        existing_constraint->evaluation_and_bounds.conservativeResize(existing_constraint->evaluation_and_bounds.rows(), existing_constraint->evaluation_and_bounds.cols() + constraint.evaluation_and_bounds.cols());
-                        existing_constraint->evaluation_and_bounds.rightCols(constraint.evaluation_and_bounds.cols()) = constraint.evaluation_and_bounds;
+                        std::string key = constraint.metadata.name + constraint.metadata.plot_titles[i];
+
+                        if (constraint_map.count(key) > 0)
+                        {
+                            // If the constraint already exists, concatenate the new data
+                            constraint_map[key].evaluation.conservativeResize(constraint_map[key].evaluation.rows(), constraint_map[key].evaluation.cols() + constraint.evaluation.cols());
+                            constraint_map[key].evaluation << constraint.evaluation;
+
+                            constraint_map[key].lower_bounds.conservativeResize(constraint_map[key].lower_bounds.rows(), constraint_map[key].lower_bounds.cols() + constraint.lower_bounds.cols());
+                            constraint_map[key].lower_bounds << constraint.lower_bounds;
+
+                            constraint_map[key].upper_bounds.conservativeResize(constraint_map[key].upper_bounds.rows(), constraint_map[key].upper_bounds.cols() + constraint.upper_bounds.cols());
+                            constraint_map[key].upper_bounds << constraint.upper_bounds;
+                        }
+                        else
+                        {
+                            // If the constraint doesn't exist, add it to the map
+                            opt::constraint_evaluations_t new_constraint;
+                            new_constraint.metadata.plot_groupings = {constraint.metadata.plot_groupings[i]};
+                            new_constraint.metadata.plot_titles = {constraint.metadata.plot_titles[i]};
+                            new_constraint.metadata.plot_names = {constraint.metadata.plot_names[i]};
+                            new_constraint.metadata.name = constraint.metadata.name;
+
+                            new_constraint.times = constraint.times;
+                            new_constraint.evaluation = constraint.evaluation;
+                            new_constraint.lower_bounds = constraint.lower_bounds;
+                            new_constraint.upper_bounds = constraint.upper_bounds;
+
+                            constraint_map[key] = new_constraint;
+                        }
                     }
                 }
             }
-            std::cout << "New constraints size: " << new_constraints.size() << std::endl;
+
+            // Convert the map to a vector
+            std::vector<opt::constraint_evaluations_t> new_constraints;
+            for (auto &pair : constraint_map)
+            {
+                new_constraints.push_back(pair.second);
+            }
+
             // Plot each group of constraints on the same graph
             for (size_t i = 0; i < new_constraints.size(); ++i)
             {
-                std::cout << "Plotting constraint: " << new_constraints[i].name << std::endl;
                 std::vector<double> std_times(new_constraints[i].times.data(), new_constraints[i].times.data() + new_constraints[i].times.size());
-                Gnuplot gp;
-                gp << "set xlabel 'Time'\n";
-                gp << "set ylabel 'Values'\n";
-                gp << "set title '" + new_constraints[i].name + "'\n";
-                std::string ss = "plot ";
-                std::string tmp_name;
-                for (size_t j = 0; j < 3; ++j)
+                for (size_t j = 0; j < new_constraints[i].metadata.plot_titles.size(); ++j)
                 {
-                    if (j == 0)
-                        tmp_name = "Evaluation";
-                    else if (j == 1)
-                        tmp_name = "Lower Bound";
-                    else if (j == 2)
-                        tmp_name = "Upper Bound";
-
-                    if (j != 0)
+                    gp << "set term wxt " << window_index << "\n"; // Create a new window for each plot
+                    gp << "set xlabel 'Time'\n";
+                    gp << "set ylabel 'Values'\n";
+                    gp << "set title '" + new_constraints[i].metadata.plot_titles[j] + "'\n";
+                    std::string ss = "plot ";
+                    for (size_t k = 0; k < new_constraints[i].metadata.plot_names[j].size(); ++k)
                     {
-                        ss += ", ";
+                        if (k != 0)
+                        {
+                            ss += ", ";
+                        }
+                        ss += "'-' with linespoints linestyle " + std::to_string(3 * k + 1) + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Evaluation', ";
+                        ss += "'-' with linespoints linestyle " + std::to_string(3 * k + 2) + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Lower Bound', ";
+                        ss += "'-' with linespoints linestyle " + std::to_string(3 * k + 3) + " title '" + new_constraints[i].metadata.plot_names[j][k] + " Upper Bound'";
                     }
-                    ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + tmp_name + "'";
-                }
-                ss += "\n";
-                gp << ss;
-                for (Eigen::Index j = 0; j < new_constraints[i].evaluation_and_bounds.rows(); ++j)
-                {
-                    Eigen::MatrixXd rowMatrix = new_constraints[i].evaluation_and_bounds.row(j).matrix();
-                    std::vector<double> std_row_vector(rowMatrix.data(), rowMatrix.data() + rowMatrix.size());
-                    gp.send1d(std::make_tuple(std_times, std_row_vector));
+                    ss += "\n";
+                    gp << ss;
+                    Eigen::MatrixXd block_eval = new_constraints[i].evaluation.block(0, std::get<0>(new_constraints[i].metadata.plot_groupings[j]), new_constraints[i].evaluation.rows(), std::get<1>(new_constraints[i].metadata.plot_groupings[j]) - std::get<0>(new_constraints[i].metadata.plot_groupings[j]));
+                    Eigen::MatrixXd block_lb = new_constraints[i].lower_bounds.block(0, std::get<0>(new_constraints[i].metadata.plot_groupings[j]), new_constraints[i].lower_bounds.rows(), std::get<1>(new_constraints[i].metadata.plot_groupings[j]) - std::get<0>(new_constraints[i].metadata.plot_groupings[j]));
+                    Eigen::MatrixXd block_ub = new_constraints[i].upper_bounds.block(0, std::get<0>(new_constraints[i].metadata.plot_groupings[j]), new_constraints[i].upper_bounds.rows(), std::get<1>(new_constraints[i].metadata.plot_groupings[j]) - std::get<0>(new_constraints[i].metadata.plot_groupings[j]));
+
+                    for (Eigen::Index k = 0; k < block_eval.cols(); ++k)
+                    {
+                        Eigen::VectorXd colMatrix = block_eval.col(k).matrix();
+                        std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
+                        gp.send1d(std::make_tuple(std_times, std_col_vector));
+                        colMatrix = block_lb.col(k).matrix();
+                        std::vector<double> std_col_vector_lb(colMatrix.data(), colMatrix.data() + colMatrix.size());
+                        gp.send1d(std::make_tuple(std_times, std_col_vector_lb));
+                        colMatrix = block_ub.col(k).matrix();
+                        std::vector<double> std_col_vector_ub(colMatrix.data(), colMatrix.data() + colMatrix.size());
+                        gp.send1d(std::make_tuple(std_times, std_col_vector_ub));
+                    }
+                    ++window_index;
                 }
             }
         }

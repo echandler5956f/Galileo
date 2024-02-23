@@ -376,25 +376,23 @@ namespace galileo
                     casadi_int start_idx = casadi_int(std::get<0>(seg_range));
                     casadi_int end_idx = casadi_int(std::get<1>(seg_range));
 
-                    std::vector<double> con_eval = con_data->G.map(end_idx - start_idx)(casadi::DMVector{
+                    casadi::DM con_eval = con_data->G.map(end_idx - start_idx)(casadi::DMVector{
                         dm_state_result(casadi::Slice(0, dm_state_result.rows()), casadi::Slice(start_idx, end_idx)), 
-                        dm_input_result(casadi::Slice(0, dm_input_result.rows()), casadi::Slice(start_idx, end_idx))}).at(0).get_elements();
-                    std::vector<double> con_lb = con_data->lower_bound.map(end_idx - start_idx)(casadi::DMVector{
-                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0).get_elements();
-                    std::vector<double> con_ub = con_data->upper_bound.map(end_idx - start_idx)(casadi::DMVector{
-                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0).get_elements();
-                    Eigen::VectorXd eval = Eigen::Map<Eigen::VectorXd>(con_eval.data(), con_eval.size(), 1);
-                    Eigen::VectorXd lb = Eigen::Map<Eigen::VectorXd>(con_lb.data(), con_lb.size(), 1);
-                    Eigen::VectorXd ub = Eigen::Map<Eigen::VectorXd>(con_ub.data(), con_ub.size(), 1);
+                        dm_input_result(casadi::Slice(0, dm_input_result.rows()), casadi::Slice(start_idx, end_idx))}).at(0);
+                    casadi::DM con_lb = con_data->lower_bound.map(end_idx - start_idx)(casadi::DMVector{
+                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0);
+                    casadi::DM con_ub = con_data->upper_bound.map(end_idx - start_idx)(casadi::DMVector{
+                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0);
+                    Eigen::MatrixXd eval = Eigen::Map<Eigen::MatrixXd>(con_eval.get_elements().data(), con_eval.size1(), con_eval.size2()).transpose();
+                    Eigen::MatrixXd lb = Eigen::Map<Eigen::MatrixXd>(con_lb.get_elements().data(), con_lb.size1(), con_lb.size2()).transpose();
+                    Eigen::MatrixXd ub = Eigen::Map<Eigen::MatrixXd>(con_ub.get_elements().data(), con_ub.size1(), con_ub.size2()).transpose();
 
                     constraint_evaluations_t con_evals;
-                    con_evals.name = con_data->G.name();
+                    con_evals.metadata = con_data->metadata;
                     con_evals.times = result.times.block(std::get<0>(seg_range), 0, std::get<1>(seg_range) - std::get<0>(seg_range), 1);
-                    con_evals.evaluation_and_bounds = Eigen::MatrixXd(3, con_eval.size());
-                    con_evals.evaluation_and_bounds.row(0) = eval.transpose();
-                    con_evals.evaluation_and_bounds.row(1) = lb.transpose();
-                    con_evals.evaluation_and_bounds.row(2) = ub.transpose();
-
+                    con_evals.evaluation = eval;
+                    con_evals.lower_bounds = lb;
+                    con_evals.upper_bounds = ub;
                     phase_constraint_evaluations.push_back(con_evals);
                 }
 

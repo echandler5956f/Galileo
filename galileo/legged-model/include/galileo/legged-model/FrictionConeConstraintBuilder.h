@@ -70,6 +70,16 @@ namespace galileo
                 FrictionConeConstraintBuilder() : opt::ConstraintBuilder<ProblemData>() {}
 
             private:
+
+                /**
+                 * @brief Build constraint data for a given problem data.
+                 *
+                 * @param problem_data MUST CONTAIN AN INSTANCE OF "FrictionConeProblemData" NAMED "friction_cone_problem_data"
+                 * @param phase_index the index of the phase
+                 * @param constraint_data The constraint data to be built.
+                 */
+                void buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data);
+
                 /**
                  * @brief Generate bounds for a vector of points.
                  *
@@ -125,6 +135,18 @@ namespace galileo
                  */
                 Eigen::MatrixXd getConeConstraintApproximation(const ProblemData &problem_data) const;
             };
+
+            template <class ProblemData>
+            void FrictionConeConstraintBuilder<ProblemData>::buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
+            {
+                createBounds(problem_data, phase_index, constraint_data.upper_bound, constraint_data.lower_bound);
+                createFunction(problem_data, phase_index, constraint_data.G);
+
+                // int num_ee = problem_data.friction_cone_problem_data.contact_sequence->num_end_effectors();
+                // std::bitset<32> bin_bitset(problem_data.friction_cone_problem_data.contact_sequence->modeIDFromPhaseIndex(phase_index));
+                // std::string tmp = bin_bitset.to_string();
+                constraint_data.metadata.name = "Friction Cone Constraint";
+            }
 
             template <class ProblemData>
             void FrictionConeConstraintBuilder<ProblemData>::createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const

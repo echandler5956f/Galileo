@@ -25,6 +25,9 @@ namespace galileo
         protected:
             opt::solution_t solution;
             std::vector<std::vector<opt::constraint_evaluations_t>> constraint_evaluations;
+
+            Gnuplot gp;
+            size_t window_index;
         };
     }
 }

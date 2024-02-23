@@ -1,5 +1,6 @@
 #pragma once
 
+#include "galileo/opt/Solution.h"
 #include <pinocchio/autodiff/casadi.hpp>
 
 namespace galileo
@@ -79,10 +80,16 @@ namespace galileo
             casadi::Function lower_bound;
 
             /**
-             * @brief The constraint function.
-             *
+             * @brief Constraint function.
+             * 
              */
             casadi::Function G;
+
+            /**
+             * @brief Metadata for the constraint.
+             * 
+             */
+            constraint_metadata_t metadata;
         };
 
         /**
@@ -144,30 +151,7 @@ namespace galileo
              * @param phase_index Index to build constraint data for
              * @param constraint_data Constraint specific data
              */
-            virtual void buildConstraint(const ProblemData &problem_data, int phase_index, ConstraintData &constraint_data)
-            {
-                createBounds(problem_data, phase_index, constraint_data.upper_bound, constraint_data.lower_bound);
-                createFunction(problem_data, phase_index, constraint_data.G);
-            }
-
-            /**
-             * @brief Generate bounds for a vector of points.
-             *
-             * @param problem_data Problem specific data
-             * @param phase_index Index to build constraint data for
-             * @param upper_bound Upper bound function to return
-             * @param lower_bound Lower bound function to return
-             */
-            virtual void createBounds(const ProblemData &problem_data, int phase_index, casadi::Function &upper_bound, casadi::Function &lower_bound) const = 0;
-
-            /**
-             * @brief Generate a function to evaluate each point.
-             *
-             * @param problem_data Problem specific data
-             * @param phase_index Index to build constraint data for
-             * @param G The constraint function to return
-             */
-            virtual void createFunction(const ProblemData &problem_data, int phase_index, casadi::Function &G) const = 0;
+            virtual void buildConstraint(const ProblemData &problem_data, int phase_index, ConstraintData &constraint_data) = 0;
         };
     };
 };

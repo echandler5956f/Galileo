@@ -68,6 +68,17 @@ namespace galileo
                 return count;
             }
 
+            int ContactSequence::modeIDFromPhaseIndex(int phase_index) const
+                {
+                    int result = 0;
+                    for (auto mode : phase_sequence_[phase_index].mode.combination_definition)
+                    {
+                        result = result << 1;
+                        result += mode.second;
+                    }
+                    return result;
+                }
+
             int ContactSequence::addPhase(const ContactMode &mode, int knot_points, double dt)
             {
                 auto validity_mode = mode;
