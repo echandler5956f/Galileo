@@ -107,9 +107,6 @@ namespace galileo
                                                                    casadi::SXVector{problem_data.contact_constraint_problem_data.t},
                                                                    casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
 
-                    // int num_ee = problem_data.friction_cone_problem_data.contact_sequence->num_end_effectors();
-                    // std::bitset<32> bin_bitset(problem_data.friction_cone_problem_data.contact_sequence->modeIDFromPhaseIndex(phase_index));
-                    // std::string tmp = bin_bitset.to_string();
                     constraint_data.metadata.name = "Contact Constraint";
                 }
 

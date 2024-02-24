@@ -26,9 +26,10 @@ namespace galileo
              * @param problem_ Problem data containing the objective function and dynamics
              * @param phase_sequence Sequence of phases including dynamics and timing information
              * @param builders_ Constraint builders used to build the constraints
+             * @param decision_builder_ Decision builder used to build the decision data
              * @param opts_ Options to pass to the solver
              */
-            TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_);
+            TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder_, casadi::Dict opts_);
 
             /**
              * @brief Initialize the finite elements.
@@ -47,7 +48,7 @@ namespace galileo
 
             /**
              * @brief Get the times where the decision variables are evaluated.
-             * 
+             *
              * @return std::vector<double> The times
              */
             std::vector<double> getGlobalTimes() const;
@@ -66,7 +67,7 @@ namespace galileo
 
             /**
              * @brief Get the Segment times from the global times.
-             * 
+             *
              * @param times The times to evaluate the solution at
              * @param initial_time The initial time of the segment
              * @param end_time The end time of the segment
@@ -76,7 +77,7 @@ namespace galileo
 
             /**
              * @brief Process the segment times and interpolate the solution.
-             * 
+             *
              * @param l_times_vec Local times vector
              * @param segment_times The segment times
              * @param solx_segment The solution at the segment
@@ -95,6 +96,10 @@ namespace galileo
              */
             std::vector<std::shared_ptr<Segment>> trajectory;
 
+            /**
+             * @brief The ranges of the segment times.
+             *
+             */
             std::vector<tuple_size_t> segment_times_ranges;
 
             /**
@@ -120,6 +125,12 @@ namespace galileo
              *
              */
             std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders;
+
+            /**
+             * @brief Decision builder used to build the decision data.
+             *
+             */
+            std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder;
 
             /**
              * @brief Constraint datas for each phase.
@@ -212,11 +223,12 @@ namespace galileo
         };
 
         template <class ProblemData, class MODE_T>
-        TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, casadi::Dict opts_)
+        TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder_, casadi::Dict opts_)
         {
             this->problem = problem_;
             this->gp_data = problem_->gp_data;
             this->builders = builders_;
+            this->decision_builder = decision_builder_;
             this->state_indices = problem_->states;
             this->sequence = phase_sequence;
             this->opts = opts_;
@@ -244,8 +256,7 @@ namespace galileo
             std::vector<double> equality_back(state_indices->nx, 0.0);
 
             std::vector<std::shared_ptr<ConstraintData>> G;
-            std::shared_ptr<DecisionData> Wx = std::make_shared<DecisionData>();
-            std::shared_ptr<DecisionData> Wu = std::make_shared<DecisionData>();
+            std::shared_ptr<DecisionData> Wdata = std::make_shared<DecisionData>();
 
             auto num_phases = sequence->getNumPhases();
 
@@ -261,13 +272,15 @@ namespace galileo
                     builder->buildConstraint(*problem, i, *con_data);
                     G.push_back(con_data);
                 }
+                decision_builder->buildDecisionData(*problem, i, *Wdata);
+                
                 constraint_datas_for_phase.push_back(G);
                 auto phase = sequence->phase_sequence_[i];
 
                 std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
                 segment->initializeLocalTimeVector(global_times);
                 segment->initializeKnotSegments(X0, prev_final_state);
-                segment->initializeExpressionGraph(G, Wx, Wu);
+                segment->initializeExpressionGraph(G, Wdata);
                 segment->evaluateExpressionGraph(J, w, g);
                 ranges_decision_variables.push_back(segment->get_range_idx_decision_variables());
 
@@ -377,15 +390,18 @@ namespace galileo
                     casadi_int end_idx = casadi_int(std::get<1>(seg_range));
 
                     casadi::DM con_eval = con_data->G.map(end_idx - start_idx)(casadi::DMVector{
-                        dm_state_result(casadi::Slice(0, dm_state_result.rows()), casadi::Slice(start_idx, end_idx)), 
-                        dm_input_result(casadi::Slice(0, dm_input_result.rows()), casadi::Slice(start_idx, end_idx))}).at(0);
+                                                                                   dm_state_result(casadi::Slice(0, dm_state_result.rows()), casadi::Slice(start_idx, end_idx)),
+                                                                                   dm_input_result(casadi::Slice(0, dm_input_result.rows()), casadi::Slice(start_idx, end_idx))})
+                                              .at(0);
                     casadi::DM con_lb = con_data->lower_bound.map(end_idx - start_idx)(casadi::DMVector{
-                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0);
+                                                                                           dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.columns()))})
+                                            .at(0);
                     casadi::DM con_ub = con_data->upper_bound.map(end_idx - start_idx)(casadi::DMVector{
-                        dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.size2()))}).at(0);
-                    Eigen::MatrixXd eval = Eigen::Map<Eigen::MatrixXd>(con_eval.get_elements().data(), con_eval.size1(), con_eval.size2()).transpose();
-                    Eigen::MatrixXd lb = Eigen::Map<Eigen::MatrixXd>(con_lb.get_elements().data(), con_lb.size1(), con_lb.size2()).transpose();
-                    Eigen::MatrixXd ub = Eigen::Map<Eigen::MatrixXd>(con_ub.get_elements().data(), con_ub.size1(), con_ub.size2()).transpose();
+                                                                                           dm_times(casadi::Slice(start_idx, end_idx), casadi::Slice(0, dm_times.columns()))})
+                                            .at(0);
+                    Eigen::MatrixXd eval = Eigen::Map<Eigen::MatrixXd>(con_eval.get_elements().data(), con_eval.rows(), con_eval.columns()).transpose();
+                    Eigen::MatrixXd lb = Eigen::Map<Eigen::MatrixXd>(con_lb.get_elements().data(), con_lb.rows(), con_lb.columns()).transpose();
+                    Eigen::MatrixXd ub = Eigen::Map<Eigen::MatrixXd>(con_ub.get_elements().data(), con_ub.rows(), con_ub.columns()).transpose();
 
                     constraint_evaluations_t con_evals;
                     con_evals.metadata = con_data->metadata;

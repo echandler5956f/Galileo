@@ -119,51 +119,51 @@ int main(int argc, char **argv)
                          {robot.cx},
                          {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
-    casadi::Dict opts;
-    opts["ipopt.linear_solver"] = "ma97";
-    opts["ipopt.ma97_order"] = "metis";
-    opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 250;
+    // casadi::Dict opts;
+    // opts["ipopt.linear_solver"] = "ma97";
+    // opts["ipopt.ma97_order"] = "metis";
+    // opts["ipopt.fixed_variable_treatment"] = "make_constraint";
+    // opts["ipopt.max_iter"] = 250;
 
-    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
-    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
-        std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
-    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
-        std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
-    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
-        std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
-    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
+    // std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
+    // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
+    //     std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
+    // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
+    //     std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
+    // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
+    //     std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
+    // std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
 
-    std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
-                                                                                                           std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
+    // std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
+    //                                                                                                        std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
 
-    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
+    // TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
 
-    traj.initFiniteElements(1, X0);
-    casadi::MXVector sol = traj.optimize();
+    // traj.initFiniteElements(1, X0);
+    // casadi::MXVector sol = traj.optimize();
 
-    std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., robot.contact_sequence->getDT());
-    solution_t new_sol = solution_t(new_times);
-    traj.getSolution(new_sol);
+    // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
+    // Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., robot.contact_sequence->getDT());
+    // solution_t new_sol = solution_t(new_times);
+    // traj.getSolution(new_sol);
 
-    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-    MeshcatInterface meshcat("../examples/visualization/");
-    meshcat.WriteTimes(new_times, "sol_times.csv");
-    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
-    meshcat.WriteMetadata(huron_location, q0_vec, "metadata.csv");
+    // Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
+    // MeshcatInterface meshcat("../examples/visualization/");
+    // meshcat.WriteTimes(new_times, "sol_times.csv");
+    // meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    // meshcat.WriteMetadata(huron_location, q0_vec, "metadata.csv");
 
-    auto cons = traj.getConstraintViolations(new_sol);
+    // auto cons = traj.getConstraintViolations(new_sol);
 
-    GNUPlotInterface plotter(new_sol, cons);
-    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
-                         {},
-                         {"Positions", "Orientations"},
-                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
-                         {},
-                         {{}});
+    // GNUPlotInterface plotter(new_sol, cons);
+    // plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
+    //                      {},
+    //                      {"Positions", "Orientations"},
+    //                      {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+    //                      {},
+    //                      {{}});
 
-    plotter.PlotConstraints();
+    // plotter.PlotConstraints();
 
     return 0;
 }

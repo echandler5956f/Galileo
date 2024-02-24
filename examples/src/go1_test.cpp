@@ -105,10 +105,10 @@ int main(int argc, char **argv)
     pinocchio::computeTotalMass(robot.model, robot.data);
 
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
-    // U_ref(2) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
-    // U_ref(5) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
-    // U_ref(8) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
-    // U_ref(11) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
+    U_ref(2) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
+    U_ref(5) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
+    U_ref(8) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
+    U_ref(11) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     // std::cout << "num_end_effectors: " << robot.num_end_effectors_ << std::endl;
     // std::cout << "mass: " << robot.cdata.mass[0] << std::endl;
     // std::cout << "nu: " << si->nu << std::endl;
@@ -142,19 +142,20 @@ int main(int argc, char **argv)
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
 
     std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
+    std::shared_ptr<DecisionDataBuilder<LeggedRobotProblemData>> decision_builder = std::make_shared<LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
                                                                                                            std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
 
-    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
+    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts);
 
     traj.initFiniteElements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 
     // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(200, 0., robot.contact_sequence->getDT());
-    
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
+
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
 
@@ -166,14 +167,32 @@ int main(int argc, char **argv)
 
     auto cons = traj.getConstraintViolations(new_sol);
 
+    // Collect the data specific to each end effector
+    std::vector<tuple_size_t> wrench_indices;
+    std::vector<std::vector<std::string>> wrench_legend_names;
+    std::vector<std::string> ee_plot_names;
+    for (auto ee : robot.getEndEffectors())
+    {
+        // auto range = si->frame_id_to_index_range[ee.second->frame_id];
+        // wrench_indices.push_back(std::make_tuple(std::get<1>(range) - 1, std::get<1>(range)));
+        wrench_indices.push_back(si->frame_id_to_index_range[ee.second->frame_id]);
+        if (ee.second->is_6d)
+            wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
+        else
+        {
+            wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
+            // wrench_legend_names.push_back({"F_{z}"});
+        }
+        ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
+    }
+
     GNUPlotInterface plotter(new_sol, cons);
     plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
-                         {},
+                         wrench_indices,
                          {"Positions", "Orientations"},
                          {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
-                         {},
-                         {});
-
+                         ee_plot_names,
+                         wrench_legend_names);
     plotter.PlotConstraints();
 
     return 0;

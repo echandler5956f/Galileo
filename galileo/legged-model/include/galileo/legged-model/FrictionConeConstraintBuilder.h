@@ -142,9 +142,6 @@ namespace galileo
                 createBounds(problem_data, phase_index, constraint_data.lower_bound, constraint_data.upper_bound);
                 createFunction(problem_data, phase_index, constraint_data.G);
 
-                // int num_ee = problem_data.friction_cone_problem_data.contact_sequence->num_end_effectors();
-                // std::bitset<32> bin_bitset(problem_data.friction_cone_problem_data.contact_sequence->modeIDFromPhaseIndex(phase_index));
-                // std::string tmp = bin_bitset.to_string();
                 constraint_data.metadata.name = "Friction Cone Constraint";
             }
 
