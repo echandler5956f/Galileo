@@ -195,7 +195,7 @@ Right now, our main development goal is to get the framework to solve general tr
 
 ## Contribute
 
-We are a small team of WPI students with no lab and no funding. We are open to contributions from the community! Submit a pull request or post an issue if you have any suggestions. This framework is still in its most nascent phase, and will take time to mature. Be patient and hopefully something good will come from this work.
+We are open to contributions from the community! Please feel free to submit a pull request or post an issue if you have any suggestions. This framework is still in its most nascent phase, and will take time to mature. Be patient, and hopefully something good will come from this work.
 
 ## Publications
 
