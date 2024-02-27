@@ -137,7 +137,7 @@ namespace galileo
                                                                                                           pinocchio::LOCAL)
                                                                                   .toVector();
 
-                    casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), 1));
+                    casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), foot_vel.cols()));
                     pinocchio::casadi::copy(foot_vel, cfoot_vel);
 
                     return cfoot_vel;
@@ -325,8 +325,8 @@ namespace galileo
                         if (ee.second->is_6d)
                         {
                             G_vec.push_back(cfoot_vel);
-                            lower_bound_vec.push_back(casadi::SX::zeros(cfoot_vel.rows(), 1));
-                            upper_bound_vec.push_back(casadi::SX::zeros(cfoot_vel.rows(), 1));
+                            lower_bound_vec.push_back(casadi::SX::zeros(6, 1));
+                            upper_bound_vec.push_back(casadi::SX::zeros(6, 1));
                         }
                         else
                         {
@@ -340,16 +340,13 @@ namespace galileo
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(lower_bound_vec)});
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(upper_bound_vec)});
 
-                int num_ee = problem_data.friction_cone_problem_data.contact_sequence->num_end_effectors();
-                std::bitset<32> bin_bitset(problem_data.friction_cone_problem_data.contact_sequence->modeIDFromPhaseIndex(phase_index));
-                std::string tmp = bin_bitset.to_string();
                 constraint_data.metadata.name = "Velocity Constraint";
                 int i = 0;
                 for (auto ee : problem_data.velocity_constraint_problem_data.robot_end_effectors)
                 {
                     if (mode[(*ee.second)])
                     {
-                        constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " +  ee.second->frame_name);
+                        constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
                         if (ee.second->is_6d)
                         {
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));

@@ -115,12 +115,6 @@ namespace galileo
              *
              */
             casadi::Function initial_guess;
-
-            /**
-             * @brief Decision variables at one knot or collocation point (x, u)
-             *
-             */
-            casadi::SX w;
         };
 
         /**
@@ -151,6 +145,36 @@ namespace galileo
              * @param constraint_data Constraint specific data
              */
             virtual void buildConstraint(const ProblemData &problem_data, int phase_index, ConstraintData &constraint_data) = 0;
+        };
+
+        /**
+         * @brief Extend this class to implement constraints.
+         *
+         */
+        template <class ProblemData>
+        class DecisionDataBuilder
+        {
+        public:
+            /**
+             * @brief Construct a new Decision Data Builder object.
+             *
+             */
+            DecisionDataBuilder() {}
+
+            /**
+             * @brief Destroy the Decision Data Builder object.
+             *
+             */
+            virtual ~DecisionDataBuilder() = default;
+
+            /**
+             * @brief Build constraint data for a given problem data.
+             *
+             * @param problem_data Problem specific data
+             * @param phase_index Index to build constraint data for
+             * @param decision_data Constraint specific data
+             */
+            virtual void buildDecisionData(const ProblemData &problem_data, int phase_index, DecisionData &decision_data) = 0;
         };
     };
 };
