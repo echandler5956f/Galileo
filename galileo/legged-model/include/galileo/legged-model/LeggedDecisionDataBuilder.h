@@ -28,6 +28,8 @@ namespace galileo
                 casadi::SX x;
                 casadi::SX u;
                 casadi::SX t;
+
+                casadi::SX X0;
             };
 
             template <class ProblemData>
@@ -56,8 +58,7 @@ namespace galileo
                             initial_guess_u(casadi::Slice(std::get<0>(states->frame_id_to_index_range[ee.first]), std::get<1>(states->frame_id_to_index_range[ee.first])))(casadi::Slice(0, 3)) = mass * g / num_in_contact;
                         }
                     }
-                    initial_guess_x(casadi::Slice(states->nh + states->ndh, states->nh + states->ndh + states->nq)) = vertcat(casadi::SXVector{0., 0., 0.339, 0., 0., 0., 1.,
-                                                                                                                                               0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3});
+                    initial_guess_x = problem_data.legged_decision_problem_data.X0;
 
                     decision_data.initial_guess = casadi::Function("DecisionInitialGuess", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{initial_guess_x, initial_guess_u});
                     decision_data.lower_bound = casadi::Function("DecisionLowerBounds", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{-casadi::inf * casadi::SX::ones(states->ndx, 1), -casadi::inf * casadi::SX::ones(states->nu, 1)});

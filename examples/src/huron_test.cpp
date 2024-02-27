@@ -22,40 +22,38 @@ int main(int argc, char **argv)
     std::shared_ptr<environment::EnvironmentSurfaces> surfaces = std::make_shared<environment::EnvironmentSurfaces>();
     surfaces->push_back(environment::createInfiniteGround());
 
-    contact::ContactMode initial_mode;
-    initial_mode.combination_definition = robot.getContactCombination(0b11);
-    initial_mode.contact_surfaces = {0, 0};
+    std::vector<int> knot_num = {20, 20, 20, 20, 20};
+    std::vector<double> knot_time = {0.25, 0.1667, 0.25, 0.1667, 0.25};
+    std::vector<int> mask_vec = {0b11, 0b10, 0b11, 0b01, 0b11}; // static walk
 
-    robot.contact_sequence->addPhase(initial_mode, 20, 1.);
-
-    contact::ContactMode second_mode;
-    second_mode.combination_definition = robot.getContactCombination(0b10);
-    second_mode.contact_surfaces.resize(second_mode.combination_definition.size());
-
-    // Set the surfaces for the end effectors that are in contact
-    int i = 0;
-    for (auto combo : second_mode.combination_definition)
+    int num_steps = 1;
+    for (int i = 0; i < num_steps; ++i)
     {
-        if (combo.second) // If the end effector is in contact
+        for (size_t j = 0; j < mask_vec.size(); ++j)
         {
-            // Set the surface for this end effector
-            second_mode.contact_surfaces[i] = 0;
-        }
-        else
-        {
-            second_mode.contact_surfaces[i] = environment::NO_SURFACE;
+            contact::ContactMode mode;
+            mode.combination_definition = robot.getContactCombination(mask_vec[j]);
+            mode.contact_surfaces.resize(mode.combination_definition.size());
+            int k = 0;
+            for (auto combo : mode.combination_definition)
+            {
+                if (combo.second)
+                    mode.contact_surfaces[k] = 0;
+                else
+                    mode.contact_surfaces[k] = environment::NO_SURFACE;
+                ++k;
+            }
+            robot.contact_sequence->addPhase(mode, knot_num[j], knot_time[j]);
         }
     }
 
-    robot.contact_sequence->addPhase(second_mode, 10, 0.25);
+    // contact::ContactMode final_mode;
+    // final_mode.combination_definition = robot.getContactCombination(0b11);
+    // final_mode.contact_surfaces = {0, 0};
+    // robot.contact_sequence->addPhase(final_mode, 20, 0.05);
 
-    contact::ContactMode final_mode;
-    final_mode.combination_definition = robot.getContactCombination(0b11);
-    final_mode.contact_surfaces = {0, 0};
-
-    robot.contact_sequence->addPhase(final_mode, 20, 0.25);
-
-    robot.fillModeDynamics();
+    std::cout << "Filling dynamics" << std::endl;
+    robot.fillModeDynamics(true);
 
     casadi::SX cq0(robot.model.nq);
     pinocchio::casadi::copy(q0_vec, cq0);
@@ -64,7 +62,7 @@ int main(int argc, char **argv)
     Eigen::VectorXd Q_diag(si->ndx);
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
+        500., 500., 500., 200., 200., 200.,                         /*Floating base position and orientation (exponential coordinates) error weights*/
         20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
@@ -103,11 +101,9 @@ int main(int argc, char **argv)
                                                   target_error_casadi,
                                                   robot.cx(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx)) - X_ref(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx))});
 
-    pinocchio::computeTotalMass(robot.model, robot.data);
-
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
-    U_ref(5) = 9.81 * robot.data.mass[0] / 2;
-    U_ref(11) = 9.81 * robot.data.mass[0] / 2;
+    U_ref(5) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
+    U_ref(11) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     casadi::SX u_error = robot.cu - U_ref;
 
     casadi::Function L("L",
@@ -119,51 +115,76 @@ int main(int argc, char **argv)
                          {robot.cx},
                          {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
-    // casadi::Dict opts;
-    // opts["ipopt.linear_solver"] = "ma97";
-    // opts["ipopt.ma97_order"] = "metis";
-    // opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    // opts["ipopt.max_iter"] = 250;
+    casadi::Dict opts;
+    opts["ipopt.linear_solver"] = "ma97";
+    opts["ipopt.ma97_order"] = "metis";
+    opts["ipopt.fixed_variable_treatment"] = "make_constraint";
+    opts["ipopt.max_iter"] = 250;
 
-    // std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
-    // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
-    //     std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
-    // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
-    //     std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
-    // std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
-    //     std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
-    // std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
+    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
 
-    // std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
-    //                                                                                                        std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
+    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
+        std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
-    // TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, opts);
+    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
+        std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
 
-    // traj.initFiniteElements(1, X0);
-    // casadi::MXVector sol = traj.optimize();
+    std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
+        std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
+
+    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
+    std::shared_ptr<DecisionDataBuilder<LeggedRobotProblemData>> decision_builder = std::make_shared<LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
+
+    std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
+                                                                                                           std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt, X0);
+
+    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts);
+
+    traj.initFiniteElements(1, X0);
+
+    casadi::MXVector sol = traj.optimize();
 
     // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    // Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(20, 0., robot.contact_sequence->getDT());
-    // solution_t new_sol = solution_t(new_times);
-    // traj.getSolution(new_sol);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
 
-    // Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-    // MeshcatInterface meshcat("../examples/visualization/");
-    // meshcat.WriteTimes(new_times, "sol_times.csv");
-    // meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
-    // meshcat.WriteMetadata(huron_location, q0_vec, "metadata.csv");
+    solution_t new_sol = solution_t(new_times);
+    traj.getSolution(new_sol);
 
-    // auto cons = traj.getConstraintViolations(new_sol);
+    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
+    MeshcatInterface meshcat("../examples/visualization/");
+    meshcat.WriteTimes(new_times, "sol_times.csv");
+    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    meshcat.WriteMetadata(huron_location, q0_vec, "metadata.csv");
 
-    // GNUPlotInterface plotter(new_sol, cons);
-    // plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
-    //                      {},
-    //                      {"Positions", "Orientations"},
-    //                      {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
-    //                      {},
-    //                      {{}});
+    auto cons = traj.getConstraintViolations(new_sol);
 
-    // plotter.PlotConstraints();
+    // Collect the data specific to each end effector
+    std::vector<tuple_size_t> wrench_indices;
+    std::vector<std::vector<std::string>> wrench_legend_names;
+    std::vector<std::string> ee_plot_names;
+    for (auto ee : robot.getEndEffectors())
+    {
+        // auto range = si->frame_id_to_index_range[ee.second->frame_id];
+        // wrench_indices.push_back(std::make_tuple(std::get<1>(range) - 1, std::get<1>(range)));
+        wrench_indices.push_back(si->frame_id_to_index_range[ee.second->frame_id]);
+        if (ee.second->is_6d)
+            wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
+        else
+        {
+            wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
+            // wrench_legend_names.push_back({"F_{z}"});
+        }
+        ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
+    }
+
+    GNUPlotInterface plotter(new_sol, cons);
+    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
+                         wrench_indices,
+                         {"Positions", "Orientations"},
+                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                         ee_plot_names,
+                         wrench_legend_names);
+    plotter.PlotConstraints();
 
     return 0;
 }

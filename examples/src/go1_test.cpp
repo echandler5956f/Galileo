@@ -107,17 +107,11 @@ int main(int argc, char **argv)
                                                   target_error_casadi,
                                                   robot.cx(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx)) - X_ref(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx))});
 
-    pinocchio::computeTotalMass(robot.model, robot.data);
-
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
     U_ref(2) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     U_ref(5) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     U_ref(8) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     U_ref(11) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
-    // std::cout << "num_end_effectors: " << robot.num_end_effectors_ << std::endl;
-    // std::cout << "mass: " << robot.cdata.mass[0] << std::endl;
-    // std::cout << "nu: " << si->nu << std::endl;
-    // std::cout << "nF: " << robot.si->nF << std::endl;
     casadi::SX u_error = robot.cu - U_ref;
 
     casadi::Function L("L",
@@ -150,7 +144,7 @@ int main(int argc, char **argv)
     std::shared_ptr<DecisionDataBuilder<LeggedRobotProblemData>> decision_builder = std::make_shared<LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
-                                                                                                           std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
+                                                                                                           std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt, X0);
 
     TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts);
 
