@@ -22,15 +22,15 @@ int main(int argc, char **argv)
     std::shared_ptr<environment::EnvironmentSurfaces> surfaces = std::make_shared<environment::EnvironmentSurfaces>();
     surfaces->push_back(environment::createInfiniteGround());
 
-    std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
-    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05};
-    std::vector<int> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
+    // std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
+    // std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05};
+    // std::vector<int> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
 
-    // std::vector<int> knot_num = {20, 20, 20, 20, 20};
-    // std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3};
-    // std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // static trot
+    std::vector<int> knot_num = {20, 20, 20, 20};
+    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3};
+    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // static trot
 
-    int num_steps = 1;
+    int num_steps = 2;
     for (int i = 0; i < num_steps; ++i)
     {
         for (size_t j = 0; j < mask_vec.size(); ++j)
@@ -50,6 +50,11 @@ int main(int argc, char **argv)
             robot.contact_sequence->addPhase(mode, knot_num[j], knot_time[j]);
         }
     }
+
+    contact::ContactMode final_mode;
+    final_mode.combination_definition = robot.getContactCombination(0b1111);
+    final_mode.contact_surfaces = {0, 0, 0, 0};
+    robot.contact_sequence->addPhase(final_mode, 20, 0.05);
 
     std::cout << "Filling dynamics" << std::endl;
     robot.fillModeDynamics(true);

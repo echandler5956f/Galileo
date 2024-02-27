@@ -336,7 +336,6 @@ namespace galileo
             {
                 general_lbw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(Wdata->lower_bound.map(knot_num + 1, "serial")(knot_times).at(0), Ndxknot, 1);
                 general_ubw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(Wdata->upper_bound.map(knot_num + 1, "serial")(knot_times).at(0), Ndxknot, 1);
-                std::cout << "Ndx: " << Ndx << std::endl;
                 general_lbw(casadi::Slice(Ndxknot, Ndx)) = casadi::DM::reshape(Wdata->lower_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0), Ndxcol, 1);
                 general_ubw(casadi::Slice(Ndxknot, Ndx)) = casadi::DM::reshape(Wdata->upper_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0), Ndxcol, 1);
             }
