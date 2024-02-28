@@ -57,6 +57,14 @@ namespace galileo
                 }
             };
 
+
+            /**
+             * @brief Creates a surface at some Rotation and Translation away from the origin.
+             *
+             * @return The created surface 
+             */
+            SurfaceData createInfiniteSurface( double angle, Eigen::Vector3d rotation_axis, Eigen::Vector3d origin_translation  )
+
             /**
              * @brief Creates an infinite ground surface.
              *

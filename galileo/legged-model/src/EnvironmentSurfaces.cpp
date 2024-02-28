@@ -7,6 +7,24 @@ namespace galileo
         namespace environment
         {
 
+            SurfaceData createInfiniteSurface( double angle, Eigen::Vector3d rotation_axis, Eigen::Vector3d origin_translation  ){
+
+                galileo::legged::environment::SurfaceData new_surface;
+
+                Eigen::AngleAxis<double> aa(angle, rotation_axis);
+
+                Eigen::Translation<double,3> x_translation(origin_translation);
+
+                new_surface.surface_transform = x_translation * aa;
+
+                new_surface.A = {0, 0};
+
+                new_surface.b = Eigen::VectorXd::Zero(1);
+                new_surface.polytope_local_chebyshev_center = {0, 0};
+
+                return new_surface;
+            }
+            
             SurfaceData createInfiniteGround()
             {
                 SurfaceData infinite_ground;
