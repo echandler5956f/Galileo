@@ -203,6 +203,14 @@ namespace galileo
                         gp.send1d(std::make_tuple(std_times, std_col_vector_ub));
                         // Send the data for the filled curves
                         gp.send1d(std::make_tuple(std_times, std_col_vector_lb, std_col_vector_ub));
+                        double constraint_violation = 0.;
+                        for (Eigen::Index cnt = 0; cnt < eval.rows(); ++cnt)
+                        {
+                            constraint_violation += pow(std::max(0., std_col_vector[cnt] - std_col_vector_ub[cnt]), 2);
+                            constraint_violation += pow(std::max(0., std_col_vector_lb[cnt] - std_col_vector[cnt]), 2);
+                        }
+                        constraint_violation = sqrt(constraint_violation / eval.rows());
+                        std::cout << "Constraint violation of " << new_constraints[i][0].metadata.plot_titles[0] << " " << new_constraints[i][j].metadata.name << ": " << constraint_violation << std::endl;
                     }
                 }
                 ++window_index;

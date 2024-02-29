@@ -30,7 +30,7 @@ namespace galileo
             std::vector<std::vector<opt::constraint_evaluations_t>> constraint_evaluations;
 
             Gnuplot gp;
-            size_t window_index;
+            size_t window_index = 0;
         };
     }
 }

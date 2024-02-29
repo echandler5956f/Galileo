@@ -28,7 +28,11 @@ int main(int argc, char **argv)
 
     std::vector<int> knot_num = {20, 20, 20, 20};
     std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3};
-    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // static trot
+    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // trot
+
+    // std::vector<int> knot_num = {20, 20};
+    // std::vector<double> knot_time = {0.05, 0.3};
+    // std::vector<int> mask_vec = {0b1111, 0b1001}; // half trot
 
     int num_steps = 2;
     for (int i = 0; i < num_steps; ++i)
@@ -154,6 +158,20 @@ int main(int argc, char **argv)
 
     // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
+    // std::vector<double> tmp = traj.getGlobalTimes();
+    // double threshold = 1e-6; // Adjust this value as needed
+
+    // // Custom comparison function
+    // auto closeEnough = [threshold](double a, double b) {
+    //     return std::abs(a - b) < threshold;
+    // };
+
+    // std::sort(tmp.begin(), tmp.end());
+    // auto last = std::unique(tmp.begin(), tmp.end(), closeEnough);
+    // tmp.erase(last, tmp.end());
+
+    // Eigen::VectorXd new_times = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
+    // std::cout << "New times: " << new_times << std::endl;
 
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
@@ -163,7 +181,7 @@ int main(int argc, char **argv)
     meshcat.WriteTimes(new_times, "sol_times.csv");
     meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
     meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
-
+    std::cout << "Getting constraint violations" << std::endl;
     auto cons = traj.getConstraintViolations(new_sol);
 
     // Collect the data specific to each end effector

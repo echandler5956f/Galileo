@@ -61,18 +61,31 @@ namespace galileo
             virtual casadi::MX getFinalState() const = 0;
 
             /**
-             * @brief Get the local times vector.
+             * @brief Get the segment times vector.
              *
-             * @return casadi::DM The local times vector
+             * @return casadi::DM The segment times vector
              */
-            virtual casadi::DM getLocalTimes() const = 0;
+            virtual casadi::DM getSegmentTimes() const = 0;
 
             /**
-             * @brief Initialize the vector of local times which constraints are evaluated at.
+             * @brief Get the input segment times vector.
+             * 
+             * @return casadi::DM The input segment times vector
+             */
+            virtual casadi::DM getUSegmentTimes() const = 0;
+
+            /**
+             * @brief Initialize the vector of segment times which constraints are evaluated at.
              *
              * @param global_times Vector of global times
              */
-            virtual void initializeLocalTimeVector(casadi::DM &global_times) = 0;
+            virtual void initializeSegmentTimeVector(casadi::DM &global_times) = 0;
+
+            /**
+             * @brief Initialize the vector of times which coincide to the decision variables U occur at.
+             *
+             */
+            virtual void initializeInputTimeVector(casadi::DM &global_times) = 0;
 
             /**
              * @brief Create all the knot segments.
