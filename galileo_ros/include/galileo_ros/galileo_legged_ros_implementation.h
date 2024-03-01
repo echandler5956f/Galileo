@@ -90,7 +90,6 @@ class GalileoLeggedROSImplementation {
      * @brief Publishes the last solution.
      */
     void PublishLastSolution();
-
     /**
      * @brief Updates the solution based on the initial state.
      * 
