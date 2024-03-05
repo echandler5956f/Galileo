@@ -10,6 +10,11 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+find_package(catkin REQUIRED COMPONENTS
+  ${GALILEO_ROS_DEPEDENCIES}
+)
+
+
 ## System dependencies are found with CMake's conventions
 find_package(casadi REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)

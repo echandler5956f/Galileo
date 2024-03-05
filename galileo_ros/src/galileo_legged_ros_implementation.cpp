@@ -373,6 +373,12 @@ int main(int argc, char **argv)
 
     GalileoLeggedROSImplementation galileo_legged_imp(nh, true);
 
+    // Load the robot model from the given model file and set the end effectors
+
+    galileo_ros::ModelLocation model_location;
+    model_location.model_file = "path/to/robot_model";
+    galileo_legged_imp.LoadModelCallback(model_location);
+
     // Spin the ROS node
     ros::spin();
 
