@@ -44,31 +44,6 @@ class GalileoLeggedROSImplementation {
     GalileoLeggedROSImplementation(::ros::NodeHandle& node_handle);
 
     /**
-     * @brief Initializes the subscribers for the Galileo Legged ROS Implementation.
-     */
-    void InitSubscribers();
-
-    /**
-     * @brief Initializes the publishers for the Galileo Legged ROS Implementation.
-     */
-    void InitPublishers();
-    
-    /**
-     * @brief Initializes the services for the Galileo Legged ROS Implementation.
-     */
-    void InitServices(){} // no services yet.
-        
-    private: 
-
-    /**
-     * @brief Loads the robot model from the given model file and sets the end effectors.
-     * 
-     * @param model_file The path to the robot model file.
-     * @param end_effector_names The names of the end effectors.
-     */
-    void LoadModel(const std::string& model_file, const std::vector<std::string>& end_effector_names);
-
-    /**
      * @brief Loads the robot model from the given model file and sets the end effectors.
      * 
      * @param model_file The path to the robot model file.
@@ -96,6 +71,40 @@ class GalileoLeggedROSImplementation {
     void UpdateSolution( T_ROBOT_STATE initial_state );    
     
     
+    /**
+     * @brief Creates the problem data from the loaded model/parameters.
+    */
+    void CreateProblemData();
+
+    /**
+     * @brief Creates the trajectory optimizer if the problem data is set.
+    */
+    void CreateTrajOptSolver();
+    private: 
+
+    /**
+     * @brief Initializes the subscribers for the Galileo Legged ROS Implementation.
+     */
+    void InitSubscribers();
+
+    /**
+     * @brief Initializes the publishers for the Galileo Legged ROS Implementation.
+     */
+    void InitPublishers();
+    
+    /**
+     * @brief Initializes the services for the Galileo Legged ROS Implementation.
+     */
+    void InitServices(){} // no services yet.
+        
+    /**
+     * @brief Loads the robot model from the given model file and sets the end effectors.
+     * 
+     * @param model_file The path to the robot model file.
+     * @param end_effector_names The names of the end effectors.
+     */
+    void LoadModel(const std::string& model_file, const std::vector<std::string>& end_effector_names);
+
     // Hardcoded functions for the Go1 implementation. To be changed.
 
     /**
@@ -106,20 +115,13 @@ class GalileoLeggedROSImplementation {
     void LoadParameters(const std::string& parameter_file);
     
 
-    /**
-     * @brief Creates the problem data from the loaded model/parameters.
-    */
-    void CreateProblemData();
+
     /**
      * @brief Updates the robot running and terminal costs L and Phi. 
      * 
     */
     void CreateCost( casadi::Function &L, casadi::Function &Phi ) const;
 
-    /**
-     * @brief Creates the trajectory optimizer.
-    */
-    void CreateTrajOptSolver();
 
     
     /**
