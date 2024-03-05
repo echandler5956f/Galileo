@@ -38,7 +38,7 @@ void GalileoLeggedROSImplementation::InitSubscribers()
     // robot_state_subscriber_ = 
     //     nh_.subscribe("legged_robot_state", 100, &GalileoLeggedROSImplementation::UpdateRobotState, this);
 
-    // Subscribe to the robot command. this should end up being a service
+    // Subscribe to the robot command. this should end up being a service.
     robot_command_subscriber_ = 
         nh_.subscribe("legged_robot_command", 100, &GalileoLeggedROSImplementation::UpdateRobotCommand, this);
 }
@@ -283,6 +283,12 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
 
     GalileoLeggedROSImplementation galileo_legged_imp(nh);
+
+    // Load the robot model from the given model file and set the end effectors
+
+    galileo_ros::ModelLocation model_location;
+    model_location.model_file = "path/to/robot_model";
+    galileo_legged_imp.LoadModelCallback(model_location);
 
     // Spin the ROS node
     ros::spin();
