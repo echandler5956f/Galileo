@@ -236,6 +236,7 @@ void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Fu
                          {robot_->cx},
                          {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
+    if(verbose_) ROS_INFO("Costs created");
 }
 
 std::vector< GalileoLeggedROSImplementation::LeggedConstraintBuilderType > 
@@ -270,6 +271,9 @@ void GalileoLeggedROSImplementation::CreateTrajOptSolver(){
     decision_builder_ = std::make_shared<galileo::legged::constraints::LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
     trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_);
+
+
+    if(verbose_) ROS_INFO("Trajectory Optimizer created");
 }
 
 /**
