@@ -51,7 +51,7 @@ class GalileoLeggedROSImplementation {
      * 
      * @param node_handle The ROS node handle.
      */
-    GalileoLeggedROSImplementation(::ros::NodeHandle& node_handle);
+    GalileoLeggedROSImplementation(::ros::NodeHandle& node_handle, bool verbose = false);
 
     /**LeggedConstraintBuilderType
      * @brief Loads the robot model from the given model file and sets the end effectors.
@@ -157,6 +157,9 @@ class GalileoLeggedROSImplementation {
     casadi::Dict opts_;
 
     std::shared_ptr<galileo::opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
+
+
+    bool verbose_; /**< Whether to print verbose output. */
 
 
     ::ros::NodeHandle& node_handle_; /**< The ROS node handle. */

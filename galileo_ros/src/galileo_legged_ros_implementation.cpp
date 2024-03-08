@@ -1,8 +1,8 @@
 #include "galileo_ros/galileo_legged_ros_implementation.h"
 
 // Constructor
-GalileoLeggedROSImplementation::GalileoLeggedROSImplementation(ros::NodeHandle& node_handle)
-    : node_handle_(node_handle)
+GalileoLeggedROSImplementation::GalileoLeggedROSImplementation(ros::NodeHandle& node_handle, bool verbose)
+    : node_handle_(node_handle), verbose_(verbose)
 {
     // Initialize the subscribers
     InitSubscribers();
@@ -23,10 +23,13 @@ void GalileoLeggedROSImplementation::InitSubscribers()
     robot_model_subscriber_ = 
         node_handle_.subscribe("legged_robot_model", 1, &GalileoLeggedROSImplementation::LoadModelCallback, this);
 
+    if(verbose_) ROS_INFO("Subscribed to legged_robot_model");
+
     // Subscribe to the parameter location strings
     parameter_location_subscriber_ = 
         node_handle_.subscribe("legged_parameter_location", 1, &GalileoLeggedROSImplementation::ParameterCallback, this);
 
+    if(verbose_) ROS_INFO("Subscribed to legged_parameter_location");
     // // Subscribe to the robot state
     // robot_state_subscriber_ = 
     //     nh_.subscribe("legged_robot_state", 100, &GalileoLeggedROSImplementation::UpdateRobotState, this);
@@ -60,7 +63,9 @@ void GalileoLeggedROSImplementation::LoadModel(const std::string& model_file, co
     for (size_t i = 0; i < end_effector_names.size(); ++i)
     {
         end_effector_names_array[i] = end_effector_names[i];
+        if(verbose_) ROS_INFO("Setting end effector: %s", end_effector_names_array[i].c_str() );
     }
+    if(verbose_) ROS_INFO ("Loading model from %s", model_file.c_str());
     
     // Load the robot model from the given model file and set the end effectors
     robot_ = std::make_shared<galileo::legged::LeggedBody>(model_file, end_effector_names.size(), end_effector_names_array);
@@ -80,6 +85,7 @@ void GalileoLeggedROSImplementation::ParameterCallback(const std_msgs::String::C
     // Update the parameters from the given parameter file, and create the costs
     LoadParameters(msg->data);
 
+
     // get target position 
     // get cost weights
     // create cost function, L and Phi
@@ -95,6 +101,8 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string& parameter
     opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts_["ipopt.max_iter"] = 250;
 
+
+    if(verbose_) ROS_INFO("Parameters loaded from %s", parameter_file.c_str());
     // Do nothing, we will hard code parameters for now.
 }
 
@@ -289,7 +297,7 @@ int main(int argc, char** argv)
     // Create a ROS node handle
     ros::NodeHandle nh;
 
-    GalileoLeggedROSImplementation galileo_legged_imp(nh);
+    GalileoLeggedROSImplementation galileo_legged_imp(nh, true);
 
     // Spin the ROS node
     ros::spin();
