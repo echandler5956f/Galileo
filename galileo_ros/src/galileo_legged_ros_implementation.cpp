@@ -339,6 +339,9 @@ void GalileoLeggedROSImplementation::CreateTrajOptSolver()
         ROS_INFO("Creating Trajectory Optimizer");
 
     trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_);
+
+
+    if(verbose_) ROS_INFO("Trajectory Optimizer created");
 }
 
 /**
