@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 
 #include "galileo_ros/ModelLocation.h"
 #include "galileo_ros/RobotSolution.h"
@@ -21,7 +22,7 @@ int main(int argc, char** argv)
 
     // Create a legged modelLocation message
     galileo_ros::ModelLocation model_location_msg;
-    model_location_msg.model_location = "/home/akshay/Documents/BiQu/src/Galileo/resources/go1/urdf/go1.urdf";
+    model_location_msg.model_file_location = "/home/akshay/Documents/BiQu/src/Galileo/resources/go1/urdf/go1.urdf";
     model_location_msg.end_effector_names = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
 
     // Create a parameter location message
