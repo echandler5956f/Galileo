@@ -268,8 +268,8 @@ namespace galileo
                     //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
-                    //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
-                    // G_out = evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)));
+                    //  Function = (evaluated_vector[2] - evaluated_vector.head(2).normSquared());
+                    // G_out = evaluated_vector(2) - sqrt(evaluated_vector(0) * evaluated_vector(0) + evaluated_vector(1) * evaluated_vector(1) + casadi::eps);
                     G_out = f_ee(2);
                 }
             }

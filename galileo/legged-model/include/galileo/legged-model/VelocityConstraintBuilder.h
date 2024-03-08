@@ -30,8 +30,8 @@ namespace galileo
                 // A value between 0 and 1 that determines the window of time on which the footstep has velocitty along basis n.
                 // We consider the total spatial velocity to be some [n1 n2] * [v1; v2].
                 // At t = h_1_window_duration, the velocity v1 is 0.  at t = 1 - h2_window_duration, the velocity v2 is 0.
-                double h1_window_duration = 0.5;
-                double h2_window_duration = 0.5;
+                double h1_window_duration = 0.65;
+                double h2_window_duration = 0.65;
 
                 // The number of standard deviations we consider in the window of the bell curve.
                 // Effectively, this defines the steepness fo the bell curve.

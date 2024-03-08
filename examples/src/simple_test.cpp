@@ -31,8 +31,8 @@ int main()
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
     X0(1, 0) = 1;
 
-    int d = 3;
-    int N = 20;
+    int d = 1;
+    int N = 5;
     double T = 10.;
     double h = T / N;
 
@@ -52,13 +52,12 @@ int main()
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 250;
-    TrajectoryOpt<RosenbrockProblemData, BasicMode> traj(problem, seq, builders, decision_builder, opts);
+    TrajectoryOpt<RosenbrockProblemData, BasicMode> traj(problem, seq, builders, decision_builder, opts, "ipopt");
 
     traj.initFiniteElements(d, X0);
     casadi::MXVector sol = traj.optimize();
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., seq->getDT());
-    std::cout << "Duration: " << seq->getDT() << std::endl;
 
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);

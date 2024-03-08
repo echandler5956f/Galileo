@@ -86,8 +86,9 @@ namespace galileo
              * @param builders_ Constraint builders used to build the constraints
              * @param decision_builder_ Decision builder used to build the decision data
              * @param opts_ Options to pass to the solver
+             * @param nonlinear_solver_name_ Nonlinear solver name to use for the optimization
              */
-            TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder_, casadi::Dict opts_);
+            TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder_, casadi::Dict opts_, std::string nonlinear_solver_name_ = "ipopt");
 
             /**
              * @brief Initialize the finite elements.
@@ -203,6 +204,12 @@ namespace galileo
             casadi::Dict opts;
 
             /**
+             * @brief Nonlinear solver to use.
+             * 
+             */
+            std::string nonlinear_solver_name;
+
+            /**
              * @brief Nonlinear function solver.
              *
              */
@@ -287,7 +294,7 @@ namespace galileo
         };
 
         template <class ProblemData, class MODE_T>
-        TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder_, casadi::Dict opts_)
+        TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem_, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders_, std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder_, casadi::Dict opts_, std::string nonlinear_solver_name_)
         {
             this->problem = problem_;
             this->gp_data = problem_->gp_data;
@@ -296,6 +303,7 @@ namespace galileo
             this->state_indices = problem_->states;
             this->sequence = phase_sequence;
             this->opts = opts_;
+            this->nonlinear_solver_name = nonlinear_solver_name_;
         }
 
         template <class ProblemData, class MODE_T>
@@ -445,10 +453,10 @@ namespace galileo
 
             // opts["iteration_callback"] = callback;
             // opts["iteration_callback_step"] = 1; // Call the callback function at every iteration
-            solver = casadi::nlpsol("solver", "ipopt", nlp, opts);
+            solver = casadi::nlpsol("solver", nonlinear_solver_name, nlp, opts);
 
             double time_from_funcs = 0.0;
-            double time_just_ipopt = 0.0;
+            double time_just_solver = 0.0;
             casadi::DMDict arg;
             arg["lbg"] = lbg;
             arg["ubg"] = ubg;
@@ -458,12 +466,22 @@ namespace galileo
             casadi::DMDict result = solver(arg);
             w0 = result["x"].get_elements();
             casadi::Dict stats = solver.stats();
-            time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_hess_l"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
-            time_just_ipopt += (double)stats["t_wall_total"] - time_from_funcs;
+            if (nonlinear_solver_name == "ipopt")
+            {
+                time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_hess_l"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
+                time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
+                std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
+                std::cout << "Total seconds from Ipopt w/o function: " << time_just_solver << std::endl;
+            }
+            else if (nonlinear_solver_name == "snopt")
+            {
+                time_from_funcs += (double)stats["t_wall_nlp_grad"] + (double)stats["t_wall_nlp_jac_f"] + (double)stats["t_wall_nlp_jac_g"];
+                time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
+                std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
+                std::cout << "Total seconds from SNOPT w/o function: " << time_just_solver << std::endl;
+            }
             auto full_sol = casadi::MX(result["x"]);
 
-            std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
-            std::cout << "Total seconds from Solver w/o function: " << time_just_ipopt << std::endl;
             for (size_t i = 0; i < trajectory.size(); ++i)
             {
                 auto seg_sol = full_sol(casadi::Slice(0, casadi_int(std::get<1>(ranges_decision_variables[i]))));

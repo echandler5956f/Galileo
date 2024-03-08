@@ -11,12 +11,12 @@ find_package (Eigen3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS iostreams unit_test_framework)
 find_package(OpenMP)
 
-add_executable(casadi_demo casadi_demo.cpp)
-target_link_libraries(casadi_demo casadi OpenMP::OpenMP_CXX pinocchio Eigen3::Eigen ${Boost_LIBRARIES})
+# add_executable(casadi_demo casadi_demo.cpp)
+# target_link_libraries(casadi_demo casadi OpenMP::OpenMP_CXX pinocchio Eigen3::Eigen ${Boost_LIBRARIES})
 
-include_directories(${Boost_INCLUDE_DIRS})
-add_executable(casadi_demo2 casadi_demo2.cpp)
-target_link_libraries(casadi_demo2 casadi OpenMP::OpenMP_CXX pinocchio Eigen3::Eigen ${Boost_LIBRARIES})
+# include_directories(${Boost_INCLUDE_DIRS})
+# add_executable(casadi_demo2 casadi_demo2.cpp)
+# target_link_libraries(casadi_demo2 casadi OpenMP::OpenMP_CXX pinocchio Eigen3::Eigen ${Boost_LIBRARIES})
 
 # add_executable(casadi_demo3 casadi_demo3.cpp)
 # target_link_libraries(casadi_demo3 casadi pinocchio Eigen3::Eigen)

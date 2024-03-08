@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     // std::vector<int> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
 
     std::vector<int> knot_num = {20, 20, 20, 20};
-    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3};
+    std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45};
     std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // trot
 
     // std::vector<int> knot_num = {20, 20};
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     contact::ContactMode final_mode;
     final_mode.combination_definition = robot.getContactCombination(0b1111);
     final_mode.contact_surfaces = {0, 0, 0, 0};
-    robot.contact_sequence->addPhase(final_mode, 20, 0.05);
+    robot.contact_sequence->addPhase(final_mode, 20, 0.075);
 
     std::cout << "Filling dynamics" << std::endl;
     robot.fillModeDynamics(true);
@@ -132,6 +132,8 @@ int main(int argc, char **argv)
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 250;
+    // opts["snopt.System information"] = "Yes";
+    // opts["snopt.Total real workspace"] = 100000000;
 
     std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
 
@@ -150,14 +152,14 @@ int main(int argc, char **argv)
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
                                                                                                            std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt, X0);
 
-    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts);
+    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts, "ipopt");
 
     traj.initFiniteElements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 
     // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(1000, 0., robot.contact_sequence->getDT());
     // std::vector<double> tmp = traj.getGlobalTimes();
     // double threshold = 1e-6; // Adjust this value as needed
 

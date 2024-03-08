@@ -156,19 +156,90 @@ namespace galileo
                                                          si->get_general_joint_velocities(cu_general))});
         }
 
+        casadi::SX apply_quat(casadi::SX quat, casadi::SX vec3)
+        {
+            casadi::SX imag = quat(casadi::Slice(0, 3));
+            casadi::SX real = quat(3);
+            return vec3 + 2 * cross(imag, cross(imag, vec3) + real * vec3);
+        }
+
+        casadi::SX quat_mult(casadi::SX quat1, casadi::SX quat2)
+        {
+            casadi::SX real_1 = quat1(3);
+            casadi::SX imag_1 = quat1(casadi::Slice(0, 3));
+
+            casadi::SX real_2 = quat2(3);
+            casadi::SX imag_2 = quat2(casadi::Slice(0, 3));
+
+            casadi::SX real_res = real_1 * real_2 - dot(imag_1, imag_2);
+            casadi::SX imag_res = real_1 * imag_2 + real_2 * imag_1 + cross(imag_1, imag_2);
+            return casadi::SX::vertcat({imag_res, real_res});
+        }
+
+        casadi::SX quat_exp(casadi::SX quat)
+        {
+            casadi::SX v = quat(casadi::Slice(0, 3));
+            casadi::SX v_norm = sqrt(v(0) * v(0) + v(1) * v(1) + v(2) * v(2) + casadi::eps);
+            casadi::SX a = quat(3);
+
+            casadi::SX exp_a = exp(a);
+            casadi::SX cos_norm_v = cos(v_norm);
+            casadi::SX sin_norm_v = sin(v_norm);
+
+            casadi::SX quat_new = casadi::SX::vertcat({exp_a * v * sin_norm_v / v_norm, exp_a * cos_norm_v});
+
+            return quat_new / sqrt(quat_new(0) * quat_new(0) + quat_new(1) * quat_new(1) + quat_new(2) * quat_new(2) + quat_new(3) * quat_new(3) + casadi::eps);
+        }
+
+        casadi::SX rodrigues(casadi::SX omega)
+        {
+            casadi::SX theta = sqrt(omega(0) * omega(0) + omega(1) * omega(1) + omega(2) * omega(2) + casadi::eps);
+            return casadi::SX::eye(3) + ((1 - cos(theta)) / (theta * theta)) * skew(omega) + ((theta - sin(theta)) / (theta * theta * theta)) * mpower(skew(omega), 2);
+        }
+
+        casadi::SX lie_group_int(casadi::SX qb, casadi::SX vb, casadi::SX dt)
+        {
+            casadi::SX pos = qb(casadi::Slice(0, 3));
+            casadi::SX quat = qb(casadi::Slice(3, 7));
+
+            casadi::SX vel = vb(casadi::Slice(0, 3)) * dt;
+            casadi::SX omega = vb(casadi::Slice(3, 6)) * dt;
+            casadi::SX omega_quat = casadi::SX::vertcat({omega / 2, 0});
+            casadi::SX exp_omega_quat = quat_exp(omega_quat);
+            casadi::SX quat_new = quat_mult(quat, exp_omega_quat);
+            quat_new = quat_new / sqrt(quat_new(0) * quat_new(0) + quat_new(1) * quat_new(1) + quat_new(2) * quat_new(2) + quat_new(3) * quat_new(3) + casadi::eps);
+            casadi::SX pos_new = pos + apply_quat(quat, casadi::SX::mtimes(rodrigues(omega), vel));
+            return vertcat(pos_new, quat_new);
+        }
+
         void LeggedBody::createFint()
         {
-            // opt::ConfigVectorAD q_result = pinocchio::integrate(cmodel, q_AD, v_AD * cdt);
-            // casadi::SX cq_result(model.nq, 1);
-            // pinocchio::casadi::copy(q_result, cq_result);
+            opt::ConfigVectorAD q_result = pinocchio::integrate(cmodel, q_AD, v_AD * cdt);
+            casadi::SX cq_result(model.nq, 1);
+            pinocchio::casadi::copy(q_result, cq_result);
+
+            casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
+            casadi::SX vb = si->get_q_d(cdx)(casadi::Slice(0, si->nvb));
+            casadi::SX lie_group_int_result = lie_group_int(qb, vb, cdt);
+            casadi::SX q_joints_int_result = si->get_q(cx)(casadi::Slice(si->nqb, si->nq)) + si->get_q_d(cdx)(casadi::Slice(si->nvb, si->nv)) * cdt;
 
             fint = casadi::Function("Fint",
                                     {cx, cdx, cdt},
                                     {vertcat(si->get_ch(cx) + si->get_ch_d(cdx),
                                              si->get_cdh(cx) + si->get_cdh_d(cdx),
-                                             // cq_result, // returns different expression than python version, NO idea why
-                                             customFint(cx, cdx, cdt),
+                                              lie_group_int_result(casadi::Slice(0, si->nqb)),
+                                            //  customFint(cx, cdx, cdt)(casadi::Slice(0, si->nqb)),
+                                             q_joints_int_result,
+                                             //  customFint(cx, cdx, cdt)(casadi::Slice(si->nqb, si->nq)),
                                              si->get_v(cx) + si->get_v_d(cdx))});
+
+            // fint = casadi::Function("Fint",
+            //                         {cx, cdx, cdt},
+            //                         {vertcat(si->get_ch(cx) + si->get_ch_d(cdx),
+            //                                  si->get_cdh(cx) + si->get_cdh_d(cdx),
+            //                                  // cq_result, // returns different expression than python version, NO idea why
+            //                                  customFint(cx, cdx, cdt),
+            //                                  si->get_v(cx) + si->get_v_d(cdx))});
         }
 
         void LeggedBody::createFdiff()
