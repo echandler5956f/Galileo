@@ -17,10 +17,18 @@ namespace galileo
                                             std::vector<std::string> input_title_names, std::vector<std::vector<std::string>> input_names)
         {
             std::vector<double> std_times(solution.times.data(), solution.times.data() + solution.times.size());
+            gp << "set terminal qt " << 0 << "\n"; // Create a dummy window
+            gp << "plot '-' with lines linestyle 1 title 'Dummy'\n";
+            gp.send1d(std::make_tuple(std_times, std_times));
 
+            window_index = 1;
             for (size_t i = 0; i < state_groups.size(); ++i)
             {
-                gp << "set term wxt " << window_index << "\n"; // Create a new window for each plot
+                // std::string filename = "output_" + state_title_names[i] + ".png";
+                // gp << "set terminal pngcairo\n";
+                // gp << "set output '" << filename << "'\n";
+                gp << "set terminal qt " << window_index << "\n"; // Create a new window for each plot
+                gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
                 gp << "set xlabel 'Time'\n";
                 gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
                 gp << "set ylabel 'Values'\n";
@@ -33,10 +41,11 @@ namespace galileo
                     {
                         ss += ", ";
                     }
-                    ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + state_names[i][j] + "'";
+                    ss += "'-' with lines linestyle " + std::to_string(j + 1) + " title '" + state_names[i][j] + "'";
                 }
                 ss += "\n";
                 gp << ss;
+                sleep(0.1);
                 Eigen::MatrixXd block = solution.state_result.block(0, std::get<0>(state_groups[i]), solution.state_result.rows(), std::get<1>(state_groups[i]) - std::get<0>(state_groups[i]));
                 for (Eigen::Index j = 0; j < block.cols(); ++j)
                 {
@@ -44,12 +53,17 @@ namespace galileo
                     std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
                     gp.send1d(std::make_tuple(std_times, std_col_vector));
                 }
+                // gp << "set output\n"; // Close the output file
                 ++window_index;
             }
 
             for (size_t i = 0; i < input_groups.size(); ++i)
             {
-                gp << "set term wxt " << window_index << "\n"; // Create a new window for each plot
+                // std::string filename = "output_" + input_title_names[i] + ".png";
+                // gp << "set terminal pngcairo\n";
+                // gp << "set output '" << filename << "'\n";
+                gp << "set terminal qt " << window_index << "\n"; // Create a new window for each plot
+                gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
                 gp << "set xlabel 'Time'\n";
                 gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
                 gp << "set ylabel 'Values'\n";
@@ -62,7 +76,7 @@ namespace galileo
                     {
                         ss += ", ";
                     }
-                    ss += "'-' with linespoints linestyle " + std::to_string(j + 1) + " title '" + input_names[i][j] + "'";
+                    ss += "'-' with lines linestyle " + std::to_string(j + 1) + " title '" + input_names[i][j] + "'";
                 }
                 ss += "\n";
                 gp << ss;
@@ -73,6 +87,7 @@ namespace galileo
                     std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
                     gp.send1d(std::make_tuple(std_times, std_col_vector));
                 }
+                // gp << "set output\n"; // Close the output file
                 ++window_index;
             }
         }
@@ -127,7 +142,8 @@ namespace galileo
             // Plot each group of constraints on the same graph
             for (size_t i = 0; i < new_constraints.size(); ++i)
             {
-                gp << "set term wxt " << window_index << "\n"; // Create a new window for each plot
+                gp << "set terminal qt " << window_index << "\n"; // Create a new window for each plot
+                gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
                 gp << "set xlabel 'Time'\n";
                 gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
                 gp << "set ylabel 'Values'\n";
@@ -166,16 +182,16 @@ namespace galileo
 
                         if (j == 0)
                         {
-                            ss += "'-' with linespoints linestyle " + std::to_string(idx + 3 * k + 1) + colors[4 * k + 0] + " title '" + new_constraints[i][0].metadata.plot_names[0][k] + " Evaluation', ";
-                            ss += "'-' with linespoints linestyle " + std::to_string(idx + 3 * k + 2) + colors[4 * k + 1] + " title '" + new_constraints[i][0].metadata.plot_names[0][k] + " Lower Bound', ";
-                            ss += "'-' with linespoints linestyle " + std::to_string(idx + 3 * k + 3) + colors[4 * k + 2] + " title '" + new_constraints[i][0].metadata.plot_names[0][k] + " Upper Bound', ";
+                            ss += "'-' with lines linestyle " + std::to_string(idx + 3 * k + 1) + colors[4 * k + 0] + " title '" + new_constraints[i][0].metadata.plot_names[0][k] + " Evaluation', ";
+                            ss += "'-' with lines linestyle " + std::to_string(idx + 3 * k + 2) + colors[4 * k + 1] + " title '" + new_constraints[i][0].metadata.plot_names[0][k] + " Lower Bound', ";
+                            ss += "'-' with lines linestyle " + std::to_string(idx + 3 * k + 3) + colors[4 * k + 2] + " title '" + new_constraints[i][0].metadata.plot_names[0][k] + " Upper Bound', ";
                             ss += "'-' with filledcurves" + colors[4 * k + 3] + " title '" + new_constraints[i][0].metadata.plot_names[0][k] + " Bounds'";
                         }
                         else
                         {
-                            ss += "'-' with linespoints linestyle " + std::to_string(idx + 3 * k + 1) + colors[4 * k + 0] + " notitle, ";
-                            ss += "'-' with linespoints linestyle " + std::to_string(idx + 3 * k + 2) + colors[4 * k + 1] + " notitle, ";
-                            ss += "'-' with linespoints linestyle " + std::to_string(idx + 3 * k + 3) + colors[4 * k + 2] + " notitle, ";
+                            ss += "'-' with lines linestyle " + std::to_string(idx + 3 * k + 1) + colors[4 * k + 0] + " notitle, ";
+                            ss += "'-' with lines linestyle " + std::to_string(idx + 3 * k + 2) + colors[4 * k + 1] + " notitle, ";
+                            ss += "'-' with lines linestyle " + std::to_string(idx + 3 * k + 3) + colors[4 * k + 2] + " notitle, ";
                             ss += "'-' with filledcurves" + colors[4 * k + 3] + " notitle";
                         }
                     }
@@ -203,6 +219,14 @@ namespace galileo
                         gp.send1d(std::make_tuple(std_times, std_col_vector_ub));
                         // Send the data for the filled curves
                         gp.send1d(std::make_tuple(std_times, std_col_vector_lb, std_col_vector_ub));
+                        double constraint_violation = 0.;
+                        for (Eigen::Index cnt = 0; cnt < eval.rows(); ++cnt)
+                        {
+                            constraint_violation += pow(std::max(0., std_col_vector[cnt] - std_col_vector_ub[cnt]), 2);
+                            constraint_violation += pow(std::max(0., std_col_vector_lb[cnt] - std_col_vector[cnt]), 2);
+                        }
+                        constraint_violation = sqrt(constraint_violation / eval.rows());
+                        std::cout << "Constraint violation of " << new_constraints[i][0].metadata.plot_titles[0] << " " << new_constraints[i][j].metadata.name << ": " << constraint_violation << std::endl;
                     }
                 }
                 ++window_index;

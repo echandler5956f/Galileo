@@ -27,8 +27,12 @@ int main(int argc, char **argv)
     // std::vector<int> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
 
     std::vector<int> knot_num = {20, 20, 20, 20};
-    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3};
-    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // static trot
+    std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45};
+    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // trot
+
+    // std::vector<int> knot_num = {20, 20};
+    // std::vector<double> knot_time = {0.05, 0.3};
+    // std::vector<int> mask_vec = {0b1111, 0b1001}; // half trot
 
     int num_steps = 2;
     for (int i = 0; i < num_steps; ++i)
@@ -54,7 +58,7 @@ int main(int argc, char **argv)
     contact::ContactMode final_mode;
     final_mode.combination_definition = robot.getContactCombination(0b1111);
     final_mode.contact_surfaces = {0, 0, 0, 0};
-    robot.contact_sequence->addPhase(final_mode, 20, 0.05);
+    robot.contact_sequence->addPhase(final_mode, 20, 0.075);
 
     std::cout << "Filling dynamics" << std::endl;
     robot.fillModeDynamics(true);
@@ -107,17 +111,11 @@ int main(int argc, char **argv)
                                                   target_error_casadi,
                                                   robot.cx(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx)) - X_ref(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx))});
 
-    pinocchio::computeTotalMass(robot.model, robot.data);
-
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
     U_ref(2) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     U_ref(5) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     U_ref(8) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
     U_ref(11) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
-    // std::cout << "num_end_effectors: " << robot.num_end_effectors_ << std::endl;
-    // std::cout << "mass: " << robot.cdata.mass[0] << std::endl;
-    // std::cout << "nu: " << si->nu << std::endl;
-    // std::cout << "nF: " << robot.si->nF << std::endl;
     casadi::SX u_error = robot.cu - U_ref;
 
     casadi::Function L("L",
@@ -134,6 +132,8 @@ int main(int argc, char **argv)
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
     opts["ipopt.max_iter"] = 250;
+    // opts["snopt.System information"] = "Yes";
+    // opts["snopt.Total real workspace"] = 100000000;
 
     std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
 
@@ -150,16 +150,30 @@ int main(int argc, char **argv)
     std::shared_ptr<DecisionDataBuilder<LeggedRobotProblemData>> decision_builder = std::make_shared<LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
-                                                                                                           std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt);
+                                                                                                           std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt, X0);
 
-    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts);
+    TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts, "ipopt");
 
     traj.initFiniteElements(1, X0);
 
     casadi::MXVector sol = traj.optimize();
 
     // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(1000, 0., robot.contact_sequence->getDT());
+    // std::vector<double> tmp = traj.getGlobalTimes();
+    // double threshold = 1e-6; // Adjust this value as needed
+
+    // // Custom comparison function
+    // auto closeEnough = [threshold](double a, double b) {
+    //     return std::abs(a - b) < threshold;
+    // };
+
+    // std::sort(tmp.begin(), tmp.end());
+    // auto last = std::unique(tmp.begin(), tmp.end(), closeEnough);
+    // tmp.erase(last, tmp.end());
+
+    // Eigen::VectorXd new_times = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
+    // std::cout << "New times: " << new_times << std::endl;
 
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
@@ -169,7 +183,7 @@ int main(int argc, char **argv)
     meshcat.WriteTimes(new_times, "sol_times.csv");
     meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
     meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
-
+    std::cout << "Getting constraint violations" << std::endl;
     auto cons = traj.getConstraintViolations(new_sol);
 
     // Collect the data specific to each end effector

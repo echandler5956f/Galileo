@@ -30,8 +30,8 @@ namespace galileo
                 // A value between 0 and 1 that determines the window of time on which the footstep has velocitty along basis n.
                 // We consider the total spatial velocity to be some [n1 n2] * [v1; v2].
                 // At t = h_1_window_duration, the velocity v1 is 0.  at t = 1 - h2_window_duration, the velocity v2 is 0.
-                double h1_window_duration = 0.5;
-                double h2_window_duration = 0.5;
+                double h1_window_duration = 0.65;
+                double h2_window_duration = 0.65;
 
                 // The number of standard deviations we consider in the window of the bell curve.
                 // Effectively, this defines the steepness fo the bell curve.
@@ -42,7 +42,62 @@ namespace galileo
 
                 double liftoff_time;
                 double touchdown_time;
+
+                double h_start;
+                double h_end;
+                double h_max;
             };
+
+            casadi::SX createFootstepHeightFunction(casadi::SX t, const FootstepDefinition FS_def)
+            {
+                double takeoff_position = FS_def.h_start;
+                double takeoff_velocity = 0.;
+                double takeoff_acceleration = 0.;
+                double up_position = FS_def.h_max;
+                double up_velocity = 0.025;
+                double up_acceleration = 0.;
+                double down_position = FS_def.h_max;
+                double down_velocity = -0.025;
+                double down_acceleration = 0.;
+                double touchdown_position = FS_def.h_end;
+                double touchdown_velocity = 0.;
+                double touchdown_accleration = 0.;
+
+                casadi::SX terms = vertcat(casadi::SXVector{1, t, pow(t, 2), pow(t, 3), pow(t, 4), pow(t, 5)});
+                casadi::SX A = vertcat(casadi::SXVector{horzcat(casadi::SXVector{1, 0, 0, 0, 0, 0}), 
+                                                        horzcat(casadi::SXVector{0, 1, 0, 0, 0, 0}),
+                                                        horzcat(casadi::SXVector{0, 0, 2, 0, 0, 0}),
+                                                        horzcat(casadi::SXVector{1, 1, 1, 1, 1, 1}),
+                                                        horzcat(casadi::SXVector{0, 1, 2, 3, 4, 5}),
+                                                        horzcat(casadi::SXVector{0, 0, 2, 6, 12, 20})});
+                casadi::SX b_takeoff = vertcat(casadi::SXVector{takeoff_position, takeoff_velocity, takeoff_acceleration,
+                                                        up_position, up_velocity, up_acceleration});
+                casadi::SX x_takeoff = casadi::SX::mtimes(casadi::SX::inv(A), b_takeoff);
+                casadi::SX p_takeoff = casadi::SX::mtimes(terms.T(), x_takeoff);
+                casadi::Function p_takeoff_func = casadi::Function("p1_func", {t}, {p_takeoff});
+                casadi::SX dp_takeoff = casadi::SX::jacobian(p_takeoff, t);
+                casadi::Function dp_takeoff_func = casadi::Function("dp1_func", {t}, {dp_takeoff});
+
+                casadi::SX b_top = vertcat(casadi::SXVector{up_position, up_velocity, up_acceleration,
+                                                        down_position, down_velocity, down_acceleration});
+                casadi::SX x_top = casadi::SX::mtimes(casadi::SX::inv(A), b_top);
+                casadi::SX p_top = casadi::SX::mtimes(terms.T(), x_top);
+                casadi::Function p_top_func = casadi::Function("p2_func", {t}, {p_top});
+                casadi::SX dp_top = casadi::SX::jacobian(p_top, t);
+                casadi::Function dp_top_func = casadi::Function("dp2_func", {t}, {dp_top});
+
+                casadi::SX b_touchdown = vertcat(casadi::SXVector{down_position, down_velocity, down_acceleration,
+                                                        touchdown_position, touchdown_velocity, touchdown_accleration});
+                casadi::SX x_touchdown = casadi::SX::mtimes(casadi::SX::inv(A), b_touchdown);
+                casadi::SX p_touchdown = casadi::SX::mtimes(terms.T(), x_touchdown);
+                casadi::Function p_touchdown_func = casadi::Function("p3_func", {t}, {p_touchdown});
+                casadi::SX dp_touchdown = casadi::SX::jacobian(p_touchdown, t);
+                casadi::Function dp_touchdown_func = casadi::Function("dp3_func", {t}, {dp_touchdown});
+
+                casadi::SX piecewise_poly = casadi::SX::if_else(t < 0.333, dp_takeoff_func(casadi::SXVector{t / 0.333}).at(0), casadi::SX::if_else(t < 0.666, dp_top_func(casadi::SXVector{(t - 0.333) / (0.666 - 0.333)}).at(0), dp_touchdown_func(casadi::SXVector{(t - 0.666) / (1 - 0.666)}).at(0)));
+
+                return piecewise_poly;
+            }
 
             casadi::Function getMappedBellCurve(casadi::SX &t, double window_sigma)
             {
@@ -346,7 +401,7 @@ namespace galileo
                 {
                     if (mode[(*ee.second)])
                     {
-                        constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
+                        // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
                         if (ee.second->is_6d)
                         {
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
@@ -355,17 +410,53 @@ namespace galileo
                         }
                         else
                         {
-                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
-                            constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
-                            i += 3;
+                            // constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
+                            // constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
+                            // i += 3;
+                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vx " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Vx"});
+                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vy " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Vy"});
+                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vz " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Vz"});
+                            i += 1;
                         }
                     }
                     else
                     {
-                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
-                        constraint_data.metadata.plot_names.push_back({"lo-Vx", "lo-Vy", "lo-Vz", "td-Vx", "td-Vy", "td-Vz"});
-                        i += 6;
+                        // constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint for " + ee.second->frame_name);
+                        // constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
+                        // constraint_data.metadata.plot_names.push_back({"lo-Vx", "lo-Vy", "lo-Vz", "td-Vx", "td-Vy", "td-Vz"});
+                        // i += 6;
+                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint lo-Vx for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"lo-Vx"});
+                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint lo-Vy for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"lo-Vy"});
+                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint lo-Vz for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"lo-Vz"});
+                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint td-Vx for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"td-Vx"});
+                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint td-Vy for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"td-Vy"});
+                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint td-Vz for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"td-Vz"});
+                        i += 1;
                     }
                 }
 
@@ -374,6 +465,137 @@ namespace galileo
                 // std::cout << "G_Velocity Upper Bound at Phase " << phase_index << ": " << constraint_data.upper_bound << std::endl;
             }
 
+            // template <class ProblemData>
+            // void VelocityConstraintBuilder<ProblemData>::buildConstraint(const ProblemData &problem_data, int phase_index, opt::ConstraintData &constraint_data)
+            // {
+            //     casadi::SXVector G_vec;
+            //     casadi::SXVector lower_bound_vec;
+            //     casadi::SXVector upper_bound_vec;
+
+            //     casadi::SX t = problem_data.velocity_constraint_problem_data.t;
+            //     contact::ContactMode mode = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(phase_index).mode;
+            //     for (auto ee : problem_data.velocity_constraint_problem_data.robot_end_effectors)
+            //     {
+            //         if (!mode[(*ee.second)])
+            //         {
+            //             double liftoff_time = 0;
+            //             double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->getDT();
+            //             FootstepDefinition footstep_definition;
+            //             footstep_definition.h_start = 0;
+            //             footstep_definition.h_end = 0;
+
+            //             galileo::legged::environment::SurfaceID liftoff_surface_ID = 0;
+            //             galileo::legged::environment::SurfaceID touchdown_surface_ID = 0;
+
+            //             contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
+            //             // When did the EE break contact?
+            //             for (int i = phase_index; i >= 0; i--)
+            //             {
+            //                 contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
+            //                 // If the ee is in contact, we have found the phase where liftoff occurred.
+            //                 if (mode_i.at(*ee.second))
+            //                 {
+            //                     int liftoff_index = i + 1;
+            //                     problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
+            //                     liftoff_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
+            //                     break;
+            //                     // if liftoff is not found, we will assume that the ee is in contact with SURFACE 0 at the start of the horizon.
+            //                     //  This is an odd and limiting assumption. Better behavior should be created.
+            //                 }
+            //             }
+            //             // When does it make contact again?
+            //             for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->getNumPhases(); i++)
+            //             {
+            //                 contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
+            //                 // If the ee is in contact, we have found the phase where touchdown occurred.
+            //                 if (mode_i.at(*ee.second))
+            //                 {
+            //                     int touchdown_index = i;
+            //                     problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
+            //                     touchdown_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
+            //                     break;
+            //                     // if liftoff is not found, we will assume that the ee is in contact with SURFACE 0 at the start of the horizon.
+            //                     //  This is an odd and limiting assumption. Better behavior should be created.
+            //                 }
+            //             }
+            //             footstep_definition.h_start = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(liftoff_surface_ID).surface_transform.translation()[2];
+            //             footstep_definition.h_end = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(touchdown_surface_ID).surface_transform.translation()[2];
+
+            //             footstep_definition.h_max = std::max(footstep_definition.h_start, footstep_definition.h_end) + problem_data.velocity_constraint_problem_data.ideal_offset_height;
+            //             casadi::Function footstep_function = casadi::Function("footstep_velocity", casadi::SXVector{t}, casadi::SXVector{createFootstepHeightFunction(t, footstep_definition)});
+
+            //             casadi::SX footstep_height_expression = footstep_function(casadi::SXVector{(t - liftoff_time) / (touchdown_time - liftoff_time)}).at(0);
+            //             casadi::SX desired_velocity = footstep_height_expression;
+
+            //             casadi::SX cfoot_vel = getFootstepVelocityInWorldFrame(problem_data, ee.first)(casadi::Slice(2, 3), 0);
+
+            //             G_vec.push_back(cfoot_vel);
+            //             lower_bound_vec.push_back(desired_velocity);
+            //             upper_bound_vec.push_back(desired_velocity);
+            //         }
+            //         else
+            //         {
+            //             casadi::SX cfoot_vel = getFootstepVelocityInWorldFrame(problem_data, ee.first);
+            //             if (ee.second->is_6d)
+            //             {
+            //                 G_vec.push_back(cfoot_vel);
+            //                 lower_bound_vec.push_back(casadi::SX::zeros(6, 1));
+            //                 upper_bound_vec.push_back(casadi::SX::zeros(6, 1));
+            //             }
+            //             else
+            //             {
+            //                 G_vec.push_back(cfoot_vel(casadi::Slice(0, 3), 0));
+            //                 lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
+            //                 upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
+            //             }
+            //         }
+            //     }
+
+            //     constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{vertcat(G_vec)});
+            //     constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(lower_bound_vec)});
+            //     constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(upper_bound_vec)});
+
+            //     constraint_data.metadata.name = "Velocity Constraint";
+            //     int i = 0;
+            //     for (auto ee : problem_data.velocity_constraint_problem_data.robot_end_effectors)
+            //     {
+            //         if (mode[(*ee.second)])
+            //         {
+            //             // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
+            //             if (ee.second->is_6d)
+            //             {
+            //                 constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
+            //                 constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz", "wx", "wy", "wz"});
+            //                 i += 6;
+            //             }
+            //             else
+            //             {
+            //                 // constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
+            //                 // constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
+            //                 // i += 3;
+            //                 constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vx " + ee.second->frame_name);
+            //                 constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+            //                 constraint_data.metadata.plot_names.push_back({"Vx"});
+            //                 i += 1;
+            //                 constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vy " + ee.second->frame_name);
+            //                 constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+            //                 constraint_data.metadata.plot_names.push_back({"Vy"});
+            //                 i += 1;
+            //                 constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vz " + ee.second->frame_name);
+            //                 constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+            //                 constraint_data.metadata.plot_names.push_back({"Vz"});
+            //                 i += 1;
+            //             }
+            //         }
+            //         else
+            //         {
+            //             constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vz for " + ee.second->frame_name);
+            //             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+            //             constraint_data.metadata.plot_names.push_back({"Vz"});
+            //             i += 1;
+            //         }
+            //     }
+            // }
         }
     }
 }

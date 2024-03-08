@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 project (examples)
 
-option(BUILD_SIMPLE_TESTS "Build the simple test examples" OFF)
+option(BUILD_SIMPLE_TESTS "Build the simple test examples" ON)
 
 add_definitions(-D_GLIBCXX_PARALLEL)
 
@@ -39,7 +39,7 @@ target_include_directories(go1_test
     ${PROJECT_SOURCE_DIR}/include
 )
 
-if (BUILD_SIMPLE_TESTS)
+# if (BUILD_SIMPLE_TESTS)
     add_executable(simple_test src/simple_test.cpp)
     add_executable(model_building_test src/model_building_test.cpp)
     target_link_libraries(simple_test
@@ -54,4 +54,4 @@ if (BUILD_SIMPLE_TESTS)
         PRIVATE 
         ${PROJECT_SOURCE_DIR}/include
 )
-endif()
+# endif()

@@ -178,6 +178,9 @@ namespace galileo
                     {
                         lower_bound_vec.push_back(casadi::SX::zeros(1));
                         upper_bound_vec.push_back(casadi::inf);
+
+                        // lower_bound_vec.push_back(-casadi::inf * casadi::SX::ones(num_constraints, 1));
+                        // upper_bound_vec.push_back(casadi::SX::zeros(num_constraints, 1));
                     }
                 }
 
@@ -241,7 +244,7 @@ namespace galileo
                     G_out = problem_data.friction_cone_problem_data.states->get_wrench(u_in, EndEffectorID);
                     return;
                 }
-                casadi::SX u_ee = problem_data.friction_cone_problem_data.states->get_f(u_in, EndEffectorID);
+                casadi::SX f_ee = problem_data.friction_cone_problem_data.states->get_f(u_in, EndEffectorID);
 
                 Eigen::Matrix<double, 3, 3> rotation = getContactSurfaceRotationAtMode(EndEffectorID, problem_data, mode);
                 Eigen::MatrixXd cone_constraint_approximation = getConeConstraintApproximation(problem_data);
@@ -251,23 +254,23 @@ namespace galileo
                 pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
 
                 // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
-                casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, u_ee);
+                casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, f_ee);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
                     //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
                     // G_out = evaluated_vector;
-                    G_out = u_ee(2);
+                    G_out = f_ee(2);
                 }
                 else
                 {
                     //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
-                    //  Function = (evaluated_vector[0] - evaluated_vector.tail(2).normSquared());
-                    // G_out = evaluated_vector(0) - casadi::SX::norm_2(evaluated_vector(casadi::Slice(1, 3)));
-                    G_out = u_ee(2);
+                    //  Function = (evaluated_vector[2] - evaluated_vector.head(2).normSquared());
+                    // G_out = evaluated_vector(2) - sqrt(evaluated_vector(0) * evaluated_vector(0) + evaluated_vector(1) * evaluated_vector(1) + casadi::eps);
+                    G_out = f_ee(2);
                 }
             }
 
