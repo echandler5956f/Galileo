@@ -9,6 +9,10 @@ int main(int argc, char** argv)
     // Initialize the ROS node
     ros::init(argc, argv, "go1_model_publisher_node");
 
+    std::string model_file_location;
+    if(argc > 1){
+        model_file_location = argv[1];
+    }
     // Create a ROS node handle
     ros::NodeHandle node_handle;
 
@@ -22,7 +26,7 @@ int main(int argc, char** argv)
 
     // Create a legged modelLocation message
     galileo_ros::ModelLocation model_location_msg;
-    model_location_msg.model_file_location = "/home/quant/ros_ws/src/Galileo/resources/go1/urdf/go1.urdf";
+    model_location_msg.model_file_location = model_file_location;
     model_location_msg.end_effector_names = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
     model_location_msg.num_end_effectors = 4;
 
