@@ -80,11 +80,10 @@ class GalileoLeggedROSImplementation {
      */
     void UpdateSolution( T_ROBOT_STATE initial_state );    
     
-    
     /**
      * @brief Creates the problem data from the loaded model/parameters.
     */
-    void CreateProblemData();
+    void CreateProblemData(T_ROBOT_STATE initial_state);
 
     /**
      * @brief Creates the trajectory optimizer if the problem data is set.
