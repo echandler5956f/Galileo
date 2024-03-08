@@ -2,14 +2,21 @@
 
 #pragma once
 
+#include <pinocchio/fwd.hpp>
+
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <ros/subscriber.h>
+
+// Include the necessary ROS header files
+#include <ros/ros.h>
+#include <std_msgs/String.h> // Assuming the parameter location strings are published as std_msgs::String
 
 #include <Eigen/Core>
 
 #include "galileo/legged-model/LeggedBody.h"
 #include "galileo/legged-model/LeggedRobotProblemData.h"
+#include "galileo/legged-model/LeggedRobotStates.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 #include "galileo/opt/TrajectoryOpt.h"
 
@@ -30,10 +37,13 @@ class GalileoLeggedROSImplementation {
     public: 
 
     // casadi DM of size nx
-    typedef T_ROBOT_STATE casadi::DM;
+    using T_ROBOT_STATE = casadi::DM;
     
-    using LeggedConstraintBuilderType = std::shared_ptr<gallileo::legged::constraints::ConstraintBuilder<gallileo::legged::constraints::LeggedRobotProblemData>>; 
-    using LeggedTrajOpt = galileo::opt::TrajectoryOpt<galileo::legged::LeggedRobotProblemData, galileo::legged::contact::ContactMode>;
+    using LeggedRobotProblemData = galileo::legged::constraints::LeggedRobotProblemData;
+    using GeneralProblemData = galileo::opt::GeneralProblemData;
+
+    using LeggedConstraintBuilderType = std::shared_ptr<galileo::opt::ConstraintBuilder<LeggedRobotProblemData>>; 
+    using LeggedTrajOpt = galileo::opt::TrajectoryOpt<LeggedRobotProblemData, galileo::legged::contact::ContactMode>;
 
     
     /**
@@ -43,7 +53,7 @@ class GalileoLeggedROSImplementation {
      */
     GalileoLeggedROSImplementation(::ros::NodeHandle& node_handle);
 
-    /**
+    /**LeggedConstraintBuilderType
      * @brief Loads the robot model from the given model file and sets the end effectors.
      * 
      * @param model_file The path to the robot model file.
@@ -62,7 +72,7 @@ class GalileoLeggedROSImplementation {
      * @brief Publishes the last solution.
      */
     void PublishLastSolution();
--
+
     /**
      * @brief Updates the solution based on the initial state.
      * 
@@ -134,16 +144,19 @@ class GalileoLeggedROSImplementation {
 
     std::shared_ptr<galileo::legged::LeggedBody> robot_; /**< The robot model. */
 
-    std::shared_ptr<galileo::legged::LeggedRobotStates> states_; /**< Definition of the state. */
+    std::shared_ptr<galileo::opt::LeggedRobotStates> states_; /**< Definition of the state. */
 
-    std::shared_ptr<galileo::legged::LeggedRobotProblemData> problem_data_; /**< The problem data. */
+    std::shared_ptr<LeggedRobotProblemData> problem_data_; /**< The problem data. */
 
     std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
 
-    std::shared_ptr<galileo::environment::EnvironmentSurfaces> surfaces_; /**< The surfaces. */
+    std::shared_ptr<galileo::legged::environment::EnvironmentSurfaces> surfaces_; /**< The surfaces. */
     
     std::shared_ptr<galileo::legged::contact::ContactSequence> contact_sequence_; /**< The gait. */
 
+    casadi::Dict opts_;
+
+    std::shared_ptr<galileo::opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
 
 
     ::ros::NodeHandle& node_handle_; /**< The ROS node handle. */

@@ -12,19 +12,29 @@ set(GALILEO_DEPENDS
   # nothing
 ) 
 
+set(ROS_INCLUDE_DIRS "/opt/ros/noetic/include")
+
+set(ROS_LIBRARY_DIRS "/opt/ros/noetic/lib")
+
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
 set(GALILEO_ROS_DEPEDENCIES
   roscpp
-  ${GALILEO_DEPENDS}
   std_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS
+
+find_package(roscpp REQUIRED PATHS ${ROS_INCLUDE_DIRS}/libroscpp.so )
+
+find_package(std_msgs REQUIRED PATHS ${ROS_INCLUDE_DIRS}/python3/dist-packages/std_msgs)
+
+
+find_package(catkin REQUIRED COMPONENTS message_generation
   ${GALILEO_ROS_DEPEDENCIES}
 )
 
-
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -58,7 +68,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate messages in the 'msg' folder
 add_message_files(
-  # FILES
+  FILES
   ModelLocation.msg
   RobotSolution.msg
 )
@@ -114,7 +124,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES ${PROJECT_NAME}
+ ${EIGEN3_INCLUDE_DIRS}
+ LIBRARIES roscpp std_msgs
  CATKIN_DEPENDS ${GALILEO_ROS_DEPEDENCIES}
  DEPENDS system_lib
 )
@@ -125,11 +136,13 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
 include_directories(
   include
+  ${EIGEN3_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
-
 
 # Declare a C++ library
 add_library(${PROJECT_NAME}
@@ -147,9 +160,27 @@ add_library(${PROJECT_NAME}
 add_executable(${PROJECT_NAME}_legged_node 
   src/galileo_legged_ros_implementation.cpp
 )
+
+target_link_libraries(${PROJECT_NAME}_legged_node Eigen3::Eigen)
+
+target_link_libraries(${PROJECT_NAME}_legged_node
+   ${catkin_LIBRARIES}
+  # ${GALILEO_ROS_DEPEDENCIES}  
+   roscpp
+   std_msgs
+ )
+
+
 add_executable(${PROJECT_NAME}_go1_publisher 
   src/helper_nodes/galileo_legged_example.cpp
 )
+
+target_link_libraries(${PROJECT_NAME}_go1_publisher
+   ${catkin_LIBRARIES}
+  # ${GALILEO_ROS_DEPEDENCIES}  
+   roscpp
+   std_msgs
+ )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
