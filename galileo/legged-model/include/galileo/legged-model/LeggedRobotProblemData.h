@@ -90,6 +90,11 @@ namespace galileo
                 VelocityConstraintProblemData velocity_constraint_problem_data;
 
                 LeggedDecisionProblemData legged_decision_problem_data;
+
+                void updateX0(const casadi::SX &X0)
+                {
+                    this->legged_decision_problem_data.X0 = X0;
+                }
             };
         }
     }
