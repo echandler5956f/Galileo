@@ -10,10 +10,15 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-find_package(catkin REQUIRED COMPONENTS
+
+find_package(roscpp REQUIRED PATHS ${ROS_INCLUDE_DIRS}/libroscpp.so )
+
+find_package(std_msgs REQUIRED PATHS ${ROS_INCLUDE_DIRS}/python3/dist-packages/std_msgs)
+
+
+find_package(catkin REQUIRED COMPONENTS message_generation
   ${GALILEO_ROS_DEPEDENCIES}
 )
-
 
 ## System dependencies are found with CMake's conventions
 find_package(casadi REQUIRED)

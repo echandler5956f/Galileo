@@ -11,6 +11,10 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h> // Assuming the parameter location strings are published as std_msgs::String
 
+// Include the necessary ROS header files
+#include <ros/ros.h>
+#include <std_msgs/String.h> // Assuming the parameter location strings are published as std_msgs::String
+
 #include <Eigen/Core>
 
 #include <thread>
