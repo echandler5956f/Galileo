@@ -108,7 +108,7 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string& parameter
 
 
 
-void GalileoLeggedROSImplementation::CreateProblemData()
+void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE initial_state )
 {
     // First, get the costs L (running) and Phi (terminal). This creates the general problem data
     casadi::Function L, Phi;
@@ -155,7 +155,7 @@ void GalileoLeggedROSImplementation::CreateProblemData()
                                                              states_, std::make_shared<galileo::opt::ADModel>(robot_->cmodel),
                                                              std::make_shared<galileo::opt::ADData>(robot_->cdata), 
                                                              robot_->getEndEffectors(), 
-                                                             robot_->cx, robot_->cu, robot_->cdt);
+                                                             robot_->cx, robot_->cu, robot_->cdt, initial_state);
 }
 
 void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Function &Phi ) const
@@ -287,6 +287,7 @@ void GalileoLeggedROSImplementation::UpdateSolution( T_ROBOT_STATE initial_state
         return;
     }
 
+    problem_data_->updateX0(initial_state);
     // Update the initial state
     trajectory_opt_->initFiniteElements(1, initial_state);
 
