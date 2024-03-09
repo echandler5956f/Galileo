@@ -210,6 +210,7 @@ Coming soon (ICRA 2025?).
 
 ### With contributions from
 
+- Yuen Lam Leung
 - Hushmand Esmaeili
 - Ibrahim Salman Al-Tameemi
 - Duc Doan
