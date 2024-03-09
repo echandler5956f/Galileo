@@ -137,6 +137,11 @@ class GalileoLeggedROSImplementation {
      * 
     */
     void CreateCost( casadi::Function &L, casadi::Function &Phi ) const;
+
+    /**
+     * @brief Part of the hardcoded initialization. Returns X0.
+    */
+    casadi::DM getX0( double* q0) const;
     
     /**
      * @brief Gets the legged constraint builders.
