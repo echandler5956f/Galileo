@@ -16,7 +16,6 @@ GalileoLeggedROSImplementation::GalileoLeggedROSImplementation(ros::NodeHandle& 
 
 
 // Initialize the subscribers
-
 void GalileoLeggedROSImplementation::InitSubscribers()
 {
     // Subscribe to the robot model
@@ -30,15 +29,10 @@ void GalileoLeggedROSImplementation::InitSubscribers()
         node_handle_.subscribe("legged_parameter_location", 1, &GalileoLeggedROSImplementation::ParameterCallback, this);
 
     if(verbose_) ROS_INFO("Subscribed to legged_parameter_location");
-    // // Subscribe to the robot state
-    // robot_state_subscriber_ = 
-    //     nh_.subscribe("legged_robot_state", 100, &GalileoLeggedROSImplementation::UpdateRobotState, this);
-
-    // Subscribe to the robot command. this should end up being a service.
-    // robot_command_subscriber_ = 
-    //     nh_.subscribe("legged_robot_command", 100, &GalileoLeggedROSImplementation::UpdateRobotCommand, this);
+    
+    robot_command_subscriber_ = 
+        node_handle_.subscribe("legged_robot_command", 100, &GalileoLeggedROSImplementation::RobotCommandCallback, this);
 }
-
 
 // Initialize the publishers
 void GalileoLeggedROSImplementation::InitPublishers()
@@ -85,14 +79,14 @@ void GalileoLeggedROSImplementation::ParameterCallback(const std_msgs::String::C
     // Update the parameters from the given parameter file, and create the costs
     LoadParameters(msg->data);
 
+    // Create the problem data from the loaded model/parameters
+    CreateProblemData( casadi::DM::zeros(states_->nx, 1) );
 
-    // get target position 
-    // get cost weights
-    // create cost function, L and Phi
-    
+    // Create the trajectory optimizer if the problem data is set
+    CreateTrajOptSolver();
+
     parameter_location_subscriber_.shutdown();
 }
-
 
 void GalileoLeggedROSImplementation::LoadParameters(const std::string& parameter_file)
 {
@@ -106,7 +100,11 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string& parameter
     // Do nothing, we will hard code parameters for now.
 }
 
-
+void GalileoLeggedROSImplementation::RobotCommandCallback(const galileo_ros::RobotCommand::ConstPtr& msg){
+    // Update the solution with a new initial state.
+    T_ROBOT_STATE initial_state( {msg->initial_state} );
+    UpdateSolution(initial_state);
+}
 
 void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE initial_state )
 {
@@ -227,6 +225,9 @@ void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Fu
     casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
     casadi::SX u_error = robot_->cu - U_ref;
 
+    ROS_INFO("X_error_size: %d", X_error.size1());
+    ROS_INFO("Q_size: %d", Q.size1());
+
     L = casadi::Function("L",
                        {robot_->cx, robot_->cu},
                        {1. * 0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
@@ -270,10 +271,11 @@ void GalileoLeggedROSImplementation::CreateTrajOptSolver(){
     auto constraint_builders = getLeggedConstraintBuilders();
     decision_builder_ = std::make_shared<galileo::legged::constraints::LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
+    if(verbose_) ROS_INFO("Creating Trajectory Optimizer");
+
     trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_);
 
 
-    if(verbose_) ROS_INFO("Trajectory Optimizer created");
 }
 
 /**
@@ -287,11 +289,12 @@ void GalileoLeggedROSImplementation::UpdateSolution( T_ROBOT_STATE initial_state
         return;
     }
 
-    problem_data_->updateX0(initial_state);
+    problem_data_->legged_decision_problem_data.X0 = (initial_state);
     // Update the initial state
     trajectory_opt_->initFiniteElements(1, initial_state);
 
-    //@todo set the initial guess and solve
+    // Solve the problem 
+    solution_ = trajectory_opt_->optimize();
 }
 
 int main(int argc, char** argv)
