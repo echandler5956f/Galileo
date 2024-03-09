@@ -22,6 +22,7 @@
 
 #include "galileo_ros/ModelLocation.h"
 #include "galileo_ros/RobotSolution.h"
+#include "galileo_ros/RobotCommand.h"
 
 
 #define BASE_FRAME "base"
@@ -67,6 +68,14 @@ class GalileoLeggedROSImplementation {
      * @param parameter_file The path to the parameter file.
      */
     void ParameterCallback(const std_msgs::String::ConstPtr& msg);
+
+    /**
+     * @brief Updates the solution with a new initial state. 
+     * Currently DOES NOT update a target state.
+     * 
+     * @param msg The initial state of the robot.
+     */
+    void RobotCommandCallback(const galileo_ros::RobotCommand::ConstPtr& msg);
 
     /**
      * @brief Publishes the last solution.
@@ -122,16 +131,12 @@ class GalileoLeggedROSImplementation {
      * @param parameter_file The path to the parameter file.
      */
     void LoadParameters(const std::string& parameter_file);
-    
-
 
     /**
      * @brief Updates the robot running and terminal costs L and Phi. 
      * 
     */
     void CreateCost( casadi::Function &L, casadi::Function &Phi ) const;
-
-
     
     /**
      * @brief Gets the legged constraint builders.
@@ -167,12 +172,16 @@ class GalileoLeggedROSImplementation {
 
     ::ros::Subscriber target_pose_subscriber_; /**< The subscriber for the target pose. */
 
-    ::ros::Publisher solution_publisher_; /**< The publisher for the solution. */
-
     ::ros::Subscriber parameter_location_subscriber_; /**< The subscriber for the parameter file location. */
 
     ::ros::Subscriber robot_model_subscriber_; /**< The subscriber for the robot model. */
 
+    /** For getting solutions. We eventually want to publish the last known solution at a high frequency */
+    ::ros::Publisher solution_publisher_; /**< Publishes the last solution. */
 
+    ::ros::Subscriber robot_command_subscriber_; /**< Updates the solution when called. */
 
+    casadi::MXVector solution_; /**< The last solution. */
+
+    bool fully_initted_; /**< Whether a solution has been made. */
 };
