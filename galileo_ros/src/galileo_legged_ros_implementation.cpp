@@ -216,15 +216,22 @@ void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Fu
 
     casadi::SX X_ref = casadi::SX(X0);
     X_ref(casadi::Slice(states_->nh + states_->ndh, states_->nh + states_->ndh + 3)) = target_pos;
-    casadi::SX X_error = casadi::SX::vertcat(casadi::SXVector{robot_->cx(casadi::Slice(0, states_->nh + states_->ndh)) - X_ref(casadi::Slice(0, states_->nh + states_->ndh)),
-                                                  target_error_casadi,
-                                                  robot_->cx(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx)) - X_ref(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx))});
+    
+    auto h_and_dh_error = robot_->cx(casadi::Slice(0, states_->nh + states_->ndh)) - X_ref(casadi::Slice(0, states_->nh + states_->ndh));
+    auto x_error = robot_->cx(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx)) - X_ref(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx));
+
+    casadi::SX X_error = casadi::SX::vertcat({h_and_dh_error,
+                                                target_error_casadi,
+                                                x_error});
 
     pinocchio::computeTotalMass(robot_->model, robot_->data);
 
     casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
     casadi::SX u_error = robot_->cu - U_ref;
 
+    ROS_INFO("h_and_dh_error_size: %d", h_and_dh_error.size1());
+    ROS_INFO("target_error_casadi_size: %d", target_error_casadi.size1());
+    ROS_INFO("x_error_size: %d", x_error.size1());
     ROS_INFO("X_error_size: %d", X_error.size1());
     ROS_INFO("Q_size: %d", Q.size1());
 
