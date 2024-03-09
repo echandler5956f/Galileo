@@ -20,6 +20,7 @@ add_message_files(
   FILES
   ModelLocation.msg
   RobotSolution.msg
+  RobotCommand.msg
 )
 
 ## Generate added messages and services with any dependencies listed here
