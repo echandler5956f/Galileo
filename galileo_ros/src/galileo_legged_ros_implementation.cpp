@@ -101,13 +101,19 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string& parameter
 }
 
 void GalileoLeggedROSImplementation::RobotCommandCallback(const galileo_ros::RobotCommand::ConstPtr& msg){
-    // Update the solution with a new initial state.
-    T_ROBOT_STATE initial_state( {msg->initial_state} );
-    UpdateSolution(initial_state);
+    // Update the solution with a new initial state. Currently, it is only a state on "q". 
+    double q0[states_->nq];
+    for (size_t i = 0; i < states_->nq; ++i)
+    {
+        q0[i] = msg->initial_state[i];
+    }
+    T_ROBOT_STATE X0 = getX0(q0);
+    UpdateSolution(X0);
 }
 
-void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE initial_state )
+void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE X0 )
 {
+
     // First, get the costs L (running) and Phi (terminal). This creates the general problem data
     casadi::Function L, Phi;
     CreateCost(L, Phi);
@@ -119,17 +125,21 @@ void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE initial_st
     surfaces_->push_back(galileo::legged::environment::createInfiniteGround());
 
 
-    std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
-    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05};
-    std::vector<uint> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
+    std::vector<int> knot_num = {20, 20, 20, 20, 20}; //, 20, 20, 20, 20};
+    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05}; // , 0.3, 0.05, 0.3, 0.05};
+    std::vector<uint> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111};//, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
+
+    //Create the contact sequence
+    surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
+    surfaces_->push_back(galileo::legged::environment::createInfiniteGround());
 
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = 
         {   {0, 0, 0, 0}, 
             {0, 0, galileo::legged::environment::NO_SURFACE, 0}, {0, 0, 0, 0}, 
-            {0, galileo::legged::environment::NO_SURFACE, 0, 0}, {0, 0, 0, 0},
-            {0, 0, 0, galileo::legged::environment::NO_SURFACE}, {0, 0, 0, 0}, 
-            {galileo::legged::environment::NO_SURFACE, 0, 0, 0}, {0, 0, 0, 0},
-            }; 
+            {0, galileo::legged::environment::NO_SURFACE, 0, 0}, {0, 0, 0, 0}}; //,
+            // {0, 0, 0, galileo::legged::environment::NO_SURFACE}, {0, 0, 0, 0}, 
+            // {galileo::legged::environment::NO_SURFACE, 0, 0, 0}, {0, 0, 0, 0},
+            // }; 
 
 
     int num_steps = 1;
@@ -141,6 +151,7 @@ void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE initial_st
             mode.combination_definition = robot_->getContactCombination(mask_vec[j]);
             mode.contact_surfaces = contact_surfaces[j];
             robot_->contact_sequence->addPhase(mode, knot_num[j], knot_time[j]);
+            ROS_INFO("Added phase %d", j);
         }
     }
 
@@ -153,17 +164,14 @@ void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE initial_st
                                                              states_, std::make_shared<galileo::opt::ADModel>(robot_->cmodel),
                                                              std::make_shared<galileo::opt::ADData>(robot_->cdata), 
                                                              robot_->getEndEffectors(), 
-                                                             robot_->cx, robot_->cu, robot_->cdt, initial_state);
+                                                             robot_->cx, robot_->cu, robot_->cdt, X0);
 }
 
-void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Function &Phi ) const
-{
-    //HARDCODE INITIAL CONDITION 
-    double q0[] = {
-        0., 0., 0.339, 0., 0., 0., 1.,
-        0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3};
 
-    Eigen::Map<galileo::opt::ConfigVector> q0_vec(q0, 19);
+
+casadi::DM GalileoLeggedROSImplementation::getX0( double* q0) const {
+    //HARDCODE INITIAL CONDITION 
+    Eigen::Map<galileo::opt::ConfigVector> q0_vec(q0, states_->nq);
 
     casadi::DM X0 = casadi::DM::zeros(states_->nx, 1);
     int j = 0;
@@ -173,9 +181,21 @@ void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Fu
         ++j;
     }
 
+    return X0;
+}
+
+void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Function &Phi ) const
+{
+    //HARDCODE INITIAL CONDITION 
+    double q0[] = {
+        0., 0., 0.339, 0., 0., 0., 1.,
+        0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3};
+
+    casadi::DM X0 = getX0(q0);
+
     //HARDCODE COST WEIGHTS
 
-    Eigen::VectorXd Q_diag(states_->nx); 
+    Eigen::VectorXd Q_diag(states_->ndx); 
     Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
         500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
@@ -228,12 +248,6 @@ void GalileoLeggedROSImplementation::CreateCost( casadi::Function &L, casadi::Fu
 
     casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
     casadi::SX u_error = robot_->cu - U_ref;
-
-    ROS_INFO("h_and_dh_error_size: %d", h_and_dh_error.size1());
-    ROS_INFO("target_error_casadi_size: %d", target_error_casadi.size1());
-    ROS_INFO("x_error_size: %d", x_error.size1());
-    ROS_INFO("X_error_size: %d", X_error.size1());
-    ROS_INFO("Q_size: %d", Q.size1());
 
     L = casadi::Function("L",
                        {robot_->cx, robot_->cu},
@@ -288,17 +302,17 @@ void GalileoLeggedROSImplementation::CreateTrajOptSolver(){
 /**
  * @brief Updates the solution based on the initial state.
  * 
- * @param initial_state The initial state of the robot.
+ * @param X0 The initial state of the robot.
  */
-void GalileoLeggedROSImplementation::UpdateSolution( T_ROBOT_STATE initial_state ){
+void GalileoLeggedROSImplementation::UpdateSolution( T_ROBOT_STATE X0 ){
     if(!trajectory_opt_){
         ROS_ERROR("Trajectory optimizer not created yet. Cannot update solution.");
         return;
     }
 
-    problem_data_->legged_decision_problem_data.X0 = (initial_state);
+    problem_data_->legged_decision_problem_data.X0 = (X0);
     // Update the initial state
-    trajectory_opt_->initFiniteElements(1, initial_state);
+    trajectory_opt_->initFiniteElements(1, X0);
 
     // Solve the problem 
     solution_ = trajectory_opt_->optimize();
