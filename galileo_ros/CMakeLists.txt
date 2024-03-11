@@ -23,6 +23,11 @@ add_message_files(
   RobotCommand.msg
 )
 
+add_service_files(
+  FILES
+  DesiredStateCmd.srv
+)
+
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
@@ -72,5 +77,14 @@ add_executable(${PROJECT_NAME}_go1_publisher
 )
 
 target_link_libraries(${PROJECT_NAME}_go1_publisher
+   ${catkin_LIBRARIES}
+)
+
+
+add_executable(${PROJECT_NAME}_go1_poll_solution 
+  src/helper_nodes/galileo_legged_poll_solution.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_go1_poll_solution 
    ${catkin_LIBRARIES}
 )

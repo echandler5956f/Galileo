@@ -42,6 +42,13 @@ void GalileoLeggedROSImplementation::InitPublishers()
         node_handle_.advertise<galileo_ros::RobotSolution>("legged_robot_solution", 100);
 }
 
+void GalileoLeggedROSImplementation::InitServices()
+{
+    // Create the get_desired_state service
+    desired_state_service_ = 
+        node_handle_.advertiseService("get_desired_state", &GalileoLeggedROSImplementation::DesiredStateCallback, this);
+}
+
 void GalileoLeggedROSImplementation::LoadModelCallback(const galileo_ros::ModelLocation::ConstPtr& model_location)
 {
     // Load the robot model from the given model file and set the end effectors
@@ -90,14 +97,16 @@ void GalileoLeggedROSImplementation::ParameterCallback(const std_msgs::String::C
 
 void GalileoLeggedROSImplementation::LoadParameters(const std::string& parameter_file)
 {
+    //We will hardcode parameters for now 
+
+
     // opts["ipopt.linear_solver"] = "ma97";
     // opts["ipopt.ma97_order"] = "metis";
     opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts_["ipopt.max_iter"] = 250;
+    opts_["ipopt.max_iter"] = 1;
 
 
     if(verbose_) ROS_INFO("Parameters loaded from %s", parameter_file.c_str());
-    // Do nothing, we will hard code parameters for now.
 }
 
 void GalileoLeggedROSImplementation::RobotCommandCallback(const galileo_ros::RobotCommand::ConstPtr& msg){
@@ -151,7 +160,7 @@ void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE X0 )
             mode.combination_definition = robot_->getContactCombination(mask_vec[j]);
             mode.contact_surfaces = contact_surfaces[j];
             robot_->contact_sequence->addPhase(mode, knot_num[j], knot_time[j]);
-            ROS_INFO("Added phase %d", j);
+            ROS_INFO("Added phase %ld", j);
         }
     }
 
@@ -166,8 +175,6 @@ void GalileoLeggedROSImplementation::CreateProblemData( T_ROBOT_STATE X0 )
                                                              robot_->getEndEffectors(), 
                                                              robot_->cx, robot_->cu, robot_->cdt, X0);
 }
-
-
 
 casadi::DM GalileoLeggedROSImplementation::getX0( double* q0) const {
     //HARDCODE INITIAL CONDITION 
@@ -278,6 +285,32 @@ GalileoLeggedROSImplementation::getLeggedConstraintBuilders() const
 
 }
 
+bool GalileoLeggedROSImplementation::DesiredStateCallback(galileo_ros::DesiredStateCmd::Request& req, galileo_ros::DesiredStateCmd::Response& res)
+{
+    // Get the desired state from the trajectory optimizer
+    if(!fully_initted_){
+        ROS_ERROR("Trajectory optimizer not fully initialized yet. Cannot get desired state.");
+        res.valid_response = false;
+        return false;
+    }
+
+    Eigen::VectorXd time_offset_on_horizon(1);
+    time_offset_on_horizon << req.time_offset_on_horizon;
+
+    galileo::opt::solution_t sol = galileo::opt::solution_t(time_offset_on_horizon );
+    trajectory_opt_->getSolution(sol);
+
+    Eigen::VectorXf desired_state_q = sol.state_result.block(states_->nh + states_->ndh, 0, states_->nq, 1).template cast<float>();
+
+    std::vector<float> desired_state_q_vec(desired_state_q.size());
+
+    Eigen::VectorXf::Map(&desired_state_q_vec[0], desired_state_q.size()) = desired_state_q;
+
+    
+    res.state_at_time_offset = desired_state_q_vec;
+    res.valid_response = true;
+    return true;
+}
 
 void GalileoLeggedROSImplementation::CreateTrajOptSolver(){
     if(!problem_data_){
@@ -316,6 +349,7 @@ void GalileoLeggedROSImplementation::UpdateSolution( T_ROBOT_STATE X0 ){
 
     // Solve the problem 
     solution_ = trajectory_opt_->optimize();
+    fully_initted_ = true;
 }
 
 int main(int argc, char** argv)
