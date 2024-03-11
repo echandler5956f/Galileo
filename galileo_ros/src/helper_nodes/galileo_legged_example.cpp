@@ -49,13 +49,14 @@ int main(int argc, char** argv)
     robot_command_msg.target_state = q0;
     
 
-    while(true){
+    for(int i = 0; i < 20; i++){
         // Publish the messages
         legged_robot_model_publisher.publish(model_location_msg);
         legged_parameter_location_publisher.publish(parameter_location_msg);
 
         legged_robot_command_publisher.publish(robot_command_msg);
 
+        ros::Duration(0.1).sleep();
         // Spin and sleep
         ros::spinOnce();
     }
