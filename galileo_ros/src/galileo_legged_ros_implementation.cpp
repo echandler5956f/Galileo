@@ -103,7 +103,7 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string& parameter
     // opts["ipopt.linear_solver"] = "ma97";
     // opts["ipopt.ma97_order"] = "metis";
     opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts_["ipopt.max_iter"] = 1;
+    opts_["ipopt.max_iter"] = 10;
 
 
     if(verbose_) ROS_INFO("Parameters loaded from %s", parameter_file.c_str());
@@ -293,7 +293,7 @@ bool GalileoLeggedROSImplementation::DesiredStateCallback(galileo_ros::DesiredSt
         res.valid_response = false;
         return false;
     }
-
+     
     Eigen::VectorXd time_offset_on_horizon(1);
     time_offset_on_horizon << req.time_offset_on_horizon;
 
@@ -328,8 +328,6 @@ void GalileoLeggedROSImplementation::CreateTrajOptSolver(){
     if(verbose_) ROS_INFO("Creating Trajectory Optimizer");
 
     trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_);
-
-
 }
 
 /**
@@ -350,6 +348,7 @@ void GalileoLeggedROSImplementation::UpdateSolution( T_ROBOT_STATE X0 ){
     // Solve the problem 
     solution_ = trajectory_opt_->optimize();
     fully_initted_ = true;
+
 }
 
 int main(int argc, char** argv)
