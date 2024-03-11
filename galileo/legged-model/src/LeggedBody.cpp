@@ -156,14 +156,105 @@ namespace galileo
                                                          si->get_general_joint_velocities(cu_general))});
         }
 
-        casadi::SX apply_quat(casadi::SX quat, casadi::SX vec3)
+        void LeggedBody::createFint()
+        {
+            casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
+            casadi::SX vb = si->get_q_d(cdx)(casadi::Slice(0, si->nvb));
+            casadi::SX lie_group_int_result = lie_group_int(qb, vb, cdt);
+            casadi::SX q_joints_int_result = si->get_q(cx)(casadi::Slice(si->nqb, si->nq)) + si->get_q_d(cdx)(casadi::Slice(si->nvb, si->nv)) * cdt;
+
+            fint = casadi::Function("Fint",
+                                    {cx, cdx, cdt},
+                                    {vertcat(si->get_ch(cx) + si->get_ch_d(cdx) * cdt,
+                                             si->get_cdh(cx) + si->get_cdh_d(cdx) * cdt,
+                                             lie_group_int_result,
+                                             q_joints_int_result,
+                                             si->get_v(cx) + si->get_v_d(cdx) * cdt)});
+        }
+
+        casadi::SX LeggedBody::lie_group_int(casadi::SX qb, casadi::SX vb, casadi::SX dt)
+        {
+            casadi::SX pos = qb(casadi::Slice(0, 3));
+            casadi::SX quat = qb(casadi::Slice(3, 7));
+
+            casadi::SX vel = vb(casadi::Slice(0, 3)) * dt;
+            casadi::SX omega = vb(casadi::Slice(3, 6)) * dt;
+            casadi::SX omega_quat = casadi::SX::vertcat({omega / 2, 0});
+            casadi::SX exp_omega_quat = quat_exp(omega_quat);
+            casadi::SX quat_new = quat_mult(quat, exp_omega_quat);
+            quat_new = quat_new / sqrt(quat_new(0) * quat_new(0) + quat_new(1) * quat_new(1) + quat_new(2) * quat_new(2) + quat_new(3) * quat_new(3) + casadi::eps * casadi::eps);
+            casadi::SX pos_new = pos + apply_quat(quat, casadi::SX::mtimes(rodrigues(omega), vel));
+            return vertcat(pos_new, quat_new);
+        }
+
+        casadi::SX LeggedBody::quat_exp(casadi::SX quat)
+        {
+            casadi::SX v = quat(casadi::Slice(0, 3));
+            casadi::SX v_norm = sqrt(v(0) * v(0) + v(1) * v(1) + v(2) * v(2) + casadi::eps * casadi::eps);
+            casadi::SX a = quat(3);
+
+            casadi::SX exp_a = exp(a);
+            casadi::SX cos_norm_v = cos(v_norm);
+            casadi::SX sin_norm_v = sin(v_norm);
+
+            casadi::SX quat_new = casadi::SX::vertcat({exp_a * v * sin_norm_v / v_norm, exp_a * cos_norm_v});
+
+            return quat_new / sqrt(quat_new(0) * quat_new(0) + quat_new(1) * quat_new(1) + quat_new(2) * quat_new(2) + quat_new(3) * quat_new(3) + casadi::eps * casadi::eps);
+        }
+
+        void LeggedBody::createFdiff()
+        {
+            casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
+            casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
+            casadi::SX qb2 = si->get_q(cx2)(casadi::Slice(0, si->nqb));
+            casadi::SX lie_group_diff_result = lie_group_diff(qb, qb2, cdt);
+            casadi::SX v_joints_diff_result = (si->get_vj(cx2) - si->get_vj(cx)) / cdt;
+
+            fdiff = casadi::Function("Fdiff",
+                                     {cx, cx2, cdt},
+                                     {vertcat((si->get_ch(cx2) - si->get_ch(cx)) / cdt,
+                                              (si->get_cdh(cx2) - si->get_cdh(cx)) / cdt,
+                                              lie_group_diff_result,
+                                              v_joints_diff_result,
+                                              (si->get_v(cx2) - si->get_v(cx)) / cdt)});
+        }
+
+        casadi::SX LeggedBody::lie_group_diff(casadi::SX qb1, casadi::SX qb2, casadi::SX dt)
+        {
+            casadi::SX pos1 = qb1(casadi::Slice(0, 3));
+            casadi::SX quat1 = qb1(casadi::Slice(3, 7));
+            casadi::SX pos2 = qb2(casadi::Slice(0, 3));
+            casadi::SX quat2 = qb2(casadi::Slice(3, 7));
+
+            casadi::SX quat_diff = quat_mult(quat_inv(quat1), quat2);
+            casadi::SX omega_quat = quat_log(quat_diff);
+            casadi::SX omega = omega_quat(casadi::Slice(0, 3));
+
+            casadi::SX pos_diff = pos2 - pos1;
+            casadi::SX vel = casadi::SX::mtimes(inv(rodrigues(omega)), apply_quat(quat_inv(quat1), pos_diff));
+
+            return casadi::SX::vertcat({vel / dt, omega / dt});
+        }
+
+        casadi::SX LeggedBody::quat_log(casadi::SX quat)
+        {
+            casadi::SX squared_n = quat(0) * quat(0) + quat(1) * quat(1) + quat(2) * quat(2);
+            casadi::SX n = sqrt(squared_n);
+            casadi::SX w = quat(3);
+
+            return casadi::SX::if_else(n < casadi::eps,
+                                                ((2./w) - (2./3.) * (squared_n / (w * w * w))) * quat(casadi::Slice(0, 3)),
+                                                4. * atan(n / (w + sqrt(w * w + squared_n + casadi::eps * casadi::eps))) * quat(casadi::Slice(0, 3)) / n);
+        }
+
+        casadi::SX LeggedBody::apply_quat(casadi::SX quat, casadi::SX vec3)
         {
             casadi::SX imag = quat(casadi::Slice(0, 3));
             casadi::SX real = quat(3);
             return vec3 + 2 * cross(imag, cross(imag, vec3) + real * vec3);
         }
 
-        casadi::SX quat_mult(casadi::SX quat1, casadi::SX quat2)
+        casadi::SX LeggedBody::quat_mult(casadi::SX quat1, casadi::SX quat2)
         {
             casadi::SX real_1 = quat1(3);
             casadi::SX imag_1 = quat1(casadi::Slice(0, 3));
@@ -176,89 +267,16 @@ namespace galileo
             return casadi::SX::vertcat({imag_res, real_res});
         }
 
-        casadi::SX quat_exp(casadi::SX quat)
+        casadi::SX LeggedBody::quat_inv(casadi::SX quat)
         {
-            casadi::SX v = quat(casadi::Slice(0, 3));
-            casadi::SX v_norm = sqrt(v(0) * v(0) + v(1) * v(1) + v(2) * v(2) + casadi::eps);
-            casadi::SX a = quat(3);
-
-            casadi::SX exp_a = exp(a);
-            casadi::SX cos_norm_v = cos(v_norm);
-            casadi::SX sin_norm_v = sin(v_norm);
-
-            casadi::SX quat_new = casadi::SX::vertcat({exp_a * v * sin_norm_v / v_norm, exp_a * cos_norm_v});
-
-            return quat_new / sqrt(quat_new(0) * quat_new(0) + quat_new(1) * quat_new(1) + quat_new(2) * quat_new(2) + quat_new(3) * quat_new(3) + casadi::eps);
+            casadi::SX quat_norm = sqrt(quat(0) * quat(0) + quat(1) * quat(1) + quat(2) * quat(2) + quat(3) * quat(3) + casadi::eps * casadi::eps);
+            return casadi::SX::vertcat({-quat(casadi::Slice(0, 3)) / quat_norm, quat(3) / quat_norm});
         }
 
-        casadi::SX rodrigues(casadi::SX omega)
+        casadi::SX LeggedBody::rodrigues(casadi::SX omega)
         {
-            casadi::SX theta = sqrt(omega(0) * omega(0) + omega(1) * omega(1) + omega(2) * omega(2) + casadi::eps);
+            casadi::SX theta = sqrt(omega(0) * omega(0) + omega(1) * omega(1) + omega(2) * omega(2) + casadi::eps * casadi::eps);
             return casadi::SX::eye(3) + ((1 - cos(theta)) / (theta * theta)) * skew(omega) + ((theta - sin(theta)) / (theta * theta * theta)) * mpower(skew(omega), 2);
-        }
-
-        casadi::SX lie_group_int(casadi::SX qb, casadi::SX vb, casadi::SX dt)
-        {
-            casadi::SX pos = qb(casadi::Slice(0, 3));
-            casadi::SX quat = qb(casadi::Slice(3, 7));
-
-            casadi::SX vel = vb(casadi::Slice(0, 3)) * dt;
-            casadi::SX omega = vb(casadi::Slice(3, 6)) * dt;
-            casadi::SX omega_quat = casadi::SX::vertcat({omega / 2, 0});
-            casadi::SX exp_omega_quat = quat_exp(omega_quat);
-            casadi::SX quat_new = quat_mult(quat, exp_omega_quat);
-            quat_new = quat_new / sqrt(quat_new(0) * quat_new(0) + quat_new(1) * quat_new(1) + quat_new(2) * quat_new(2) + quat_new(3) * quat_new(3) + casadi::eps);
-            casadi::SX pos_new = pos + apply_quat(quat, casadi::SX::mtimes(rodrigues(omega), vel));
-            return vertcat(pos_new, quat_new);
-        }
-
-        void LeggedBody::createFint()
-        {
-            opt::ConfigVectorAD q_result = pinocchio::integrate(cmodel, q_AD, v_AD * cdt);
-            casadi::SX cq_result(model.nq, 1);
-            pinocchio::casadi::copy(q_result, cq_result);
-
-            casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
-            casadi::SX vb = si->get_q_d(cdx)(casadi::Slice(0, si->nvb));
-            casadi::SX lie_group_int_result = lie_group_int(qb, vb, cdt);
-            casadi::SX q_joints_int_result = si->get_q(cx)(casadi::Slice(si->nqb, si->nq)) + si->get_q_d(cdx)(casadi::Slice(si->nvb, si->nv)) * cdt;
-
-            fint = casadi::Function("Fint",
-                                    {cx, cdx, cdt},
-                                    {vertcat(si->get_ch(cx) + si->get_ch_d(cdx),
-                                             si->get_cdh(cx) + si->get_cdh_d(cdx),
-                                              lie_group_int_result(casadi::Slice(0, si->nqb)),
-                                            //  customFint(cx, cdx, cdt)(casadi::Slice(0, si->nqb)),
-                                             q_joints_int_result,
-                                             //  customFint(cx, cdx, cdt)(casadi::Slice(si->nqb, si->nq)),
-                                             si->get_v(cx) + si->get_v_d(cdx))});
-
-            // fint = casadi::Function("Fint",
-            //                         {cx, cdx, cdt},
-            //                         {vertcat(si->get_ch(cx) + si->get_ch_d(cdx),
-            //                                  si->get_cdh(cx) + si->get_cdh_d(cdx),
-            //                                  // cq_result, // returns different expression than python version, NO idea why
-            //                                  customFint(cx, cdx, cdt),
-            //                                  si->get_v(cx) + si->get_v_d(cdx))});
-        }
-
-        void LeggedBody::createFdiff()
-        {
-            casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
-            auto cq2 = si->get_q(cx2);
-
-            opt::ConfigVectorAD q2_AD(model.nq);
-            q2_AD = Eigen::Map<opt::ConfigVectorAD>(static_cast<std::vector<opt::ADScalar>>(si->get_q(cx2)).data(), model.nq, 1);
-
-            opt::TangentVectorAD v_result = pinocchio::difference(cmodel, q_AD, q2_AD);
-            casadi::SX cv_result(model.nv, 1);
-            pinocchio::casadi::copy(v_result, cv_result);
-            fdif = casadi::Function("Fdif",
-                                    {cx, cx2, cdt},
-                                    {vertcat(si->get_ch(cx2) - si->get_ch(cx),
-                                             si->get_cdh(cx2) - si->get_cdh(cx),
-                                             cv_result / cdt,
-                                             si->get_v(cx2) - si->get_v(cx))});
         }
 
         void LeggedBody::fillModeDynamics(bool print_ees_info)
@@ -329,133 +347,5 @@ namespace galileo
         contact::ContactCombination LeggedBody::getContactCombination(int contact_mask) { return contact_combinations_[contact_mask]; }
 
         contact::RobotEndEffectors LeggedBody::getEndEffectors() { return ees_; }
-
-        /*So, for some reason, pinocchio's integrate function returns a slightly differentcasadi matrix than than the python version.
-        When I actually evaluate the function though, it seems to return the correct result for both versions.
-        I have tried everything I can think of to figure out the discrepency, but I have not found the issue.
-        So, I just copied over the output from integrate for huron into this function here.
-        This is obviously a big problem for portability, but it at least lets us test if the rest of the framework is working.*/
-        casadi::SX LeggedBody::customFint(casadi::SX x, casadi::SX dx, casadi::SX dt)
-        {
-            casadi::SX x_12 = x(12);
-            casadi::SX x_13 = x(13);
-            casadi::SX x_14 = x(14);
-            casadi::SX x_15 = x(15);
-            casadi::SX x_16 = x(16);
-            casadi::SX x_17 = x(17);
-            casadi::SX x_18 = x(18);
-            casadi::SX x_19 = x(19);
-            casadi::SX x_20 = x(20);
-            casadi::SX x_21 = x(21);
-            casadi::SX x_22 = x(22);
-            casadi::SX x_23 = x(23);
-            casadi::SX x_24 = x(24);
-            casadi::SX x_25 = x(25);
-            casadi::SX x_26 = x(26);
-            casadi::SX x_27 = x(27);
-            casadi::SX x_28 = x(28);
-            casadi::SX x_29 = x(29);
-            casadi::SX x_30 = x(30);
-            casadi::SX dx_12 = dx(12);
-            casadi::SX dx_13 = dx(13);
-            casadi::SX dx_14 = dx(14);
-            casadi::SX dx_15 = dx(15);
-            casadi::SX dx_16 = dx(16);
-            casadi::SX dx_17 = dx(17);
-            casadi::SX dx_18 = dx(18);
-            casadi::SX dx_19 = dx(19);
-            casadi::SX dx_20 = dx(20);
-            casadi::SX dx_21 = dx(21);
-            casadi::SX dx_22 = dx(22);
-            casadi::SX dx_23 = dx(23);
-            casadi::SX dx_24 = dx(24);
-            casadi::SX dx_25 = dx(25);
-            casadi::SX dx_26 = dx(26);
-            casadi::SX dx_27 = dx(27);
-            casadi::SX dx_28 = dx(28);
-            casadi::SX dx_29 = dx(29);
-
-            casadi::SX c1 = (dx_12 * dt);
-            casadi::SX c2 = (dx_15 * dt);
-            casadi::SX c3 = (dx_16 * dt);
-            casadi::SX c4 = (dx_17 * dt);
-            casadi::SX c5 = 4.93038e-32;
-            casadi::SX c6 = ((sq(c2) + (sq(c3) + sq(c4))) + c5);
-            casadi::SX c7 = sqrt(c6);
-            casadi::SX c8 = 0.00012207;
-            casadi::SX c9 = (c7 < c8);
-            casadi::SX c10 = 0.5;
-            casadi::SX c11 = 24;
-            casadi::SX c12 = 1;
-            casadi::SX c13 = (if_else(c9, (c10 - (c6 / c11)), 0) + if_else((!c9), ((c12 - cos(c7)) / c6), 0));
-            casadi::SX c14 = (dx_14 * dt);
-            casadi::SX c15 = (dx_13 * dt);
-            casadi::SX c16 = (c7 < c8);
-            casadi::SX c17 = 120;
-            casadi::SX c18 = (if_else(c16, (0.166667 - (c6 / c17)), 0) + if_else((!c16), (((c7 - sin(c7)) / c6) / c7), 0));
-            casadi::SX c19 = ((c2 * c15) - (c3 * c1));
-            casadi::SX c20 = ((c4 * c1) - (c2 * c14));
-            casadi::SX c21 = ((c1 + (c13 * ((c3 * c14) - (c4 * c15)))) + (c18 * ((c3 * c19) - (c4 * c20))));
-            casadi::SX c22 = ((c3 * c14) - (c4 * c15));
-            casadi::SX c23 = ((c14 + (c13 * ((c2 * c15) - (c3 * c1)))) + (c18 * ((c2 * c20) - (c3 * c22))));
-            casadi::SX c24 = ((c15 + (c13 * ((c4 * c1) - (c2 * c14)))) + (c18 * ((c4 * c22) - (c2 * c19))));
-            casadi::SX c25 = ((x_16 * c23) - (x_17 * c24));
-            casadi::SX c26 = (c25 + c25);
-            casadi::SX c27 = ((x_15 * c24) - (x_16 * c21));
-            casadi::SX c28 = (c27 + c27);
-            casadi::SX c29 = ((x_17 * c21) - (x_15 * c23));
-            casadi::SX c30 = (c29 + c29);
-            casadi::SX c31 = (sq(c2) + (sq(c3) + sq(c4)));
-            casadi::SX c32 = (c8 < c31);
-            casadi::SX c33 = sqrt((c31 + c5));
-            casadi::SX c34 = (c10 * c33);
-            casadi::SX c35 = sin(c34);
-            casadi::SX c36 = (c31 / 4);
-            casadi::SX c37 = (c10 * ((c12 - (c36 / 6)) + (sq(c36) / c17)));
-            casadi::SX c38 = (if_else(c32, (c35 * (c2 / c33)), 0) + if_else((!c32), (c37 * c2), 0));
-            casadi::SX c39 = (c8 < c31);
-            casadi::SX c40 = 2;
-            casadi::SX c41 = (if_else(c39, cos(c34), 0) + if_else((!c39), ((c12 - (c36 / c40)) + (sq(c36) / c11)), 0));
-            casadi::SX c42 = (c8 < c31);
-            casadi::SX c43 = (if_else(c42, (c35 * (c4 / c33)), 0) + if_else((!c42), (c37 * c4), 0));
-            casadi::SX c44 = (c8 < c31);
-            casadi::SX c45 = (if_else(c44, (c35 * (c3 / c33)), 0) + if_else((!c44), (c37 * c3), 0));
-            casadi::SX c46 = ((((x_18 * c38) + (x_15 * c41)) + (x_16 * c43)) - (x_17 * c45));
-            casadi::SX c47 = ((((x_18 * c45) + (x_16 * c41)) + (x_17 * c38)) - (x_15 * c43));
-            casadi::SX c48 = ((((x_18 * c43) + (x_17 * c41)) + (x_15 * c45)) - (x_16 * c38));
-            casadi::SX c49 = ((((x_18 * c41) - (x_15 * c38)) - (x_16 * c45)) - (x_17 * c43));
-            casadi::SX c50 = (((c46 * x_15) + (c47 * x_16)) + ((c48 * x_17) + (c49 * x_18)));
-            casadi::SX c51 = 0;
-            casadi::SX c52 = (c50 < c51);
-            casadi::SX c53 = (if_else(c52, (-c46), 0) + if_else((!c52), c46, 0));
-            casadi::SX c54 = (c50 < c51);
-            casadi::SX c55 = (if_else(c54, (-c47), 0) + if_else((!c54), c47, 0));
-            casadi::SX c56 = (c50 < c51);
-            casadi::SX c57 = (if_else(c56, (-c48), 0) + if_else((!c56), c48, 0));
-            casadi::SX c58 = (c50 < c51);
-            casadi::SX c59 = (if_else(c58, (-c49), 0) + if_else((!c58), c49, 0));
-            casadi::SX c60 = ((3 - ((sq(c53) + sq(c55)) + (sq(c57) + sq(c59)))) / c40);
-
-            return casadi::SX::vertcat(
-                {(((c21 + (x_18 * c26)) + ((x_16 * c28) - (x_17 * c30))) + x_12),
-                 (((c24 + (x_18 * c30)) + ((x_17 * c26) - (x_15 * c28))) + x_13),
-                 (((c23 + (x_18 * c28)) + ((x_15 * c30) - (x_16 * c26))) + x_14),
-                 (c53 * c60),
-                 (c55 * c60),
-                 (c57 * c60),
-                 (c59 * c60),
-                 (x_19 + (dx_18 * dt)),
-                 (x_20 + (dx_19 * dt)),
-                 (x_21 + (dx_20 * dt)),
-                 (x_22 + (dx_21 * dt)),
-                 (x_23 + (dx_22 * dt)),
-                 (x_24 + (dx_23 * dt)),
-                 (x_25 + (dx_24 * dt)),
-                 (x_26 + (dx_25 * dt)),
-                 (x_27 + (dx_26 * dt)),
-                 (x_28 + (dx_27 * dt)),
-                 (x_29 + (dx_28 * dt)),
-                 (x_30 + (dx_29 * dt))});
-        }
     }
 }

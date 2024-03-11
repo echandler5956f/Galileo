@@ -27,6 +27,17 @@ namespace galileo
             }
             this->nu += this->nF;
             this->nu_general = 6 + this->nvju;
+
+            this->h_index = 0;
+            this->dh_index = this->h_index + this->nh;
+            this->q_index = this->dh_index + this->ndh;
+            this->qj_index = this->q_index + this->nqb;
+            this->v_index = this->q_index + this->nq;
+            this->vj_index = this->v_index + this->nvb;
+            
+            this->general_force_index = 0;
+            this->general_torque_index = this->general_force_index + 3;
+            this->general_vju_index = this->general_torque_index + 3;
         }
 
         template <typename Sym>
