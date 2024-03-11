@@ -4,15 +4,16 @@
 
 #include <pinocchio/fwd.hpp>
 
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Twist.h>
 #include <ros/subscriber.h>
-
+#include <ros/publisher.h>
+#include <ros/service.h>
 // Include the necessary ROS header files
 #include <ros/ros.h>
 #include <std_msgs/String.h> // Assuming the parameter location strings are published as std_msgs::String
 
 #include <Eigen/Core>
+
+#include <thread>
 
 #include "galileo/legged-model/LeggedBody.h"
 #include "galileo/legged-model/LeggedRobotProblemData.h"
@@ -23,6 +24,7 @@
 #include "galileo_ros/ModelLocation.h"
 #include "galileo_ros/RobotSolution.h"
 #include "galileo_ros/RobotCommand.h"
+#include "galileo_ros/DesiredStateCmd.h"
 
 
 #define BASE_FRAME "base"
@@ -78,6 +80,13 @@ class GalileoLeggedROSImplementation {
     void RobotCommandCallback(const galileo_ros::RobotCommand::ConstPtr& msg);
 
     /**
+     * @brief returns the desired state at time "t"
+     * 
+    */
+    bool DesiredStateCallback(galileo_ros::DesiredStateCmd::Request  &req,
+                                galileo_ros::DesiredStateCmd::Response &res);
+
+    /**
      * @brief Publishes the last solution.
      */
     void PublishLastSolution();
@@ -113,7 +122,7 @@ class GalileoLeggedROSImplementation {
     /**
      * @brief Initializes the services for the Galileo Legged ROS Implementation.
      */
-    void InitServices(){} // no services yet.
+    void InitServices();
         
     /**
      * @brief Loads the robot model from the given model file and sets the end effectors.
@@ -149,8 +158,6 @@ class GalileoLeggedROSImplementation {
     std::vector< LeggedConstraintBuilderType > 
         getLeggedConstraintBuilders() const;
 
-
-
     std::shared_ptr<galileo::legged::LeggedBody> robot_; /**< The robot model. */
 
     std::shared_ptr<galileo::opt::LeggedRobotStates> states_; /**< Definition of the state. */
@@ -181,12 +188,20 @@ class GalileoLeggedROSImplementation {
 
     ::ros::Subscriber robot_model_subscriber_; /**< The subscriber for the robot model. */
 
+    std::thread galileo_solver_ ; /**< The thread for running the optimizer */ 
+
+    std::mutex solution_mutex_; /**< Bar the solution from being written to/accessed. */
+
+    std::mutex optimizing_mutex_; /**< Bar the solution from being written to/accessed. */
+
     /** For getting solutions. We eventually want to publish the last known solution at a high frequency */
     ::ros::Publisher solution_publisher_; /**< Publishes the last solution. */
 
     ::ros::Subscriber robot_command_subscriber_; /**< Updates the solution when called. */
 
+    ::ros::ServiceServer desired_state_service_; /**< Returns the desired state at time "t". */
+
     casadi::MXVector solution_; /**< The last solution. */
 
-    bool fully_initted_; /**< Whether a solution has been made. */
+    bool fully_initted_ = false; /**< Whether a solution has been made. */
 };
