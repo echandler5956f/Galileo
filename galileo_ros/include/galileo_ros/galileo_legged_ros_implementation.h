@@ -24,7 +24,7 @@
 #include "galileo_ros/ModelLocation.h"
 #include "galileo_ros/RobotSolution.h"
 #include "galileo_ros/RobotCommand.h"
-#include "galileo_ros/DesiredStateCmd.h"
+#include "galileo_ros/DesiredStateInputCmd.h"
 
 
 #define BASE_FRAME "base"
@@ -80,11 +80,11 @@ class GalileoLeggedROSImplementation {
     void RobotCommandCallback(const galileo_ros::RobotCommand::ConstPtr& msg);
 
     /**
-     * @brief returns the desired state at time "t"
+     * @brief returns the desired state and input at time "t"
      * 
     */
-    bool DesiredStateCallback(galileo_ros::DesiredStateCmd::Request  &req,
-                                galileo_ros::DesiredStateCmd::Response &res);
+    bool DesiredStateInputCallback(galileo_ros::DesiredStateInputCmd::Request  &req,
+                                galileo_ros::DesiredStateInputCmd::Response &res);
 
     /**
      * @brief Publishes the last solution.
@@ -199,7 +199,7 @@ class GalileoLeggedROSImplementation {
 
     ::ros::Subscriber robot_command_subscriber_; /**< Updates the solution when called. */
 
-    ::ros::ServiceServer desired_state_service_; /**< Returns the desired state at time "t". */
+    ::ros::ServiceServer desired_state_input_service_; /**< Returns the desired state and input at time "t". */
 
     casadi::MXVector solution_; /**< The last solution. */
 
