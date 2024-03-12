@@ -14,7 +14,7 @@ namespace galileo
             else
                 d = d_;
             /*Choose collocation points*/
-            /*IMPORTANT NOTE for radau scheme: The left endpoint is NOT included in the collocation points. This is because we are using 'flipped' LGR points (i.e., right endpoint is included, but left is not)*/
+            /*IMPORTANT NOTE for radau scheme: The right endpoint is NOT included in the collocation points.*/
             tau_root = casadi::collocation_points(d, scheme);
             tau_root.insert(tau_root.begin(), 0);
 

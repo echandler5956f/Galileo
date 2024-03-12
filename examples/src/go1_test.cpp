@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 250;
+    opts["ipopt.max_iter"] = 5;
     // opts["snopt.System information"] = "Yes";
     // opts["snopt.Total real workspace"] = 100000000;
 
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
 
     Eigen::MatrixXd new_state(new_sol.state_result.rows()-1, new_sol.state_result.cols());
     Eigen::MatrixXd euler_angles = quatToEulerZYX(new_sol.state_result.block(si->nh + si->ndh + 3, 0, 4, new_sol.state_result.cols()));
-    new_state << new_sol.state_result.topRows(si->nh + si->ndh + 3), euler_angles, new_sol.state_result.bottomRows(si->nq - 7);
+    new_state << new_sol.state_result.topRows(si->nh + si->ndh + 3), euler_angles, new_sol.state_result.bottomRows(si->nx - (si->nh + si->ndh + si->nqb));
 
     return 0;
 }
