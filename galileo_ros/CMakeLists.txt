@@ -25,7 +25,7 @@ add_message_files(
 
 add_service_files(
   FILES
-  DesiredStateCmd.srv
+  DesiredStateInputCmd.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
