@@ -1,4 +1,0 @@
-float32 time_offset_on_horizon
----
-bool valid_response
-float32[] state_at_time_offset

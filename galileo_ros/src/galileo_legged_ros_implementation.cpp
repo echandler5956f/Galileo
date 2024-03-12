@@ -297,7 +297,7 @@ bool GalileoLeggedROSImplementation::DesiredStateInputCallback(galileo_ros::Desi
         res.valid_response = false;
         return false;
     }
-     
+
     Eigen::VectorXd time_offset_on_horizon(1);
     time_offset_on_horizon << req.time_offset_on_horizon;
 
@@ -360,7 +360,6 @@ void GalileoLeggedROSImplementation::UpdateSolution(T_ROBOT_STATE X0)
     // Solve the problem
     solution_ = trajectory_opt_->optimize();
     fully_initted_ = true;
-
 }
 
 int main(int argc, char **argv)
