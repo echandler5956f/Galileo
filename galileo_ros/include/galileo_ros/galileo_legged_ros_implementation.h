@@ -15,6 +15,7 @@
 
 #include <thread>
 
+#include "galileo/math/Quat2Euler.h"
 #include "galileo/legged-model/LeggedBody.h"
 #include "galileo/legged-model/LeggedRobotProblemData.h"
 #include "galileo/legged-model/LeggedRobotStates.h"
