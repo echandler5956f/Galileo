@@ -3,7 +3,7 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/tools/MeshcatInterface.h"
 #include "galileo/tools/GNUPlotInterface.h"
-#include "/home/quant/ros_ws/src/Galileo/galileo/legged-model/include/galileo/GalileoToOCS2Conversions.h"
+#include "galileo/legged-model/GalileoToOCS2Conversions.h"
 
 using namespace galileo;
 using namespace legged;
