@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 250;
+    opts["ipopt.max_iter"] = 5;
     // opts["snopt.System information"] = "Yes";
     // opts["snopt.Total real workspace"] = 100000000;
 
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     casadi::MXVector sol = traj.optimize();
 
     // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(1000, 0., robot.contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
     // std::vector<double> tmp = traj.getGlobalTimes();
     // double threshold = 1e-6; // Adjust this value as needed
 
@@ -213,6 +213,11 @@ int main(int argc, char **argv)
                          ee_plot_names,
                          wrench_legend_names);
     plotter.PlotConstraints();
+
+    Eigen::MatrixXd new_state(new_sol.state_result.rows()-1, new_sol.state_result.cols());
+    Eigen::MatrixXd euler_angles = galileo::math::quaternion2Euler(new_sol.state_result.block(si->nh + si->ndh + 3, 0, 4, new_sol.state_result.cols()), galileo::math::zyx);
+    new_state << new_sol.state_result.topRows(si->nh + si->ndh + 3), euler_angles, new_sol.state_result.bottomRows(si->nx - (si->nh + si->ndh + si->nqb));
+    std::cout << "new_state: " << new_state << std::endl;
 
     return 0;
 }
