@@ -214,5 +214,9 @@ int main(int argc, char **argv)
                          wrench_legend_names);
     plotter.PlotConstraints();
 
+    Eigen::MatrixXd new_state(new_sol.state_result.rows()-1, new_sol.state_result.cols());
+    Eigen::MatrixXd euler_angles = quatToEulerZYX(new_sol.state_result.block(si->nh + si->ndh + 3, 0, 4, new_sol.state_result.cols()));
+    new_state << new_sol.state_result.topRows(si->nh + si->ndh + 3), euler_angles, new_sol.state_result.bottomRows(si->nq - 7);
+
     return 0;
 }
