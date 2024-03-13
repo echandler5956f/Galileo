@@ -4,3 +4,5 @@
 *build/
 docs/html
 docs/latex
+
+*.csv
