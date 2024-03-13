@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     // std::vector<double> knot_time = {0.05, 0.3};
     // std::vector<int> mask_vec = {0b1111, 0b1001}; // half trot
 
-    int num_steps = 2;
+    int num_steps = 1;
     for (int i = 0; i < num_steps; ++i)
     {
         for (size_t j = 0; j < mask_vec.size(); ++j)
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 
     casadi::Function Phi("Phi",
                          {robot.cx},
-                         {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
+                         {1e5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
     casadi::Dict opts;
     opts["ipopt.linear_solver"] = "ma97";

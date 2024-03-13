@@ -47,19 +47,17 @@ namespace galileo
                     casadi::SX initial_guess_u = casadi::SX::zeros(states->nu, 1);
 
                     casadi::SX mass = problem_data.legged_decision_problem_data.ad_data->mass[0];
-                    casadi::SX g = casadi::SX::zeros(3, 1);
-                    g(2) = 9.81;
+                    casadi::SX g = casadi::SX(9.81);
                     int num_in_contact = problem_data.legged_decision_problem_data.contact_sequence->numEndEffectorsInContactAtPhase(phase_index);
 
                     for (auto ee : problem_data.legged_decision_problem_data.robot_end_effectors)
                     {
                         if (mode[(*ee.second)])
                         {
-                            initial_guess_u(casadi::Slice(std::get<0>(states->frame_id_to_index_range[ee.first]), std::get<1>(states->frame_id_to_index_range[ee.first])))(casadi::Slice(0, 3)) = mass * g / num_in_contact;
+                            initial_guess_u(std::get<0>(states->frame_id_to_index_range[ee.first]) + 2) = mass * g / num_in_contact;
                         }
                     }
                     initial_guess_x = problem_data.legged_decision_problem_data.X0;
-
                     decision_data.initial_guess = casadi::Function("DecisionInitialGuess", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{initial_guess_x, initial_guess_u});
                     decision_data.lower_bound = casadi::Function("DecisionLowerBounds", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{-casadi::inf * casadi::SX::ones(states->ndx, 1), -casadi::inf * casadi::SX::ones(states->nu, 1)});
                     decision_data.upper_bound = casadi::Function("DecisionUpperBounds", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{casadi::inf * casadi::SX::ones(states->ndx, 1), casadi::inf * casadi::SX::ones(states->nu, 1)});
