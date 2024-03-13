@@ -102,10 +102,10 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string &parameter
 {
     // We will hardcode parameters for now
 
-    // opts["ipopt.linear_solver"] = "ma97";
-    // opts["ipopt.ma97_order"] = "metis";
+    opts_["ipopt.linear_solver"] = "ma97";
+    opts_["ipopt.ma97_order"] = "metis";
     opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts_["ipopt.max_iter"] = 10;
+    opts_["ipopt.max_iter"] = 250;
 
     if (verbose_)
         ROS_INFO("Parameters loaded from %s", parameter_file.c_str());
@@ -136,23 +136,43 @@ void GalileoLeggedROSImplementation::CreateProblemData(T_ROBOT_STATE X0)
     surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
     surfaces_->push_back(galileo::legged::environment::createInfiniteGround());
 
-    std::vector<int> knot_num = {20, 20, 20, 20, 20};                      //, 20, 20, 20, 20};
-    std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05};          // , 0.3, 0.05, 0.3, 0.05};
-    std::vector<uint> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111}; //, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
+    // std::vector<int> knot_num = {20, 20, 20, 20, 20};                      //, 20, 20, 20, 20};
+    // std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05};          // , 0.3, 0.05, 0.3, 0.05};
+    // std::vector<uint> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111}; //, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
+
+    // std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
+    // std::vector<double> knot_time = {0.05, 0.25, 0.05, 0.25, 0.05, 0.25, 0.05, 0.25, 0.05};
+    // std::vector<uint> mask_vec = {0b1111, 0b0110, 0b1111, 0b1001, 0b1111, 0b0110, 0b1111, 0b1001, 0b1111};
+
+    std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
+    std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075};
+    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110, 0b1111, 0b1001, 0b1111, 0b0110, 0b1111}; // trot
 
     // Create the contact sequence
     surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
     surfaces_->push_back(galileo::legged::environment::createInfiniteGround());
 
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces =
+    //     {{0, 0, 0, 0},
+    //      {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
+    //      {0, 0, 0, 0},
+    //      {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
+    //      {0, 0, 0, 0},
+    //      {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
+    //      {0, 0, 0, 0},
+    //      {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
+    //      {0, 0, 0, 0}};
+
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces =
         {{0, 0, 0, 0},
-         {0, 0, galileo::legged::environment::NO_SURFACE, 0},
+         {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
          {0, 0, 0, 0},
-         {0, galileo::legged::environment::NO_SURFACE, 0, 0},
-         {0, 0, 0, 0}}; //,
-                        // {0, 0, 0, galileo::legged::environment::NO_SURFACE}, {0, 0, 0, 0},
-                        // {galileo::legged::environment::NO_SURFACE, 0, 0, 0}, {0, 0, 0, 0},
-                        // };
+         {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
+         {0, 0, 0, 0},
+         {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
+         {0, 0, 0, 0},
+         {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
+         {0, 0, 0, 0}};
 
     int num_steps = 1;
     for (int i = 0; i < num_steps; ++i)
@@ -201,6 +221,10 @@ void GalileoLeggedROSImplementation::CreateCost(casadi::Function &L, casadi::Fun
     double q0[] = {
         0., 0., 0.339, 0., 0., 0., 1.,
         0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3};
+
+    // double q0[] = {
+    //     0., 0., 0.3, 0., 0., 0., 1.,
+    //     -0.10, 0.72, -1.44, -0.10, 0.72, -1.44, 0.10, 0.72, -1.44, 0.10, 0.72, -1.44};
 
     casadi::DM X0 = getX0(q0);
 
