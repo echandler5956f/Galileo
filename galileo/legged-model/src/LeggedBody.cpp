@@ -227,8 +227,8 @@ namespace galileo
                                     {cx, cdx, cdt},
                                     {vertcat(si->get_ch(cx) + si->get_ch_d(cdx),
                                              si->get_cdh(cx) + si->get_cdh_d(cdx),
-                                              lie_group_int_result(casadi::Slice(0, si->nqb)),
-                                            //  customFint(cx, cdx, cdt)(casadi::Slice(0, si->nqb)),
+                                             lie_group_int_result(casadi::Slice(0, si->nqb)),
+                                             //  customFint(cx, cdx, cdt)(casadi::Slice(0, si->nqb)),
                                              q_joints_int_result,
                                              //  customFint(cx, cdx, cdt)(casadi::Slice(si->nqb, si->nq)),
                                              si->get_v(cx) + si->get_v_d(cdx))});
@@ -456,6 +456,45 @@ namespace galileo
                  (x_28 + (dx_27 * dt)),
                  (x_29 + (dx_28 * dt)),
                  (x_30 + (dx_29 * dt))});
+        }
+
+        void LeggedBody::calculateBaseToFeetJacobians()
+        {
+            pinocchio::computeJointJacobians(cmodel, cdata, q_AD);
+            pinocchio::updateFramePlacements(cmodel, cdata);
+            Eigen::Matrix<galileo::opt::ADScalar, -1, -1, 0> baseToFeetJacobiansEigen = Eigen::Matrix<galileo::opt::ADScalar, -1, -1, 0>::Zero(si->nF, si->nvju);
+            int i = 0;
+            for (auto ee : ees_)
+            {
+                Eigen::Matrix<galileo::opt::ADScalar, -1, -1, 0> jacobianWorldToContactPointInWorldFrame = Eigen::Matrix<galileo::opt::ADScalar, -1, -1, 0>::Zero(6, model.nv);
+                pinocchio::getFrameJacobian(cmodel, cdata, ee.second->frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobianWorldToContactPointInWorldFrame);
+                baseToFeetJacobiansEigen.block(3 * i, 0, 3, si->nvju) =
+                    jacobianWorldToContactPointInWorldFrame.block(0, 6, 3, si->nvju);
+                ++i;
+            }
+
+            casadi::SX cbaseToFeetJacobians(si->nF, si->nvju);
+            pinocchio::casadi::copy(baseToFeetJacobiansEigen, cbaseToFeetJacobians);
+            baseToFeetJacobians = casadi::Function("baseToFeetJacobians",
+                                                      casadi::SXVector{si->get_q(cx)},
+                                                      casadi::SXVector{cbaseToFeetJacobians});
+        }
+
+        Eigen::MatrixXd LeggedBody::getInputWeights(Eigen::MatrixXd &R_taskspace, opt::ConfigVector q)
+        {
+            casadi::DM q_dm(q.size(), 1);
+            pinocchio::casadi::copy(q, q_dm);
+            std::vector<double> baseToFeetJacobiansVec= baseToFeetJacobians(q_dm).at(0).get_elements();
+            Eigen::MatrixXd baseToFeetJacobiansEigen = Eigen::Map<Eigen::MatrixXd>(baseToFeetJacobiansVec.data(), si->nF, si->nvju);
+            Eigen::MatrixXd R = Eigen::MatrixXd::Zero(si->nu, si->nu);
+
+            /*Contact forces*/
+            R.topLeftCorner(si->nF, si->nF) = R_taskspace.topLeftCorner(si->nF, si->nF);
+
+            /*Joint velocities*/
+            R.bottomRightCorner(si->nvju, si->nvju) =baseToFeetJacobiansEigen.transpose() * R_taskspace.bottomRightCorner(si->nF, si->nF) * baseToFeetJacobiansEigen;
+
+            return R;
         }
     }
 }

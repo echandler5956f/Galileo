@@ -94,6 +94,28 @@ namespace galileo
             contact::RobotEndEffectors getEndEffectors();
 
             /**
+             * @brief Calculate the jacobians for the base to the end effectors.
+             * 
+             */
+            void calculateBaseToFeetJacobians();
+
+            /**
+             * @brief Calculate the weights of the foot velocity relative to the base using the Jacobian at a certain configuration.
+             * 
+             * @param R_taskspace The input weights to be calculated.
+             * @param q The configuration.
+             * 
+             * @return Eigen::MatrixXd The modified input weights.
+            */
+            Eigen::MatrixXd getInputWeights(Eigen::MatrixXd &R_taskspace, opt::ConfigVector q);
+
+            /**
+             * @brief The function to calculate the base to end effector jacobians.
+             * 
+             */
+            casadi::Function baseToFeetJacobians;
+
+            /**
              * @brief The pinocchio model of the robot.
              *
              */

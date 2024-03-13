@@ -66,12 +66,30 @@ int main(int argc, char **argv)
     casadi::SX cq0(robot.model.nq);
     pinocchio::casadi::copy(q0_vec, cq0);
 
-    /*ETH Weights*/
+    // /*ETH Weights*/
+    // Eigen::VectorXd Q_diag(si->ndx);
+    // Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
+    //     0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
+    //     500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
+    //     20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
+    //     0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
+    //     0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
+    // Eigen::MatrixXd Q_mat = Q_diag.asDiagonal();
+
+    // Eigen::VectorXd R_diag(si->nu);
+    // R_diag << 1e-3, 1e-3, 1e-3,                                     /*First contact wrench error weights*/
+    //     1e-3, 1e-3, 1e-3,                                           /*Second contact wrench error weights*/
+    //     1e-3, 1e-3, 1e-3,                                           /*Third contact wrench error weights*/
+    //     1e-3, 1e-3, 1e-3,                                           /*Fourth contact wrench error weights*/
+    //     10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.; /*Joint acceleration error weights*/
+    // Eigen::MatrixXd R_mat = R_diag.asDiagonal();
+
+    /*Legged Control Weights*/
     Eigen::VectorXd Q_diag(si->ndx);
-    Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
+    Q_diag << 15., 15., 100., 10., 30., 30.,                        /*Centroidal momentum error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
-        20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
+        1000., 1000., 1500., 100., 300., 300.,                         /*Floating base position and orientation (exponential coordinates) error weights*/
+        5., 5., 2.5, 5., 5., 2.5, 5., 5., 2.5, 5., 5., 2.5, /*Joint position error weights*/
         0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
     Eigen::MatrixXd Q_mat = Q_diag.asDiagonal();
@@ -81,14 +99,17 @@ int main(int argc, char **argv)
         1e-3, 1e-3, 1e-3,                                           /*Second contact wrench error weights*/
         1e-3, 1e-3, 1e-3,                                           /*Third contact wrench error weights*/
         1e-3, 1e-3, 1e-3,                                           /*Fourth contact wrench error weights*/
-        10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.; /*Joint acceleration error weights*/
+        5000., 5000., 5000., 5000., 5000., 5000., 5000., 5000., 5000., 5000., 5000., 5000.; /*Foot velocity relative to base (uses the Jacobian at nominal configuration)*/
     Eigen::MatrixXd R_mat = R_diag.asDiagonal();
+
+    robot.calculateBaseToFeetJacobians();
+    Eigen::MatrixXd R_new = robot.getInputWeights(R_mat, q0_vec);
 
     casadi::SX Q = casadi::SX::zeros(si->ndx, si->ndx);
     casadi::SX R = casadi::SX::zeros(si->nu, si->nu);
 
     pinocchio::casadi::copy(Q_mat, Q);
-    pinocchio::casadi::copy(R_mat, R);
+    pinocchio::casadi::copy(R_new, R);
 
     casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
@@ -131,7 +152,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 5;
+    opts["ipopt.max_iter"] = 250;
     // opts["snopt.System information"] = "Yes";
     // opts["snopt.Total real workspace"] = 100000000;
 
@@ -217,7 +238,6 @@ int main(int argc, char **argv)
     Eigen::MatrixXd new_state(new_sol.state_result.rows()-1, new_sol.state_result.cols());
     Eigen::MatrixXd euler_angles = galileo::math::quaternion2Euler(new_sol.state_result.block(si->nh + si->ndh + 3, 0, 4, new_sol.state_result.cols()), galileo::math::zyx);
     new_state << new_sol.state_result.topRows(si->nh + si->ndh + 3), euler_angles, new_sol.state_result.bottomRows(si->nx - (si->nh + si->ndh + si->nqb));
-    std::cout << "new_state: " << new_state << std::endl;
 
     return 0;
 }
