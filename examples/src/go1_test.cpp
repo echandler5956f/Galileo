@@ -1,23 +1,16 @@
 #include "go1_test.h"
+#include <random>
 
 int main(int argc, char **argv)
 {
-    double q0[] = {
-        0., 0., 0.339, 0., 0., 0., 1.,
-        0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3};
 
-    Eigen::Map<ConfigVector> q0_vec(q0, 19);
+    ConfigVector q0_vec = (ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
 
     LeggedBody robot(go1_location, num_ees, end_effector_names);
     std::shared_ptr<LeggedRobotStates> si = robot.si;
 
     casadi::DM X0 = casadi::DM::zeros(si->nx, 1);
-    int j = 0;
-    for (int i = si->nh + si->ndh; i < si->nh + si->ndh + si->nq; ++i)
-    {
-        X0(i) = q0_vec[j];
-        ++j;
-    }
+    X0(casadi::Slice(si->q_index, si->q_index + si->nq), 0) = casadi::DM(std::vector<double>(q0_vec.data(), q0_vec.data() + q0_vec.size()));
 
     std::shared_ptr<environment::EnvironmentSurfaces> surfaces = std::make_shared<environment::EnvironmentSurfaces>();
     surfaces->push_back(environment::createInfiniteGround());
@@ -90,7 +83,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
+    casadi::SX target_pos = vertcat(casadi::SXVector{X0(si->q_index) + 0., X0(si->q_index + 1) + 0., X0(si->q_index + 2) + 0.});
     casadi::SX target_rot = casadi::SX::eye(3);
 
     pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
@@ -106,10 +99,16 @@ int main(int argc, char **argv)
     casadi::SX target_error_casadi = vertcat(casadi::SXVector{cpos - target_pos, casadi::SX::inv_skew(rot_c - rot_c.T()) / 2});
 
     casadi::SX X_ref = casadi::SX(X0);
-    X_ref(casadi::Slice(si->nh + si->ndh, si->nh + si->ndh + 3)) = target_pos;
-    casadi::SX X_error = vertcat(casadi::SXVector{robot.cx(casadi::Slice(0, si->nh + si->ndh)) - X_ref(casadi::Slice(0, si->nh + si->ndh)),
+    X_ref(casadi::Slice(si->q_index, si->q_index + 3)) = target_pos;
+    casadi::SX X_error = vertcat(casadi::SXVector{robot.cx(casadi::Slice(0, si->q_index)) - X_ref(casadi::Slice(0, si->q_index)),
                                                   target_error_casadi,
-                                                  robot.cx(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx)) - X_ref(casadi::Slice(si->nh + si->ndh + si->nqb, si->nx))});
+                                                  robot.cx(casadi::Slice(si->qj_index, si->nx)) - X_ref(casadi::Slice(si->qj_index, si->nx))});
+
+    // casadi::SX Xf = casadi::SX(X0);
+    // Xf(si->q_index + 0) += 0.;
+    // Xf(si->q_index + 1) += 0.;
+    // Xf(si->q_index + 2) += 0.;
+    // casadi::SX X_error = robot.fdiff(casadi::SXVector{X0, Xf, 1.}).at(0);
 
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
     U_ref(2) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
@@ -131,23 +130,17 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 5;
-    // opts["snopt.System information"] = "Yes";
-    // opts["snopt.Total real workspace"] = 100000000;
+    opts["ipopt.max_iter"] = 250;
 
-    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdif, L, Phi);
-
+    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot.fint, robot.fdiff, L, Phi);
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> friction_cone_constraint_builder =
         std::make_shared<FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
-
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> velocity_constraint_builder =
         std::make_shared<VelocityConstraintBuilder<LeggedRobotProblemData>>();
-
     std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>> contact_constraint_builder =
         std::make_shared<ContactConstraintBuilder<LeggedRobotProblemData>>();
-
-    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
     std::shared_ptr<DecisionDataBuilder<LeggedRobotProblemData>> decision_builder = std::make_shared<LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
+    std::vector<std::shared_ptr<ConstraintBuilder<LeggedRobotProblemData>>> builders = {velocity_constraint_builder, friction_cone_constraint_builder};
 
     std::shared_ptr<LeggedRobotProblemData> legged_problem_data = std::make_shared<LeggedRobotProblemData>(gp_data, surfaces, robot.contact_sequence, si, std::make_shared<ADModel>(robot.cmodel),
                                                                                                            std::make_shared<ADData>(robot.cdata), robot.getEndEffectors(), robot.cx, robot.cu, robot.cdt, X0);
@@ -155,30 +148,12 @@ int main(int argc, char **argv)
     TrajectoryOpt<LeggedRobotProblemData, contact::ContactMode> traj(legged_problem_data, robot.contact_sequence, builders, decision_builder, opts, "ipopt");
 
     traj.initFiniteElements(1, X0);
-
     casadi::MXVector sol = traj.optimize();
-
-    // std::cout << "Total duration: " << robot.contact_sequence->getDT() << std::endl;
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
-    // std::vector<double> tmp = traj.getGlobalTimes();
-    // double threshold = 1e-6; // Adjust this value as needed
-
-    // // Custom comparison function
-    // auto closeEnough = [threshold](double a, double b) {
-    //     return std::abs(a - b) < threshold;
-    // };
-
-    // std::sort(tmp.begin(), tmp.end());
-    // auto last = std::unique(tmp.begin(), tmp.end(), closeEnough);
-    // tmp.erase(last, tmp.end());
-
-    // Eigen::VectorXd new_times = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
-    // std::cout << "New times: " << new_times << std::endl;
-
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0., robot.contact_sequence->getDT());
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
 
-    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
+    Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->q_index, 0, si->nq, new_sol.state_result.cols());
     MeshcatInterface meshcat("../examples/visualization/solution_data/");
     meshcat.WriteTimes(new_times, "sol_times.csv");
     meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
@@ -206,7 +181,7 @@ int main(int argc, char **argv)
     }
 
     GNUPlotInterface plotter(new_sol, cons);
-    plotter.PlotSolution({std::make_tuple(si->nh + si->ndh, si->nh + si->ndh + 3), std::make_tuple(si->nh + si->ndh + 3, si->nh + si->ndh + si->nqb)},
+    plotter.PlotSolution({std::make_tuple(si->q_index, si->q_index + 3), std::make_tuple(si->q_index + 3, si->qj_index)},
                          wrench_indices,
                          {"Positions", "Orientations"},
                          {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},

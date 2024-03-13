@@ -26,30 +26,6 @@ namespace galileo
             LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees);
 
             /**
-             * @brief Momenta space dimension.
-             *
-             */
-            static const int nh = 6;
-
-            /**
-             * @brief Momenta time derivative offset.
-             *
-             */
-            static const int ndh = 6;
-
-            /**
-             * @brief Number of position coordinates for the base.
-             *
-             */
-            static const int nqb = 7;
-
-            /**
-             * @brief Number of velocity coordinates for the base.
-             *
-             */
-            static const int nvb = 6;
-
-            /**
              * @brief Get momenta: nh x 1.
              *
              * @tparam Sym The type of the input
@@ -174,7 +150,7 @@ namespace galileo
 
             /**
              * @brief Get the contact wrench: 6 x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u The input
              * @param ee_id The end effector id
@@ -205,7 +181,7 @@ namespace galileo
 
             /**
              * @brief Get the general forces: 3 x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u_general The input
              * @return const Sym The forces
@@ -215,7 +191,7 @@ namespace galileo
 
             /**
              * @brief Get the general torques: 3 x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u_general The input
              * @return const Sym The torques
@@ -225,7 +201,7 @@ namespace galileo
 
             /**
              * @brief Get the general joint velocities: nvju x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u_general The input
              * @return const Sym The joint velocities
@@ -235,6 +211,34 @@ namespace galileo
 
             // map between frame id and its index in the input vector
             std::map<pinocchio::FrameIndex, std::tuple<int, int>> frame_id_to_index_range;
+
+            /*-----------------------------
+            Sizes of certain state elements
+            -----------------------------*/
+
+            /**
+             * @brief Momenta space dimension.
+             *
+             */
+            static const int nh = 6;
+
+            /**
+             * @brief Momenta time derivative offset.
+             *
+             */
+            static const int ndh = 6;
+
+            /**
+             * @brief Number of position coordinates for the base.
+             *
+             */
+            static const int nqb = 7;
+
+            /**
+             * @brief Number of velocity coordinates for the base.
+             *
+             */
+            static const int nvb = 6;
 
             /**
              * @brief Number of position variables.
@@ -262,9 +266,67 @@ namespace galileo
 
             /**
              * @brief Summed wrenches followed by the joint velocities.
-             * 
+             *
              */
             int nu_general = 0;
+
+            /*----------------------------------------
+            Starting indices of certain state elements
+            ----------------------------------------*/
+
+            /**
+             * @brief Starting index of the momenta.
+             * 
+             */
+            int h_index = 0;
+
+            /**
+             * @brief Starting index of the momenta time derivative.
+             * 
+             */
+            int dh_index = 0;
+
+            /**
+             * @brief Starting index of the position variables.
+             * 
+             */
+            int q_index = 0;
+
+            /**
+             * @brief Starting index of the joint position variables.
+             * 
+             */
+            int qj_index = 0;
+
+            /**
+             * @brief Starting index of the velocity variables.
+             * 
+             */
+            int v_index = 0;
+
+            /**
+             * @brief Starting index of the joint velocity inputs.
+             * 
+             */
+            int vj_index = 0;
+
+            /**
+             * @brief Starting index of the generalized force variables.
+             * 
+             */
+            int general_force_index = 0;
+
+            /**
+             * @brief Starting index of the generalized torque variables.
+             * 
+             */
+            int general_torque_index = 0;
+
+            /**
+             * @brief Starting index of the generalized joint velocity inputs.
+             * 
+             */
+            int general_vju_index = 0;
         };
 
         typedef double Scalar;
