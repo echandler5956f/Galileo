@@ -21,7 +21,7 @@ namespace galileo
             {
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
-                std::shared_ptr<opt::LeggedRobotStates> states;
+                std::shared_ptr<legged::LeggedRobotStates> states;
                 std::shared_ptr<opt::ADModel> ad_model;
                 std::shared_ptr<opt::ADData> ad_data;
                 contact::RobotEndEffectors robot_end_effectors;
@@ -41,7 +41,7 @@ namespace galileo
                 void buildDecisionData(const ProblemData &problem_data, int phase_index, opt::DecisionData &decision_data)
                 {
                     contact::ContactMode mode = problem_data.legged_decision_problem_data.contact_sequence->getPhase(phase_index).mode;
-                    std::shared_ptr<opt::LeggedRobotStates> states = problem_data.legged_decision_problem_data.states;
+                    std::shared_ptr<legged::LeggedRobotStates> states = problem_data.legged_decision_problem_data.states;
 
                     casadi::SX initial_guess_x = casadi::SX::zeros(states->nx, 1);
                     casadi::SX initial_guess_u = casadi::SX::zeros(states->nu, 1);

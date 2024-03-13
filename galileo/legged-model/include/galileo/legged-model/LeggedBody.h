@@ -121,7 +121,7 @@ namespace galileo
              * @brief The state indices helper for the robot.
              *
              */
-            std::shared_ptr<opt::LeggedRobotStates> si;
+            std::shared_ptr<legged::LeggedRobotStates> si;
 
             /**
              * @brief The contact sequence of the robot.

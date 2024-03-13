@@ -7,13 +7,13 @@
 
 namespace galileo
 {
-    namespace opt
+    namespace legged
     {
         /**
          * @brief Simple slicer class for getting state variables.
          *
          */
-        class LeggedRobotStates : public States
+        class LeggedRobotStates : public opt::States
         {
         public:
             /**
@@ -174,7 +174,7 @@ namespace galileo
 
             /**
              * @brief Get the contact wrench: 6 x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u The input
              * @param ee_id The end effector id
@@ -205,7 +205,7 @@ namespace galileo
 
             /**
              * @brief Get the general forces: 3 x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u_general The input
              * @return const Sym The forces
@@ -215,7 +215,7 @@ namespace galileo
 
             /**
              * @brief Get the general torques: 3 x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u_general The input
              * @return const Sym The torques
@@ -225,7 +225,7 @@ namespace galileo
 
             /**
              * @brief Get the general joint velocities: nvju x 1.
-             * 
+             *
              * @tparam Sym The type of the input
              * @param u_general The input
              * @return const Sym The joint velocities
@@ -262,11 +262,14 @@ namespace galileo
 
             /**
              * @brief Summed wrenches followed by the joint velocities.
-             * 
+             *
              */
             int nu_general = 0;
         };
+    }
 
+    namespace opt
+    {
         typedef double Scalar;
         typedef casadi::SX ADScalar;
 

@@ -161,7 +161,7 @@ class GalileoLeggedROSImplementation {
 
     std::shared_ptr<galileo::legged::LeggedBody> robot_; /**< The robot model. */
 
-    std::shared_ptr<galileo::opt::LeggedRobotStates> states_; /**< Definition of the state. */
+    std::shared_ptr<galileo::legged::LeggedRobotStates> states_; /**< Definition of the state. */
 
     std::shared_ptr<LeggedRobotProblemData> problem_data_; /**< The problem data. */
 
