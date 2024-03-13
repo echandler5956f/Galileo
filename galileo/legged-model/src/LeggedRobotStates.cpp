@@ -2,9 +2,9 @@
 
 namespace galileo
 {
-    namespace opt
+    namespace legged
     {
-        LeggedRobotStates::LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees)
+        legged::LeggedRobotStates::LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees)
         {
             this->nq = nq_;
             this->nv = nv_;
