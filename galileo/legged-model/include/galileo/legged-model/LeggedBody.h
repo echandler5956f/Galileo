@@ -162,6 +162,27 @@ namespace galileo
             casadi::SX rodrigues(casadi::SX omega);
 
             /**
+             * @brief Create the state error function.
+             *
+             */
+            void createErrorFunction();
+
+            /**
+             * @brief Calculate the distance between two quaternions.
+             *
+             * The resulting 3x1 vector is a measure of how much one quaternion is rotated from another.
+             * If this vector is zero, it indicates that the measured and desired frames are aligned,
+             * meaning the orientations are the same. If not, the vector gives the axis and magnitude
+             * of rotation needed to align the measured quaternion with the desired one.
+             *
+             * @param quat1 The first quaternion.
+             * @param quat2 The second quaternion.
+             *
+             * @return casadi::SX The distance between the two quaternions.
+             */
+            casadi::SX quat_distance(casadi::SX quat1, casadi::SX quat2);
+
+            /**
              * @brief Create the mode dynamics for each mode using the General Dynamics.
              *
              *  @param print_ees_info Whether to print the end effector contact information.
@@ -237,6 +258,12 @@ namespace galileo
             casadi::Function fdiff;
 
             /**
+             * @brief The state error function
+             *
+             */
+            casadi::Function f_state_error;
+
+            /**
              * @brief The symbolic state.
              *
              */
@@ -273,16 +300,6 @@ namespace galileo
             int num_end_effectors_;
 
         private:
-            /**
-             * @brief Helper function to create the integrator function.
-             *
-             * @param x The state.
-             * @param dx The state deviant.
-             * @param dt The time step.
-             * @return casadi::SX The state after being integrated from x by dx over dt.
-             */
-            casadi::SX customFint(casadi::SX x, casadi::SX dx, casadi::SX dt);
-
             /**
              * @brief The IDs that correspond to the pinocchio end effector frames.
              *

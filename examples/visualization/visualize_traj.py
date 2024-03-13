@@ -20,7 +20,7 @@ q0 = np.array([float(x) for x in q0_str.split(', ')])
 builder = RobotWrapper.BuildFromURDF
 robot = builder(
     location,
-    ["resources"],
+    ["."],
     pin.JointModelFreeFlyer(),
 )
 

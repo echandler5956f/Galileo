@@ -126,6 +126,7 @@ namespace galileo
             createGeneralDynamics();
             createFint();
             createFdiff();
+            createErrorFunction();
         }
 
         void LeggedBody::createGeneralDynamics()
@@ -208,14 +209,13 @@ namespace galileo
             casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
             casadi::SX qb2 = si->get_q(cx2)(casadi::Slice(0, si->nqb));
             casadi::SX lie_group_diff_result = lie_group_diff(qb, qb2, cdt);
-            casadi::SX v_joints_diff_result = (si->get_vj(cx2) - si->get_vj(cx)) / cdt;
 
             fdiff = casadi::Function("Fdiff",
                                      {cx, cx2, cdt},
                                      {vertcat((si->get_ch(cx2) - si->get_ch(cx)) / cdt,
                                               (si->get_cdh(cx2) - si->get_cdh(cx)) / cdt,
                                               lie_group_diff_result,
-                                              v_joints_diff_result,
+                                              (si->get_qj(cx2) - si->get_qj(cx)) / cdt,
                                               (si->get_v(cx2) - si->get_v(cx)) / cdt)});
         }
 
@@ -243,8 +243,8 @@ namespace galileo
             casadi::SX w = quat(3);
 
             return casadi::SX::if_else(n < casadi::eps,
-                                                ((2./w) - (2./3.) * (squared_n / (w * w * w))) * quat(casadi::Slice(0, 3)),
-                                                4. * atan(n / (w + sqrt(w * w + squared_n + casadi::eps * casadi::eps))) * quat(casadi::Slice(0, 3)) / n);
+                                       ((2. / w) - (2. / 3.) * (squared_n / (w * w * w))) * quat(casadi::Slice(0, 3)),
+                                       4. * atan(n / (w + sqrt(w * w + squared_n + casadi::eps * casadi::eps))) * quat(casadi::Slice(0, 3)) / n);
         }
 
         casadi::SX LeggedBody::apply_quat(casadi::SX quat, casadi::SX vec3)
@@ -277,6 +277,34 @@ namespace galileo
         {
             casadi::SX theta = sqrt(omega(0) * omega(0) + omega(1) * omega(1) + omega(2) * omega(2) + casadi::eps * casadi::eps);
             return casadi::SX::eye(3) + ((1 - cos(theta)) / (theta * theta)) * skew(omega) + ((theta - sin(theta)) / (theta * theta * theta)) * mpower(skew(omega), 2);
+        }
+
+        void LeggedBody::createErrorFunction()
+        {
+            casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
+            casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
+            casadi::SX qb2 = si->get_q(cx2)(casadi::Slice(0, si->nqb));
+            casadi::SX quat_distance_result = quat_distance(qb(casadi::Slice(3, si->nqb)), qb2(casadi::Slice(3, si->nqb)));
+
+            f_state_error = casadi::Function("F_state_error",
+                                             {cx, cx2},
+                                             {vertcat(si->get_ch(cx2) - si->get_ch(cx),
+                                                      si->get_cdh(cx2) - si->get_cdh(cx),
+                                                      qb(casadi::Slice(0, 3)) - qb2(casadi::Slice(0, 3)),
+                                                      quat_distance_result,
+                                                      si->get_qj(cx2) - si->get_qj(cx),
+                                                      si->get_v(cx2) - si->get_v(cx))});
+        }
+
+        casadi::SX LeggedBody::quat_distance(casadi::SX quat1, casadi::SX quat2)
+        {
+            casadi::SX real_1 = quat1(3);
+            casadi::SX imag_1 = quat1(casadi::Slice(0, 3));
+
+            casadi::SX real_2 = quat2(3);
+            casadi::SX imag_2 = quat2(casadi::Slice(0, 3));
+
+            return real_1 * imag_2 - real_2 * imag_1 + cross(imag_1, imag_2);
         }
 
         void LeggedBody::fillModeDynamics(bool print_ees_info)

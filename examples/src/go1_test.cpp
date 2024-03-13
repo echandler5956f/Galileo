@@ -83,32 +83,13 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    casadi::SX target_pos = vertcat(casadi::SXVector{X0(si->q_index) + 0., X0(si->q_index + 1) + 0., X0(si->q_index + 2) + 0.});
-    casadi::SX target_rot = casadi::SX::eye(3);
-
-    pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot.cdata.oMf[robot.model.getFrameId("base", pinocchio::BODY)];
-    auto rot = oMf.rotation();
-    auto pos = oMf.translation();
-    casadi::SX crot = casadi::SX::zeros(3, 3);
-    casadi::SX cpos = casadi::SX::zeros(3, 1);
-    pinocchio::casadi::copy(rot, crot);
-    pinocchio::casadi::copy(pos, cpos);
-
-    casadi::SX rot_c = casadi::SX::mtimes(crot.T(), target_rot);
-
-    casadi::SX target_error_casadi = vertcat(casadi::SXVector{cpos - target_pos, casadi::SX::inv_skew(rot_c - rot_c.T()) / 2});
-
-    casadi::SX X_ref = casadi::SX(X0);
-    X_ref(casadi::Slice(si->q_index, si->q_index + 3)) = target_pos;
-    casadi::SX X_error = vertcat(casadi::SXVector{robot.cx(casadi::Slice(0, si->q_index)) - X_ref(casadi::Slice(0, si->q_index)),
-                                                  target_error_casadi,
-                                                  robot.cx(casadi::Slice(si->qj_index, si->nx)) - X_ref(casadi::Slice(si->qj_index, si->nx))});
-
-    // casadi::SX Xf = casadi::SX(X0);
-    // Xf(si->q_index + 0) += 0.;
-    // Xf(si->q_index + 1) += 0.;
-    // Xf(si->q_index + 2) += 0.;
-    // casadi::SX X_error = robot.fdiff(casadi::SXVector{X0, Xf, 1.}).at(0);
+    casadi::SX Xf = casadi::SX(X0);
+    Xf(si->q_index + 0) += 0.;
+    Xf(si->q_index + 1) += 0.;
+    Xf(si->q_index + 2) += 0.;
+    /*Both f_state_error and fdiff work for the quaternion error, but fdiff uses the quaternion logarithm, so it is more accurate albeit slightly more expensive*/
+    casadi::SX X_error = robot.f_state_error(casadi::SXVector{robot.cx, Xf}).at(0);
+    // casadi::SX X_error = robot.fdiff(casadi::SXVector{robot.cx, Xf, 1.}).at(0);
 
     casadi::SX U_ref = casadi::SX::zeros(si->nu, 1);
     U_ref(2) = 9.81 * robot.cdata.mass[0] / robot.num_end_effectors_;
@@ -189,10 +170,9 @@ int main(int argc, char **argv)
                          wrench_legend_names);
     plotter.PlotConstraints();
 
-    Eigen::MatrixXd new_state(new_sol.state_result.rows()-1, new_sol.state_result.cols());
-    Eigen::MatrixXd euler_angles = galileo::math::quaternion2Euler(new_sol.state_result.block(si->nh + si->ndh + 3, 0, 4, new_sol.state_result.cols()), galileo::math::zyx);
-    new_state << new_sol.state_result.topRows(si->nh + si->ndh + 3), euler_angles, new_sol.state_result.bottomRows(si->nx - (si->nh + si->ndh + si->nqb));
-    std::cout << "new_state: " << new_state << std::endl;
+    // Eigen::MatrixXd new_state(new_sol.state_result.rows()-1, new_sol.state_result.cols());
+    // Eigen::MatrixXd euler_angles = galileo::math::quaternion2Euler(new_sol.state_result.block(si->nh + si->ndh + 3, 0, 4, new_sol.state_result.cols()), galileo::math::zyx);
+    // new_state << new_sol.state_result.topRows(si->nh + si->ndh + 3), euler_angles, new_sol.state_result.bottomRows(si->nx - (si->nh + si->ndh + si->nqb));
 
     return 0;
 }
