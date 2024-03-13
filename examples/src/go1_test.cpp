@@ -16,7 +16,7 @@ int main(int argc, char **argv)
         std::vector<galileo::legged::environment::SurfaceID> tmp;
         for (int j = 0; j < 4; j++)
         {
-            if (mask_vec[i] & (1 << j))
+            if (mask_vec[i] & (8 >> j))
             {
                 tmp.push_back(0);
             }
