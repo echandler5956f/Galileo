@@ -311,12 +311,12 @@ bool GalileoLeggedROSImplementation::DesiredStateInputCallback(galileo_ros::Desi
         galileo::math::quaternion2Euler(sol.state_result.block(states_->nh + states_->ndh + 3, 0, 4, 1), galileo::math::zyx),
         state_sol.block(states_->nh + states_->ndh + states_->nqb, 0, states_->nq - states_->nqb, 1);
 
-    std::vector<float> desired_state_vec(desired_state.size());
-    Eigen::VectorXf::Map(&desired_state_vec[0], desired_state.size()) = desired_state.template cast<float>();
+    std::vector<double> desired_state_vec(desired_state.size());
+    Eigen::VectorXd::Map(&desired_state_vec[0], desired_state.size()) = desired_state;
 
-    Eigen::VectorXf desired_input = sol.input_result.template cast<float>();
-    std::vector<float> desired_input_vec(desired_input.size());
-    Eigen::VectorXf::Map(&desired_input_vec[0], desired_input.size()) = desired_input;
+    Eigen::VectorXd desired_input = sol.input_result;
+    std::vector<double> desired_input_vec(desired_input.size());
+    Eigen::VectorXd::Map(&desired_input_vec[0], desired_input.size()) = desired_input;
 
     res.state_at_time_offset = desired_state_vec;
     res.input_at_time_offset = desired_input_vec;

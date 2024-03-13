@@ -1,5 +1,5 @@
 float32 time_offset_on_horizon
 ---
 bool valid_response
-float32[] state_at_time_offset
-float32[] input_at_time_offset
+float64[] state_at_time_offset
+float64[] input_at_time_offset

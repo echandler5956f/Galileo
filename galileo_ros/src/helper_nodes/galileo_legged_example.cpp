@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     std_msgs::String parameter_location_msg;
     parameter_location_msg.data = "  "; // Empty right now
 
-    std::vector<float> q0 = {
+    std::vector<double> q0 = {
         0., 0., 0.339, 0., 0., 0., 1.,
         0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3};
 
