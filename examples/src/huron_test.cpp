@@ -151,7 +151,7 @@ int main(int argc, char **argv)
     traj.getSolution(new_sol);
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(si->nh + si->ndh, 0, si->nq, new_sol.state_result.cols());
-    MeshcatInterface meshcat("../examples/visualization/");
+    MeshcatInterface meshcat("../examples/visualization/solution_data/");
     meshcat.WriteTimes(new_times, "sol_times.csv");
     meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
     meshcat.WriteMetadata(huron_location, q0_vec, "metadata.csv");
