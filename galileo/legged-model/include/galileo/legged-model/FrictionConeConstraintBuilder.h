@@ -255,13 +255,23 @@ namespace galileo
 
                 // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
                 casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, f_ee);
+
+                casadi::SX symbolic_rotation = casadi::SX(casadi::Sparsity::dense(rotation.rows(), 1));
+                pinocchio::casadi::copy(rotation, symbolic_rotation);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
                     //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
                     // G_out = evaluated_vector;
-                    G_out = f_ee(2);
+                    // G_out = f_ee(2);
+                    casadi::SX forcesInWorldFrame = f_ee;
+                    casadi::SX localForce = casadi::SX::mtimes(symbolic_rotation, f_ee);
+                    casadi::SX local_tangent_norm = sqrt(localForce(0) * localForce(0) + localForce(1) * localForce(1) + 25);
+                    casadi::SX dCone_dF = vertcat(casadi::SXVector{-localForce(0) / local_tangent_norm, -localForce(1) / local_tangent_norm, problem_data.friction_cone_problem_data.mu});
+                    casadi::SX dCone_du = casadi::SX::mtimes(dCone_dF.T(), symbolic_rotation);
+                    casadi::SX dfdu = dCone_du;
+                    G_out = problem_data.friction_cone_problem_data.mu * localForce(2) - local_tangent_norm + casadi::SX::mtimes(dfdu, f_ee);
                 }
                 else
                 {
