@@ -204,10 +204,7 @@ namespace galileo
                 {
                     casadi::SX G_out;
                     createSingleEndEffectorFunction(end_effector.first, problem_data, phase_index, u_in, G_out);
-                    if (!G_out.is_zero())
-                    {
-                        G_vec.push_back(G_out);
-                    }
+                    G_vec.push_back(G_out);
                 }
                 G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, u_in}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
                 // std::cout << "G_FrictionCone Evaluation at Phase " << phase_index << ": " << G << std::endl;
