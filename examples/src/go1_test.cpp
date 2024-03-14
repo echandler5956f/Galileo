@@ -4,9 +4,13 @@ int main(int argc, char **argv)
 {
     ConfigVector q0_vec = (ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
 
-    std::vector<int> knot_num = {20, 20, 20, 20, 20};
-    std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075}; 
-    std::vector<uint> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110};
+    // std::vector<int> knot_num = {20, 20, 20, 20, 20};
+    // std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075}; 
+    // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110};
+
+    std::vector<int> knot_num = {20};
+    std::vector<double> knot_time = {0.075}; 
+    std::vector<uint> mask_vec = {0b1111};
 
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
     std::vector<galileo::legged::environment::SurfaceID> tmp_surfaces;
