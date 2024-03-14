@@ -62,6 +62,9 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/galileo_legged_ros_implementation.cpp
 )
+# add_library(${PROJECT_NAME}
+#   src/commanding_controller.cpp
+# )
 
 ## Declare a C++ executable
 add_executable(${PROJECT_NAME}_legged_node 
@@ -88,5 +91,15 @@ add_executable(${PROJECT_NAME}_go1_poll_solution
 )
 
 target_link_libraries(${PROJECT_NAME}_go1_poll_solution 
+   ${catkin_LIBRARIES}
+)
+
+add_executable(${PROJECT_NAME}_commanding_controller 
+  src/commanding_controller.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_commanding_controller casadi Eigen3::Eigen galileo)
+
+target_link_libraries(${PROJECT_NAME}_commanding_controller 
    ${catkin_LIBRARIES}
 )

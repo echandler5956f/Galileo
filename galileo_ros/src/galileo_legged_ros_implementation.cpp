@@ -48,6 +48,8 @@ void GalileoLeggedROSImplementation::InitServices()
     // Create the get_desired_state service
     desired_state_input_service_ =
         node_handle_.advertiseService("get_desired_state_input", &GalileoLeggedROSImplementation::DesiredStateInputCallback, this);
+
+    problem_ready_ = node_handle_.advertiseService("galileo_problem_is_ready", &GalileoLeggedROSImplementation::IsReadyCallback, this);
 }
 
 void GalileoLeggedROSImplementation::LoadModelCallback(const galileo_ros::ModelLocation::ConstPtr &model_location)
@@ -178,7 +180,6 @@ void GalileoLeggedROSImplementation::CreateProblemData(T_ROBOT_STATE X0)
     //      {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
     //      {0, 0, 0, 0}};
 
-    
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces =
         {{0, 0, 0, 0}};
 
@@ -387,7 +388,7 @@ void GalileoLeggedROSImplementation::UpdateSolution(T_ROBOT_STATE X0)
 {
     if (!trajectory_opt_)
     {
-        ROS_ERROR("Trajectory optimizer not created yet. Cannot update solution.");
+        // ROS_ERROR("Trajectory optimizer not created yet. Cannot update solution.");
         return;
     }
 
