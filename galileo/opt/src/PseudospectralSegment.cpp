@@ -7,7 +7,7 @@ namespace galileo
         PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F_, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_)
         {
             auto Fint_ = problem->Fint;
-            auto Fdif_ = problem->Fdif;
+            auto Fdiff_ = problem->Fdiff;
             auto L_ = problem->L;
 
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
@@ -17,8 +17,8 @@ namespace galileo
             assert(F_.n_out() == 1 && "F must have 1 output");
             assert(Fint_.n_in() == 3 && "Fint must have 3 inputs");
             assert(Fint_.n_out() == 1 && "Fint must have 1 output");
-            assert(Fdif_.n_in() == 3 && "Fdif must have 3 inputs");
-            assert(Fdif_.n_out() == 1 && "Fdif must have 1 output");
+            assert(Fdiff_.n_in() == 3 && "Fdiff must have 3 inputs");
+            assert(Fdiff_.n_out() == 1 && "Fdiff must have 1 output");
             assert(L_.n_in() == 2 && "L must have 2 inputs");
             assert(L_.n_out() == 1 && "L must have 1 output");
 
@@ -35,16 +35,16 @@ namespace galileo
             Fint_.assert_size_in(2, 1, 1);
             Fint_.assert_size_out(0, st_m_->nx, 1);
 
-            Fdif_.assert_size_in(0, st_m_->nx, 1);
-            Fdif_.assert_size_in(1, st_m_->nx, 1);
-            Fdif_.assert_size_in(2, 1, 1);
-            Fdif_.assert_size_out(0, st_m_->ndx, 1);
+            Fdiff_.assert_size_in(0, st_m_->nx, 1);
+            Fdiff_.assert_size_in(1, st_m_->nx, 1);
+            Fdiff_.assert_size_in(2, 1, 1);
+            Fdiff_.assert_size_out(0, st_m_->ndx, 1);
 
             this->knot_num = knot_num_;
             this->h = h_;
             this->st_m = st_m_;
             this->Fint = Fint_;
-            this->Fdif = Fdif_;
+            this->Fdiff = Fdiff_;
             this->F = F_;
             this->L = L_;
             this->T = (knot_num)*h;
@@ -439,11 +439,11 @@ namespace galileo
             if (!Wdata->initial_guess.is_null())
             {
                 auto xg = Wdata->initial_guess.map(knot_num + 1, "serial")(knot_times).at(0);
-                casadi::Function dxg_func = casadi::Function("xg_fun", casadi::MXVector{xkg_sym}, casadi::MXVector{Fdif(casadi::MXVector{x0_global, xkg_sym, 1.0}).at(0)})
+                casadi::Function dxg_func = casadi::Function("xg_fun", casadi::MXVector{xkg_sym}, casadi::MXVector{Fdiff(casadi::MXVector{x0_global, xkg_sym, 1.0}).at(0)})
                                                 .map(knot_num + 1, "serial");
                 w0(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(dxg_func(casadi::DMVector{xg}).at(0), Ndxknot, 1);
                 /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
-                Thus, dxc_k = fdif(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
+                Thus, dxc_k = fdiff(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
                 auto xc_g = Wdata->initial_guess.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0);
                 for (casadi_int i = 0; i < knot_num; ++i)
                 {
@@ -452,7 +452,7 @@ namespace galileo
                     for (casadi_int j = 0; j < dX_poly.d; ++j)
                     {
                         w0(casadi::Slice(Ndxknot + i * st_m->ndx * dX_poly.d + j * st_m->ndx, Ndxknot + i * st_m->ndx * dX_poly.d + (j + 1) * st_m->ndx)) =
-                            reshape(Fdif(casadi::DMVector{xk, xck(casadi::Slice(j * st_m->nx, (j + 1) * st_m->nx)), h}).at(0), st_m->ndx, 1);
+                            reshape(Fdiff(casadi::DMVector{xk, xck(casadi::Slice(j * st_m->nx, (j + 1) * st_m->nx)), h}).at(0), st_m->ndx, 1);
                     }
                 }
             }

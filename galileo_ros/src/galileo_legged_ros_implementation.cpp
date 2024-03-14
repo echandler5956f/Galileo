@@ -102,10 +102,10 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string &parameter
 {
     // We will hardcode parameters for now
 
-    opts_["ipopt.linear_solver"] = "ma97";
-    opts_["ipopt.ma97_order"] = "metis";
+    // opts_["ipopt.linear_solver"] = "ma97";
+    // opts_["ipopt.ma97_order"] = "metis";
     opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts_["ipopt.max_iter"] = 250;
+    opts_["ipopt.max_iter"] = 20;
 
     if (verbose_)
         ROS_INFO("Parameters loaded from %s", parameter_file.c_str());
@@ -130,7 +130,7 @@ void GalileoLeggedROSImplementation::CreateProblemData(T_ROBOT_STATE X0)
     casadi::Function L, Phi;
     CreateCost(L, Phi);
 
-    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot_->fint, robot_->fdif, L, Phi);
+    std::shared_ptr<GeneralProblemData> gp_data = std::make_shared<GeneralProblemData>(robot_->fint, robot_->fdiff, L, Phi);
 
     // Init with a default gait and an infinite ground
     surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
@@ -144,9 +144,13 @@ void GalileoLeggedROSImplementation::CreateProblemData(T_ROBOT_STATE X0)
     // std::vector<double> knot_time = {0.05, 0.25, 0.05, 0.25, 0.05, 0.25, 0.05, 0.25, 0.05};
     // std::vector<uint> mask_vec = {0b1111, 0b0110, 0b1111, 0b1001, 0b1111, 0b0110, 0b1111, 0b1001, 0b1111};
 
-    std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
-    std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075};
-    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110, 0b1111, 0b1001, 0b1111, 0b0110, 0b1111}; // trot
+    // std::vector<int> knot_num = {20, 20, 20, 20, 20, 20, 20, 20, 20};
+    // std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075};
+    // std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110, 0b1111, 0b1001, 0b1111, 0b0110, 0b1111}; // trot
+
+    std::vector<int> knot_num = {180};
+    std::vector<double> knot_time = {1.0};
+    std::vector<int> mask_vec = {0b1111};
 
     // Create the contact sequence
     surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
@@ -163,16 +167,20 @@ void GalileoLeggedROSImplementation::CreateProblemData(T_ROBOT_STATE X0)
     //      {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
     //      {0, 0, 0, 0}};
 
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces =
+    //     {{0, 0, 0, 0},
+    //      {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
+    //      {0, 0, 0, 0},
+    //      {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
+    //      {0, 0, 0, 0},
+    //      {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
+    //      {0, 0, 0, 0},
+    //      {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
+    //      {0, 0, 0, 0}};
+
+    
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces =
-        {{0, 0, 0, 0},
-         {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
-         {0, 0, 0, 0},
-         {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
-         {0, 0, 0, 0},
-         {0, galileo::legged::environment::NO_SURFACE, galileo::legged::environment::NO_SURFACE, 0},
-         {0, 0, 0, 0},
-         {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
-         {0, 0, 0, 0}};
+        {{0, 0, 0, 0}};
 
     int num_steps = 1;
     for (int i = 0; i < num_steps; ++i)

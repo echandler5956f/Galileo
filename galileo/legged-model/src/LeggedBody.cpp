@@ -19,7 +19,7 @@ namespace galileo
             cdata = opt::ADData(cmodel);
             setEndEffectors(ee_name_vect);
             generateContactCombination();
-            si = std::make_shared<opt::LeggedRobotStates>(model.nq, model.nv, ees_);
+            si = std::make_shared<legged::LeggedRobotStates>(model.nq, model.nv, ees_);
             contact_sequence = std::make_shared<contact::ContactSequence>(num_ees);
 
             cx = casadi::SX::sym("x", si->nx);

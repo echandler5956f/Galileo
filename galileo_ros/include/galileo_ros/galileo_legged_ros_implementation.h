@@ -11,10 +11,6 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h> // Assuming the parameter location strings are published as std_msgs::String
 
-// Include the necessary ROS header files
-#include <ros/ros.h>
-#include <std_msgs/String.h> // Assuming the parameter location strings are published as std_msgs::String
-
 #include <Eigen/Core>
 
 #include <thread>
@@ -164,7 +160,7 @@ class GalileoLeggedROSImplementation {
 
     std::shared_ptr<galileo::legged::LeggedBody> robot_; /**< The robot model. */
 
-    std::shared_ptr<galileo::opt::LeggedRobotStates> states_; /**< Definition of the state. */
+    std::shared_ptr<galileo::legged::LeggedRobotStates> states_; /**< Definition of the state. */
 
     std::shared_ptr<LeggedRobotProblemData> problem_data_; /**< The problem data. */
 
