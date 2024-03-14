@@ -19,14 +19,14 @@ void GalileoLeggedROSImplementation::InitSubscribers()
 {
     // Subscribe to the robot model
     robot_model_subscriber_ =
-        node_handle_.subscribe("legged_robot_model", 1, &GalileoLeggedROSImplementation::LoadModelCallback, this);
+        node_handle_.subscribe("legged_robot_model", 10, &GalileoLeggedROSImplementation::LoadModelCallback, this);
 
     if (verbose_)
         ROS_INFO("Subscribed to legged_robot_model");
 
     // Subscribe to the parameter location strings
     parameter_location_subscriber_ =
-        node_handle_.subscribe("legged_parameter_location", 1, &GalileoLeggedROSImplementation::ParameterCallback, this);
+        node_handle_.subscribe("legged_parameter_location", 10, &GalileoLeggedROSImplementation::ParameterCallback, this);
 
     if (verbose_)
         ROS_INFO("Subscribed to legged_parameter_location");
@@ -105,7 +105,7 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string &parameter
     opts_["ipopt.linear_solver"] = "ma97";
     opts_["ipopt.ma97_order"] = "metis";
     opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts_["ipopt.max_iter"] = 250;
+    opts_["ipopt.max_iter"] = 5;
 
     if (verbose_)
         ROS_INFO("Parameters loaded from %s", parameter_file.c_str());

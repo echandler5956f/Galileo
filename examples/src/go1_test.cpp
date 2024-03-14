@@ -152,7 +152,7 @@ int main(int argc, char **argv)
     opts["ipopt.linear_solver"] = "ma97";
     opts["ipopt.ma97_order"] = "metis";
     opts["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts["ipopt.max_iter"] = 250;
+    opts["ipopt.max_iter"] = 5;
     // opts["snopt.System information"] = "Yes";
     // opts["snopt.Total real workspace"] = 100000000;
 

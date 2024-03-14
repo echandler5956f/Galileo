@@ -10,24 +10,32 @@ int main(int argc, char **argv)
     // Initialize the ROS node
     ros::init(argc, argv, "go1_model_publisher_node");
 
+    // Create a global ROS node handle
+    ros::NodeHandle global_node_handle;
+
+    // Create a private ROS node handle for parameters
+    ros::NodeHandle private_node_handle("~");
+
     std::string model_file_location;
     if (argc > 1)
     {
         model_file_location = argv[1];
+        std::cout << "model_file_location: " << model_file_location << std::endl;
     }
-    // Create a ROS node handle
-    ros::NodeHandle node_handle;
 
-    // Publish to legged_robot_model
+    private_node_handle.getParam("urdf_filename", model_file_location);
+    ROS_INFO("model_file_location %s: ", model_file_location.c_str());
+
+    // Publish to legged_robot_model using the global node handle
     ros::Publisher legged_robot_model_publisher =
-        node_handle.advertise<galileo_ros::ModelLocation>("legged_robot_model", 1);
+        global_node_handle.advertise<galileo_ros::ModelLocation>("legged_robot_model", 1);
 
-    // Publish to legged_parameter_location
+    // Publish to legged_parameter_location using the global node handle
     ros::Publisher legged_parameter_location_publisher =
-        node_handle.advertise<std_msgs::String>("legged_parameter_location", 1);
+        global_node_handle.advertise<std_msgs::String>("legged_parameter_location", 1);
 
     ros::Publisher legged_robot_command_publisher =
-        node_handle.advertise<galileo_ros::RobotCommand>("legged_robot_command", 1);
+        global_node_handle.advertise<galileo_ros::RobotCommand>("legged_robot_command", 1);
 
     ros::Rate loop_rate(10);
 
@@ -51,6 +59,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < 4; i++)
     {
+        std::cout << "Publishing model location and parameter location" << std::endl;
         // Publish the messages
         legged_robot_model_publisher.publish(model_location_msg);
         legged_parameter_location_publisher.publish(parameter_location_msg);

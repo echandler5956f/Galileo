@@ -1,13 +1,24 @@
 <launch>
-  <!--arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz" /-->
-   
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
-    <param name='robot_description' value="$(command 'cat $(find-pkg-share galileo)/resources/go1/urdf/go1.urdf')"/>
-  </node>
+  <arg name="urdf_filename" default="$(find galileo_go1_description)/urdf/go1.urdf" />
+  <arg name="rvizconfig" default="$(find galileo_ros)/launch/go1_rviz.rviz" />
+  <arg name="robot_type" default="$(env ROBOT_TYPE)" doc="Robot type: [a1, aliengo, go1, laikago]"/>
+    <!--param name="robot_description" command="$(find xacro)/xacro $(find legged_unitree_description)/urdf/robot.xacro
+       robot_type:=$(arg robot_type)"/-->
+    <param name = "robot_description" command = "$(find xacro)/xacro --inorder $(find galileo_go1_description)/urdf/go1.urdf" />
 
-  <node name="rviz" pkg="rviz" type="rviz" required="true" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+        <!-- <param name="ignore_timestamp" type="bool" value="true"/> -->
+    </node>
+
+  <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="false"/>
+  </node> -->
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
   
-  <node name="model_node" type="galileo_legged_example.cpp" pkg="galileo_ros" />
+  <node name="galileo_ros_go1_publisher" type="galileo_ros_go1_publisher" pkg="galileo_ros" output="screen">
+    <param name="urdf_filename" value="$(arg urdf_filename)"/>
+  </node>
   
-  <node name="poll_node" type="galileo_legged_poll_solution.cpp" pkg="galileo_ros" />
+  <!-- <node name="galileo_ros_go1_poll_solution" type="galileo_ros_go1_poll_solution" pkg="galileo_ros" output="screen"/> -->
 </launch>

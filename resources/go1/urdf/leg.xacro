@@ -63,7 +63,7 @@
                     <origin rpy="${PI} ${PI} 0" xyz="0 0 0"/>
                 </xacro:if>
                 <geometry>
-                    <mesh filename="../meshes/hip.dae" scale="1 1 1"/>
+                    <mesh filename="package://galileo_go1_description/meshes/hip.dae" scale="1 1 1"/>
                 </geometry>
                 <!-- <material name="orange"/> -->
             </visual>
@@ -127,10 +127,10 @@
                 <origin rpy="0 0 0" xyz="0 0 0"/>
                 <geometry>
                     <xacro:if value="${mirror_dae == True}">
-                        <mesh filename="../meshes/thigh.dae" scale="1 1 1"/>
+                        <mesh filename="package://galileo_go1_description/meshes/thigh.dae" scale="1 1 1"/>
                     </xacro:if>
                     <xacro:if value="${mirror_dae == False}">
-                        <mesh filename="../meshes/thigh_mirror.dae" scale="1 1 1"/>
+                        <mesh filename="package://galileo_go1_description/meshes/thigh_mirror.dae" scale="1 1 1"/>
                     </xacro:if>
                 </geometry>
                 <!-- <material name="orange"/> -->
@@ -194,7 +194,7 @@
             <visual>
                 <origin rpy="0 0 0" xyz="0 0 0"/>
                 <geometry>
-                    <mesh filename="../meshes/calf.dae" scale="1 1 1"/>
+                    <mesh filename="package://galileo_go1_description/meshes/calf.dae" scale="1 1 1"/>
                 </geometry>
                 <!-- <material name="orange"/> -->
             </visual>
