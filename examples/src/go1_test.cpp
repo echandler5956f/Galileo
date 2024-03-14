@@ -2,7 +2,6 @@
 
 int main(int argc, char **argv)
 {
-
     ConfigVector q0_vec = (ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
 
     std::vector<int> knot_num = {20, 20, 20, 20, 20};
@@ -35,12 +34,10 @@ int main(int argc, char **argv)
     solver_interface.LoadParameters(" ");
 
     casadi::DM X0 = casadi::DM::zeros(solver_interface.states()->nx, 1);
-    int j = solver_interface.states()->nh + solver_interface.states()->ndh;
     int q0_idx = solver_interface.states()->nh + solver_interface.states()->ndh;
     for (int j = 0; j < solver_interface.states()->nq; j++)
     {
         X0(q0_idx + j) = q0_vec(j);
-        ++j;
     }
 
     solver_interface.surfaces()->push_back(environment::createInfiniteGround());
