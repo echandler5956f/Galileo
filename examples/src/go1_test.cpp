@@ -8,8 +8,8 @@ int main(int argc, char **argv)
     // std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075}; 
     // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110};
 
-    std::vector<int> knot_num = {20};
-    std::vector<double> knot_time = {0.075}; 
+    std::vector<int> knot_num = {180};
+    std::vector<double> knot_time = {1.0}; 
     std::vector<uint> mask_vec = {0b1111};
 
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
