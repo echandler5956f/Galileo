@@ -26,8 +26,8 @@ namespace galileo
         {
             // Hardcoded parameters for now
             // Load the parameters from the given parameter file.
-            opts_["ipopt.linear_solver"] = "ma97";
-            opts_["ipopt.ma97_order"] = "metis";
+            // opts_["ipopt.linear_solver"] = "ma97";
+            // opts_["ipopt.ma97_order"] = "metis";
             opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
             opts_["ipopt.max_iter"] = 250;
 

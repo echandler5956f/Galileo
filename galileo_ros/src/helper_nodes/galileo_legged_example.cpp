@@ -20,14 +20,14 @@ int main(int argc, char **argv)
 
     // Publish to legged_robot_model
     ros::Publisher legged_robot_model_publisher =
-        node_handle.advertise<galileo_ros::ModelLocation>("legged_robot_model", 1);
+        node_handle.advertise<galileo_ros::ModelLocation>("galileo/legged_robot_model", 1);
 
     // Publish to legged_parameter_location
     ros::Publisher legged_parameter_location_publisher =
-        node_handle.advertise<std_msgs::String>("legged_parameter_location", 1);
+        node_handle.advertise<std_msgs::String>("galileo/legged_parameter_location", 1);
 
     ros::Publisher legged_robot_command_publisher =
-        node_handle.advertise<galileo_ros::RobotCommand>("legged_robot_command", 1);
+        node_handle.advertise<galileo_ros::RobotCommand>("galileo/legged_robot_command", 1);
 
     ros::Rate loop_rate(10);
 

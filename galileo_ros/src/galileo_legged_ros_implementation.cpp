@@ -19,20 +19,20 @@ void GalileoLeggedROSImplementation::InitSubscribers()
 {
     // Subscribe to the robot model
     robot_model_subscriber_ =
-        node_handle_.subscribe("legged_robot_model", 1, &GalileoLeggedROSImplementation::LoadModelCallback, this);
+        node_handle_.subscribe("galileo/legged_robot_model", 1, &GalileoLeggedROSImplementation::LoadModelCallback, this);
 
     if (verbose_)
-        ROS_INFO("Subscribed to legged_robot_model");
+        ROS_INFO("galileo/Subscribed to legged_robot_model");
 
     // Subscribe to the parameter location strings
     parameter_location_subscriber_ =
-        node_handle_.subscribe("legged_parameter_location", 1, &GalileoLeggedROSImplementation::ParameterCallback, this);
+        node_handle_.subscribe("galileo/legged_parameter_location", 1, &GalileoLeggedROSImplementation::ParameterCallback, this);
 
     if (verbose_)
-        ROS_INFO("Subscribed to legged_parameter_location");
+        ROS_INFO("Subscribed to galileo/legged_parameter_location");
 
     robot_command_subscriber_ =
-        node_handle_.subscribe("legged_robot_command", 100, &GalileoLeggedROSImplementation::RobotCommandCallback, this);
+        node_handle_.subscribe("galileo/legged_robot_command", 100, &GalileoLeggedROSImplementation::RobotCommandCallback, this);
 }
 
 // Initialize the publishers
@@ -40,7 +40,7 @@ void GalileoLeggedROSImplementation::InitPublishers()
 {
     // Publish the solution
     solution_publisher_ =
-        node_handle_.advertise<galileo_ros::RobotSolution>("legged_robot_solution", 100);
+        node_handle_.advertise<galileo_ros::RobotSolution>("galileo/legged_robot_solution", 100);
 }
 
 void GalileoLeggedROSImplementation::InitServices()

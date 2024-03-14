@@ -205,7 +205,7 @@ namespace galileo
 
             /**
              * @brief Nonlinear solver to use.
-             * 
+             *
              */
             std::string nonlinear_solver_name;
 
@@ -291,6 +291,29 @@ namespace galileo
              *
              */
             IterationCallback callback;
+
+            struct solution_segment_data_t
+            {
+                Eigen::VectorXd state_times;
+                Eigen::VectorXd input_times;
+                double initial_time;
+                double end_time;
+                int num_knots;
+                int state_degree;
+                int input_degree;
+                std::shared_ptr<LagrangePolynomial> state_poly;
+                std::shared_ptr<LagrangePolynomial> input_poly;
+            }
+
+            // void createPChipDerivatives();
+
+            // Eigen::MatrixXd pchip_state_derivatives;
+            // Eigen::MatrixXd pchip_input_derivatives;
+
+            // Eigen::MatrixXd state_sol_eigen;
+            // Eigen::MatrixXd input_sol_eigen;
+            // Eigen::VectorXd global_state_times;
+            // Eigen::VectorXd global_input_times;
         };
 
         template <class ProblemData, class MODE_T>
@@ -336,7 +359,7 @@ namespace galileo
             printf("Starting initialization\n");
             auto begin_time = std::chrono::high_resolution_clock::now();
             auto start_time = std::chrono::high_resolution_clock::now();
-            auto end_time = std::chrono::high_resolution_clock::now();  
+            auto end_time = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end_time - start_time;
 
             for (size_t i = 0; i < num_phases; ++i)
@@ -494,6 +517,15 @@ namespace galileo
                     sol[1] = horzcat(sol[1], sol_i[1]);
                 }
             }
+
+            // auto solx = sol[0];
+            // auto solu = sol[1];
+
+            // std::vector<double> solx_vec = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(0, solx.columns()))).get_elements();
+            // std::vector<double> solu_vec = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(0, solu.columns()))).get_elements();
+            // // convert solx_segment to eigen matrix
+            // state_sol_eigen = Eigen::Map<Eigen::MatrixXd>(solx_vec.data(), solx.rows(), solx.columns());
+            // input_sol_eigen = Eigen::Map<Eigen::MatrixXd>(solu_vec.data(), solu.rows(), solu.columns());
             return sol;
         }
 
