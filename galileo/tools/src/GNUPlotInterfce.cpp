@@ -17,17 +17,17 @@ namespace galileo
                                             std::vector<std::string> input_title_names, std::vector<std::vector<std::string>> input_names)
         {
             std::vector<double> std_times(solution.times.data(), solution.times.data() + solution.times.size());
-            gp << "set terminal qt " << 0 << "\n"; // Create a dummy window
-            gp << "plot '-' with lines linestyle 1 title 'Dummy'\n";
-            gp.send1d(std::make_tuple(std_times, std_times));
+            // gp << "set terminal x11 " << 0 << "\n"; // Create a dummy window
+            // gp << "plot '-' with lines linestyle 1 title 'Dummy'\n";
+            // gp.send1d(std::make_tuple(std_times, std_times));
 
-            window_index = 1;
+            window_index = 0;
             for (size_t i = 0; i < state_groups.size(); ++i)
             {
-                // std::string filename = "output_" + state_title_names[i] + ".png";
-                // gp << "set terminal pngcairo\n";
-                // gp << "set output '" << filename << "'\n";
-                gp << "set terminal qt " << window_index << "\n"; // Create a new window for each plot
+                std::string filename = "output_" + state_title_names[i] + ".png";
+                gp << "set terminal pngcairo\n";
+                gp << "set output '" << filename << "'\n";
+                // gp << "set terminal x11 " << window_index << "\n"; // Create a new window for each plot
                 gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
                 gp << "set xlabel 'Time'\n";
                 gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
@@ -59,10 +59,10 @@ namespace galileo
 
             for (size_t i = 0; i < input_groups.size(); ++i)
             {
-                // std::string filename = "output_" + input_title_names[i] + ".png";
-                // gp << "set terminal pngcairo\n";
-                // gp << "set output '" << filename << "'\n";
-                gp << "set terminal qt " << window_index << "\n"; // Create a new window for each plot
+                std::string filename = "output_" + input_title_names[i] + ".png";
+                gp << "set terminal pngcairo\n";
+                gp << "set output '" << filename << "'\n";
+                // gp << "set terminal x11 " << window_index << "\n"; // Create a new window for each plot
                 gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
                 gp << "set xlabel 'Time'\n";
                 gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
@@ -142,14 +142,17 @@ namespace galileo
             // Plot each group of constraints on the same graph
             for (size_t i = 0; i < new_constraints.size(); ++i)
             {
-                gp << "set terminal qt " << window_index << "\n"; // Create a new window for each plot
+                std::string filename = "output_" + new_constraints[i][0].metadata.plot_titles[0] + ".png";
+                gp << "set terminal pngcairo\n";
+                gp << "set output '" << filename << "'\n";
+                // gp << "set terminal x11 " << window_index << "\n"; // Create a new window for each plot
                 gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
                 gp << "set xlabel 'Time'\n";
                 gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
                 gp << "set ylabel 'Values'\n";
                 gp << "set title '" + new_constraints[i][0].metadata.plot_titles[0] + "'\n";
                 gp << "set style fill transparent solid 0.5 noborder\n";
-                // gp << "set key outside\n"; // Move the legend outside of the plot
+                gp << "set key inside right\n"; // Move the legend outside of the plot
                 std::string ss = "plot ";
 
                 colors.clear();
