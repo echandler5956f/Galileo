@@ -57,42 +57,42 @@ int main(int argc, char **argv)
 
     // TODO: Add interface to get the solution
 
-    // Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
-    // solution_t new_sol = solution_t(new_times);
-    // traj.getSolution(new_sol);
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.robot_->contact_sequence->getDT());
+    solution_t new_sol = solution_t(new_times);
+    solver_interface.trajectory_opt_->getSolution(new_sol);
 
-    // Eigen::MatrixXd subMatrix = new_sol.state_result.block(solver_interface.states()->q_index, 0, solver_interface.states()->nq, new_sol.state_result.cols());
-    // MeshcatInterface meshcat("../examples/solution_data/visualization/");
-    // meshcat.WriteTimes(new_times, "sol_times.csv");
-    // meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
-    // meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
-    // std::cout << "Getting constraint violations" << std::endl;
-    // auto cons = traj.getConstraintViolations(new_sol);
+    Eigen::MatrixXd subMatrix = new_sol.state_result.block(solver_interface.states()->q_index, 0, solver_interface.states()->nq, new_sol.state_result.cols());
+    MeshcatInterface meshcat("../examples/visualization/solution_data/");
+    meshcat.WriteTimes(new_times, "sol_times.csv");
+    meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
+    meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
+    std::cout << "Getting constraint violations" << std::endl;
+    auto cons = solver_interface.trajectory_opt_->getConstraintViolations(new_sol);
 
-    // // Collect the data specific to each end effector
-    // std::vector<tuple_size_t> wrench_indices;
-    // std::vector<std::vector<std::string>> wrench_legend_names;
-    // std::vector<std::string> ee_plot_names;
-    // for (auto ee : robot.getEndEffectors())
-    // {
-    //     wrench_indices.push_back(solver_interface.states()->frame_id_to_index_range[ee.second->frame_id]);
-    //     if (ee.second->is_6d)
-    //         wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
-    //     else
-    //     {
-    //         wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
-    //     }
-    //     ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
-    // }
+    // Collect the data specific to each end effector
+    std::vector<tuple_size_t> wrench_indices;
+    std::vector<std::vector<std::string>> wrench_legend_names;
+    std::vector<std::string> ee_plot_names;
+    for (auto ee : solver_interface.robot_->getEndEffectors())
+    {
+        wrench_indices.push_back(solver_interface.states()->frame_id_to_index_range[ee.second->frame_id]);
+        if (ee.second->is_6d)
+            wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
+        else
+        {
+            wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
+        }
+        ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
+    }
 
-    // GNUPlotInterface plotter(new_sol, cons);
-    // plotter.PlotSolution({std::make_tuple(solver_interface.states()->q_index, solver_interface.states()->q_index + 3), std::make_tuple(solver_interface.states()->q_index + 3, solver_interface.states()->q_index + solver_interface.states()->nqb)},
-    //                      wrench_indices,
-    //                      {"Positions", "Orientations"},
-    //                      {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
-    //                      ee_plot_names,
-    //                      wrench_legend_names);
-    // plotter.PlotConstraints();
+    GNUPlotInterface plotter(new_sol, cons);
+    plotter.PlotSolution({std::make_tuple(solver_interface.states()->q_index, solver_interface.states()->q_index + 3), std::make_tuple(solver_interface.states()->q_index + 3, solver_interface.states()->q_index + solver_interface.states()->nqb)},
+                         wrench_indices,
+                         {"Positions", "Orientations"},
+                         {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                         ee_plot_names,
+                         wrench_legend_names);
+    plotter.PlotConstraints();
 
     return 0;
 }

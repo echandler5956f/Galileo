@@ -75,6 +75,10 @@ namespace galileo
 
             std::shared_ptr<LeggedRobotStates> states() const { return states_; }
 
+            std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
+
+            std::shared_ptr<LeggedBody> robot_; /**< The robot model. */
+
         private:
             /**
              * @brief Create the trajectory optimizer.
@@ -96,13 +100,10 @@ namespace galileo
              */
             void CreateProblemData(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
 
-            std::shared_ptr<LeggedBody> robot_; /**< The robot model. */
 
             std::shared_ptr<LeggedRobotStates> states_; /**< Definition of the state. */
 
             std::shared_ptr<LeggedRobotProblemData> problem_data_; /**< The problem data. */
-
-            std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
 
             std::shared_ptr<EnvironmentSurfaces> surfaces_; /**< The surfaces. */
 
