@@ -7,17 +7,8 @@ add_compile_options(-std=c++17)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  sensor_msgs
   message_generation
-)
-
-
-find_package(roscpp REQUIRED PATHS ${ROS_INCLUDE_DIRS}/libroscpp.so )
-
-find_package(std_msgs REQUIRED PATHS ${ROS_INCLUDE_DIRS}/python3/dist-packages/std_msgs)
-
-
-find_package(catkin REQUIRED COMPONENTS message_generation
-  ${GALILEO_ROS_DEPEDENCIES}
 )
 
 ## System dependencies are found with CMake's conventions
@@ -42,6 +33,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  sensor_msgs
 )
 
 ###################################
