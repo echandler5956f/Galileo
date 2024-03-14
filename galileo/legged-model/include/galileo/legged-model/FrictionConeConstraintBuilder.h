@@ -176,11 +176,11 @@ namespace galileo
                     /* If the end effector is in contact*/
                     else
                     {
-                        lower_bound_vec.push_back(casadi::SX::zeros(1));
-                        upper_bound_vec.push_back(casadi::inf);
+                        // lower_bound_vec.push_back(casadi::SX::zeros(1));
+                        // upper_bound_vec.push_back(casadi::inf);
 
-                        // lower_bound_vec.push_back(-casadi::inf * casadi::SX::ones(num_constraints, 1));
-                        // upper_bound_vec.push_back(casadi::SX::zeros(num_constraints, 1));
+                        lower_bound_vec.push_back(-casadi::inf * casadi::SX::ones(num_constraints, 1));
+                        upper_bound_vec.push_back(casadi::SX::zeros(num_constraints, 1));
                     }
                 }
 
@@ -251,8 +251,8 @@ namespace galileo
                     //@todo (ethan)
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
-                    // G_out = evaluated_vector;
-                    G_out = f_ee(2);
+                    G_out = evaluated_vector;
+                    // G_out = f_ee(2);
                     // casadi::SX forcesInWorldFrame = f_ee;
                     // casadi::SX localForce = casadi::SX::mtimes(symbolic_rotation, f_ee);
                     // casadi::SX local_tangent_norm = sqrt(localForce(0) * localForce(0) + localForce(1) * localForce(1) + problem_data.friction_cone_problem_data.regularization);
