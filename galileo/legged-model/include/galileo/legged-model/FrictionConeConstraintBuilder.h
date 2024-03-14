@@ -26,7 +26,8 @@ namespace galileo
                 casadi::SX u;
                 casadi::SX t;
 
-                float mu;
+                float mu = 0.7;
+                float regularization = 25; /*Convex smoothing*/
 
                 enum ApproximationOrder
                 {
@@ -226,21 +227,15 @@ namespace galileo
             template <class ProblemData>
             void FrictionConeConstraintBuilder<ProblemData>::createSingleEndEffectorFunction(pinocchio::FrameIndex EndEffectorID, const ProblemData &problem_data, int phase_index, const casadi::SX &u_in, casadi::SX &G_out) const
             {
-                // Get the size of the constraint applied to an end effector at a state.
-                uint num_contraint_per_ee_per_point = getNumConstraintPerEEPerState(problem_data);
-
                 // Get the mode at the knot point.
                 const contact::ContactMode mode = getModeAtPhase(problem_data, phase_index);
                 casadi::SX x = problem_data.friction_cone_problem_data.x;
                 auto it = mode.combination_definition.find(EndEffectorID);
-                bool dof6 = (it != mode.combination_definition.end()) ? problem_data.friction_cone_problem_data.robot_end_effectors.find(EndEffectorID)->second->is_6d : false;
 
                 // If the end effector is not in contact, Do not apply the constraint; the function is all zeros
                 if (it != mode.combination_definition.end() && !it->second)
 
                 {
-                    // SET ALL ZEROS CASADI FUNCTION
-                    //  Function = Eigen::MatrixXd::Zero(num_contraint_per_ee_per_point, 3) * GRF
                     G_out = problem_data.friction_cone_problem_data.states->get_wrench(u_in, EndEffectorID);
                     return;
                 }
@@ -264,14 +259,14 @@ namespace galileo
                     // SET CASADI FUNCTION
                     //  Function = rotated_cone_constraint * GRF(EndEffector)
                     // G_out = evaluated_vector;
-                    // G_out = f_ee(2);
-                    casadi::SX forcesInWorldFrame = f_ee;
-                    casadi::SX localForce = casadi::SX::mtimes(symbolic_rotation, f_ee);
-                    casadi::SX local_tangent_norm = sqrt(localForce(0) * localForce(0) + localForce(1) * localForce(1) + 25);
-                    casadi::SX dCone_dF = vertcat(casadi::SXVector{-localForce(0) / local_tangent_norm, -localForce(1) / local_tangent_norm, problem_data.friction_cone_problem_data.mu});
-                    casadi::SX dCone_du = casadi::SX::mtimes(dCone_dF.T(), symbolic_rotation);
-                    casadi::SX dfdu = dCone_du;
-                    G_out = problem_data.friction_cone_problem_data.mu * localForce(2) - local_tangent_norm + casadi::SX::mtimes(dfdu, f_ee);
+                    G_out = f_ee(2);
+                    // casadi::SX forcesInWorldFrame = f_ee;
+                    // casadi::SX localForce = casadi::SX::mtimes(symbolic_rotation, f_ee);
+                    // casadi::SX local_tangent_norm = sqrt(localForce(0) * localForce(0) + localForce(1) * localForce(1) + problem_data.friction_cone_problem_data.regularization);
+                    // casadi::SX dCone_dF = vertcat(casadi::SXVector{-localForce(0) / local_tangent_norm, -localForce(1) / local_tangent_norm, problem_data.friction_cone_problem_data.mu});
+                    // casadi::SX dCone_du = casadi::SX::mtimes(dCone_dF.T(), symbolic_rotation);
+                    // casadi::SX dfdu = dCone_du;
+                    // G_out = problem_data.friction_cone_problem_data.mu * localForce(2) - local_tangent_norm + casadi::SX::mtimes(dfdu, f_ee);
                 }
                 else
                 {

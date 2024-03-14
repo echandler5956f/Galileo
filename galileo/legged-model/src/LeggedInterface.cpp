@@ -26,8 +26,10 @@ namespace galileo
         {
             // Hardcoded parameters for now
             // Load the parameters from the given parameter file.
+            // opts_["ipopt.linear_solver"] = "ma97";
+            // opts_["ipopt.ma97_order"] = "metis";
             opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-            opts_["ipopt.max_iter"] = 10;
+            opts_["ipopt.max_iter"] = 250;
 
             cost_params_.R_diag = Eigen::VectorXd(states_->nu);
             cost_params_.R_diag << 1e-3, 1e-3, 1e-3,                        /*First contact wrench error weights*/
@@ -51,7 +53,7 @@ namespace galileo
 
             CreateCost(initial_state, target_state, L, Phi);
 
-            std::shared_ptr<opt::GeneralProblemData> gp_data = std::make_shared<opt::GeneralProblemData>(robot_->fint, robot_->fdif, L, Phi);
+            std::shared_ptr<opt::GeneralProblemData> gp_data = std::make_shared<opt::GeneralProblemData>(robot_->fint, robot_->fdiff, L, Phi);
 
             problem_data_ = std::make_shared<LeggedRobotProblemData>(gp_data,
                                                                      surfaces_,
@@ -62,6 +64,7 @@ namespace galileo
                                                                      robot_->cx, robot_->cu, robot_->cdt, initial_state);
         }
 
+        // TODO: Generate a reference trajectory somewhere and share it betwen the objective and initial guess
         void LeggedInterface::CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &L, casadi::Function &Phi)
         {
             // Hardcoded costs for now
@@ -82,38 +85,15 @@ namespace galileo
             pinocchio::casadi::copy(Q_mat, Q);
             pinocchio::casadi::copy(R_mat, R);
 
-            auto qf = states_->get_q(target_state);
-            casadi::SX target_pos = qf(casadi::Slice(0, 3));
-            // Default target rot is identity
-            casadi::SX target_rot = casadi::SX::eye(3);
+            /*Both f_state_error and fdiff work for the quaternion error, but fdiff uses the quaternion logarithm, so it is more accurate albeit slightly more expensive*/
+            casadi::SX X_error = robot_->f_state_error(casadi::SXVector{robot_->cx, target_state}).at(0);
+            // casadi::SX X_error = robot_->fdiff(casadi::SXVector{rrobot_->cx, target_state, 1.}).at(0);
 
-            // GET TARGET POS AND ROT FROM THE TARGET STATE
-
-            pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot_->cdata.oMf[robot_->model.getFrameId(body_name_, pinocchio::BODY)];
-            auto rot = oMf.rotation();
-            auto pos = oMf.translation();
-            casadi::SX crot = casadi::SX::zeros(3, 3);
-            casadi::SX cpos = casadi::SX::zeros(3, 1);
-            pinocchio::casadi::copy(rot, crot);
-            pinocchio::casadi::copy(pos, cpos);
-
-            casadi::SX rot_c = casadi::SX::mtimes(crot.T(), target_rot);
-
-            casadi::SX target_error_casadi = casadi::SX::vertcat(casadi::SXVector{cpos - target_pos, casadi::SX::inv_skew(rot_c - rot_c.T()) / 2});
-
-            casadi::SX X_ref = casadi::SX(X0);
-            X_ref(casadi::Slice(states_->nh + states_->ndh, states_->nh + states_->ndh + 3)) = target_pos;
-
-            auto h_and_dh_error = robot_->cx(casadi::Slice(0, states_->nh + states_->ndh)) - X_ref(casadi::Slice(0, states_->nh + states_->ndh));
-            auto x_error = robot_->cx(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx)) - X_ref(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx));
-
-            casadi::SX X_error = casadi::SX::vertcat({h_and_dh_error,
-                                                      target_error_casadi,
-                                                      x_error});
-
-            pinocchio::computeTotalMass(robot_->model, robot_->data);
+            pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
 
             casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
+            // Hardcoded for 3-joint quadrupeds for now
+            U_ref(casadi::Slice(2, 11, 3)) = 9.81 * robot_->cdata.mass[0] / robot_->num_end_effectors_;
             casadi::SX u_error = robot_->cu - U_ref;
 
             L = casadi::Function("L",
@@ -123,7 +103,7 @@ namespace galileo
 
             Phi = casadi::Function("Phi",
                                    {robot_->cx},
-                                   {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
+                                   {1e5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
         }
 
         std::vector<LeggedInterface::LeggedConstraintBuilderType>
@@ -165,7 +145,7 @@ namespace galileo
             // Create the trajectory optimizer.
             CreateTrajOpt();
 
-            bool fully_initialized_ = true;
+            fully_initialized_ = true;
         }
 
         void LeggedInterface::CreateTrajOpt()
