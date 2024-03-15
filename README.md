@@ -1,5 +1,5 @@
 # Galileo
-*A light-weight and extensible C++ library for Guass-Legendre Pseudospectral Collocation of Switched Systems using CasADi and Pinocchio.*
+*A light-weight and extensible C++ library for Pseudospectral Collocation of Switched Systems using CasADi and Pinocchio.*
 
 <img src="https://i.imgur.com/VQJ3ZNe.png"/>
 
