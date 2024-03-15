@@ -1,7 +1,7 @@
 #include "galileo_ros/commanding_controller.h"
 
 // Constructor
-CommandingController::CommandingController(ros::NodeHandle &node_handle, bool verbose) : node_handle_(node_handle), verbose_(verbose), udp_(UNITREE_LEGGED_SDK::LOWLEVEL, 8090, "192.168.123.10", 8007)
+CommandingController::CommandingController(ros::NodeHandle &node_handle, bool verbose) : node_handle_(node_handle), verbose_(verbose), udp_(UNITREE_LEGGED_SDK::LOWLEVEL, 8090, "192.168.12.1", 8007)
 {
     // Initialize subscribers
     InitSubscribers();
@@ -46,7 +46,6 @@ void CommandingController::InitServices()
 
 void CommandingController::InitGalileo(galileo_ros::ModelLocation model_location_msg, std_msgs::String parameter_location_msg, galileo_ros::RobotCommand galileo_command)
 {
-
     ros::Duration(0.3).sleep();
 
     // Call the is_problem_ready service
@@ -67,8 +66,14 @@ void CommandingController::InitGalileo(galileo_ros::ModelLocation model_location
         is_problem_ready_client_.call(is_problem_ready_srv);
     }
 
-    // Publish the robot command
-    galileo_command_publisher_.publish(galileo_command);
+    Eigen::VectorXd desired_state;
+    Eigen::VectorXd desired_input;
+
+    if (!getDesiredState(0, desired_state, desired_input))
+    {
+        // Publish the robot command
+        galileo_command_publisher_.publish(galileo_command);
+    }
 }
 
 void CommandingController::InitWBC()
@@ -100,6 +105,7 @@ bool CommandingController::getDesiredState(float t_offset, Eigen::VectorXd &desi
         desired_state = Eigen::VectorXd::Map(desired_state_input_cmd.response.state_at_time_offset.data(), desired_state_input_cmd.response.state_at_time_offset.size());
         desired_input = Eigen::VectorXd::Map(desired_state_input_cmd.response.input_at_time_offset.data(), desired_state_input_cmd.response.input_at_time_offset.size());
 
+        std::cout << "desired state gotten";
         return true;
     }
     else
@@ -145,11 +151,17 @@ void CommandingController::RunNode()
 void CommandingController::AchieveLowLevelControl(const Eigen::VectorXd &desired_state, const Eigen::VectorXd &desired_input)
 {
 
+    udp_.Recv();
+    UNITREE_LEGGED_SDK::LowState state = {0};
+
+    udp_.GetRecv(state);
+    printf("%d  %f  %f\n", 0, state.motorState[0].q, state.motorState[0].dq);
+
     for (int joint_index = 0; joint_index < low_level_control_params_.leg_indeces.size(); joint_index++)
     {
         int motor_id = low_level_control_params_.leg_indeces[joint_index];
         int state_index = low_level_control_params_.state_indices[joint_index];
-        cmd_.motorCmd[motor_id].q = desired_state(state_index);
+        cmd_.motorCmd[motor_id].q = 0; // desired_state(state_index);
         cmd_.motorCmd[motor_id].Kd = low_level_control_params_.kd;
         cmd_.motorCmd[motor_id].Kp = low_level_control_params_.kp;
         cmd_.motorCmd[motor_id].tau = low_level_control_params_.tau_offset[joint_index];
@@ -157,6 +169,7 @@ void CommandingController::AchieveLowLevelControl(const Eigen::VectorXd &desired
 
     udp_.SetSend(cmd_);
 
+    std::cout << "sending udp" << std::endl;
     udp_.Send();
 }
 
@@ -203,13 +216,7 @@ int main(int argc, char **argv)
     commanding_controller.HardcodedPublisherInit();
     commanding_controller.InitGalileo(model_location_msg, parameter_location_msg, robot_command_msg);
 
-    // while (!commanding_controller.getDesiredState())
-    // {
-    //     ros::spinOnce();
-    //     loop_rate.sleep();
-    // }
-
-    ros::spin();
+    commanding_controller.RunNode();
 
     return 0;
 }
