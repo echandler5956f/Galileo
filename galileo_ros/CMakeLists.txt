@@ -5,16 +5,21 @@ add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
+  rospy
   roscpp
   std_msgs
   sensor_msgs
   message_generation
+  controller_manager
+  gazebo_ros
+  urdf
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(casadi REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 REQUIRED)
+find_package(gazebo REQUIRED)
 
 ## Generate messages in the 'msg' folder
 add_message_files(
@@ -42,7 +47,7 @@ generate_messages(
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS roscpp std_msgs message_runtime
+ CATKIN_DEPENDS rospy roscpp std_msgs message_runtime controller_manager gazebo_ros urdf
 )
 
 ###########
@@ -56,6 +61,7 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${GALILEO_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -83,10 +89,10 @@ target_link_libraries(${PROJECT_NAME}_go1_publisher
 )
 
 
-add_executable(${PROJECT_NAME}_go1_poll_solution 
-  src/helper_nodes/galileo_legged_poll_solution.cpp
+add_executable(switch_controller_client
+  src/helper_nodes/switch_controller_client.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_go1_poll_solution 
+target_link_libraries(switch_controller_client
    ${catkin_LIBRARIES}
 )

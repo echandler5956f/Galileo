@@ -56,11 +56,12 @@ int main(int argc, char **argv)
     casadi::MXVector solution;
     solver_interface.Update(X0, X0, solution);
 
-    // TODO: Add interface to get the solution
-
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.robot_->contact_sequence->getDT());
-    solution_t new_sol = solution_t(new_times);
-    solver_interface.trajectory_opt_->getSolution(new_sol);
+    Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(solver_interface.states()->nx, new_times.size());
+    Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(solver_interface.states()->nu, new_times.size());
+    solver_interface.solution_interface_->GetSolution(new_times, new_states, new_inputs);
+
+    solution::solution_t new_sol = solution::solution_t(new_times, new_states, new_inputs);
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(solver_interface.states()->q_index, 0, solver_interface.states()->nq, new_sol.state_result.cols());
     MeshcatInterface meshcat("../examples/visualization/solution_data/");
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
     meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
     meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
     std::cout << "Getting constraint violations" << std::endl;
-    auto cons = solver_interface.trajectory_opt_->getConstraintViolations(new_sol);
+    std::vector<std::vector<solution::constraint_evaluations_t>> cons;// = solver_interface.trajectory_opt_->getConstraintViolations(new_sol);
 
     // Collect the data specific to each end effector
     std::vector<tuple_size_t> wrench_indices;
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
                          {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
                          ee_plot_names,
                          wrench_legend_names);
-    plotter.PlotConstraints();
+    // plotter.PlotConstraints();
 
     return 0;
 }

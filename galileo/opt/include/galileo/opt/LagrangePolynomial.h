@@ -40,6 +40,19 @@ namespace galileo
             template <typename Scalar>
             Scalar barycentricInterpolation(double t, const std::vector<Scalar> terms) const;
 
+            /**
+             * @brief Perform symbolic Lagrange Interpolation, which, given a time from the Lagrange time scale, interpolates terms to find the value at time t.
+             *
+             * @param t Time to interpolate at
+             * @param terms Terms at knot points to use for interpolation
+             * @return Scalar Interpolated value
+             */
+            Eigen::VectorXd barycentricInterpolation(double t, const Eigen::MatrixXd &terms) const;
+
+            /**
+             * @brief If true, interprets the polynomial as a piecewise constant value
+             * 
+             */
             bool piecewise_constant = false;
 
             /**
@@ -71,6 +84,12 @@ namespace galileo
              *
              */
             std::vector<double> D;
+
+            /**
+             * @brief Weights used for barycentric interpolation.
+             * 
+             */
+            std::vector<double> barycentric_weights;
         };
     }
 }

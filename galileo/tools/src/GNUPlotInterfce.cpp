@@ -4,7 +4,7 @@ namespace galileo
 {
     namespace tools
     {
-        GNUPlotInterface::GNUPlotInterface(opt::solution_t solution_, std::vector<std::vector<opt::constraint_evaluations_t>> constraint_evaluations_)
+        GNUPlotInterface::GNUPlotInterface(opt::solution::solution_t solution_, std::vector<std::vector<opt::solution::constraint_evaluations_t>> constraint_evaluations_)
         {
             this->solution.state_result = solution_.state_result.transpose();
             this->solution.input_result = solution_.input_result.transpose();
@@ -94,7 +94,7 @@ namespace galileo
 
         void GNUPlotInterface::PlotConstraints()
         {
-            std::map<std::string, std::vector<opt::constraint_evaluations_t>> constraint_map;
+            std::map<std::string, std::vector<opt::solution::constraint_evaluations_t>> constraint_map;
 
             // For each phase
             for (auto &cons_in_phase : constraint_evaluations)
@@ -110,7 +110,7 @@ namespace galileo
                         size_t s1 = std::get<0>(constraint_type.metadata.plot_groupings[i]);
                         size_t s2 = std::get<1>(constraint_type.metadata.plot_groupings[i]);
 
-                        opt::constraint_evaluations_t new_constraint;
+                        opt::solution::constraint_evaluations_t new_constraint;
                         new_constraint.metadata.plot_groupings = {constraint_type.metadata.plot_groupings[i]};
                         new_constraint.metadata.plot_titles = {constraint_type.metadata.plot_titles[i]};
                         new_constraint.metadata.plot_names = {constraint_type.metadata.plot_names[i]};
@@ -132,7 +132,7 @@ namespace galileo
             }
 
             // Convert the map to a vector
-            std::vector<std::vector<opt::constraint_evaluations_t>> new_constraints;
+            std::vector<std::vector<opt::solution::constraint_evaluations_t>> new_constraints;
             for (auto &pair : constraint_map)
             {
                 new_constraints.push_back(pair.second);

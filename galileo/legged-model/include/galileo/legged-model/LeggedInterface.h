@@ -9,6 +9,7 @@
 #include "galileo/legged-model/LeggedRobotStates.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 #include "galileo/opt/TrajectoryOpt.h"
+#include "galileo/opt/Solution.h"
 
 namespace galileo
 {
@@ -79,6 +80,8 @@ namespace galileo
 
             std::shared_ptr<LeggedBody> robot_; /**< The robot model. */
 
+            std::shared_ptr<opt::solution::Solution> solution_interface_; /**< The solution interface. */
+
         private:
             /**
              * @brief Create the trajectory optimizer.
@@ -110,6 +113,8 @@ namespace galileo
             std::shared_ptr<contact::ContactSequence> contact_sequence_; /**< The gait. */
 
             casadi::MXVector solution_; /**< The last solution found. */
+            
+            std::vector<opt::solution::solution_segment_data_t> solution_segments_;
 
             casadi::Dict opts_;
 

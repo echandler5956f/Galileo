@@ -7,6 +7,7 @@ namespace galileo
         LeggedInterface::LeggedInterface()
         {
             surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
+            solution_interface_ = std::make_shared<galileo::opt::solution::Solution>();
         }
 
         void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names)
@@ -26,10 +27,10 @@ namespace galileo
         {
             // Hardcoded parameters for now
             // Load the parameters from the given parameter file.
-            // opts_["ipopt.linear_solver"] = "ma97";
-            // opts_["ipopt.ma97_order"] = "metis";
+            opts_["ipopt.linear_solver"] = "ma97";
+            opts_["ipopt.ma97_order"] = "metis";
             opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-            opts_["ipopt.max_iter"] = 250;
+            opts_["ipopt.max_iter"] = 20;
 
             cost_params_.R_diag = Eigen::VectorXd(states_->nu);
             cost_params_.R_diag << 1e-3, 1e-3, 1e-3,                        /*First contact wrench error weights*/
@@ -162,6 +163,9 @@ namespace galileo
 
             // Solve the problem
             solution = trajectory_opt_->optimize();
+            solution_segments_.clear();
+            trajectory_opt_->getSolutionSegments(solution_segments_);
+            solution_interface_->UpdateSolution(solution_segments_);
             solution_ = solution;
         }
 

@@ -47,7 +47,7 @@ void GalileoLeggedROSImplementation::InitServices()
 {
     // Create the get_desired_state service
     desired_state_input_service_ =
-        node_handle_.advertiseService("get_desired_state_input", &GalileoLeggedROSImplementation::DesiredStateInputCallback, this);
+        node_handle_.advertiseService("galileo/get_desired_state_input", &GalileoLeggedROSImplementation::DesiredStateInputCallback, this);
 }
 
 void GalileoLeggedROSImplementation::LoadModelCallback(const galileo_ros::ModelLocation::ConstPtr &model_location)
@@ -102,10 +102,10 @@ void GalileoLeggedROSImplementation::LoadParameters(const std::string &parameter
 {
     // We will hardcode parameters for now
 
-    // opts_["ipopt.linear_solver"] = "ma97";
-    // opts_["ipopt.ma97_order"] = "metis";
+    opts_["ipopt.linear_solver"] = "ma97";
+    opts_["ipopt.ma97_order"] = "metis";
     opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-    opts_["ipopt.max_iter"] = 20;
+    opts_["ipopt.max_iter"] = 250;
 
     if (verbose_)
         ROS_INFO("Parameters loaded from %s", parameter_file.c_str());
@@ -148,9 +148,11 @@ void GalileoLeggedROSImplementation::CreateProblemData(T_ROBOT_STATE X0)
     // std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075, 0.45, 0.075};
     // std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110, 0b1111, 0b1001, 0b1111, 0b0110, 0b1111}; // trot
 
-    std::vector<int> knot_num = {180};
+    std::vector<int> knot_num = {100};
     std::vector<double> knot_time = {1.0};
     std::vector<int> mask_vec = {0b1111};
+
+    solution_interface_ = std::make_shared<galileo::opt::solution::Solution>();
 
     // Create the contact sequence
     surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
@@ -178,7 +180,6 @@ void GalileoLeggedROSImplementation::CreateProblemData(T_ROBOT_STATE X0)
     //      {galileo::legged::environment::NO_SURFACE, 0, 0, galileo::legged::environment::NO_SURFACE},
     //      {0, 0, 0, 0}};
 
-    
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces =
         {{0, 0, 0, 0}};
 
@@ -261,34 +262,14 @@ void GalileoLeggedROSImplementation::CreateCost(casadi::Function &L, casadi::Fun
     pinocchio::casadi::copy(Q_mat, Q);
     pinocchio::casadi::copy(R_mat, R);
 
-    //
-    casadi::SX target_pos = casadi::SX::vertcat(casadi::SXVector{q0[0] + 0., q0[1] + 0., q0[2] + 0.});
-    casadi::SX target_rot = casadi::SX::eye(3);
+    casadi::SX X_error = robot_->f_state_error(casadi::SXVector{robot_->cx, casadi::SX(X0)}).at(0);
+    // casadi::SX X_error = robot_->fdiff(casadi::SXVector{rrobot_->cx, casadi::SX(X0), 1.}).at(0);
 
-    pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> oMf = robot_->cdata.oMf[robot_->model.getFrameId("base", pinocchio::BODY)];
-    auto rot = oMf.rotation();
-    auto pos = oMf.translation();
-    casadi::SX crot = casadi::SX::zeros(3, 3);
-    casadi::SX cpos = casadi::SX::zeros(3, 1);
-    pinocchio::casadi::copy(rot, crot);
-    pinocchio::casadi::copy(pos, cpos);
-
-    casadi::SX rot_c = casadi::SX::mtimes(crot.T(), target_rot);
-
-    casadi::SX target_error_casadi = casadi::SX::vertcat(casadi::SXVector{cpos - target_pos, casadi::SX::inv_skew(rot_c - rot_c.T()) / 2});
-
-    casadi::SX X_ref = casadi::SX(X0);
-    X_ref(casadi::Slice(states_->nh + states_->ndh, states_->nh + states_->ndh + 3)) = target_pos;
-    auto h_and_dh_error = robot_->cx(casadi::Slice(0, states_->nh + states_->ndh)) - X_ref(casadi::Slice(0, states_->nh + states_->ndh));
-    auto x_error = robot_->cx(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx)) - X_ref(casadi::Slice(states_->nh + states_->ndh + states_->nqb, states_->nx));
-
-    casadi::SX X_error = casadi::SX::vertcat({h_and_dh_error,
-                                              target_error_casadi,
-                                              x_error});
-
-    pinocchio::computeTotalMass(robot_->model, robot_->data);
+    pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
 
     casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
+    // Hardcoded for 3-joint quadrupeds for now
+    U_ref(casadi::Slice(2, 11, 3)) = 9.81 * robot_->cdata.mass[0] / robot_->num_end_effectors_;
     casadi::SX u_error = robot_->cu - U_ref;
 
     L = casadi::Function("L",
@@ -333,8 +314,10 @@ bool GalileoLeggedROSImplementation::DesiredStateInputCallback(galileo_ros::Desi
     Eigen::VectorXd time_offset_on_horizon(1);
     time_offset_on_horizon << req.time_offset_on_horizon;
 
-    galileo::opt::solution_t sol = galileo::opt::solution_t(time_offset_on_horizon);
-    trajectory_opt_->getSolution(sol);
+    Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(states_->nx, time_offset_on_horizon.size());
+    Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(states_->nu, time_offset_on_horizon.size());
+    solution_interface_->GetSolution(time_offset_on_horizon, new_states, new_inputs);
+    galileo::opt::solution::solution_t sol = galileo::opt::solution::solution_t(time_offset_on_horizon, new_states, new_inputs);
 
     Eigen::VectorXd state_sol = sol.state_result;
     Eigen::VectorXd desired_state(states_->nh + states_->nq - 1);
@@ -394,9 +377,12 @@ void GalileoLeggedROSImplementation::UpdateSolution(T_ROBOT_STATE X0)
     problem_data_->legged_decision_problem_data.X0 = (X0);
     // Update the initial state
     trajectory_opt_->initFiniteElements(1, X0);
-
     // Solve the problem
     solution_ = trajectory_opt_->optimize();
+    solution_segments_.clear();
+
+    trajectory_opt_->getSolutionSegments(solution_segments_);
+    solution_interface_->UpdateSolution(solution_segments_);
     fully_initted_ = true;
 }
 

@@ -89,7 +89,7 @@ namespace galileo
              * @brief Metadata for the constraint.
              *
              */
-            constraint_metadata_t metadata;
+            solution::constraint_metadata_t metadata;
         };
 
         /**

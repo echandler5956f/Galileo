@@ -174,9 +174,11 @@ class GalileoLeggedROSImplementation {
 
     std::shared_ptr<galileo::opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
 
+    std::shared_ptr<galileo::opt::solution::Solution> solution_interface_; /**< The solution interface. */
+
+    std::vector<galileo::opt::solution::solution_segment_data_t> solution_segments_;
 
     bool verbose_; /**< Whether to print verbose output. */
-
 
     ::ros::NodeHandle& node_handle_; /**< The ROS node handle. */
 
