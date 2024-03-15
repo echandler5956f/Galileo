@@ -1,7 +1,7 @@
 #include "galileo_ros/commanding_controller.h"
 
 // Constructor
-CommandingController::CommandingController(ros::NodeHandle &node_handle, bool verbose) : node_handle_(node_handle), verbose_(verbose)
+CommandingController::CommandingController(ros::NodeHandle &node_handle, bool verbose) : node_handle_(node_handle), verbose_(verbose), udp_(UNITREE_LEGGED_SDK::LOWLEVEL, 8090, "192.168.123.10", 8007)
 {
     // Initialize subscribers
     InitSubscribers();
@@ -14,6 +14,8 @@ CommandingController::CommandingController(ros::NodeHandle &node_handle, bool ve
 
     // Initialize WBC
     InitWBC();
+
+    InitLowLevel();
 }
 
 void CommandingController::InitSubscribers()
@@ -74,29 +76,10 @@ void CommandingController::InitWBC()
     // For now we follow opem loop trajectory
 }
 
-void CommandingController::InitRobotState()
+void CommandingController::InitRobotState(const Eigen::VectorXd &desired_state)
 {
     // publish robot state to gazebo
-}
-
-void CommandingController::PublishRobotJointCommand(float t_offset)
-{
-    // Get the desired state and input
-    Eigen::VectorXd desired_state;
-    Eigen::VectorXd desired_input;
-
-    if (getDesiredState(t_offset, desired_state, desired_input))
-    {
-        // Get the current state
-        Eigen::VectorXd current_state = Eigen::VectorXd::Zero(desired_state.size());
-
-        // Run the WBC
-        Eigen::VectorXd tau = RunWBC(desired_state, desired_input, current_state);
-
-        // Set the initial state and target state
-
-        // publish tau to gazebo
-    }
+    AchieveLowLevelControl(desired_state, Eigen::VectorXd::Zero(desired_state.size()));
 }
 
 bool CommandingController::getDesiredState(float t_offset, Eigen::VectorXd &desired_state, Eigen::VectorXd &desired_input)
@@ -133,19 +116,48 @@ Eigen::VectorXd CommandingController::RunWBC(const Eigen::VectorXd &desired_stat
 
 void CommandingController::RunNode()
 {
-
     ros::Rate loop_rate(1000);
+    Eigen::VectorXd desired_state;
+    Eigen::VectorXd desired_input;
 
-    InitRobotState();
+    getDesiredState(0, desired_state, desired_input);
+
+    InitRobotState(desired_state);
+
+    ros::Duration(0.3).sleep();
+
     std::time_t start_time = std::time(nullptr);
     while (ros::ok())
     {
         std::time_t current_time = std::time(nullptr);
         float t_offset = difftime(current_time, start_time);
-        PublishRobotJointCommand(t_offset);
+
+        if (getDesiredState(t_offset, desired_state, desired_input))
+        {
+            AchieveLowLevelControl(desired_state, desired_input);
+        }
+
         ros::spinOnce();
         loop_rate.sleep();
     }
+}
+
+void CommandingController::AchieveLowLevelControl(const Eigen::VectorXd &desired_state, const Eigen::VectorXd &desired_input)
+{
+
+    for (int joint_index = 0; joint_index < low_level_control_params_.leg_indeces.size(); joint_index++)
+    {
+        int motor_id = low_level_control_params_.leg_indeces[joint_index];
+        int state_index = low_level_control_params_.state_indices[joint_index];
+        cmd_.motorCmd[motor_id].q = desired_state(state_index);
+        cmd_.motorCmd[motor_id].Kd = low_level_control_params_.kd;
+        cmd_.motorCmd[motor_id].Kp = low_level_control_params_.kp;
+        cmd_.motorCmd[motor_id].tau = low_level_control_params_.tau_offset[joint_index];
+    }
+
+    udp_.SetSend(cmd_);
+
+    udp_.Send();
 }
 
 int main(int argc, char **argv)

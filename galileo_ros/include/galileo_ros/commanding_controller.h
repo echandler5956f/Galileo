@@ -14,6 +14,8 @@
 
 #include <thread>
 
+#include "unitree_legged_sdk/udp.h"
+
 #include "galileo/legged-model/LeggedBody.h"
 #include "galileo/legged-model/LeggedRobotProblemData.h"
 #include "galileo/legged-model/LeggedRobotStates.h"
@@ -45,16 +47,24 @@ public:
     void RunNode();
 
     /**
-     * @brief Create and publish the robot command to the robot. This should be threaded.
+     * @brief Create the command to send to the robot. This should be threaded.
      *
      */
-    void PublishRobotJointCommand(float t_offset);
+    void AchieveLowLevelControl(const Eigen::VectorXd &desired_state, const Eigen::VectorXd &desired_input);
 
 private:
     /**
      * @brief Initializes the subscribers for the Galileo Legged ROS Implementation.
      */
     void InitSubscribers();
+
+    /**
+     * @brief Initializes the low-level control on the unitree.
+     */
+    void InitLowLevel()
+    {
+        udp_.InitCmdData(cmd_);
+    }
 
     /**
      * @brief Initializes the publishers for the Galileo Legged ROS Implementation.
@@ -73,8 +83,9 @@ private:
 
     /**
      * @brief Initializes the robot state in gazebo before running the WBC to follow the open-loop trajectory.
+     *        For the real unitree robot, this is a "Stand-up" command.
      */
-    void InitRobotState();
+    void InitRobotState(const Eigen::VectorXd &desired_state);
 
     /**
      * @brief get the desired state at time t from the galileo solution
@@ -112,12 +123,19 @@ private:
 
     bool verbose_; /**< Whether to print verbose output. */
 
-    struct WBCParameters
-    {
-        std::vector<int> joint_indices;
-        std::vector<float> max_tau;
-        std::vector<float> min_tau;
+    UNITREE_LEGGED_SDK::UDP udp_;
 
-        float kp;
+    UNITREE_LEGGED_SDK::LowCmd cmd_ = {0};
+
+    struct LowLevelControlParams
+    {
+        std::vector<int> state_indices = {12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        std::vector<int> leg_indeces = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+        std::vector<float> tau_offset = {-0.65, 0, 0, -0.65, 0, 0, -0.65, 0, 0, -0.65, 0, 0};
+
+        float kp = 5.0;
+        float kd = 1.0;
     };
+
+    LowLevelControlParams low_level_control_params_;
 };
