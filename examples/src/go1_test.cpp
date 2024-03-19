@@ -19,9 +19,21 @@ int main(int argc, char **argv)
     // std::vector<double> knot_time = {0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05, 0.3, 0.05};
     // std::vector<int> mask_vec = {0b1111, 0b1101, 0b1111, 0b1011, 0b1111, 0b1110, 0b1111, 0b0111, 0b1111}; // static walk
 
-    std::vector<int> knot_num = {20, 20, 20, 20};
-    std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45};
-    std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // trot
+    // std::vector<int> knot_num = {20, 20, 20, 20};
+    // std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45};
+    // std::vector<int> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110}; // trot
+
+    // std::vector<int> knot_num = {30, 30, 30,};
+    // std::vector<double> knot_time = {0.05, 0.3, 0.3};
+    // std::vector<int> mask_vec = {0b1111, 0b1001, 0b0110}; // trot
+
+    // std::vector<int> knot_num = {30, 30, 30, 30, 30, 30};
+    // std::vector<double> knot_time = {0.05, 0.15, 0.05, 0.15, 0.05, 0.05};
+    // std::vector<int> mask_vec = {0b1111, 0b1001, 0b0000, 0b0110, 0b0000, 0b1111}; // flying trot
+
+    std::vector<int> knot_num = {30, 30, 30, 30, 30, 30};
+    std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
+    std::vector<int> mask_vec = {0b1111, 0b1001, 0b0110, 0b1001, 0b0110, 0b1111}; // trot
 
     // std::vector<int> knot_num = {20, 20};
     // std::vector<double> knot_time = {0.05, 0.3};
@@ -48,10 +60,10 @@ int main(int argc, char **argv)
         }
     }
 
-    contact::ContactMode final_mode;
-    final_mode.combination_definition = robot.getContactCombination(0b1111);
-    final_mode.contact_surfaces = {0, 0, 0, 0};
-    robot.contact_sequence->addPhase(final_mode, 20, 0.075);
+    // contact::ContactMode final_mode;
+    // final_mode.combination_definition = robot.getContactCombination(0b1111);
+    // final_mode.contact_surfaces = {0, 0, 0, 0};
+    // robot.contact_sequence->addPhase(final_mode, 30, 0.05);
 
     std::cout << "Filling dynamics" << std::endl;
     robot.fillModeDynamics(true);
@@ -61,12 +73,12 @@ int main(int argc, char **argv)
 
     /*ETH Weights*/
     Eigen::VectorXd Q_diag(si->ndx);
-    Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
-        0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-        500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
-        20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
-        0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
-        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
+    // Q_diag << 15., 15., 30., 5., 10., 10.,                          /*Centroidal momentum error weights*/
+    //     500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
+    //     20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.; /*Joint position error weights*/
+    Q_diag << 15., 15., 100., 10., 30., 30.,                          /*Centroidal momentum error weights*/
+        1000., 1000., 1500., 100., 300., 300.,                            /*Floating base position and orientation (exponential coordinates) error weights*/
+        5., 5., 2.5, 5., 5., 2.5, 5., 5., 2.5, 5., 5., 2.5; /*Joint position error weights*/
     Eigen::MatrixXd Q_mat = Q_diag.asDiagonal();
 
     Eigen::VectorXd R_diag(si->nu);
@@ -74,8 +86,9 @@ int main(int argc, char **argv)
         1e-3, 1e-3, 1e-3,                                           /*Second contact wrench error weights*/
         1e-3, 1e-3, 1e-3,                                           /*Third contact wrench error weights*/
         1e-3, 1e-3, 1e-3,                                           /*Fourth contact wrench error weights*/
-        10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.; /*Joint acceleration error weights*/
-    Eigen::MatrixXd R_mat = R_diag.asDiagonal();
+        500., 500., 500., 500., 500., 500., 500., 500., 500., 500., 500., 500.; /* Foot velocity relative to the base (uses Jacobian at the nominal configuration)*/
+    Eigen::MatrixXd R_taskspace = R_diag.asDiagonal();
+    Eigen::MatrixXd R_mat = robot.initializeInputCostWeight(R_taskspace, q0_vec);
 
     casadi::SX Q = casadi::SX::zeros(si->ndx, si->ndx);
     casadi::SX R = casadi::SX::zeros(si->nu, si->nu);
@@ -84,7 +97,7 @@ int main(int argc, char **argv)
     pinocchio::casadi::copy(R_mat, R);
 
     casadi::SX Xf = casadi::SX(X0);
-    Xf(si->q_index + 0) += 0.;
+    Xf(si->q_index + 0) += 0.4;
     Xf(si->q_index + 1) += 0.;
     Xf(si->q_index + 2) += 0.;
     /*Both f_state_error and fdiff work for the quaternion error, but fdiff uses the quaternion logarithm, so it is more accurate albeit slightly more expensive*/
@@ -105,7 +118,7 @@ int main(int argc, char **argv)
 
     casadi::Function Phi("Phi",
                          {robot.cx},
-                         {1e5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
+                         {1e3 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
 
     casadi::Dict opts;
     opts["ipopt.linear_solver"] = "ma97";
@@ -130,7 +143,7 @@ int main(int argc, char **argv)
 
     traj.initFiniteElements(1, X0);
     casadi::MXVector sol = traj.optimize();
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(100, 0., robot.contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., robot.contact_sequence->getDT());
     solution_t new_sol = solution_t(new_times);
     traj.getSolution(new_sol);
 

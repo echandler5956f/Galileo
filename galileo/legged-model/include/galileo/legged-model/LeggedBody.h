@@ -42,6 +42,8 @@ namespace galileo
              */
             void setEndEffectors(const std::vector<std::string> &ee_names);
 
+            Eigen::MatrixXd initializeInputCostWeight(Eigen::MatrixXd R_taskspace, opt::ConfigVector q0);
+
             /**
              * @brief Generate combinations of contacts.
              *

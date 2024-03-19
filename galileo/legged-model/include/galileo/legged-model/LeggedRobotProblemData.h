@@ -62,13 +62,13 @@ namespace galileo
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
 
-                    this->velocity_constraint_problem_data.ideal_offset_height = 0.1;
+                    this->velocity_constraint_problem_data.ideal_offset_height = 0.08;
                     this->velocity_constraint_problem_data.max_following_leeway_planar = 0.25;
                     this->velocity_constraint_problem_data.min_following_leeway_planar = 1e-2;
 
-                    this->velocity_constraint_problem_data.max_following_leeway_normal = 0.5;
+                    this->velocity_constraint_problem_data.max_following_leeway_normal = 0.375;
                     this->velocity_constraint_problem_data.min_following_leeway_normal = this->velocity_constraint_problem_data.ideal_offset_height * 0.015;
-                    this->velocity_constraint_problem_data.sigmoid_scaling = 15.;
+                    this->velocity_constraint_problem_data.sigmoid_scaling = 50.;
 
                     this->legged_decision_problem_data.environment_surfaces = environment_surfaces;
                     this->legged_decision_problem_data.contact_sequence = contact_sequence;
