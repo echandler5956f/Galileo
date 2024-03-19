@@ -58,7 +58,7 @@ namespace galileo
             Uc.clear();
 
             dX_poly = LagrangePolynomial(d);
-            U_poly = LagrangePolynomial(std::max(1, d - 1));
+            U_poly = LagrangePolynomial(d);
 
             for (int j = 0; j < dX_poly.d; ++j)
             {

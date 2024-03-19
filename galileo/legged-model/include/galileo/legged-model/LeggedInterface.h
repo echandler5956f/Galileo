@@ -61,7 +61,7 @@ namespace galileo
             /**
              * @brief Solve the problem, get the solution as an MX vector
              */
-            void Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution);
+            void Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution, Eigen::VectorXd &times);
 
             /**
              * @brief Get the surfaces in the environment.

@@ -4,10 +4,12 @@
 #include "galileo/opt/BasicSequence.h"
 #include "galileo/tools/MeshcatInterface.h"
 #include "galileo/tools/GNUPlotInterface.h"
+#include "galileo/opt/Solution.h"
 
 using namespace galileo;
 using namespace opt;
 using namespace tools;
+using namespace solution;
 
 struct SimpleProblemData
 {

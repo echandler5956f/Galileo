@@ -122,7 +122,7 @@ namespace galileo
              */
             // void getSolution(solution::solution_t &result);
 
-            void getSolutionSegments(std::vector<solution::solution_segment_data_t> &result);
+            void getSolutionSegments(std::vector<solution::solution_segment_data_t> &result, Eigen::VectorXd &times);
 
             std::vector<std::vector<solution::constraint_evaluations_t>> getConstraintViolations(solution::solution_t &sol) const;
 
@@ -576,7 +576,7 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        void TrajectoryOpt<ProblemData, MODE_T>::getSolutionSegments(std::vector<solution::solution_segment_data_t> &result)
+        void TrajectoryOpt<ProblemData, MODE_T>::getSolutionSegments(std::vector<solution::solution_segment_data_t> &result, Eigen::VectorXd &times)
         {
             std::cout << "Getting solution segments" << std::endl;
             auto solx = sol[0];
@@ -610,6 +610,10 @@ namespace galileo
 
                 state_count += (pseg->getStateDegree() + 1) * pseg->getKnotNum();
                 input_count += (pseg->getInputDegree() + 1) * pseg->getKnotNum();
+
+                Eigen::VectorXd segment_times;
+                tuple_size_t segment_indices = getSegmentTimes(times, segment_data.initial_time, segment_data.end_time, segment_times);
+                segment_times_ranges.push_back(segment_indices);
 
                 result.push_back(segment_data);
             }

@@ -30,7 +30,7 @@ namespace galileo
             opts_["ipopt.linear_solver"] = "ma97";
             opts_["ipopt.ma97_order"] = "metis";
             opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-            opts_["ipopt.max_iter"] = 20;
+            opts_["ipopt.max_iter"] = 250;
 
             cost_params_.R_diag = Eigen::VectorXd(states_->nu);
             cost_params_.R_diag << 1e-3, 1e-3, 1e-3,                        /*First contact wrench error weights*/
@@ -104,7 +104,7 @@ namespace galileo
 
             Phi = casadi::Function("Phi",
                                    {robot_->cx},
-                                   {1e5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
+                                   {1. * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
         }
 
         std::vector<LeggedInterface::LeggedConstraintBuilderType>
@@ -157,14 +157,14 @@ namespace galileo
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_);
         }
 
-        void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution)
+        void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution, Eigen::VectorXd &times)
         {
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem
             solution = trajectory_opt_->optimize();
             solution_segments_.clear();
-            trajectory_opt_->getSolutionSegments(solution_segments_);
+            trajectory_opt_->getSolutionSegments(solution_segments_, times);
             solution_interface_->UpdateSolution(solution_segments_);
             solution_ = solution;
         }
