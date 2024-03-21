@@ -25,10 +25,10 @@ namespace galileo
              * @param L_ Running cost
              * @param Phi_ Terminal cost
              */
-            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdif_, casadi::Function L_, casadi::Function Phi_)
+            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdiff_, casadi::Function L_, casadi::Function Phi_)
             {
                 this->Fint = Fint_;
-                this->Fdif = Fdif_;
+                this->Fdiff = Fdiff_;
                 this->L = L_;
                 this->Phi = Phi_;
             }
@@ -45,7 +45,7 @@ namespace galileo
              * @brief Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
              *
              */
-            casadi::Function Fdif;
+            casadi::Function Fdiff;
 
             /**
              * @brief The "running" or integrated cost function.
@@ -89,7 +89,7 @@ namespace galileo
              * @brief Metadata for the constraint.
              *
              */
-            constraint_metadata_t metadata;
+            solution::constraint_metadata_t metadata;
         };
 
         /**

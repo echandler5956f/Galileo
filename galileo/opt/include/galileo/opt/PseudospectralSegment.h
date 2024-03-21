@@ -426,7 +426,7 @@ namespace galileo
              * @brief Difference function.
              *
              */
-            casadi::Function Fdif;
+            casadi::Function Fdiff;
 
             /**
              * @brief Dynamics function.
