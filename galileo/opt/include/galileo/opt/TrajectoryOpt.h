@@ -22,37 +22,37 @@ namespace galileo
              * @brief Sparsity of the decision variables.
              * 
              */
-            casadi::Sparsity x;
+            casadi::Sparsity x_;
 
             /**
              * @brief Sparsity of the objective function.
              * 
              */
-            casadi::Sparsity f;
+            casadi::Sparsity f_;
 
             /**
              * @brief Sparsity of the constraints.
              * 
              */
-            casadi::Sparsity g;
+            casadi::Sparsity g_;
 
             /**
              * @brief Sparsity of the Lagrange multipliers for the decision variables.
              * 
              */
-            casadi::Sparsity lam_x;
+            casadi::Sparsity lam_x_;
 
             /**
              * @brief Sparsity of the Lagrange multipliers for the constraints.
              * 
              */
-            casadi::Sparsity lam_g;
+            casadi::Sparsity lam_g_;
 
             /**
              * @brief Sparsity of the Lagrange multipliers for the parameters.
              * 
              */
-            casadi::Sparsity lam_p;
+            casadi::Sparsity lam_p_;
 
             /**
              * @brief Construct a new Iteration Callback object.
@@ -81,12 +81,12 @@ namespace galileo
              */
             void set_sparsity(casadi::Sparsity x, casadi::Sparsity f, casadi::Sparsity g, casadi::Sparsity lam_x, casadi::Sparsity lam_g, casadi::Sparsity lam_p)
             {
-                this->x = x;
-                this->f = f;
-                this->g = g;
-                this->lam_x = lam_x;
-                this->lam_g = lam_g;
-                this->lam_p = lam_p;
+                this->x_ = x;
+                this->f_ = f;
+                this->g_ = g;
+                this->lam_x_ = lam_x;
+                this->lam_g_ = lam_g;
+                this->lam_p_ = lam_p;
             }
 
             /**
@@ -131,17 +131,17 @@ namespace galileo
             casadi::Sparsity get_sparsity_in(casadi_int i) override
             {
                 if (i == 0)
-                    return x;
+                    return x_;
                 else if (i == 1)
-                    return f;
+                    return f_;
                 else if (i == 2)
-                    return g;
+                    return g_;
                 else if (i == 3)
-                    return lam_x;
+                    return lam_x_;
                 else if (i == 4)
-                    return lam_g;
+                    return lam_g_;
                 else if (i == 5)
-                    return lam_p;
+                    return lam_p_;
                 else
                     throw std::runtime_error("Invalid input index");
             }
