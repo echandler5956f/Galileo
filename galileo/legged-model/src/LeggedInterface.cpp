@@ -74,7 +74,7 @@ namespace galileo
                 imported_vars[key] = value;
             }
 
-            opts_["ipopt.max_iter"] = imported_vars["ipopt.max_iter"];
+            opts_["ipopt.max_iter"] = std::stoi(imported_vars["max_solver_iterations"]);
 
             // Extract the string value from imported_vars
             Eigen::VectorXd Q_diag = ReadVector(imported_vars["Q_diag"]);

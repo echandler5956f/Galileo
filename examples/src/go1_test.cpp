@@ -44,7 +44,7 @@ int main(int argc, char **argv)
         X0(q0_idx + j) = q0_vec(j);
     }
 
-    solver_interface.surfaces()->push_back(environment::createInfiniteGround());
+    solver_interface.addSurface(environment::createInfiniteGround());
 
     solver_interface.setContactSequence(
         knot_num,
