@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <cassert>
+#include <mutex>
 
 #include <pinocchio/fwd.hpp>
 
@@ -49,8 +50,10 @@ namespace galileo
              */
             void setContactSequence(std::shared_ptr<contact::ContactSequence> contact_sequence)
             {
+                assert(robot_ != nullptr);
                 robot_->contact_sequence = contact_sequence;
                 robot_->fillModeDynamics(false);
+                phases_set_ = true;
             }
 
             /**
@@ -58,6 +61,8 @@ namespace galileo
              */
             void setContactSequence(std::vector<int> knot_num, std::vector<double> knot_time, std::vector<uint> mask_vec,
                                     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces);
+
+            bool CanInitialize() const { return (robot_ != nullptr) && parameters_set_ && phases_set_; }
 
             /**
              * @brief Solve the problem, get the solution as an MX vector
@@ -68,6 +73,24 @@ namespace galileo
              * @brief Solve the problem, get the solution as an MX vector
              */
             void Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution);
+
+            /**
+             * @brief Set the solution to the problem.
+             */
+            void SetSolution(const casadi::MXVector &solution_to_set)
+            {
+                std::lock_guard<std::mutex> lock(solution_mutex_);
+                solution_ = solution_to_set;
+            }
+
+            /**
+             * @brief Access the last known solution to the problem.
+             */
+            void AccessSolution(casadi::MXVector &solution_accessed)
+            {
+                std::lock_guard<std::mutex> lock(solution_mutex_);
+                solution_accessed = solution_;
+            }
 
             /**
              * @brief Add a surface to the environment.
@@ -106,6 +129,12 @@ namespace galileo
              */
             std::shared_ptr<LeggedBody> getRobotModel() { return robot_; };
 
+            /**
+             * @brief Get the end effectors of the robot.
+             *
+             */
+            contact::RobotEndEffectors getEndEffectors() { return robot_->getEndEffectors(); }
+
         private:
             /**
              * @brief Create the trajectory optimizer.
@@ -136,12 +165,14 @@ namespace galileo
             std::shared_ptr<contact::ContactSequence> contact_sequence_; /**< The gait. */
 
             casadi::MXVector solution_; /**< The last solution found. */
+            std::mutex solution_mutex_;
 
             casadi::Dict opts_;
 
             std::shared_ptr<opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
 
             std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
+            std::mutex trajectory_opt_mutex_;
 
             std::shared_ptr<LeggedBody> robot_; /**< The robot model. */
 
@@ -153,6 +184,9 @@ namespace galileo
             CostParameters cost_params_;
 
             std::string body_name_ = "base";
+
+                        bool parameters_set_ = false;
+            bool phases_set_ = false;
 
             bool fully_initialized_ = false;
         };
