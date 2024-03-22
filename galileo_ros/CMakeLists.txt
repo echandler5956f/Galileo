@@ -11,10 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   std_srvs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(casadi REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen3 REQUIRED)
+
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -47,11 +52,14 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  EnvironmentSurface.msg
+  ContactSequence.msg
+  GalileoCommand.msg
+  ParameterFileLocation.msg
+  RobotModel.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -103,10 +111,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES galileo_ros
-#  CATKIN_DEPENDS roscpp std_msgs std_srvs
-#  DEPENDS system_lib
+ INCLUDE_DIRS include
+ LIBRARIES galileo_ros
+ CATKIN_DEPENDS roscpp std_msgs std_srvs
+ DEPENDS system_lib
 )
 
 ###########
@@ -116,14 +124,18 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
+  ${EIGEN3_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${GALILEO_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/galileo_ros.cpp
-# )
+
+add_library(${PROJECT_NAME}
+  src/GalileoLeggedRos.cpp
+)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -149,6 +161,16 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+## Declare a C++ executable
+add_executable(${PROJECT_NAME}_legged_node 
+  Nodes/galileo_legged_test_node.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_legged_node casadi Eigen3::Eigen galileo)
+
+target_link_libraries(${PROJECT_NAME}_legged_node
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
