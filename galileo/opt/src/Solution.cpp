@@ -28,8 +28,7 @@ namespace galileo
                             Eigen::MatrixXd state_terms = solution_segments_[j].solx_segment.block(0, state_index * state_deg, solution_segments_[j].solx_segment.rows(), state_deg);
                             double state_knot_start_time = solution_segments_[j].state_times[state_index * state_deg - 1];
                             double state_knot_end_time = solution_segments_[j].state_times[(state_index * state_deg) + state_deg - 1];
-                            // std::cout << "state_knot_start_time: " << state_knot_start_time << std::endl;
-                            // std::cout << "state_knot_end_time: " << state_knot_end_time << std::endl;
+
                             double state_scaled_time = (query_times(i) - state_knot_start_time) / (state_knot_end_time - state_knot_start_time);
                             state_result.col(i) = solution_segments_[j].state_poly.barycentricInterpolation(state_scaled_time, state_terms);
 
