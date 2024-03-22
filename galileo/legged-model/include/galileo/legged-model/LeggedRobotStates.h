@@ -7,13 +7,13 @@
 
 namespace galileo
 {
-    namespace opt
+    namespace legged
     {
         /**
          * @brief Simple slicer class for getting state variables.
          *
          */
-        class LeggedRobotStates : public States
+        class LeggedRobotStates : public opt::States
         {
         public:
             /**
@@ -328,7 +328,10 @@ namespace galileo
              */
             int general_vju_index = 0;
         };
+    }
 
+    namespace opt
+    {
         typedef double Scalar;
         typedef casadi::SX ADScalar;
 
