@@ -70,6 +70,11 @@ namespace galileo
             void Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution);
 
             /**
+             * @brief Add a surface to the environment.
+             */
+            void addSurface(const environment::SurfaceData &surface) { surfaces_->push_back(surface); }
+
+            /**
              * @brief Get the surfaces in the environment.
              */
             std::shared_ptr<EnvironmentSurfaces> &surfaces() { return surfaces_; }
