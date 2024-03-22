@@ -59,18 +59,18 @@ int main()
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., seq->getDT());
 
-    solution_t new_sol = solution_t(new_times);
-    traj.getSolution(new_sol);
-    auto cons = traj.getConstraintViolations(new_sol);
+    // solution_t new_sol = solution_t(new_times);
+    // traj.getSolution(new_sol);
+    // auto cons = traj.getConstraintViolations(new_sol);
 
-    GNUPlotInterface plotter(new_sol, cons);
-    plotter.PlotSolution({std::make_tuple(0, si->nx)},
-                         {std::make_tuple(0, si->nu)},
-                         {"States"},
-                         {{"x1", "x2"}},
-                         {"Input"},
-                         {{"u"}});
-    // plotter.PlotConstraints();
+    // GNUPlotInterface plotter(new_sol, cons);
+    // plotter.PlotSolution({std::make_tuple(0, si->nx)},
+    //                      {std::make_tuple(0, si->nu)},
+    //                      {"States"},
+    //                      {{"x1", "x2"}},
+    //                      {"Input"},
+    //                      {{"u"}});
+    // // plotter.PlotConstraints();
 
     return 0;
 }

@@ -42,6 +42,18 @@ namespace galileo
              */
             void setEndEffectors(const std::vector<std::string> &ee_names);
 
+
+            /**
+             * @brief Apply the foot velocity cost to the input cost weight matrix.
+             * 
+             * This cost is taken w.r.t the Jacobian at the initial configuration and acts as a hueristic to prevent large foot velocities.
+             * 
+             * @param R_taskspace The input cost weight matrix.
+             * @param q0 The initial configuration.
+             * @return Eigen::MatrixXd The updated cost weight matrix.
+             */
+            Eigen::MatrixXd initializeInputCostWeight(Eigen::MatrixXd R_taskspace, ConfigVector q0);
+
             /**
              * @brief Generate combinations of contacts.
              *
@@ -207,25 +219,25 @@ namespace galileo
              * @brief The pinocchio model of the robot.
              *
              */
-            opt::Model model;
+            Model model;
 
             /**
              * @brief The pinocchio data of the robot.
              *
              */
-            opt::Data data;
+            Data data;
 
             /**
              * @brief The symbolic model of the robot.
              *
              */
-            opt::ADModel cmodel;
+            ADModel cmodel;
 
             /**
              * @brief The symbolic data of the robot.
              *
              */
-            opt::ADData cdata;
+            ADData cdata;
 
             /**
              * @brief The state indices helper for the robot.
@@ -322,13 +334,7 @@ namespace galileo
              * @brief Eigen representations of the symbolic joint variables (used for pinocchio).
              *
              */
-            opt::ConfigVectorAD q_AD;
-
-            /**
-             * @brief Eigen representations of the symbolic joint velocities (used for pinocchio).
-             *
-             */
-            opt::TangentVectorAD v_AD;
+            ConfigVectorAD q_AD;
         };
     }
 }

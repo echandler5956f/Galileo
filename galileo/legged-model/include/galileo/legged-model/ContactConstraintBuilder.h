@@ -22,8 +22,8 @@ namespace galileo
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
                 std::shared_ptr<contact::ContactSequence> contact_sequence;
                 std::shared_ptr<legged::LeggedRobotStates> states;
-                std::shared_ptr<opt::ADModel> ad_model;
-                std::shared_ptr<opt::ADData> ad_data;
+                std::shared_ptr<legged::ADModel> ad_model;
+                std::shared_ptr<legged::ADData> ad_data;
                 contact::RobotEndEffectors robot_end_effectors;
                 casadi::SX x;
                 casadi::SX u;
@@ -78,7 +78,7 @@ namespace galileo
                                 upper_bound);
 
                             // Get foot position in global frame
-                            pinocchio::SE3Tpl<galileo::opt::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.first];
+                            pinocchio::SE3Tpl<legged::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.first];
                             auto foot_pos = frame_omf_data.translation();
                             casadi::SX c_foot_pos_in_world = casadi::SX::sym("foot_pos", 3);
                             pinocchio::casadi::copy(foot_pos, c_foot_pos_in_world);

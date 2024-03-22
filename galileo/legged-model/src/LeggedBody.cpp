@@ -6,7 +6,7 @@ namespace galileo
     {
         LeggedBody::LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[])
         {
-            model = opt::Model();
+            model = Model();
             std::vector<std::string> ee_name_vect;
             ee_name_vect.resize(num_ees);
             for (int i = 0; i < num_ees; ++i)
@@ -14,9 +14,9 @@ namespace galileo
                 ee_name_vect[i] = end_effector_names[i];
             }
             pinocchio::urdf::buildModel(location, pinocchio::JointModelFreeFlyer(), model);
-            data = opt::Data(model);
-            cmodel = model.cast<opt::ADScalar>();
-            cdata = opt::ADData(cmodel);
+            data = Data(model);
+            cmodel = model.cast<ADScalar>();
+            cdata = ADData(cmodel);
             setEndEffectors(ee_name_vect);
             generateContactCombination();
             si = std::make_shared<legged::LeggedRobotStates>(model.nq, model.nv, ees_);
@@ -28,8 +28,7 @@ namespace galileo
             cu_general = casadi::SX::sym("u_general", si->nu_general);
             cdt = casadi::SX::sym("dt");
 
-            q_AD = Eigen::Map<opt::ConfigVectorAD>(static_cast<std::vector<opt::ADScalar>>(si->get_q(cx)).data(), model.nq, 1);
-            v_AD = Eigen::Map<opt::TangentVectorAD>(static_cast<std::vector<opt::ADScalar>>(si->get_v(cx)).data(), model.nv, 1);
+            q_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(si->get_q(cx)).data(), model.nq, 1);
             createGeneralFunctions();
         }
 
@@ -121,6 +120,33 @@ namespace galileo
             contact_combinations_ = contact_combinations;
         }
 
+        Eigen::MatrixXd LeggedBody::initializeInputCostWeight(Eigen::MatrixXd R_taskspace, ConfigVector q0)
+        {
+            pinocchio::computeJointJacobians(model, data, q0);
+            pinocchio::updateFramePlacements(model, data);
+
+            size_t totalContactDim = 3 * num_end_effectors_;
+
+            Eigen::MatrixXd baseToFeetJacobians(totalContactDim, si->nvju);
+            int i = 0;
+            for (auto ee : ees_)
+            {
+                auto frame_id = ee.first;
+                Eigen::MatrixXd jacobianWorldToContactPointInWorldFrame = Eigen::MatrixXd::Zero(6, si->nv);
+                pinocchio::getFrameJacobian(model, data, frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobianWorldToContactPointInWorldFrame);
+                baseToFeetJacobians.block(3 * i, 0, 3, si->nvju) =
+                    jacobianWorldToContactPointInWorldFrame.block(0, 6, 3, si->nvju);
+                ++i;
+            }
+
+            Eigen::MatrixXd R = Eigen::MatrixXd::Zero(si->nu, si->nu);
+            // Contact Forces
+            R.topLeftCorner(totalContactDim, totalContactDim) = R_taskspace.topLeftCorner(totalContactDim, totalContactDim);
+            // Joint velocities
+            R.bottomRightCorner(si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.bottomRightCorner(totalContactDim, totalContactDim) * baseToFeetJacobians;
+            return R;
+        }
+
         void LeggedBody::createGeneralFunctions()
         {
             createGeneralDynamics();
@@ -129,32 +155,54 @@ namespace galileo
             createErrorFunction();
         }
 
+        template <typename SCALAR_T>
+        Eigen::Matrix<SCALAR_T, 6, 6> computeFloatingBaseCentroidalMomentumMatrixInverse(const Eigen::Matrix<SCALAR_T, 6, 6> &Ab)
+        {
+            const SCALAR_T mass = Ab(0, 0);
+            Eigen::Matrix<SCALAR_T, 3, 3> Ab_22_inv = Ab.template block<3, 3>(3, 3).inverse();
+            Eigen::Matrix<SCALAR_T, 6, 6> Ab_inv = Eigen::Matrix<SCALAR_T, 6, 6>::Zero();
+            Ab_inv << 1.0 / mass * Eigen::Matrix<SCALAR_T, 3, 3>::Identity(), -1.0 / mass * Ab.template block<3, 3>(0, 3) * Ab_22_inv,
+                Eigen::Matrix<SCALAR_T, 3, 3>::Zero(), Ab_22_inv;
+            return Ab_inv;
+        }
+
         void LeggedBody::createGeneralDynamics()
         {
             pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
             pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
-            pinocchio::forwardKinematics(cmodel, cdata, q_AD, v_AD);
+            pinocchio::forwardKinematics(cmodel, cdata, q_AD);
             pinocchio::updateFramePlacements(cmodel, cdata);
 
             casadi::SX mass = cdata.mass[0];
             casadi::SX g = casadi::SX::zeros(3, 1);
             g(2) = 9.81;
 
+            TangentVectorAD vju_general_AD = Eigen::Map<TangentVectorAD>(static_cast<std::vector<ADScalar>>(si->get_general_joint_velocities(cu_general)).data(), si->nvju, 1);
+            TangentVectorAD vju_AD = Eigen::Map<TangentVectorAD>(static_cast<std::vector<ADScalar>>(si->get_vju(cu)).data(), si->nvju, 1);
+
             auto Ag = cdata.Ag;
-            casadi::SX cAg(Ag.rows(), Ag.cols());
-            pinocchio::casadi::copy(Ag, cAg);
+            const Eigen::Matrix<ADScalar, 6, 6> Ab = Ag.template leftCols<6>();
+            const auto Ab_inv = computeFloatingBaseCentroidalMomentumMatrixInverse(Ab);
+            TangentVectorAD h_AD = Eigen::Map<TangentVectorAD>(static_cast<std::vector<ADScalar>>(si->get_ch(cx)).data(), si->nh, 1);
+
+            TangentVectorAD vb_AD1 = Ab_inv * (mass * h_AD - Ag.rightCols(si->nvju) * vju_general_AD);
+            TangentVectorAD tmp_v_AD1(si->nv, 1);
+            tmp_v_AD1 << vb_AD1, vju_general_AD;
+            casadi::SX cv(si->nv, 1);
+            pinocchio::casadi::copy(tmp_v_AD1, cv);
 
             general_dynamics = casadi::Function("F",
                                                 {cx, cu_general},
-                                                {vertcat(si->get_cdh(cx),
-                                                         (si->get_general_forces(cu_general) - mass * g) / mass,
+                                                {vertcat((si->get_general_forces(cu_general) - mass * g) / mass,
                                                          si->get_general_torques(cu_general) / mass,
-                                                         si->get_v(cx),
-                                                         casadi::SX::mtimes(
-                                                             casadi::SX::inv(cAg(casadi::Slice(0, cAg.size1()), casadi::Slice(0, 6))),
-                                                             (mass * si->get_ch(cx) - casadi::SX::mtimes(cAg(casadi::Slice(0, cAg.size1()), casadi::Slice(6, cAg.size2())),
-                                                                                                         si->get_general_joint_velocities(cu_general)))),
-                                                         si->get_general_joint_velocities(cu_general))});
+                                                         cv)});
+
+            TangentVectorAD vb_AD2 = Ab_inv * (mass * h_AD - Ag.rightCols(si->nvju) * vju_AD);
+            TangentVectorAD tmp_v_AD2(si->nv, 1);
+            tmp_v_AD2 << vb_AD2, vju_AD;
+
+            pinocchio::forwardKinematics(cmodel, cdata, q_AD, tmp_v_AD2);
+            pinocchio::updateFramePlacements(cmodel, cdata);
         }
 
         void LeggedBody::createFint()
@@ -167,10 +215,8 @@ namespace galileo
             fint = casadi::Function("Fint",
                                     {cx, cdx, cdt},
                                     {vertcat(si->get_ch(cx) + si->get_ch_d(cdx) * cdt,
-                                             si->get_cdh(cx) + si->get_cdh_d(cdx) * cdt,
                                              lie_group_int_result,
-                                             q_joints_int_result,
-                                             si->get_v(cx) + si->get_v_d(cdx) * cdt)});
+                                             q_joints_int_result)});
         }
 
         casadi::SX LeggedBody::lie_group_int(casadi::SX qb, casadi::SX vb, casadi::SX dt)
@@ -213,10 +259,8 @@ namespace galileo
             fdiff = casadi::Function("Fdiff",
                                      {cx, cx2, cdt},
                                      {vertcat((si->get_ch(cx2) - si->get_ch(cx)) / cdt,
-                                              (si->get_cdh(cx2) - si->get_cdh(cx)) / cdt,
                                               lie_group_diff_result,
-                                              (si->get_qj(cx2) - si->get_qj(cx)) / cdt,
-                                              (si->get_v(cx2) - si->get_v(cx)) / cdt)});
+                                              (si->get_qj(cx2) - si->get_qj(cx)) / cdt)});
         }
 
         casadi::SX LeggedBody::lie_group_diff(casadi::SX qb1, casadi::SX qb2, casadi::SX dt)
@@ -289,11 +333,9 @@ namespace galileo
             f_state_error = casadi::Function("F_state_error",
                                              {cx, cx2},
                                              {vertcat(si->get_ch(cx2) - si->get_ch(cx),
-                                                      si->get_cdh(cx2) - si->get_cdh(cx),
                                                       qb(casadi::Slice(0, 3)) - qb2(casadi::Slice(0, 3)),
                                                       quat_distance_result,
-                                                      si->get_qj(cx2) - si->get_qj(cx),
-                                                      si->get_v(cx2) - si->get_v(cx))});
+                                                      si->get_qj(cx2) - si->get_qj(cx))});
         }
 
         casadi::SX LeggedBody::quat_distance(casadi::SX quat1, casadi::SX quat2)

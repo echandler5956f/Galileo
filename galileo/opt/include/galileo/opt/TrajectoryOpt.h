@@ -651,7 +651,7 @@ namespace galileo
                 state_count += (pseg->getStateDegree() + 1) * pseg->getKnotNum();
                 input_count += (pseg->getInputDegree() + 1) * pseg->getKnotNum();
 
-                tuple_size_t segment_indices = getSegmentTimes(times, segment_data.initial_time, segment_data.end_time, segment_times);
+                tuple_size_t segment_indices = getSegmentIndices(times, segment_data.initial_time, segment_data.end_time);
                 segment_times_ranges.push_back(segment_indices);
 
                 result.push_back(segment_data);
