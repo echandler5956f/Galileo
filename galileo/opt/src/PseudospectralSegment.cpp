@@ -58,7 +58,7 @@ namespace galileo
             Uc.clear();
 
             dX_poly = LagrangePolynomial(d);
-            U_poly = LagrangePolynomial(std::max(1, d - 1));
+            U_poly = LagrangePolynomial(d);
 
             for (int j = 0; j < dX_poly.d; ++j)
             {
@@ -211,7 +211,7 @@ namespace galileo
                 }
             }
             u_knot_times(u_knot_times.size1() - 2, 0) = T - h;
-            u_knot_times(u_knot_times.size1() - 1, 0) = T;            
+            u_knot_times(u_knot_times.size1() - 1, 0) = T;
 
             double start_time = knot_times(0, 0).get_elements()[0];
             u_segment_times += start_time;

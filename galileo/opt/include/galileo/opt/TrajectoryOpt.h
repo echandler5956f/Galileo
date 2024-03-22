@@ -11,23 +11,74 @@ namespace galileo
     namespace opt
     {
 
+        /**
+         * @brief Callback function called at each iteration, used for debugging and plotting.
+         * 
+         */
         class IterationCallback : public casadi::Callback
         {
         public:
+            /**
+             * @brief Sparsity of the decision variables.
+             * 
+             */
             casadi::Sparsity x_;
+
+            /**
+             * @brief Sparsity of the objective function.
+             * 
+             */
             casadi::Sparsity f_;
+
+            /**
+             * @brief Sparsity of the constraints.
+             * 
+             */
             casadi::Sparsity g_;
+
+            /**
+             * @brief Sparsity of the Lagrange multipliers for the decision variables.
+             * 
+             */
             casadi::Sparsity lam_x_;
+
+            /**
+             * @brief Sparsity of the Lagrange multipliers for the constraints.
+             * 
+             */
             casadi::Sparsity lam_g_;
+
+            /**
+             * @brief Sparsity of the Lagrange multipliers for the parameters.
+             * 
+             */
             casadi::Sparsity lam_p_;
 
+            /**
+             * @brief Construct a new Iteration Callback object.
+             * 
+             */
             IterationCallback()
             {
                 construct("f");
             }
 
+            /**
+             * @brief Destroy the Iteration Callback object.
+             * 
+             */
             ~IterationCallback() override {}
 
+            /**
+             * @brief Set the sparsity of the decision variables, objective function, constraints, Lagrange multipliers for the decision variables, constraints, and parameters.
+             * 
+             * @param x Sparsity of the decision variables
+             * @param f Sparsity of the objective function
+             * @param g Sparsity of the constraints
+             * @param lam_x Sparsity of the Lagrange multipliers for the decision variables
+             * @param lam_g Sparsity of the Lagrange multipliers for the constraints
+             * @param lam_p Sparsity of the Lagrange multipliers for the parameters
+             */
             void set_sparsity(casadi::Sparsity x, casadi::Sparsity f, casadi::Sparsity g, casadi::Sparsity lam_x, casadi::Sparsity lam_g, casadi::Sparsity lam_p)
             {
                 this->x_ = x;
@@ -38,18 +89,45 @@ namespace galileo
                 this->lam_p_ = lam_p;
             }
 
+            /**
+             * @brief Initialize the callback function.
+             * 
+             */
             void init() override
             {
             }
 
+            /**
+             * @brief Get the number of inputs.
+             * 
+             * @return casadi_int The number of inputs
+             */
             casadi_int get_n_in() override { return 6; }
+
+            /**
+             * @brief Get the number of outputs.
+             * 
+             * @return casadi_int The number of outputs
+             */
             casadi_int get_n_out() override { return 1; }
 
+            /**
+             * @brief Evaluate the callback function.
+             * 
+             * @param arg The arguments to the callback function
+             * @return std::vector<casadi::DM> The result of the callback function
+             */
             std::vector<casadi::DM> eval(const std::vector<casadi::DM> &arg) const override
             {
                 return std::vector<casadi::DM>{0};
             }
 
+            /**
+             * @brief Get the sparsity of the input at index i.
+             * 
+             * @param i The index of the input
+             * @return casadi::Sparsity The sparsity of the input
+             */
             casadi::Sparsity get_sparsity_in(casadi_int i) override
             {
                 if (i == 0)
@@ -106,47 +184,30 @@ namespace galileo
             casadi::MXVector optimize();
 
             /**
-             * @brief Get the times where the decision variables are evaluated.
-             *
-             * @return std::vector<double> The times
-             */
-            std::vector<double> getGlobalTimes() const;
-
-            /**
-             * @brief Get the solution at the specified times. Times should be monotonically increasing, but do not have to be evenly spaced.
-             * The solution is interpolated between the finite elements. The times should be bounded by the times given to the optimization problem.
-             *
+             * @brief Collect the solution segments for each phase
+             * 
              * @param times The times to evaluate the solution at
-             * @param state_result The resulting state at the specified times
-             * @param input_result The resulting input at the specified times
+             * @param result Fill the result vector with the solution segments
              */
-            void getSolution(solution_t &result);
-
-            std::vector<std::vector<constraint_evaluations_t>> getConstraintViolations(solution_t &sol) const;
+            void getSolutionSegments(const Eigen::VectorXd &times, std::vector<solution::solution_segment_data_t> &result);
 
             /**
-             * @brief Get the Segment times from the global times.
+             * @brief Get the constraint violations at the solution.
+             * 
+             * @param sol The solution to evaluate
+             * @return std::vector<std::vector<solution::constraint_evaluations_t>> The constraint evaluations
+             */
+            std::vector<std::vector<solution::constraint_evaluations_t>> getConstraintViolations(solution::solution_t &sol) const;
+
+            /**
+             * @brief Get the indices of the segment times.
              *
              * @param times The times to evaluate the solution at
              * @param initial_time The initial time of the segment
              * @param end_time The end time of the segment
-             * @return Eigen::VectorXd The segment times
+             * @return tuple_size_t The segment indices
              */
-            tuple_size_t getSegmentTimes(Eigen::VectorXd times, double initial_time, double end_time, Eigen::VectorXd &segment_times) const;
-
-            /**
-             * @brief Process the segment times and interpolate the solution.
-             *
-             * @param l_times_vec Local times vector
-             * @param segment_times The segment times
-             * @param solx_segment The solution at the segment
-             * @param degree The degree of the polynomial
-             * @param poly The Lagrange polynomial
-             * @param result The result matrix
-             * @param i The row index of the result matrix
-             * @param j The column index of the result matrix
-             */
-            void processSegmentTimes(const std::vector<double> l_times_vec, const Eigen::VectorXd segment_times, const casadi::DM solx_segment, const int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, const int i, const int j) const;
+            tuple_size_t getSegmentIndices(Eigen::VectorXd times, double initial_time, double end_time) const;
 
         private:
             /**
@@ -205,7 +266,7 @@ namespace galileo
 
             /**
              * @brief Nonlinear solver to use.
-             * 
+             *
              */
             std::string nonlinear_solver_name;
 
@@ -336,7 +397,7 @@ namespace galileo
             printf("Starting initialization\n");
             auto begin_time = std::chrono::high_resolution_clock::now();
             auto start_time = std::chrono::high_resolution_clock::now();
-            auto end_time = std::chrono::high_resolution_clock::now();  
+            auto end_time = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end_time - start_time;
 
             for (size_t i = 0; i < num_phases; ++i)
@@ -498,11 +559,11 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        std::vector<std::vector<constraint_evaluations_t>> TrajectoryOpt<ProblemData, MODE_T>::getConstraintViolations(solution_t &result) const
+        std::vector<std::vector<solution::constraint_evaluations_t>> TrajectoryOpt<ProblemData, MODE_T>::getConstraintViolations(solution::solution_t &result) const
         {
             auto clock_start_time = std::chrono::high_resolution_clock::now();
-            std::vector<std::vector<constraint_evaluations_t>> constraint_evaluations;
-            std::vector<constraint_evaluations_t> phase_constraint_evaluations;
+            std::vector<std::vector<solution::constraint_evaluations_t>> constraint_evaluations;
+            std::vector<solution::constraint_evaluations_t> phase_constraint_evaluations;
 
             casadi::DM dm_state_result = casadi::DM(casadi::Sparsity::dense(result.state_result.rows(), result.state_result.cols()));
             casadi::DM dm_input_result = casadi::DM(casadi::Sparsity::dense(result.input_result.rows(), result.input_result.cols()));
@@ -537,7 +598,7 @@ namespace galileo
                     Eigen::MatrixXd lb = Eigen::Map<Eigen::MatrixXd>(con_lb.get_elements().data(), con_lb.rows(), con_lb.columns()).transpose();
                     Eigen::MatrixXd ub = Eigen::Map<Eigen::MatrixXd>(con_ub.get_elements().data(), con_ub.rows(), con_ub.columns()).transpose();
 
-                    constraint_evaluations_t con_evals;
+                    solution::constraint_evaluations_t con_evals;
                     con_evals.metadata = con_data->metadata;
                     con_evals.times = result.times.block(std::get<0>(seg_range), 0, std::get<1>(seg_range) - std::get<0>(seg_range), 1);
                     con_evals.evaluation = eval;
@@ -555,86 +616,55 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        void TrajectoryOpt<ProblemData, MODE_T>::getSolution(solution_t &result)
+        void TrajectoryOpt<ProblemData, MODE_T>::getSolutionSegments(const Eigen::VectorXd &times, std::vector<solution::solution_segment_data_t> &result)
         {
-            auto clock_start_time = std::chrono::high_resolution_clock::now();
-            int i = 0;
+            std::cout << "Getting solution segments" << std::endl;
             auto solx = sol[0];
             auto solu = sol[1];
             int state_count = 0;
             int input_count = 0;
-            result.state_result = Eigen::MatrixXd(state_indices->nx, result.times.size());
-            result.input_result = Eigen::MatrixXd(state_indices->nu, result.times.size());
-            std::vector<Eigen::VectorXd> all_segment_times;
             for (std::shared_ptr<Segment> seg : trajectory)
             {
-                /*TODO: Find another solution that avoids dynamic cast*/
+                solution::solution_segment_data_t segment_data;
+
                 std::shared_ptr<PseudospectralSegment> pseg = std::dynamic_pointer_cast<PseudospectralSegment>(seg);
+
                 std::vector<double> state_times_vec = pseg->getSegmentTimes().get_elements();
-                // std::vector<double> input_times_vec = pseg->getInputTimes().get_elements();
                 std::vector<double> input_times_vec = pseg->getUSegmentTimes().get_elements();
-                double initial_time = state_times_vec[0];
-                double end_time = state_times_vec[state_times_vec.size() - 1];
-                int num_knots = pseg->getKnotNum();
-                /*Add one to the state degree because we are including x0*/
-                int state_degree = pseg->getStateDegree();
-                auto state_polynomial = pseg->get_dXPoly();
-                int input_degree = pseg->getInputDegree();
-                auto input_polynomial = pseg->get_UPoly();
-                Eigen::VectorXd segment_times;
-                tuple_size_t segment_indices = getSegmentTimes(result.times, initial_time, end_time, segment_times);
+                segment_data.state_times = Eigen::Map<Eigen::VectorXd>(state_times_vec.data(), state_times_vec.size());
+                segment_data.input_times = Eigen::Map<Eigen::VectorXd>(input_times_vec.data(), input_times_vec.size());
+                segment_data.initial_time = state_times_vec[0];
+                segment_data.end_time = state_times_vec[state_times_vec.size() - 1];
+
+                segment_data.state_degree = pseg->getStateDegree();
+                segment_data.input_degree = pseg->getInputDegree();
+                segment_data.num_knots = pseg->getKnotNum();
+
+                std::vector<double> solx_vec = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(state_count, state_count + (pseg->getStateDegree() + 1) * pseg->getKnotNum()))).get_elements();
+                std::vector<double> solu_vec = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(input_count, input_count + (pseg->getInputDegree() + 1) * pseg->getKnotNum()))).get_elements();
+                segment_data.solx_segment = Eigen::Map<Eigen::MatrixXd>(solx_vec.data(), solx.rows(), solx.columns());
+                segment_data.solu_segment = Eigen::Map<Eigen::MatrixXd>(solu_vec.data(), solu.rows(), solu.columns());
+
+                segment_data.state_poly = *(pseg->get_dXPoly());
+                segment_data.input_poly = *(pseg->get_UPoly());
+
+                state_count += (pseg->getStateDegree() + 1) * pseg->getKnotNum();
+                input_count += (pseg->getInputDegree() + 1) * pseg->getKnotNum();
+
+                tuple_size_t segment_indices = getSegmentTimes(times, segment_data.initial_time, segment_data.end_time, segment_times);
                 segment_times_ranges.push_back(segment_indices);
-                casadi::DM solx_segment = casadi::MX::evalf(solx(casadi::Slice(0, solx.rows()), casadi::Slice(state_count, state_count + (state_degree + 1) * num_knots)));
-                casadi::DM solu_segment = casadi::MX::evalf(solu(casadi::Slice(0, solu.rows()), casadi::Slice(input_count, input_count + (input_degree + 1) * num_knots)));
-                /*This loop is the bottleneck and could easily be vectorized if computation speed is a concern*/
-                for (Eigen::Index j = 0; j < segment_times.size(); ++j)
-                {
-                    processSegmentTimes(state_times_vec, segment_times, solx_segment, state_degree + 1, state_polynomial, result.state_result, i, j);
-                    processSegmentTimes(input_times_vec, segment_times, solu_segment, input_degree + 1, input_polynomial, result.input_result, i, j);
-                    ++i;
-                }
-                state_count += (state_degree + 1) * num_knots;
-                input_count += (input_degree + 1) * num_knots;
+
+                result.push_back(segment_data);
             }
-            auto clock_end_time = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = clock_end_time - clock_start_time;
-            std::cout << "Elapsed time for get_solution: " << elapsed.count() << std::endl;
+            std::cout << "Finished getting solution segments" << std::endl;
         }
 
         template <class ProblemData, class MODE_T>
-        tuple_size_t TrajectoryOpt<ProblemData, MODE_T>::getSegmentTimes(Eigen::VectorXd times, double initial_time, double end_time, Eigen::VectorXd &segment_times) const
+        tuple_size_t TrajectoryOpt<ProblemData, MODE_T>::getSegmentIndices(Eigen::VectorXd times, double initial_time, double end_time) const
         {
             auto start_it = std::lower_bound(times.data(), times.data() + times.size(), initial_time);
             auto end_it = std::upper_bound(times.data(), times.data() + times.size(), end_time);
-            segment_times = Eigen::VectorXd(end_it - start_it);
-            std::copy(start_it, end_it, segment_times.data());
             return std::make_tuple(std::distance(times.data(), start_it), std::distance(times.data(), end_it));
-        }
-
-        template <class ProblemData, class MODE_T>
-        void TrajectoryOpt<ProblemData, MODE_T>::processSegmentTimes(const std::vector<double> l_times_vec, const Eigen::VectorXd segment_times, const casadi::DM sol_segment, const int degree, const std::shared_ptr<LagrangePolynomial> poly, Eigen::MatrixXd &result, const int i, const int j) const
-        {
-            auto it = std::lower_bound(l_times_vec.data(), l_times_vec.data() + l_times_vec.size(), segment_times(j));
-            int index = (it - l_times_vec.data() - 1) / (degree);
-
-            casadi::DM sol_knot_segment = sol_segment(casadi::Slice(0, sol_segment.rows()), casadi::Slice(index * degree, (index * degree) + degree));
-            casadi::DMVector sol_segment_vec;
-            for (casadi_int k = 0; k < sol_knot_segment.size2(); ++k)
-            {
-                sol_segment_vec.push_back(sol_knot_segment(casadi::Slice(0, sol_knot_segment.rows()), k));
-            }
-            double scaled_time = (segment_times[j] - l_times_vec[index * degree - 1]) / (l_times_vec[(index * degree) + degree - 1] - l_times_vec[index * degree - 1]);
-            std::vector<double> tmp = poly->barycentricInterpolation(scaled_time, sol_segment_vec).get_elements();
-            for (std::size_t k = 0; k < tmp.size(); ++k)
-            {
-                result(k, i) = tmp[k];
-            }
-        }
-
-        template <class ProblemData, class MODE_T>
-        std::vector<double> TrajectoryOpt<ProblemData, MODE_T>::getGlobalTimes() const
-        {
-            return global_times.get_elements();
         }
     }
 }
