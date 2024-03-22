@@ -46,27 +46,6 @@ namespace galileo
             const Sym get_ch_d(const Sym &cdx);
 
             /**
-             * @brief Get momenta time derivative: nh x 1.
-             *
-             * @tparam Sym The type of the input
-             * @param cx The input
-             * @return const Sym The momenta time derivative
-             */
-            template <class Sym>
-            const Sym get_cdh(const Sym &cx);
-
-            /**
-             * @brief Get momentum time derivative delta: nh x 1.
-             *
-             * @tparam Sym The type of the input
-             * @param cdx The input
-             * @return const Sym The momentum time derivative delta.
-             */
-            template <class Sym>
-            const Sym get_cdh_d(const Sym &cdx);
-
-            /**/
-            /**
              * @brief Get q: nq x 1.
              *
              * @tparam Sym The type of the input
@@ -95,36 +74,6 @@ namespace galileo
              */
             template <class Sym>
             const Sym get_qj(const Sym &cx);
-
-            /**
-             * @brief Get v: nv x 1.
-             *
-             * @tparam Sym The type of the input
-             * @param cx The input
-             * @return const Sym The velocity
-             */
-            template <class Sym>
-            const Sym get_v(const Sym &cx);
-
-            /**
-             * @brief Get v delta: nv x 1.
-             *
-             * @tparam Sym The type of the input
-             * @param cdx The input
-             * @return const Sym The velocity delta
-             */
-            template <class Sym>
-            const Sym get_v_d(const Sym &cdx);
-
-            /**
-             * @brief Get v_j: (nv - 6) x 1.
-             *
-             * @tparam Sym The type of the input
-             * @param cx The input
-             * @return const Sym The joint velocity
-             */
-            template <class Sym>
-            const Sym get_vj(const Sym &cx);
 
             /**
              * @brief Get f: 3 x 1.
@@ -281,12 +230,6 @@ namespace galileo
             int h_index = 0;
 
             /**
-             * @brief Starting index of the momenta time derivative.
-             * 
-             */
-            int dh_index = 0;
-
-            /**
              * @brief Starting index of the position variables.
              * 
              */
@@ -297,18 +240,6 @@ namespace galileo
              * 
              */
             int qj_index = 0;
-
-            /**
-             * @brief Starting index of the velocity variables.
-             * 
-             */
-            int v_index = 0;
-
-            /**
-             * @brief Starting index of the joint velocity inputs.
-             * 
-             */
-            int vj_index = 0;
 
             /**
              * @brief Starting index of the generalized force variables.
@@ -328,10 +259,7 @@ namespace galileo
              */
             int general_vju_index = 0;
         };
-    }
 
-    namespace opt
-    {
         typedef double Scalar;
         typedef casadi::SX ADScalar;
 

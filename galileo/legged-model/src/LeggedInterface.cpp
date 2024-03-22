@@ -53,14 +53,8 @@ namespace galileo
 
         void LeggedInterface::LoadParameters(std::string parameter_file_location)
         {
-            // Hardcoded parameters for now
             // Load the parameters from the given parameter file.
-            // opts_["ipopt.linear_solver"] = "ma97";
-            // opts_["ipopt.ma97_order"] = "metis";
-            // opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-
             std::map<std::string, std::string> imported_vars;
-
             std::ifstream file(parameter_file_location);
             std::string row;
 
@@ -74,7 +68,11 @@ namespace galileo
                 imported_vars[key] = value;
             }
 
-            opts_["ipopt.max_iter"] = std::stoi(imported_vars["max_solver_iterations"]);
+            opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
+            opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
+
+            // opts_["ipopt.linear_solver"] = "ma97";
+            // opts_["ipopt.ma97_order"] = "metis";
 
             // Extract the string value from imported_vars
             Eigen::VectorXd Q_diag = ReadVector(imported_vars["Q_diag"]);
@@ -98,8 +96,8 @@ namespace galileo
             problem_data_ = std::make_shared<LeggedRobotProblemData>(gp_data,
                                                                      surfaces_,
                                                                      robot_->contact_sequence,
-                                                                     states_, std::make_shared<galileo::opt::ADModel>(robot_->cmodel),
-                                                                     std::make_shared<galileo::opt::ADData>(robot_->cdata),
+                                                                     states_, std::make_shared<legged::ADModel>(robot_->cmodel),
+                                                                     std::make_shared<legged::ADData>(robot_->cdata),
                                                                      robot_->getEndEffectors(),
                                                                      robot_->cx, robot_->cu, robot_->cdt, initial_state);
         }
@@ -143,7 +141,7 @@ namespace galileo
 
             Phi = casadi::Function("Phi",
                                    {robot_->cx},
-                                   {1e5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
+                                   {1e3 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
         }
 
         std::vector<LeggedInterface::LeggedConstraintBuilderType>
