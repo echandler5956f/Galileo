@@ -1,6 +1,7 @@
 #pragma once
 
 #include "galileo/opt/LagrangePolynomial.h"
+#include "galileo/opt/Constraint.h"
 #include <Eigen/Dense>
 #include <string>
 
@@ -248,11 +249,39 @@ namespace galileo
                  */
                 void GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
 
+                // /**
+                //  * @brief Update the constraints with new constraint data segments.
+                //  * 
+                //  * @param constarint_data_segments A vector of constraint data segments.
+                //  */
+                // void UpdateConstraints(std::vector<std::vector<galileo::opt::ConstraintData>> constarint_data_segments);
+
+                // /**
+                //  * @brief Get the constraint evaluations at a set of query times. 
+                //  * 
+                //  * You should call either GetSolution or GetConstraints, but not both. 
+                //  * Calling GetConstraints will call GetSolution internally and fill in the state and input results.
+                //  * 
+                //  * @param query_times A vector of times at which to query the constraints.
+                //  * @param state_result The state result at each query time. This is found by calling GetSolution.
+                //  * @param input_result The input result at each query time. This is found by calling GetSolution.
+                //  * 
+                //  * @return std::vector<std::vector<solution::constraint_evaluations_t>> A vector of constraint evaluations.
+                //  */
+                // std::vector<std::vector<solution::constraint_evaluations_t>> GetConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+
+            private:
                 /**
                  * @brief The solution segments.
                  *
                  */
                 std::vector<solution_segment_data_t> solution_segments_;
+
+                /**
+                 * @brief The constraint data segments.
+                 * 
+                 */
+                std::vector<std::vector<galileo::opt::ConstraintData>>constraint_data_segments_;
             };
         }
     }

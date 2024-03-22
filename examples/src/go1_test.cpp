@@ -49,12 +49,14 @@ int main(int argc, char **argv)
         contact_surfaces);
 
     solver_interface.Initialize(X0, X0);
-    casadi::MXVector solution;
-    solver_interface.Update(X0, X0, solution);
+    solver_interface.Update(X0, X0);
 
-    // // TODO: Add interface to get the solution
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
+    Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(solver_interface.states()->nx, new_times.size());
+    Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(solver_interface.states()->nu, new_times.size());
+    solver_interface.GetSolution(new_times, new_states, new_inputs);
+    
 
-    // Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
     // solution_t new_sol = solution_t(new_times);
     // solver_interface.getTrajectoryOptimizer()->getSolution(new_sol);
 

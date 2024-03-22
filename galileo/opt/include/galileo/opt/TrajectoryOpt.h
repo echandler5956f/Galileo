@@ -186,10 +186,9 @@ namespace galileo
             /**
              * @brief Collect the solution segments for each phase
              * 
-             * @param times The times to evaluate the solution at
-             * @param result Fill the result vector with the solution segments
+             * @return std::vector<solution::solution_segment_data_t> The solution segments
              */
-            void getSolutionSegments(const Eigen::VectorXd &times, std::vector<solution::solution_segment_data_t> &result);
+            std::vector<solution::solution_segment_data_t> getSolutionSegments();
 
             /**
              * @brief Get the constraint violations at the solution.
@@ -616,9 +615,10 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        void TrajectoryOpt<ProblemData, MODE_T>::getSolutionSegments(const Eigen::VectorXd &times, std::vector<solution::solution_segment_data_t> &result)
+        std::vector<solution::solution_segment_data_t> TrajectoryOpt<ProblemData, MODE_T>::getSolutionSegments()
         {
             std::cout << "Getting solution segments" << std::endl;
+            std::vector<solution::solution_segment_data_t> result;
             auto solx = sol[0];
             auto solu = sol[1];
             int state_count = 0;
@@ -657,6 +657,7 @@ namespace galileo
                 result.push_back(segment_data);
             }
             std::cout << "Finished getting solution segments" << std::endl;
+            return result;
         }
 
         template <class ProblemData, class MODE_T>

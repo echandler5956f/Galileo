@@ -36,6 +36,7 @@ namespace galileo
         LeggedInterface::LeggedInterface()
         {
             surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
+            solution_interface_ = std::make_shared<galileo::opt::solution::Solution>();
         }
 
         void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names)
@@ -194,13 +195,19 @@ namespace galileo
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_);
         }
 
-        void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution)
+        void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem
-            solution = trajectory_opt_->optimize();
-            solution_ = solution;
+            trajectory_opt_->optimize();
+
+            solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
+        }
+
+        void LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        {
+            solution_interface_->GetSolution(query_times, state_result, input_result);
         }
 
         void LeggedInterface::UpdateProblemBoundaries(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)

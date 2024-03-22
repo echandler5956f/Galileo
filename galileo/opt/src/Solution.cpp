@@ -17,9 +17,9 @@ namespace galileo
                 std::cout << "GetSolution called" << std::endl;
                 auto clock_start_time = std::chrono::high_resolution_clock::now();
 
-                for (int i = 0; i < query_times.size(); i++)
+                for (size_t i = 0; i < query_times.size(); i++)
                 {
-                    for (int j = 0; j < solution_segments_.size(); j++)
+                    for (size_t j = 0; j < solution_segments_.size(); j++)
                     {
                         if (query_times(i) >= solution_segments_[j].initial_time && query_times(i) <= solution_segments_[j].end_time)
                         {
@@ -48,6 +48,26 @@ namespace galileo
                 std::chrono::duration<double> elapsed_time = clock_end_time - clock_start_time;
                 std::cout << "GetSolution took " << elapsed_time.count() << " seconds" << std::endl;
             }
+
+            // void Solution::UpdateConstraints(std::vector<std::vector<galileo::opt::ConstraintData>> constarint_data_segments)
+            // {
+            //     constraint_data_segments_ = constarint_data_segments;
+            // }
+
+            // std::vector<std::vector<solution::constraint_evaluations_t>> Solution::GetConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+            // {
+            //     GetSolution(query_times, state_result, input_result);
+            //     for (size_t i = 0; i < query_times.size(); i++)
+            //     {
+            //         for (size_t j = 0; j < constraint_data_segments_.size(); j++)
+            //         {
+            //             if (query_times(i) >= solution_segments_[j].initial_time && query_times(i) <= solution_segments_[j].end_time)
+            //             {
+                            
+            //             }
+            //         }
+            //     }
+            // }
         }
     }
 }
