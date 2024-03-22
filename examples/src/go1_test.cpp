@@ -5,11 +5,11 @@ int main(int argc, char **argv)
     ConfigVector q0_vec = (ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
 
     // std::vector<int> knot_num = {20, 20, 20, 20, 20};
-    // std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075}; 
+    // std::vector<double> knot_time = {0.075, 0.45, 0.075, 0.45, 0.075};
     // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b1111, 0b0110};
 
     std::vector<int> knot_num = {180};
-    std::vector<double> knot_time = {1.0}; 
+    std::vector<double> knot_time = {1.0};
     std::vector<uint> mask_vec = {0b1111};
 
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     galileo::legged::LeggedInterface solver_interface;
 
     solver_interface.LoadModel(go1_location, end_effector_names);
-    solver_interface.LoadParameters(" ");
+    solver_interface.LoadParameters(go1_parameter_location);
 
     casadi::DM X0 = casadi::DM::zeros(solver_interface.states()->nx, 1);
     int q0_idx = solver_interface.states()->nh + solver_interface.states()->ndh;
@@ -58,9 +58,9 @@ int main(int argc, char **argv)
 
     // TODO: Add interface to get the solution
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.robot_->contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
     solution_t new_sol = solution_t(new_times);
-    solver_interface.trajectory_opt_->getSolution(new_sol);
+    solver_interface.getTrajectoryOptimizer()->getSolution(new_sol);
 
     Eigen::MatrixXd subMatrix = new_sol.state_result.block(solver_interface.states()->q_index, 0, solver_interface.states()->nq, new_sol.state_result.cols());
     MeshcatInterface meshcat("../examples/visualization/solution_data/");
@@ -68,13 +68,13 @@ int main(int argc, char **argv)
     meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
     meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
     std::cout << "Getting constraint violations" << std::endl;
-    auto cons = solver_interface.trajectory_opt_->getConstraintViolations(new_sol);
+    auto cons = solver_interface.getTrajectoryOptimizer()->getConstraintViolations(new_sol);
 
     // Collect the data specific to each end effector
     std::vector<tuple_size_t> wrench_indices;
     std::vector<std::vector<std::string>> wrench_legend_names;
     std::vector<std::string> ee_plot_names;
-    for (auto ee : solver_interface.robot_->getEndEffectors())
+    for (auto ee : solver_interface.getRobotModel()->getEndEffectors())
     {
         wrench_indices.push_back(solver_interface.states()->frame_id_to_index_range[ee.second->frame_id]);
         if (ee.second->is_6d)

@@ -1,5 +1,12 @@
 #pragma once
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <cassert>
+
 #include <pinocchio/fwd.hpp>
 
 #include <Eigen/Core>
@@ -73,11 +80,26 @@ namespace galileo
             std::vector<LeggedConstraintBuilderType>
             getLeggedConstraintBuilders() const;
 
+            /**
+             * @brief Get the states of the robot.
+             *
+             * @return std::shared_ptr<LeggedRobotStates>
+             */
             std::shared_ptr<LeggedRobotStates> states() const { return states_; }
 
-            std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
+            /**
+             * @brief Get the trajectory optimizer.
+             *
+             * @return std::shared_ptr<LeggedTrajOpt>
+             */
+            std::shared_ptr<LeggedTrajOpt> getTrajectoryOptimizer() { return trajectory_opt_; };
 
-            std::shared_ptr<LeggedBody> robot_; /**< The robot model. */
+            /**
+             * @brief Get the robot model.
+             *
+             * @return std::shared_ptr<LeggedBody>
+             */
+            std::shared_ptr<LeggedBody> getRobotModel() { return robot_; };
 
         private:
             /**
@@ -100,7 +122,6 @@ namespace galileo
              */
             void CreateProblemData(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
 
-
             std::shared_ptr<LeggedRobotStates> states_; /**< Definition of the state. */
 
             std::shared_ptr<LeggedRobotProblemData> problem_data_; /**< The problem data. */
@@ -114,6 +135,10 @@ namespace galileo
             casadi::Dict opts_;
 
             std::shared_ptr<opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
+
+            std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
+
+            std::shared_ptr<LeggedBody> robot_; /**< The robot model. */
 
             struct CostParameters
             {

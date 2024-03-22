@@ -1,5 +1,34 @@
 #include "galileo/legged-model/LeggedInterface.h"
 
+namespace
+{
+    Eigen::VectorXd ReadVector(std::string str_vector)
+    {
+        // Remove the leading and trailing double quotes
+        int idx_end = str_vector.find_last_of(')');
+        int idx_start = str_vector.find_last_of('(');
+
+        str_vector = str_vector.substr(idx_start + 1, idx_end - idx_start - 1);
+        // Split the string by commas
+        std::vector<std::string> str_values;
+        std::stringstream ss(str_vector);
+        std::string str_value;
+        while (std::getline(ss, str_value, ','))
+        {
+            str_values.push_back(str_value);
+        }
+
+        // Convert the string values to double and store in Eigen::VectorXd
+        Eigen::VectorXd vector(str_values.size());
+        for (size_t i = 0; i < str_values.size(); ++i)
+        {
+            vector(i) = std::stod(str_values[i]);
+        }
+
+        return vector;
+    }
+}
+
 namespace galileo
 {
     namespace legged
@@ -26,25 +55,36 @@ namespace galileo
         {
             // Hardcoded parameters for now
             // Load the parameters from the given parameter file.
-            opts_["ipopt.linear_solver"] = "ma97";
-            opts_["ipopt.ma97_order"] = "metis";
-            opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
-            opts_["ipopt.max_iter"] = 250;
+            // opts_["ipopt.linear_solver"] = "ma97";
+            // opts_["ipopt.ma97_order"] = "metis";
+            // opts_["ipopt.fixed_variable_treatment"] = "make_constraint";
 
-            cost_params_.R_diag = Eigen::VectorXd(states_->nu);
-            cost_params_.R_diag << 1e-3, 1e-3, 1e-3,                        /*First contact wrench error weights*/
-                1e-3, 1e-3, 1e-3,                                           /*Second contact wrench error weights*/
-                1e-3, 1e-3, 1e-3,                                           /*Third contact wrench error weights*/
-                1e-3, 1e-3, 1e-3,                                           /*Fourth contact wrench error weights*/
-                10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.; /*Joint acceleration error weights*/
+            std::map<std::string, std::string> imported_vars;
 
-            cost_params_.Q_diag = Eigen::VectorXd(states_->ndx);
-            cost_params_.Q_diag << 15., 15., 30., 5., 10., 10.,             /*Centroidal momentum error weights*/
-                0., 0., 0., 0., 0., 0.,                                     /*Rate of Centroidal momentum error weights*/
-                500., 500., 500., 0.1, 0.1, 0.1,                            /*Floating base position and orientation (exponential coordinates) error weights*/
-                20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., /*Joint position error weights*/
-                0., 0., 0., 0., 0., 0.,                                     /*Floating base velocity error weights*/
-                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.;             /*Joint velocity error weights*/
+            std::ifstream file(parameter_file_location);
+            std::string row;
+
+            while (std::getline(file, row))
+            {
+                std::stringstream ss(row);
+                std::string key;
+                std::string value;
+                std::getline(ss, key, ',');
+                std::getline(ss, value, '\n');
+                imported_vars[key] = value;
+            }
+
+            opts_["ipopt.max_iter"] = imported_vars["ipopt.max_iter"];
+
+            // Extract the string value from imported_vars
+            Eigen::VectorXd Q_diag = ReadVector(imported_vars["Q_diag"]);
+            Eigen::VectorXd R_diag = ReadVector(imported_vars["R_diag"]);
+
+            assert(Q_diag.size() == states_->ndx);
+            assert(R_diag.size() == states_->nu);
+
+            cost_params_.Q_diag = Q_diag;
+            cost_params_.R_diag = R_diag;
         }
 
         void LeggedInterface::CreateProblemData(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
