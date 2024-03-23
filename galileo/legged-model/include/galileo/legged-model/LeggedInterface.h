@@ -105,6 +105,24 @@ namespace galileo
             }
 
             /**
+             * @brief Set the solution to the problem.
+             */
+            void SetSolution(const casadi::MXVector &solution_to_set)
+            {
+                std::lock_guard<std::mutex> lock(solution_mutex_);
+                solution_ = solution_to_set;
+            }
+
+            /**
+             * @brief Access the last known solution to the problem.
+             */
+            void AccessSolution(casadi::MXVector &solution_accessed)
+            {
+                std::lock_guard<std::mutex> lock(solution_mutex_);
+                solution_accessed = solution_;
+            }
+
+            /**
              * @brief Add a surface to the environment.
              */
             void addSurface(const environment::SurfaceData &surface) { surfaces_->push_back(surface); }
@@ -205,7 +223,7 @@ namespace galileo
 
             std::string body_name_ = "base";
 
-                        bool parameters_set_ = false;
+            bool parameters_set_ = false;
             bool phases_set_ = false;
 
             bool fully_initialized_ = false;
