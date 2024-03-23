@@ -21,7 +21,7 @@ namespace galileo
             surface_subscriber_ = nh_->subscribe(solver_id_ + "_add_environment_surface", 1000, &GalileoLeggedRos::SurfaceCallback, this);
 
             // Subscribe to the initialization command
-            command_subscriber_ = nh_->subscribe(solver_id_ + "_command", 1, &GalileoLeggedRos::InitializationCallback, this);
+            command_subscriber_ = nh_->subscribe(solver_id_ + "_command", 1, &GalileoLeggedRos::GeneralCommandCallback, this);
         }
 
         void GalileoLeggedRos::InitServices()
@@ -110,6 +110,7 @@ namespace galileo
         {
 
             std::cout << "Checking if the solver can be initialized" << std::endl;
+
             res.model_set = RobotModelLoaded();
             res.solver_parameters_set = ParametersLoaded();
             res.contact_sequence_set = PhasesSet();

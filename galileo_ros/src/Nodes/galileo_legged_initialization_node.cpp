@@ -18,13 +18,13 @@ std::vector<double> getX0(int nx, int q_index)
     return X0;
 }
 
-void getProblemDataMessages(std::string resources_location,
+void getProblemDataMessages(std::string resources_location, std::string urdf_name, std::string parameter_file_name,
                             galileo_ros::RobotModel &robot_model_cmd,
                             galileo_ros::ParameterFileLocation &parameter_location_cmd,
-                            galileo_ros::ContactSequence &contact_sequence_cmd)
+                            galileo_ros::ContactSequence &contact_sequence_cmd, galileo_ros::GalileoCommand &galileo_cmd_msg)
 {
-    std::string model_location = resources_location + "/urdf/go1.urdf";
-    std::string parameter_location = resources_location + "/SolverParameters/go1_solver_parameters.txt";
+    std::string model_location = resources_location + "/urdf/" + urdf_name;
+    std::string parameter_location = resources_location + "/SolverParameters/" + parameter_file_name;
 
     robot_model_cmd.model_file_location = model_location;
     robot_model_cmd.end_effector_names = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
@@ -44,57 +44,72 @@ void getProblemDataMessages(std::string resources_location,
         phase.contact_surface_ids = contact_surfaces[phase_number];
         contact_sequence_cmd.phases.push_back(phase);
     }
+
+    std::string end_effectors[] = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
+
+    galileo::legged::LeggedBody robot(model_location, 4, end_effectors);
+
+    std::vector<double> X0 = getX0(robot.si->nx, robot.si->q_index);
+
+    galileo_cmd_msg.command_type = "init";
+
+    galileo_cmd_msg.X_initial = X0;
+    galileo_cmd_msg.X_goal = X0;
 }
 
 int main(int argc, char **argv)
 {
-    std::string solver_id = "go1_solver";
     // ros::start();
     // ros::Rate loop_rate(10);
 
-    if (argc != 2)
+    if (argc != 5)
     {
-        std::cerr << "Usage: rosrun galileo_ros galileo_legged_test_node <resources_location>" << std::endl;
-        std::cerr << "<resources_location>/urdf/go1.urdf and <resources_location>/SolverParameters/go1/solver_parameters.txt must exist" << std::endl;
+        std::cerr << "Usage: rosrun galileo_ros galileo_legged_test_node <solver_id> <resources_location> <urdf_file_name> <parameter_file_name>" << std::endl;
+        std::cerr << "<resources_location>/urdf/<urdf_file_name> and <resources_location>/SolverParameters/<parameter_file_name> must exist" << std::endl;
         return 1;
     }
 
-    std::string resources_location = argv[1];
+    std::string solver_id = argv[1];
+    std::string resources_location = argv[2];
+    std::string urdf_file_name = argv[3];
+    std::string parameter_file_name = argv[4];
 
     ros::init(argc, argv, solver_id + "_test_node");
     std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
 
     ROS_INFO("Creating the solver object");
 
-    galileo::legged::GalileoLeggedRos go1_solver(nh, solver_id);
+    // galileo::legged::GalileoLeggedRos go1_solver(nh, solver_id);
 
     galileo_ros::RobotModel model_location_msg;
     galileo_ros::ParameterFileLocation parameter_location_msg;
     galileo_ros::ContactSequence contact_sequence_msg;
-    galileo_ros::GalileoCommand init_msg;
+    galileo_ros::GalileoCommand galileo_cmd_msg;
 
     ROS_INFO("Generating problem data messages");
 
-    getProblemDataMessages(resources_location,
+    getProblemDataMessages(resources_location, urdf_file_name, parameter_file_name,
                            model_location_msg,
                            parameter_location_msg,
-                           contact_sequence_msg);
+                           contact_sequence_msg, galileo_cmd_msg);
 
     ROS_INFO("Publishing model location, parameter location and contact sequence");
 
     ros::Publisher model_location_pub = nh->advertise<galileo_ros::RobotModel>(solver_id + "_model_location", 1);
     ros::Publisher parameter_location_pub = nh->advertise<galileo_ros::ParameterFileLocation>(solver_id + "_parameter_location", 1);
     ros::Publisher contact_sequence_pub = nh->advertise<galileo_ros::ContactSequence>(solver_id + "_contact_sequence", 1);
-    ros::Publisher init_pub = nh->advertise<galileo_ros::GalileoCommand>(solver_id + "_command", 1);
-
+    ros::Publisher command_publisher = nh->advertise<galileo_ros::GalileoCommand>(solver_id + "_command", 1);
     ros::ServiceClient init_state_client = nh->serviceClient<galileo_ros::InitState>(solver_id + "_init_state_service");
+
     galileo_ros::InitState init_state;
+    init_state.request.call = true;
 
     ROS_INFO("calling init state");
+    ros::spinOnce();
     while (!init_state_client.call(init_state))
     {
         ROS_INFO("still init state");
-
+        ros::spinOnce();
         ros::Duration(0.3).sleep();
     }
 
@@ -102,6 +117,7 @@ int main(int argc, char **argv)
 
     while (true)
     {
+        init_state_client.call(init_state);
         ROS_INFO("model set: %d, solver parameters set: %d, contact sequence set: %d, fully initted: %d",
                  init_state.response.model_set,
                  init_state.response.solver_parameters_set,
@@ -127,15 +143,8 @@ int main(int argc, char **argv)
         else if (!init_state.response.fully_initted)
         {
             ROS_INFO("Publishing init command");
-
-            std::vector<double> X0 = getX0(go1_solver.states()->nx, go1_solver.states()->q_index);
-
-            init_msg.command_type = "init";
-
-            init_msg.X_initial = X0;
-            init_msg.X_goal = X0;
-
-            init_pub.publish(init_msg);
+            command_publisher.publish(galileo_cmd_msg);
+            break;
         }
 
         ros::spinOnce();

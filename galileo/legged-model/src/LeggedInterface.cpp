@@ -190,9 +190,14 @@ namespace galileo
             assert(CanInitialize());
 
             // Create the problem data from the loaded parameter values
+            std::cout << "Creating problem data...";
             CreateProblemData(initial_state, target_state);
+
+            std::cout << "Creating trajectory optimizer...";
             // Create the trajectory optimizer.
             CreateTrajOpt();
+
+            std::cout << "Initialization complete.";
 
             fully_initialized_ = true;
         }
@@ -208,6 +213,7 @@ namespace galileo
 
         void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
+            std::cout << "updating";
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem

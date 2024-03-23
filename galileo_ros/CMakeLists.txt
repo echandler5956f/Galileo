@@ -78,12 +78,22 @@ add_library(${PROJECT_NAME}
 #    ${catkin_LIBRARIES}
 # )
 
-add_executable(${PROJECT_NAME}_legged_test_node
-  src/Nodes/galileo_legged_test_node.cpp
+add_executable(${PROJECT_NAME}_legged_initialization_node
+  src/Nodes/galileo_legged_initialization_node.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_legged_test_node ${PROJECT_NAME} casadi Eigen3::Eigen galileo )
+target_link_libraries(${PROJECT_NAME}_legged_initialization_node ${PROJECT_NAME} casadi Eigen3::Eigen galileo )
 
-target_link_libraries(${PROJECT_NAME}_legged_test_node
+target_link_libraries(${PROJECT_NAME}_legged_initialization_node
+   ${catkin_LIBRARIES}
+)
+
+add_executable(${PROJECT_NAME}_legged_solver_node
+  src/Nodes/galileo_legged_solver_node.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_legged_solver_node ${PROJECT_NAME} casadi Eigen3::Eigen galileo )
+
+target_link_libraries(${PROJECT_NAME}_legged_solver_node
    ${catkin_LIBRARIES}
 )

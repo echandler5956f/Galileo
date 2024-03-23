@@ -60,8 +60,10 @@ namespace galileo
             {
                 if (msg->command_type == "init")
                 {
+                    std::cout << "initiating solver" << std::endl;
                     InitializationCallback(msg);
                 }
+
                 UpdateCallback(msg);
             }
 
