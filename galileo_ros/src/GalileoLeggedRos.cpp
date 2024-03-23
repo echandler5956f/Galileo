@@ -103,8 +103,7 @@ namespace galileo
             assert(X0.size() == states()->nx);
             assert(Xf.size() == states()->nx);
 
-            casadi::MXVector solution;
-            Update(X0, Xf, solution);
+            Update(X0, Xf);
         }
 
         bool GalileoLeggedRos::CanInitServiceCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)

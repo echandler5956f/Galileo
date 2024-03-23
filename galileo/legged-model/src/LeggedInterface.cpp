@@ -220,16 +220,16 @@ namespace galileo
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
         }
 
-        bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             return solution_interface_->GetSolution(query_times, state_result, input_result);
         }
 
-        void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
 
-            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
+            std::unique_lock<std::mutex> lock_sol(solution_mutex_);
             std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
             lock_sol.unlock();
             std::cout << "Size of constraints: " << constraints.size() << std::endl;
@@ -260,17 +260,5 @@ namespace galileo
             trajectory_opt_->initFiniteElements(1, initial_state);
         }
 
-        std::map<std::string, double> LeggedInterface::getJointValues(const casadu::MX &X)
-        {
-            assert(states_ != nullptr);
-
-            std::map<std::string, double> joint_values;
-            std::vector<std::string> joint_names = getJointNames();
-
-            for (int i = 0; i < joint_names.size(); i++)
-                joint_values[joint_names[i]] = X[i + states->qj_index];
-
-            return joint_values;
-        }
     }
 }

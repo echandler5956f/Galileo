@@ -2,7 +2,7 @@
 
 std::vector<double> getX0(int nx, int q_index)
 {
-    galileo::opt::ConfigVector q0_vec = (galileo::opt::ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
+    galileo::legged::ConfigVector q0_vec = (galileo::legged::ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
 
     std::vector<double> X0;
     for (int j = 0; j < nx; j++)

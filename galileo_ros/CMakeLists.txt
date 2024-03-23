@@ -27,10 +27,10 @@ add_message_files(
   RobotModel.msg
 )
 
-# add_service_files(
-#   FILES
-#   DesiredStateInputCmd.srv
-# )
+add_service_files(
+  FILES
+  SolutionRequest.srv
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

@@ -83,12 +83,12 @@ namespace galileo
              * @param state_result The state at the query times (num_states x num_times)
              * @param input_result The input at the query times (num_inputs x num_times)
              */
-            bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+            bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result);
 
             /**
              * @brief Get the solution and plot the constraints
              */
-            void VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+            void VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result);
 
             /**
              * @brief Add a surface to the environment.
@@ -137,15 +137,6 @@ namespace galileo
              * @brief Get the joint names in the order they are defined in the model.
              */
             std::vector<std::string> getJointNames() const { return robot_->model.names; }
-
-            /**
-             * @brief Get the joint values from the state.
-             *
-             * @param X The state.
-             *
-             * @return std::map<std::string, double> A map for the joint names and values.
-             */
-            std::map<std::string, double> getJointValues(const casadi::MX &X);
 
         private:
             /**
