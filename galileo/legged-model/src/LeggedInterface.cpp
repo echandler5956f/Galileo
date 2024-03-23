@@ -220,14 +220,18 @@ namespace galileo
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
         }
 
-        void LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
         {
-            solution_interface_->GetSolution(query_times, state_result, input_result);
+            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
+            return solution_interface_->GetSolution(query_times, state_result, input_result);
         }
 
         void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
         {
+
+            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
+            lock_sol.unlock();
             std::cout << "Size of constraints: " << constraints.size() << std::endl;
 
             Eigen::MatrixXd subMatrix = state_result.block(states_->q_index, 0, states_->nq, state_result.cols());
@@ -243,7 +247,6 @@ namespace galileo
 
         void LeggedInterface::UpdateProblemBoundaries(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
-            std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
             problem_data_->legged_decision_problem_data.X0 = (initial_state);
 
             // Create a new cost
@@ -253,8 +256,21 @@ namespace galileo
             problem_data_->gp_data->L = L;
             problem_data_->gp_data->Phi = Phi;
 
+            std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
             trajectory_opt_->initFiniteElements(1, initial_state);
         }
 
+        std::map<std::string, double> LeggedInterface::getJointValues(const casadu::MX &X)
+        {
+            assert(states_ != nullptr);
+
+            std::map<std::string, double> joint_values;
+            std::vector<std::string> joint_names = getJointNames();
+
+            for (int i = 0; i < joint_names.size(); i++)
+                joint_values[joint_names[i]] = X[i + states->qj_index];
+
+            return joint_values;
+        }
     }
 }

@@ -12,8 +12,17 @@ namespace galileo
             }
 
             // state_result and input_result should be initialized to the correct size before calling GetSolution!
-            void Solution::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+            bool Solution::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
             {
+                if (query_times.size() == 0)
+                {
+                    return false;
+                }
+                if (solution_segments_.size() == 0)
+                {
+                    return false;
+                }
+
                 auto clock_start_time = std::chrono::high_resolution_clock::now();
 
                 for (size_t i = 0; i < query_times.size(); i++)
@@ -46,6 +55,7 @@ namespace galileo
                 auto clock_end_time = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> elapsed_time = clock_end_time - clock_start_time;
                 std::cout << "GetSolution took " << elapsed_time.count() << " seconds" << std::endl;
+                return true;
             }
 
             void Solution::UpdateConstraints(std::vector<std::vector<galileo::opt::ConstraintData>> constarint_data_segments)

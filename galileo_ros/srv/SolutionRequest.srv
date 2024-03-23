@@ -1,0 +1,15 @@
+float64[]   times
+---
+bool        solution_exists
+float64[]   times_evaluated
+float64     solution_horizon
+
+#   X_t_wrapped = [X @ times[0] X @ times[1] ... X @ times[num_times] ] where X @ times[i] is nx by 1
+float64[]   X_t_wrapped
+float64[]   U_t_wrapped
+int32       nx
+int32       nu
+#   X_qj = X[qj_index : qj_index + joint_names.size] gives the joint values. 
+#   X_qj[i] is the value of joint joint_names[i]
+int32       qj_index
+string[]    joint_names

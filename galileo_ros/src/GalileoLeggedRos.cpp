@@ -27,6 +27,7 @@ namespace galileo
         void GalileoLeggedRos::InitServices()
         {
             can_init_service_ = nh_->advertiseService(solver_id_ + "_can_init_service", &GalileoLeggedRos::CanInitServiceCallback, this);
+            get_solution_service_ = nh_->advertiseService(solver_id_ + "_get_solution", &GalileoLeggedRos::GetSolutionCallback, this);
         }
 
         void GalileoLeggedRos::ModelLocationCallback(const galileo_ros::RobotModel::ConstPtr &msg)
@@ -109,6 +110,40 @@ namespace galileo
         bool GalileoLeggedRos::CanInitServiceCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
         {
             res.success = CanInitialize();
+            return true;
+        }
+
+        bool GalileoLeggedRos::GetSolutionCallback(galileo_ros::SolutionRequest::Request &req, galileo_ros::SolutionRequest::Response &res)
+        {
+            Eigen::MatrixXd state_solution;
+            Eigen::MatrixXd input_solution;
+
+            Eigen::Map<Eigen::VectorXd> query_times(req.query_times.data(), req.query_times.size());
+            bool solution_exists = GetSolution(query_times, state_solution, input_solution);
+
+            if (!solution_exists)
+            {
+                res.solution_exists = false;
+                return false;
+            }
+
+            std::vector<double> state_vec(state_solution.data(), state_solution.data() * state_solution.size());
+            std::vector<double> input_vec(input_solution.data(), input_solution.data() * input_solution.size());
+
+            res.joint_names = getJointNames();
+            res.qj_index = states()->qj_index;
+
+            res.X_t_wrapped = state_vec;
+            res.U_t_wrapped = input_vec;
+
+            res.nx = state_solution.rows();
+            res.nu = input_solution.rows();
+
+            res.solution_horizon = problem_data_->contact_constraint_problem_data.contact_sequence->getDT();
+
+            res.times_evaluated = query_times;
+            res.solution_exists = true;
+
             return true;
         }
     }

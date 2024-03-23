@@ -21,6 +21,14 @@ std::vector<double> getX0(int nx, int q_index)
 int main(int argc, char **argv)
 {
     std::string solver_id = "go1_solver";
+
+    if (argc != 2)
+    {
+        std::cerr << "Usage: rosrun galileo_ros galileo_legged_test_node <resources_location>" << std::endl;
+        std::cerr << "<resources_location>/urdf/go1.urdf and <resources_location>/SolverParameters/go1)solver_parameters.txt must exist" << std::endl;
+        return 1;
+    }
+
     std::string resources_location = argv[1];
 
     std::string model_location = resources_location + "/urdf/go1.urdf";

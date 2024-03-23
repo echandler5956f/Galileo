@@ -77,9 +77,13 @@ namespace galileo
             void Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
 
             /**
-             * @brief Get the solution
+             * @brief Get the solution.
+             *
+             * @param query_times The times at which to get the solution state and input.(num_times x 1 vector)
+             * @param state_result The state at the query times (num_states x num_times)
+             * @param input_result The input at the query times (num_inputs x num_times)
              */
-            void GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+            bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
 
             /**
              * @brief Get the solution and plot the constraints
@@ -114,20 +118,34 @@ namespace galileo
              *
              * @return std::shared_ptr<LeggedTrajOpt>
              */
-            std::shared_ptr<LeggedTrajOpt> getTrajectoryOptimizer() { return trajectory_opt_; };
+            std::shared_ptr<LeggedTrajOpt> getTrajectoryOptimizer() const { return trajectory_opt_; };
 
             /**
              * @brief Get the robot model.
              *
              * @return std::shared_ptr<LeggedBody>
              */
-            std::shared_ptr<LeggedBody> getRobotModel() { return robot_; };
+            std::shared_ptr<LeggedBody> getRobotModel() const { return robot_; };
 
             /**
              * @brief Get the end effectors of the robot.
              *
              */
-            contact::RobotEndEffectors getEndEffectors() { return robot_->getEndEffectors(); }
+            contact::RobotEndEffectors getEndEffectors() const { return robot_->getEndEffectors(); }
+
+            /**
+             * @brief Get the joint names in the order they are defined in the model.
+             */
+            std::vector<std::string> getJointNames() const { return robot_->model.names; }
+
+            /**
+             * @brief Get the joint values from the state.
+             *
+             * @param X The state.
+             *
+             * @return std::map<std::string, double> A map for the joint names and values.
+             */
+            std::map<std::string, double> getJointValues(const casadi::MX &X);
 
         private:
             /**

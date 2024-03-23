@@ -14,6 +14,7 @@
 #include "galileo_ros/ContactSequence.h"
 #include "galileo_ros/EnvironmentSurface.h"
 #include "galileo_ros/GalileoCommand.h"
+#include "galileo_ros/SolutionRequest.h"
 
 namespace galileo
 {
@@ -67,6 +68,8 @@ namespace galileo
             // Callback for update command subscriber, updates the solver
             void UpdateCallback(const galileo_ros::GalileoCommand::ConstPtr &msg);
 
+            bool GetSolutionCallback(galileo_ros::SolutionRequest::Request &req, galileo_ros::SolutionRequest::Response &res);
+
             std::shared_ptr<ros::NodeHandle> nh_;
             std::string solver_id_;
 
@@ -78,6 +81,7 @@ namespace galileo
             ros::Subscriber command_subscriber_;
 
             ros::ServiceServer can_init_service_;
+            ros::ServiceServer get_solution_service_;
         };
 
     }
