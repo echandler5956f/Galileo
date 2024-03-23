@@ -186,5 +186,35 @@ namespace galileo
         template casadi::DM quat_distance<casadi::DM>(casadi::DM quat1, casadi::DM quat2);
         template casadi::SX quat_distance<casadi::SX>(casadi::SX quat1, casadi::SX quat2);
         template casadi::MX quat_distance<casadi::MX>(casadi::MX quat1, casadi::MX quat2);
+
+        template <typename Scalar>
+        Scalar quat_slerp(Scalar quat1, Scalar quat2, Scalar t)
+        {
+            static const double mu = 1.85298109240830;
+            static const double u[8] = {1.0 / (1 * 3), 1.0 / (2 * 5), 1.0 / (3 * 7), 1.0 / (4 * 9), 1.0 / (5 * 11), 1.0 / (6 * 13), 1.0 / (7 * 15), mu / (8 * 17)};
+            static const double v[8] = {1.0 / 3, 2.0 / 5, 3.0 / 7, 4.0 / 9, 5.0 / 11, 6.0 / 13, 7.0 / 15, mu * 8. / 17};
+            Scalar xm1 = dot(quat1, quat2) - 1;
+            Scalar d = 1. - t;
+            Scalar tsqr = t * t;
+            Scalar dsqr = d * d;
+            Scalar bT[8];
+            Scalar bD[8];
+            for (int i = 7; i >= 0; --i)
+            {
+                bT[i] = (u[i] * tsqr - v[i]) * xm1;
+                bD[i] = (u[i] * dsqr - v[i]) * xm1;
+            }
+            Scalar f0 = t * (
+                1 + bT[0] * (1 + bT[1] * (1 + bT[2] * (1 + bT[3] * (1 + bT[4] * (1 + bT[5] * (1 + bT[6] * (1 + bT[7])))))))
+            );
+            Scalar f1 = d * (
+                1 + bD[0] * (1 + bD[1] * (1 + bD[2] * (1 + bD[3] * (1 + bD[4] * (1 + bD[5] * (1 + bD[6] * (1 + bD[7])))))))
+            );
+            return f0 * quat1 + f1 * quat2;
+        }
+
+        template casadi::DM quat_slerp<casadi::DM>(casadi::DM quat1, casadi::DM quat2, casadi::DM t);
+        template casadi::SX quat_slerp<casadi::SX>(casadi::SX quat1, casadi::SX quat2, casadi::SX t);
+        template casadi::MX quat_slerp<casadi::MX>(casadi::MX quat1, casadi::MX quat2, casadi::MX t);
     }
 }

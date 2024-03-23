@@ -127,5 +127,23 @@ namespace galileo
          */
         template <typename Scalar>
         Scalar quat_distance(Scalar quat1, Scalar quat2);
+
+        /**
+         * @brief Spherical linear interpolation between two quaternions.
+         * 
+         * Implements the fast SLERP algorithm from 
+         * "A Fast and Accurate Estimate for Slerp, www.geometrictools.com/Documentation/FastAndAccurateSlerp.pdf"
+         * 
+         * This implementation relies soley on addition and subtraction, so there is no costly branching or trigonometric evaluations.
+         * This is probably overkill.
+         * 
+         * @tparam Scalar Casadi type
+         * @param quat1 The first quaternion [v, a]
+         * @param quat2 The second quaternion [v, a]
+         * @param t Interpolation parameter
+         * @return Scalar The interpolated quaternion
+         */
+        template <typename Scalar>
+        Scalar quat_slerp(Scalar quat1, Scalar quat2, Scalar t);
     }
 }
