@@ -1,6 +1,6 @@
 #pragma once
 
-#include "galileo/legged-model/LeggedInterface.h"
+#include <galileo/legged-model/LeggedInterface.h>
 
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -10,6 +10,7 @@
 #include <std_srvs/Trigger.h>
 
 #include "galileo_ros/RobotModel.h"
+#include "galileo_ros/ParameterFileLocation.h"
 #include "galileo_ros/ContactSequence.h"
 #include "galileo_ros/EnvironmentSurface.h"
 #include "galileo_ros/GalileoCommand.h"
@@ -18,7 +19,7 @@ namespace galileo
 {
     namespace legged
     {
-        class GalileoLeggedRos : protected LeggedInterface
+        class GalileoLeggedRos : public LeggedInterface
         {
         public:
             GalileoLeggedRos(std::shared_ptr<ros::NodeHandle> nh, std::string solver_id) : LeggedInterface(), nh_(nh), solver_id_(solver_id)
@@ -27,7 +28,7 @@ namespace galileo
                 InitSubscribers();
             }
 
-            ~GalileoLeggedRos();
+            ~GalileoLeggedRos() {}
 
         private:
             // Initialize ROS
@@ -41,20 +42,20 @@ namespace galileo
 
             // Callbacks
             // Callback for model location subscriber, loads the model and sets the end effectors
-            void ModelLocationCallback(const galileo_ros::msg::ModelLocation::ConstPtr &msg);
+            void ModelLocationCallback(const galileo_ros::RobotModel::ConstPtr &msg);
             // Callback for parameter location subscriber, loads the parameters
-            void ParameterLocationCallback(const galileo_ros::msg::ParameterLocation::ConstPtr &msg);
+            void ParameterLocationCallback(const galileo_ros::ParameterFileLocation::ConstPtr &msg);
             // Callback for contact sequence subscriber, sets the contact sequence
-            void ContactSequenceCallback(const galileo_ros::msg::ContactSequence::ConstPtr &msg);
+            void ContactSequenceCallback(const galileo_ros::ContactSequence::ConstPtr &msg);
             // Callback for environment surface subscriber, adds an environment surface to the library of surfaces
-            void SurfaceCallback(const galileo_ros::msg::EnvironmentSurface::ConstPtr &msg);
+            void SurfaceCallback(const galileo_ros::EnvironmentSurface::ConstPtr &msg);
 
             // Callback for initialization service, checks if the solver can be initialized
             bool CanInitServiceCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
-            void GeneralCommandCallback(const galileo_ros::msg::GalileoCommand::ConstPtr &msg)
+            void GeneralCommandCallback(const galileo_ros::GalileoCommand::ConstPtr &msg)
             {
-                if (msg->command == "init")
+                if (msg->command_type == "init")
                 {
                     InitializationCallback(msg);
                 }
@@ -62,9 +63,9 @@ namespace galileo
             }
 
             // Callback for initialization command subscriber, initializes the solver
-            void InitializationCallback(const galileo_ros::msg::GalileoCommand::ConstPtr &msg);
+            void InitializationCallback(const galileo_ros::GalileoCommand::ConstPtr &msg);
             // Callback for update command subscriber, updates the solver
-            void UpdateCallback(const galileo_ros::msg::GalileoCommand::ConstPtr &msg);
+            void UpdateCallback(const galileo_ros::GalileoCommand::ConstPtr &msg);
 
             std::shared_ptr<ros::NodeHandle> nh_;
             std::string solver_id_;
@@ -76,7 +77,7 @@ namespace galileo
 
             ros::Subscriber command_subscriber_;
 
-            ROS::ServiceServer can_init_service_;
+            ros::ServiceServer can_init_service_;
         };
 
     }
