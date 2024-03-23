@@ -13,76 +13,6 @@ namespace galileo
     {
         namespace solution
         {
-            using tuple_size_t = std::tuple<size_t, size_t>;
-
-            /**
-             * @brief Struct for storing metadata about a constraint.
-             * 
-             */
-            struct constraint_metadata_t
-            {
-                /**
-                 * @brief Name of the constraint.
-                 *
-                 */
-                std::string name;
-
-                /**
-                 * @brief A vector of index ranges which group certain constraint rows together to make plotting easier. An empty vector means to include all constraint rows in the same plot.
-                 *
-                 */
-                std::vector<tuple_size_t> plot_groupings;
-
-                /**
-                 * @brief Titles of the plots.
-                 *
-                 */
-                std::vector<std::string> plot_titles;
-
-                /**
-                 * @brief Names of the plots on the legend.
-                 *
-                 */
-                std::vector<std::vector<std::string>> plot_names;
-            };
-
-            /**
-             * @brief Struct for storing constraint evaluations.
-             * 
-             */
-            struct constraint_evaluations_t
-            {
-                /**
-                 * @brief A vector of times at which the constraint was evaluated.
-                 *
-                 */
-                Eigen::VectorXd times;
-
-                /**
-                 * @brief The evaluation of the constraint at each time.
-                 *
-                 */
-                Eigen::MatrixXd evaluation;
-
-                /**
-                 * @brief The lower bounds of the constraint at each time.
-                 *
-                 */
-                Eigen::MatrixXd lower_bounds;
-
-                /**
-                 * @brief The upper bounds of the constraint at each time.
-                 *
-                 */
-                Eigen::MatrixXd upper_bounds;
-
-                /**
-                 * @brief Plotting metadata for the constraint.
-                 *
-                 */
-                constraint_metadata_t metadata;
-            };
-
             /**
              * @brief Struct for storing a solution.
              * 
@@ -249,26 +179,36 @@ namespace galileo
                  */
                 void GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
 
-                // /**
-                //  * @brief Update the constraints with new constraint data segments.
-                //  * 
-                //  * @param constarint_data_segments A vector of constraint data segments.
-                //  */
-                // void UpdateConstraints(std::vector<std::vector<galileo::opt::ConstraintData>> constarint_data_segments);
+                /**
+                 * @brief Update the constraints with new constraint data segments.
+                 * 
+                 * @param constarint_data_segments A vector of constraint data segments.
+                 */
+                void UpdateConstraints(std::vector<std::vector<galileo::opt::ConstraintData>> constarint_data_segments);
 
-                // /**
-                //  * @brief Get the constraint evaluations at a set of query times. 
-                //  * 
-                //  * You should call either GetSolution or GetConstraints, but not both. 
-                //  * Calling GetConstraints will call GetSolution internally and fill in the state and input results.
-                //  * 
-                //  * @param query_times A vector of times at which to query the constraints.
-                //  * @param state_result The state result at each query time. This is found by calling GetSolution.
-                //  * @param input_result The input result at each query time. This is found by calling GetSolution.
-                //  * 
-                //  * @return std::vector<std::vector<solution::constraint_evaluations_t>> A vector of constraint evaluations.
-                //  */
-                // std::vector<std::vector<solution::constraint_evaluations_t>> GetConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+                /**
+                 * @brief Get the constraint evaluations at a set of query times. 
+                 * 
+                 * You should call either GetSolution or GetConstraints, but not both. 
+                 * Calling GetConstraints will call GetSolution internally and fill in the state and input results.
+                 * 
+                 * @param query_times A vector of times at which to query the constraints.
+                 * @param state_result The state result at each query time. This is found by calling GetSolution.
+                 * @param input_result The input result at each query time. This is found by calling GetSolution.
+                 * 
+                 * @return std::vector<std::vector<constraint_evaluations_t>> A vector of constraint evaluations.
+                 */
+                std::vector<std::vector<constraint_evaluations_t>> GetConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+
+                /**
+                 * @brief Get the segment indices for a given time range.
+                 * 
+                 * @param times The times at which the solution is evaluated.
+                 * @param start_time Start time of the segment
+                 * @param end_time End time of the segment
+                 * @return tuple_size_t A tuple of the start and end indices of the segment in the times vector.
+                 */
+                tuple_size_t getSegmentIndices(const Eigen::VectorXd &times, double start_time, double end_time) const;
 
             private:
                 /**
@@ -281,7 +221,7 @@ namespace galileo
                  * @brief The constraint data segments.
                  * 
                  */
-                std::vector<std::vector<galileo::opt::ConstraintData>>constraint_data_segments_;
+                std::vector<std::vector<galileo::opt::ConstraintData>> constraint_data_segments_;
             };
         }
     }

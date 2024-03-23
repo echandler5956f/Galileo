@@ -1,12 +1,12 @@
 #pragma once
 
-#include "galileo/opt/Solution.h"
 #include <pinocchio/autodiff/casadi.hpp>
 
 namespace galileo
 {
     namespace opt
     {
+        using tuple_size_t = std::tuple<size_t, size_t>;
         /**
          * @brief Data necessary to build the problem or constraints.
          * It is good practice to have a corresponding constraint specific
@@ -60,6 +60,74 @@ namespace galileo
             casadi::Function Phi;
         };
 
+                    /**
+             * @brief Struct for storing metadata about a constraint.
+             * 
+             */
+            struct constraint_metadata_t
+            {
+                /**
+                 * @brief Name of the constraint.
+                 *
+                 */
+                std::string name;
+
+                /**
+                 * @brief A vector of index ranges which group certain constraint rows together to make plotting easier. An empty vector means to include all constraint rows in the same plot.
+                 *
+                 */
+                std::vector<tuple_size_t> plot_groupings;
+
+                /**
+                 * @brief Titles of the plots.
+                 *
+                 */
+                std::vector<std::string> plot_titles;
+
+                /**
+                 * @brief Names of the plots on the legend.
+                 *
+                 */
+                std::vector<std::vector<std::string>> plot_names;
+            };
+
+            /**
+             * @brief Struct for storing constraint evaluations.
+             * 
+             */
+            struct constraint_evaluations_t
+            {
+                /**
+                 * @brief A vector of times at which the constraint was evaluated.
+                 *
+                 */
+                Eigen::VectorXd times;
+
+                /**
+                 * @brief The evaluation of the constraint at each time.
+                 *
+                 */
+                Eigen::MatrixXd evaluation;
+
+                /**
+                 * @brief The lower bounds of the constraint at each time.
+                 *
+                 */
+                Eigen::MatrixXd lower_bounds;
+
+                /**
+                 * @brief The upper bounds of the constraint at each time.
+                 *
+                 */
+                Eigen::MatrixXd upper_bounds;
+
+                /**
+                 * @brief Plotting metadata for the constraint.
+                 *
+                 */
+                constraint_metadata_t metadata;
+            };
+
         /**
          * @brief Results that describe a "built" constraint.
          * This contains the constraint Function, Bounds, etc.
@@ -89,7 +157,7 @@ namespace galileo
              * @brief Metadata for the constraint.
              *
              */
-            solution::constraint_metadata_t metadata;
+            constraint_metadata_t metadata;
         };
 
         /**

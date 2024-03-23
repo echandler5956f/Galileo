@@ -4,15 +4,17 @@ namespace galileo
 {
     namespace tools
     {
-        GNUPlotInterface::GNUPlotInterface(opt::solution::solution_t solution_, std::vector<std::vector<opt::solution::constraint_evaluations_t>> constraint_evaluations_)
+        GNUPlotInterface::GNUPlotInterface(std::string dir)
         {
-            this->solution.state_result = solution_.state_result.transpose();
-            this->solution.input_result = solution_.input_result.transpose();
-            this->solution.times = solution_.times;
-            this->constraint_evaluations = constraint_evaluations_;
+            // this->solution.state_result = solution_.state_result.transpose();
+            // this->solution.input_result = solution_.input_result.transpose();
+            // this->solution.times = solution_.times;
+            // this->constraint_evaluations = constraint_evaluations_;
+            dir_ = dir;
         }
 
-        void GNUPlotInterface::PlotSolution(std::vector<tuple_size_t> state_groups, std::vector<tuple_size_t> input_groups,
+        void GNUPlotInterface::PlotSolution(opt::solution::solution_t solution,
+                                            std::vector<tuple_size_t> state_groups, std::vector<tuple_size_t> input_groups,
                                             std::vector<std::string> state_title_names, std::vector<std::vector<std::string>> state_names,
                                             std::vector<std::string> input_title_names, std::vector<std::vector<std::string>> input_names)
         {
@@ -21,18 +23,18 @@ namespace galileo
             // gp << "plot '-' with lines linestyle 1 title 'Dummy'\n";
             // gp.send1d(std::make_tuple(std_times, std_times));
 
-            window_index = 0;
+            window_index_ = 0;
             for (size_t i = 0; i < state_groups.size(); ++i)
             {
                 std::string filename = "output_" + state_title_names[i] + ".png";
-                gp << "set terminal pngcairo\n";
-                gp << "set output '" << filename << "'\n";
+                gp_ << "set terminal pngcairo\n";
+                gp_ << "set output '" << this->dir_ + filename << "'\n";
                 // gp << "set terminal x11 " << window_index << "\n"; // Create a new window for each plot
-                gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
-                gp << "set xlabel 'Time'\n";
-                gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
-                gp << "set ylabel 'Values'\n";
-                gp << "set title '" + state_title_names[i] + "'\n";
+                gp_ << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
+                gp_ << "set xlabel 'Time'\n";
+                gp_ << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
+                gp_ << "set ylabel 'Values'\n";
+                gp_ << "set title '" + state_title_names[i] + "'\n";
                 // gp << "set key outside\n"; // Move the legend outside of the plot
                 std::string ss = "plot ";
                 for (size_t j = 0; j < state_names[i].size(); ++j)
@@ -44,30 +46,30 @@ namespace galileo
                     ss += "'-' with lines linestyle " + std::to_string(j + 1) + " title '" + state_names[i][j] + "'";
                 }
                 ss += "\n";
-                gp << ss;
+                gp_ << ss;
                 sleep(0.1);
                 Eigen::MatrixXd block = solution.state_result.block(0, std::get<0>(state_groups[i]), solution.state_result.rows(), std::get<1>(state_groups[i]) - std::get<0>(state_groups[i]));
                 for (Eigen::Index j = 0; j < block.cols(); ++j)
                 {
                     Eigen::VectorXd colMatrix = block.col(j).matrix();
                     std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
-                    gp.send1d(std::make_tuple(std_times, std_col_vector));
+                    gp_.send1d(std::make_tuple(std_times, std_col_vector));
                 }
                 // gp << "set output\n"; // Close the output file
-                ++window_index;
+                ++window_index_;
             }
 
             for (size_t i = 0; i < input_groups.size(); ++i)
             {
                 std::string filename = "output_" + input_title_names[i] + ".png";
-                gp << "set terminal pngcairo\n";
-                gp << "set output '" << filename << "'\n";
+                gp_ << "set terminal pngcairo\n";
+                gp_ << "set output '" << this->dir_ + filename << "'\n";
                 // gp << "set terminal x11 " << window_index << "\n"; // Create a new window for each plot
-                gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
-                gp << "set xlabel 'Time'\n";
-                gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
-                gp << "set ylabel 'Values'\n";
-                gp << "set title '" + input_title_names[i] + "'\n";
+                gp_ << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
+                gp_ << "set xlabel 'Time'\n";
+                gp_ << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
+                gp_ << "set ylabel 'Values'\n";
+                gp_ << "set title '" + input_title_names[i] + "'\n";
                 // gp << "set key outside\n"; // Move the legend outside of the plot
                 std::string ss = "plot ";
                 for (size_t j = 0; j < input_names[i].size(); ++j)
@@ -79,22 +81,22 @@ namespace galileo
                     ss += "'-' with lines linestyle " + std::to_string(j + 1) + " title '" + input_names[i][j] + "'";
                 }
                 ss += "\n";
-                gp << ss;
+                gp_ << ss;
                 Eigen::MatrixXd block = solution.input_result.block(0, std::get<0>(input_groups[i]), solution.input_result.rows(), std::get<1>(input_groups[i]) - std::get<0>(input_groups[i]));
                 for (Eigen::Index j = 0; j < block.cols(); ++j)
                 {
                     Eigen::VectorXd colMatrix = block.col(j).matrix();
                     std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
-                    gp.send1d(std::make_tuple(std_times, std_col_vector));
+                    gp_.send1d(std::make_tuple(std_times, std_col_vector));
                 }
                 // gp << "set output\n"; // Close the output file
-                ++window_index;
+                ++window_index_;
             }
         }
 
-        void GNUPlotInterface::PlotConstraints()
+        void GNUPlotInterface::PlotConstraints(std::vector<std::vector<opt::constraint_evaluations_t>> constraint_evaluations)
         {
-            std::map<std::string, std::vector<opt::solution::constraint_evaluations_t>> constraint_map;
+            std::map<std::string, std::vector<opt::constraint_evaluations_t>> constraint_map;
 
             // For each phase
             for (auto &cons_in_phase : constraint_evaluations)
@@ -110,7 +112,7 @@ namespace galileo
                         size_t s1 = std::get<0>(constraint_type.metadata.plot_groupings[i]);
                         size_t s2 = std::get<1>(constraint_type.metadata.plot_groupings[i]);
 
-                        opt::solution::constraint_evaluations_t new_constraint;
+                        opt::constraint_evaluations_t new_constraint;
                         new_constraint.metadata.plot_groupings = {constraint_type.metadata.plot_groupings[i]};
                         new_constraint.metadata.plot_titles = {constraint_type.metadata.plot_titles[i]};
                         new_constraint.metadata.plot_names = {constraint_type.metadata.plot_names[i]};
@@ -132,7 +134,7 @@ namespace galileo
             }
 
             // Convert the map to a vector
-            std::vector<std::vector<opt::solution::constraint_evaluations_t>> new_constraints;
+            std::vector<std::vector<opt::constraint_evaluations_t>> new_constraints;
             for (auto &pair : constraint_map)
             {
                 new_constraints.push_back(pair.second);
@@ -143,16 +145,16 @@ namespace galileo
             for (size_t i = 0; i < new_constraints.size(); ++i)
             {
                 std::string filename = "output_" + new_constraints[i][0].metadata.plot_titles[0] + ".png";
-                gp << "set terminal pngcairo\n";
-                gp << "set output '" << filename << "'\n";
-                // gp << "set terminal x11 " << window_index << "\n"; // Create a new window for each plot
-                gp << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
-                gp << "set xlabel 'Time'\n";
-                gp << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
-                gp << "set ylabel 'Values'\n";
-                gp << "set title '" + new_constraints[i][0].metadata.plot_titles[0] + "'\n";
-                gp << "set style fill transparent solid 0.5 noborder\n";
-                gp << "set key inside right\n"; // Move the legend outside of the plot
+                gp_ << "set terminal pngcairo\n";
+                gp_ << "set output '" << this->dir_ + filename << "'\n";
+                // gp_ << "set terminal x11 " << window_index_ << "\n"; // Create a new window for each plot
+                gp_ << "set object 1 rectangle from screen 0,0 to screen 1,1 fillcolor rgb '#FFFFFF' behind\n";
+                gp_ << "set xlabel 'Time'\n";
+                // gp_ << "set xrange [" << solution.times(0) << ":" << solution.times(solution.times.size() - 1) << "]\n";
+                gp_ << "set ylabel 'Values'\n";
+                gp_ << "set title '" + new_constraints[i][0].metadata.plot_titles[0] + "'\n";
+                gp_ << "set style fill transparent solid 0.5 noborder\n";
+                gp_ << "set key inside right\n"; // Move the legend outside of the plot
                 std::string ss = "plot ";
 
                 colors.clear();
@@ -200,7 +202,7 @@ namespace galileo
                     }
                 }
                 ss += "\n";
-                gp << ss;
+                gp_ << ss;
                 for (size_t j = 0; j < new_constraints[i].size(); ++j)
                 {
                     std::vector<double> std_times(new_constraints[i][j].times.data(), new_constraints[i][j].times.data() + new_constraints[i][j].times.size());
@@ -213,15 +215,15 @@ namespace galileo
                     {
                         Eigen::VectorXd colMatrix = eval.col(k).matrix();
                         std::vector<double> std_col_vector(colMatrix.data(), colMatrix.data() + colMatrix.size());
-                        gp.send1d(std::make_tuple(std_times, std_col_vector));
+                        gp_.send1d(std::make_tuple(std_times, std_col_vector));
                         colMatrix = lb.col(k).matrix();
                         std::vector<double> std_col_vector_lb(colMatrix.data(), colMatrix.data() + colMatrix.size());
-                        gp.send1d(std::make_tuple(std_times, std_col_vector_lb));
+                        gp_.send1d(std::make_tuple(std_times, std_col_vector_lb));
                         colMatrix = ub.col(k).matrix();
                         std::vector<double> std_col_vector_ub(colMatrix.data(), colMatrix.data() + colMatrix.size());
-                        gp.send1d(std::make_tuple(std_times, std_col_vector_ub));
+                        gp_.send1d(std::make_tuple(std_times, std_col_vector_ub));
                         // Send the data for the filled curves
-                        gp.send1d(std::make_tuple(std_times, std_col_vector_lb, std_col_vector_ub));
+                        gp_.send1d(std::make_tuple(std_times, std_col_vector_lb, std_col_vector_ub));
                         double constraint_violation = 0.;
                         for (Eigen::Index cnt = 0; cnt < eval.rows(); ++cnt)
                         {
@@ -232,7 +234,7 @@ namespace galileo
                         std::cout << "Constraint violation of " << new_constraints[i][0].metadata.plot_titles[0] << " " << new_constraints[i][j].metadata.name << ": " << constraint_violation << std::endl;
                     }
                 }
-                ++window_index;
+                ++window_index_;
             }
         }
     }

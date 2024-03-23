@@ -20,100 +20,100 @@ namespace galileo
 
             /**
              * @brief Struct for defining the footstep.
-             * 
+             *
              */
             struct FootstepDefinition
             {
                 /**
                  * @brief Height of the liftoff surface.
-                 * 
+                 *
                  */
                 double h_offset_P1;
 
                 /**
                  * @brief Height of the touchdown surface.
-                 * 
+                 *
                  */
                 double h_offset_P2;
 
                 /**
                  * @brief Rotation matrix from the world frame to the liftoff surface frame.
-                 * 
+                 *
                  * R s.t. R * z_hat = normal of surface
-                 * 
+                 *
                  */
                 Eigen::MatrixXd R_P1;
 
                 /**
                  * @brief Rotation matrix from the world frame to the touchdown surface frame.
-                 * 
+                 *
                  * R s.t. R * z_hat = normal of surface
-                 * 
+                 *
                  */
                 Eigen::MatrixXd R_P2;
 
                 /**
                  * @brief The duration of the window in which the footstep has velocity along basis n1.
-                 * 
+                 *
                  *  A value between 0 and 1 that determines the window of time on which the footstep has velocity along basis n.
                  *  We consider the total spatial velocity to be some [n1 n2] * [v1; v2].
                  *  At t = h_1_window_duration, the velocity v1 is 0.  at t = 1 - h2_window_duration, the velocity v2 is 0.
-                 * 
+                 *
                  */
                 double h1_window_duration = 0.65;
 
                 /**
                  * @brief The duration of the window in which the footstep has velocity along basis n2.
-                 * 
+                 *
                  *  A value between 0 and 1 that determines the window of time on which the footstep has velocity along basis n.
                  *  We consider the total spatial velocity to be some [n1 n2] * [v1; v2].
                  *  At t = h_1_window_duration, the velocity v1 is 0.  at t = 1 - h2_window_duration, the velocity v2 is 0.
-                 * 
+                 *
                  */
                 double h2_window_duration = 0.65;
 
                 /**
                  * @brief The number of standard deviations we consider in the window of the bell curve.
-                 * 
+                 *
                  * The number of standard deviations we consider in the window of the bell curve.
                  * Effectively, this defines the steepness fo the bell curve.
-                 * 
+                 *
                  */
                 double window_sigma = 3.3;
 
                 /**
                  * @brief How tightly thhe bell curve trajectory is followed. The higher the value, the more tightly the trajectory is followed.
-                 * 
+                 *
                  */
                 double sigmoid_scaling = 15.0;
 
                 /**
                  * @brief Liftoff time of the footstep.
-                 * 
+                 *
                  */
                 double liftoff_time;
 
                 /**
                  * @brief Touchdown time of the footstep.
-                 * 
+                 *
                  */
                 double touchdown_time;
 
                 /**
                  * @brief Start height of the footstep.
-                 * 
+                 *
                  */
                 double h_start;
 
                 /**
                  * @brief End height of the footstep.
-                 * 
+                 *
                  */
                 double h_end;
 
                 /**
                  * @brief Maximum height of the footstep.
-                 * 
+                 *
                  */
                 double h_max;
             };
@@ -259,10 +259,10 @@ namespace galileo
                 casadi::SX getFootstepVelocityInWorldFrame(const ProblemData &problem_data, pinocchio::FrameIndex frame_id) const
                 {
                     Eigen::Matrix<legged::ADScalar, 6, 1, 0> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
-                                                                                                          *(problem_data.velocity_constraint_problem_data.ad_data),
-                                                                                                          frame_id,
-                                                                                                          pinocchio::LOCAL_WORLD_ALIGNED)
-                                                                                  .toVector();
+                                                                                                    *(problem_data.velocity_constraint_problem_data.ad_data),
+                                                                                                    frame_id,
+                                                                                                    pinocchio::LOCAL_WORLD_ALIGNED)
+                                                                            .toVector();
 
                     casadi::SX cfoot_vel = casadi::SX(casadi::Sparsity::dense(foot_vel.rows(), foot_vel.cols()));
                     pinocchio::casadi::copy(foot_vel, cfoot_vel);
@@ -661,7 +661,15 @@ namespace galileo
                     }
                 }
 
-                constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{vertcat(G_vec)});
+                casadi::Dict opts;
+                // // opts["cse"] = true;
+                // opts["jit"] = true;
+                // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+                // opts["jit_options.compiler"] = "gcc";
+                // // opts["jit_options.temp_suffix"] = false;
+                // opts["compiler"] = "shell";
+                // // opts["jit_cleanup"] = false;
+                constraint_data.G = casadi::Function("G_Velocity", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}, casadi::SXVector{vertcat(G_vec)}, opts);
                 constraint_data.lower_bound = casadi::Function("lower_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(lower_bound_vec)});
                 constraint_data.upper_bound = casadi::Function("upper_bound", casadi::SXVector{t}, casadi::SXVector{vertcat(upper_bound_vec)});
 

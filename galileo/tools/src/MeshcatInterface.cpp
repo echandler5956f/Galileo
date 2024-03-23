@@ -29,24 +29,12 @@ namespace galileo
             }
         }
 
-        void MeshcatInterface::WriteMetadata(std::string urdf_location, Eigen::VectorXd q0, std::string file_name)
+        void MeshcatInterface::WriteMetadata(std::string urdf_location, std::string file_name)
         {
             std::ofstream file(this->dir + file_name);
             if (file.is_open())
             {
                 file << "urdf location: " << urdf_location << "\n";
-
-                file << "q0: ";
-                for (int i = 0; i < q0.size(); ++i)
-                {
-                    file << q0[i];
-                    if (i != q0.size() - 1) // not the last element
-                    {
-                        file << ", ";
-                    }
-                }
-                file << "\n";
-
                 file.close();
             }
         }

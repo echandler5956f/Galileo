@@ -16,6 +16,8 @@
 #include "galileo/legged-model/LeggedRobotStates.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 #include "galileo/opt/TrajectoryOpt.h"
+#include "galileo/tools/GNUPlotInterface.h"
+#include "galileo/tools/MeshcatInterface.h"
 
 namespace galileo
 {
@@ -73,6 +75,11 @@ namespace galileo
              * @brief Get the solution
              */
             void GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+
+            /**
+             * @brief Get the solution and plot the constraints
+             */
+            void VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
 
             /**
              * @brief Add a surface to the environment.
@@ -144,6 +151,10 @@ namespace galileo
 
             std::shared_ptr<opt::solution::Solution> solution_interface_; /**< The solution interface. */
 
+            std::shared_ptr<tools::MeshcatInterface> meshcat_interface; /**< The meshcat interface. */
+
+            std::shared_ptr<tools::GNUPlotInterface> plotting_interface; /**< The plotting interface. */
+
             casadi::Dict opts_;
 
             std::shared_ptr<opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
@@ -151,6 +162,8 @@ namespace galileo
             std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
 
             std::shared_ptr<LeggedBody> robot_; /**< The robot model. */
+
+            std::string model_file_location_;
 
             struct CostParameters
             {

@@ -253,7 +253,7 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::initializeExpressionGraph(std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wdata)
+        void PseudospectralSegment::initializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata)
         {
             auto start_time = std::chrono::high_resolution_clock::now();
             /*Collocation equations*/
@@ -386,15 +386,15 @@ namespace galileo
             {
                 auto g_data = G[i];
 
-                assert(g_data->G.n_in() == 2 && "G must have 2 inputs");
-                g_data->G.assert_size_in(0, st_m->nx, 1);
-                g_data->G.assert_size_in(1, st_m->nu, 1);
-                assert(g_data->lower_bound.n_in() == 1 && "G lower_bound must have 1 inputs");
-                assert(g_data->lower_bound.n_out() == 1 && "G lower_bound must have 1 output");
-                g_data->lower_bound.assert_size_in(0, 1, 1);
-                auto tmap = casadi::Function(g_data->G.name() + "_map",
+                assert(g_data.G.n_in() == 2 && "G must have 2 inputs");
+                g_data.G.assert_size_in(0, st_m->nx, 1);
+                g_data.G.assert_size_in(1, st_m->nu, 1);
+                assert(g_data.lower_bound.n_in() == 1 && "G lower_bound must have 1 inputs");
+                assert(g_data.lower_bound.n_out() == 1 && "G lower_bound must have 1 output");
+                g_data.lower_bound.assert_size_in(0, 1, 1);
+                auto tmap = casadi::Function(g_data.G.name() + "_map",
                                              casadi::SXVector{X0, vertcat(dXc), dX0, U0, vertcat(Uc)},
-                                             casadi::SXVector{vertcat(g_data->G.map(dX_poly.d, "serial")((casadi::SXVector{horzcat(x_at_c), horzcat(u_at_c)})))})
+                                             casadi::SXVector{vertcat(g_data.G.map(dX_poly.d, "serial")((casadi::SXVector{horzcat(x_at_c), horzcat(u_at_c)})))})
                                 .map(knot_num, "serial");
                 general_constraint_maps.push_back(tmap);
                 ranges_G.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
@@ -414,9 +414,9 @@ namespace galileo
             {
                 auto g_data = G[i];
                 general_lbg(casadi::Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i]))), 0) =
-                    casadi::DM::reshape(vertcat(g_data->lower_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
+                    casadi::DM::reshape(vertcat(g_data.lower_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
                 general_ubg(casadi::Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i]))), 0) =
-                    casadi::DM::reshape(vertcat(g_data->upper_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
+                    casadi::DM::reshape(vertcat(g_data.upper_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
             }
             end_time = std::chrono::high_resolution_clock::now();
             duration = end_time - start_time;

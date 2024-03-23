@@ -13,18 +13,12 @@ with open('examples/visualization/solution_data/metadata.csv', 'r') as file:
 # Parse the location
 location = lines[0].strip().split(': ')[1].replace("../", "", 2)
 
-# Parse the q0 array
-q0_str = lines[1].strip().split(': ')[1]
-q0 = np.array([float(x) for x in q0_str.split(', ')])
-
 builder = RobotWrapper.BuildFromURDF
 robot = builder(
     location,
     ["."],
     pin.JointModelFreeFlyer(),
 )
-
-robot.q0 = q0
 
 # The pinocchio model is what we are really interested by.
 model = robot.model
@@ -35,7 +29,6 @@ new_sol = np.genfromtxt('examples/visualization/solution_data/sol_states.csv', d
 new_times = np.reshape(np.diff(new_times), (new_times.shape[0] - 1, 1))
 
 viz = MeshcatVisualizer(robot)
-viz.display(robot.q0)
 
 def display_scene(q: np.ndarray, dt=1e-1):
     pin.framesForwardKinematics(model, data, q)
