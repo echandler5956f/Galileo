@@ -191,11 +191,20 @@ namespace galileo
             casadi::SX cv(si->nv, 1);
             pinocchio::casadi::copy(tmp_v_AD1, cv);
 
+            casadi::Dict opts;
+            // // opts["cse"] = true;
+            // opts["jit"] = true;
+            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            // opts["jit_options.compiler"] = "gcc";
+            // // opts["jit_options.temp_suffix"] = false;
+            // opts["compiler"] = "shell";
+            // // opts["jit_cleanup"] = false;
+
             general_dynamics = casadi::Function("F",
                                                 {cx, cu_general},
                                                 {vertcat((si->get_general_forces(cu_general) - mass * g) / mass,
                                                          si->get_general_torques(cu_general) / mass,
-                                                         cv)});
+                                                         cv)}, opts);
 
             TangentVectorAD vb_AD2 = Ab_inv * (mass * h_AD - Ag.rightCols(si->nvju) * vju_AD);
             TangentVectorAD tmp_v_AD2(si->nv, 1);
@@ -212,11 +221,20 @@ namespace galileo
             casadi::SX lie_group_int_result =  math::lie_group_int(qb, vb, cdt);
             casadi::SX q_joints_int_result = si->get_q(cx)(casadi::Slice(si->nqb, si->nq)) + si->get_q_d(cdx)(casadi::Slice(si->nvb, si->nv)) * cdt;
 
+            casadi::Dict opts;
+            // opts["cse"] = true;
+            opts["jit"] = true;
+            opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            opts["jit_options.compiler"] = "gcc";
+            // opts["jit_options.temp_suffix"] = false;
+            opts["compiler"] = "shell";
+            // opts["jit_cleanup"] = false;
+
             fint = casadi::Function("Fint",
                                     {cx, cdx, cdt},
                                     {vertcat(si->get_ch(cx) + si->get_ch_d(cdx) * cdt,
                                              lie_group_int_result,
-                                             q_joints_int_result)});
+                                             q_joints_int_result)}, opts);
         }
 
         void LeggedBody::createFdiff()
@@ -226,11 +244,20 @@ namespace galileo
             casadi::SX qb2 = si->get_q(cx2)(casadi::Slice(0, si->nqb));
             casadi::SX lie_group_diff_result =  math::lie_group_diff(qb, qb2, cdt);
 
+            casadi::Dict opts;
+            // opts["cse"] = true;
+            opts["jit"] = true;
+            opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            opts["jit_options.compiler"] = "gcc";
+            // opts["jit_options.temp_suffix"] = false;
+            opts["compiler"] = "shell";
+            // opts["jit_cleanup"] = false;
+
             fdiff = casadi::Function("Fdiff",
                                      {cx, cx2, cdt},
                                      {vertcat((si->get_ch(cx2) - si->get_ch(cx)) / cdt,
                                               lie_group_diff_result,
-                                              (si->get_qj(cx2) - si->get_qj(cx)) / cdt)});
+                                              (si->get_qj(cx2) - si->get_qj(cx)) / cdt)}, opts);
         }
 
         void LeggedBody::createErrorFunction()
@@ -244,12 +271,21 @@ namespace galileo
             
             casadi::SX quat_distance_result = math::quat_distance(quat1, quat2);
 
+            casadi::Dict opts;
+            // opts["cse"] = true;
+            opts["jit"] = true;
+            opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            opts["jit_options.compiler"] = "gcc";
+            // opts["jit_options.temp_suffix"] = false;
+            opts["compiler"] = "shell";
+            // opts["jit_cleanup"] = false;
+
             f_state_error = casadi::Function("F_state_error",
                                              {cx, cx2},
                                              {vertcat(si->get_ch(cx2) - si->get_ch(cx),
                                                       qb(casadi::Slice(0, 3)) - qb2(casadi::Slice(0, 3)),
                                                       quat_distance_result,
-                                                      si->get_qj(cx2) - si->get_qj(cx))});
+                                                      si->get_qj(cx2) - si->get_qj(cx))}, opts);
         }
 
         void LeggedBody::fillModeDynamics(bool print_ees_info)
@@ -310,10 +346,19 @@ namespace galileo
 
                 casadi::SX u_general = vertcat(casadi::SXVector{total_f_input, total_tau_input, si->get_vju(cu)});
 
+                casadi::Dict opts;
+                // // opts["cse"] = true;
+                // opts["jit"] = true;
+                // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+                // opts["jit_options.compiler"] = "gcc";
+                // // opts["jit_options.temp_suffix"] = false;
+                // opts["compiler"] = "shell";
+                // opts["jit_cleanup"] = false;
+
                 contact_sequence->phase_sequence_[i].phase_dynamics = casadi::Function("F_mode",
                                                                                        {cx, cu},
                                                                                        {general_dynamics(casadi::SXVector{cx, u_general})
-                                                                                            .at(0)});
+                                                                                            .at(0)}, opts);
             }
         }
 

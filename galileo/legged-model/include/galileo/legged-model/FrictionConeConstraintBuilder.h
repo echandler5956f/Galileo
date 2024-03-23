@@ -142,7 +142,50 @@ namespace galileo
                 createBounds(problem_data, phase_index, constraint_data.lower_bound, constraint_data.upper_bound);
                 createFunction(problem_data, phase_index, constraint_data.G);
 
+                contact::ContactMode mode = problem_data.friction_cone_problem_data.contact_sequence->getPhase(phase_index).mode;
+
                 constraint_data.metadata.name = "Friction Cone Constraint";
+                int i = 0;
+                for (auto ee : problem_data.friction_cone_problem_data.robot_end_effectors)
+                {
+                    if (mode[(*ee.second)])
+                    {
+                        constraint_data.metadata.plot_titles.push_back("Normal Force for " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"Fz"});
+                        i += 1;
+                    }
+                    else
+                    {
+                        constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Fx " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"Fx"});
+                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Fy " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"Fy"});
+                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Fz " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                        constraint_data.metadata.plot_names.push_back({"Fz"});
+                        i += 1;
+                        if (ee.second->is_6d)
+                        {
+                            constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Tau x " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Tau x"});
+                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Tau y " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Tau y"});
+                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Tau z " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Tau z"});
+                            i += 1;
+                        }
+                    }
+                }
             }
 
             template <class ProblemData>

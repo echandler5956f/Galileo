@@ -102,7 +102,7 @@ namespace galileo
              * @param G Vector of constraint data
              * @param Wdata Decision bound and initial guess data for the state and input
              */
-            virtual void initializeExpressionGraph(std::vector<std::shared_ptr<ConstraintData>> G, std::shared_ptr<DecisionData> Wdata) = 0;
+            virtual void initializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata) = 0;
 
             /**
              * @brief Evaluate the expressions with the actual decision variables.

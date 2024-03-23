@@ -4,7 +4,11 @@ int main(int argc, char **argv)
 {
     ConfigVector q0_vec = (ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
 
-    std::vector<int> knot_num = {30, 30, 30, 30, 30, 30};
+    // std::vector<int> knot_num = {5, 30, 30, 5};
+    // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.05};
+    // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110,  0b1111}; // trot
+
+    std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
     std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
     std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110, 0b1001, 0b0110, 0b1111}; // trot
 
@@ -48,48 +52,23 @@ int main(int argc, char **argv)
         mask_vec,
         contact_surfaces);
 
-    solver_interface.Initialize(X0, X0);
-    casadi::MXVector solution;
-    solver_interface.Update(X0, X0, solution);
+    casadi::DM Xf = X0;
+    Xf(solver_interface.states()->q_index) = 0.2;
+    // Xf(solver_interface.states()->q_index) = 0.2 * sqrt(2);
+    // Xf(solver_interface.states()->q_index + 2) = 0.2 * sqrt(2);
+    // Xf(solver_interface.states()->q_index + 3) = 0.;
+    // Xf(solver_interface.states()->q_index + 4) = 0.;
+    // Xf(solver_interface.states()->q_index + 5) = 0.3826834;
+    // Xf(solver_interface.states()->q_index + 6) = 0.9238795;
 
-    // // TODO: Add interface to get the solution
+    solver_interface.Initialize(X0, Xf);
+    solver_interface.Update(X0, Xf);
 
-    // Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
-    // solution_t new_sol = solution_t(new_times);
-    // solver_interface.getTrajectoryOptimizer()->getSolution(new_sol);
-
-    // Eigen::MatrixXd subMatrix = new_sol.state_result.block(solver_interface.states()->q_index, 0, solver_interface.states()->nq, new_sol.state_result.cols());
-    // MeshcatInterface meshcat("../examples/visualization/solution_data/");
-    // meshcat.WriteTimes(new_times, "sol_times.csv");
-    // meshcat.WriteJointPositions(subMatrix, "sol_states.csv");
-    // meshcat.WriteMetadata(go1_location, q0_vec, "metadata.csv");
-    // std::cout << "Getting constraint violations" << std::endl;
-    // auto cons = solver_interface.getTrajectoryOptimizer()->getConstraintViolations(new_sol);
-
-    // // Collect the data specific to each end effector
-    // std::vector<tuple_size_t> wrench_indices;
-    // std::vector<std::vector<std::string>> wrench_legend_names;
-    // std::vector<std::string> ee_plot_names;
-    // for (auto ee : solver_interface.getRobotModel()->getEndEffectors())
-    // {
-    //     wrench_indices.push_back(solver_interface.states()->frame_id_to_index_range[ee.second->frame_id]);
-    //     if (ee.second->is_6d)
-    //         wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
-    //     else
-    //     {
-    //         wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
-    //     }
-    //     ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
-    // }
-
-    // GNUPlotInterface plotter(new_sol, cons);
-    // plotter.PlotSolution({std::make_tuple(solver_interface.states()->q_index, solver_interface.states()->q_index + 3), std::make_tuple(solver_interface.states()->q_index + 3, solver_interface.states()->q_index + solver_interface.states()->nqb)},
-    //                      wrench_indices,
-    //                      {"Positions", "Orientations"},
-    //                      {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
-    //                      ee_plot_names,
-    //                      wrench_legend_names);
-    // plotter.PlotConstraints();
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
+    Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(solver_interface.states()->nx, new_times.size());
+    Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(solver_interface.states()->nu, new_times.size());
+    // solver_interface.GetSolution(new_times, new_states, new_inputs);
+    solver_interface.VisualizeSolutionAndConstraints(new_times, new_states, new_inputs);
 
     return 0;
 }

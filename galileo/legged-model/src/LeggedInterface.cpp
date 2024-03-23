@@ -36,6 +36,9 @@ namespace galileo
         LeggedInterface::LeggedInterface()
         {
             surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
+            solution_interface_ = std::make_shared<galileo::opt::solution::Solution>();
+            meshcat_interface = std::make_shared<galileo::tools::MeshcatInterface>("../examples/visualization/solution_data/");
+            plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>("../examples/visualization/plots/");
         }
 
         void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names)
@@ -49,6 +52,7 @@ namespace galileo
 
             robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array);
             states_ = robot_->si;
+            model_file_location_ = model_file_location;
         }
 
         void LeggedInterface::LoadParameters(std::string parameter_file_location)
@@ -68,11 +72,15 @@ namespace galileo
                 imported_vars[key] = value;
             }
 
-            opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
-            opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
+            // opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
+            // opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
 
-            // opts_["ipopt.linear_solver"] = "ma97";
-            // opts_["ipopt.ma97_order"] = "metis";
+            opts_["ipopt.linear_solver"] = "ma97";
+            opts_["ipopt.ma97_order"] = "metis";
+            // opts_["snopt.Major iterations limit"] = 1;
+            // opts_["snopt.Minor iterations limit"] = 1;
+            // opts_["snopt.Iterations limit"] = 1;
+            // opts_["snopt.Cold Start/Warm Start"] = "Warm";
 
             // Extract the string value from imported_vars
             Eigen::VectorXd Q_diag = ReadVector(imported_vars["Q_diag"]);
@@ -191,16 +199,39 @@ namespace galileo
             auto constraint_builders = getLeggedConstraintBuilders();
             decision_builder_ = std::make_shared<galileo::legged::constraints::LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
-            trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_);
+            trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, "ipopt");
         }
 
-        void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::MXVector &solution)
+        void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem
-            solution = trajectory_opt_->optimize();
-            solution_ = solution;
+            trajectory_opt_->optimize();
+
+            solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
+            solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
+        }
+
+        void LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        {
+            solution_interface_->GetSolution(query_times, state_result, input_result);
+        }
+
+        void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        {
+            std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
+            std::cout << "Size of constraints: " << constraints.size() << std::endl;
+
+            Eigen::MatrixXd subMatrix = state_result.block(states_->q_index, 0, states_->nq, state_result.cols());
+            meshcat_interface->WriteTimes(query_times, "sol_times.csv");
+            meshcat_interface->WriteJointPositions(subMatrix, "sol_states.csv");
+            meshcat_interface->WriteMetadata(model_file_location_, "metadata.csv");
+            
+            opt::solution::solution_t solution(query_times, state_result, input_result);
+            // plotting_interface->PlotSolution(solution, {},{}, {}, {}, {}, {});
+            std::cout << "Plotting constraints" << std::endl;
+            plotting_interface->PlotConstraints(constraints);
         }
 
         void LeggedInterface::UpdateProblemBoundaries(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
