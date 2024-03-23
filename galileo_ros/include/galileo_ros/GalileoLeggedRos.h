@@ -15,6 +15,7 @@
 #include "galileo_ros/EnvironmentSurface.h"
 #include "galileo_ros/GalileoCommand.h"
 #include "galileo_ros/SolutionRequest.h"
+#include "galileo_ros/InitState.h"
 
 namespace galileo
 {
@@ -27,6 +28,7 @@ namespace galileo
             {
                 InitPublishers();
                 InitSubscribers();
+                InitServices();
             }
 
             ~GalileoLeggedRos() {}
@@ -52,7 +54,7 @@ namespace galileo
             void SurfaceCallback(const galileo_ros::EnvironmentSurface::ConstPtr &msg);
 
             // Callback for initialization service, checks if the solver can be initialized
-            bool CanInitServiceCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+            bool InitStateServiceCallback(galileo_ros::InitState::Request &req, galileo_ros::InitState::Response &res);
 
             void GeneralCommandCallback(const galileo_ros::GalileoCommand::ConstPtr &msg)
             {
@@ -80,7 +82,7 @@ namespace galileo
 
             ros::Subscriber command_subscriber_;
 
-            ros::ServiceServer can_init_service_;
+            ros::ServiceServer init_state_service_;
             ros::ServiceServer get_solution_service_;
         };
 

@@ -30,6 +30,7 @@ add_message_files(
 add_service_files(
   FILES
   SolutionRequest.srv
+  InitState.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -67,21 +68,22 @@ add_library(${PROJECT_NAME}
 )
 
 ## Declare a C++ executable
-add_executable(${PROJECT_NAME}_GalileoLeggedRos 
-  src/GalileoLeggedRos.cpp
-)
+# add_executable(${PROJECT_NAME}_GalileoLeggedRos 
+#   src/GalileoLeggedRos.cpp
+# )
 
-target_link_libraries(${PROJECT_NAME}_GalileoLeggedRos  ${CASADI_LIBRARIES} Eigen3::Eigen galileo)
+# target_link_libraries(${PROJECT_NAME}_GalileoLeggedRos  ${PROJECT_NAME} casadi Eigen3::Eigen galileo )
 
-target_link_libraries(${PROJECT_NAME}_GalileoLeggedRos
-   ${catkin_LIBRARIES}
-)
+# target_link_libraries(${PROJECT_NAME}_GalileoLeggedRos
+#    ${catkin_LIBRARIES}
+# )
 
 add_executable(${PROJECT_NAME}_legged_test_node
   src/Nodes/galileo_legged_test_node.cpp
 )
 
+target_link_libraries(${PROJECT_NAME}_legged_test_node ${PROJECT_NAME} casadi Eigen3::Eigen galileo )
+
 target_link_libraries(${PROJECT_NAME}_legged_test_node
    ${catkin_LIBRARIES}
 )
-

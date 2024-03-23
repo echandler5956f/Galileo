@@ -143,11 +143,18 @@ namespace galileo
              * The problem data can change after a solution is found, but it serves
              * as a best approximate for now.
              */
-            double getSolutionDT()  
+            double getSolutionDT()
             {
                 assert(problem_data_ != nullptr);
                 return problem_data_->phase_sequence->getDT();
             }
+
+            // Checking solution state
+            bool RobotModelLoaded() const { return robot_ != nullptr; }
+            bool ParametersLoaded() const { return parameters_set_; }
+            bool PhasesSet() const { return phases_set_; }
+            bool FullyInitialized() const { return fully_initialized_; }
+            bool SolutionSet() const { return solution_interface_ == nullptr ? false : solution_interface_->isSolutionSet(); }
 
         private:
             /**

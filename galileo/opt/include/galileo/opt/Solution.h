@@ -212,6 +212,13 @@ namespace galileo
                  */
                 tuple_size_t getSegmentIndices(const Eigen::VectorXd &times, double start_time, double end_time) const;
 
+                /**
+                 * @brief Get if this constains a solution
+                 *
+                 * @return bool True if the solution set is not empty.
+                 */
+                bool isSolutionSet() const { return !solution_segments_.empty(); }
+
             private:
                 /**
                  * @brief The solution segments.

@@ -26,7 +26,7 @@ namespace galileo
 
         void GalileoLeggedRos::InitServices()
         {
-            can_init_service_ = nh_->advertiseService(solver_id_ + "_can_init_service", &GalileoLeggedRos::CanInitServiceCallback, this);
+            init_state_service_ = nh_->advertiseService(solver_id_ + "_init_state_service", &GalileoLeggedRos::InitStateServiceCallback, this);
             get_solution_service_ = nh_->advertiseService(solver_id_ + "_get_solution", &GalileoLeggedRos::GetSolutionCallback, this);
         }
 
@@ -106,9 +106,16 @@ namespace galileo
             Update(X0, Xf);
         }
 
-        bool GalileoLeggedRos::CanInitServiceCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+        bool GalileoLeggedRos::InitStateServiceCallback(galileo_ros::InitState::Request &req, galileo_ros::InitState::Response &res)
         {
-            res.success = CanInitialize();
+
+            std::cout << "Checking if the solver can be initialized" << std::endl;
+            res.model_set = RobotModelLoaded();
+            res.solver_parameters_set = ParametersLoaded();
+            res.contact_sequence_set = PhasesSet();
+            res.fully_initted = FullyInitialized();
+            res.solution_set = SolutionSet();
+
             return true;
         }
 

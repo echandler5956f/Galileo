@@ -1,0 +1,8 @@
+
+---
+
+bool    model_set
+bool    solver_parameters_set
+bool    contact_sequence_set
+bool    fully_initted
+bool    solution_set
