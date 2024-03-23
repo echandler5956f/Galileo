@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         galileo_ros::SolutionRequest solution_request;
 
         // SET TO 0 FOR NOW
-        solution_request.request.query_times = {0};
+        solution_request.request.times = {0};
 
         if (solution_client.call(solution_request))
         {

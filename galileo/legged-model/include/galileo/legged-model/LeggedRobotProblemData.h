@@ -31,6 +31,8 @@ namespace galileo
                     this->gp_data = gp_data_;
                     this->states = states_;
 
+                    phase_sequence = contact_sequence;
+
                     this->friction_cone_problem_data.environment_surfaces = environment_surfaces;
                     this->friction_cone_problem_data.contact_sequence = contact_sequence;
                     this->friction_cone_problem_data.states = states;

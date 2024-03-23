@@ -138,6 +138,17 @@ namespace galileo
              */
             std::vector<std::string> getJointNames() const { return robot_->model.names; }
 
+            /**
+             * @brief Get the horizon. This is not technically correct, it is actually the problem data dt.
+             * The problem data can change after a solution is found, but it serves
+             * as a best approximate for now.
+             */
+            double getSolutionDT()  
+            {
+                assert(problem_data_ != nullptr);
+                return problem_data_->phase_sequence->getDT();
+            }
+
         private:
             /**
              * @brief Create the trajectory optimizer.

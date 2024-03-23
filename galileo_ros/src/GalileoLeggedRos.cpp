@@ -117,7 +117,7 @@ namespace galileo
             Eigen::MatrixXd state_solution;
             Eigen::MatrixXd input_solution;
 
-            Eigen::Map<Eigen::VectorXd> query_times(req.query_times.data(), req.query_times.size());
+            Eigen::Map<Eigen::VectorXd> query_times(req.times.data(), req.times.size());
             bool solution_exists = GetSolution(query_times, state_solution, input_solution);
 
             if (!solution_exists)
@@ -126,8 +126,8 @@ namespace galileo
                 return false;
             }
 
-            std::vector<double> state_vec(state_solution.data(), state_solution.data() * state_solution.size());
-            std::vector<double> input_vec(input_solution.data(), input_solution.data() * input_solution.size());
+            std::vector<double> state_vec(state_solution.data(), state_solution.data() + state_solution.size());
+            std::vector<double> input_vec(input_solution.data(), input_solution.data() + input_solution.size());
 
             res.joint_names = getJointNames();
             res.qj_index = states()->qj_index;
@@ -138,9 +138,9 @@ namespace galileo
             res.nx = state_solution.rows();
             res.nu = input_solution.rows();
 
-            res.solution_horizon = problem_data_->contact_constraint_problem_data.contact_sequence->getDT();
+            res.solution_horizon = getSolutionDT();
 
-            res.times_evaluated = query_times;
+            res.times_evaluated = req.times;
             res.solution_exists = true;
 
             return true;
