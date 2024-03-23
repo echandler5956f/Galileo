@@ -18,13 +18,13 @@ std::vector<double> getX0(int nx, int q_index)
     return X0;
 }
 
-void getProblemDataMessages(std::string resources_location, std::string urdf_name, std::string parameter_file_name,
+void getProblemDataMessages(std::string urdf_name, std::string parameter_file_name,
                             galileo_ros::RobotModel &robot_model_cmd,
                             galileo_ros::ParameterFileLocation &parameter_location_cmd,
                             galileo_ros::ContactSequence &contact_sequence_cmd, galileo_ros::GalileoCommand &galileo_cmd_msg)
 {
-    std::string model_location = resources_location + "/urdf/" + urdf_name;
-    std::string parameter_location = resources_location + "/SolverParameters/" + parameter_file_name;
+    std::string model_location =  urdf_name;
+    std::string parameter_location = parameter_file_name;
 
     robot_model_cmd.model_file_location = model_location;
     robot_model_cmd.end_effector_names = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
@@ -62,22 +62,21 @@ int main(int argc, char **argv)
     // ros::start();
     // ros::Rate loop_rate(10);
 
-    if (argc != 5)
+    if (argc != 4)
     {
-        std::cerr << "Usage: rosrun galileo_ros galileo_legged_test_node <solver_id> <resources_location> <urdf_file_name> <parameter_file_name>" << std::endl;
-        std::cerr << "<resources_location>/urdf/<urdf_file_name> and <resources_location>/SolverParameters/<parameter_file_name> must exist" << std::endl;
+        std::cerr << "Usage: rosrun galileo_ros galileo_legged_test_node <solver_id> <urdf_file_name> <parameter_file_name>" << std::endl;
+        std::cerr << "<urdf_file_name> and <parameter_file_name> must exist" << std::endl;
         return 1;
     }
 
     std::string solver_id = argv[1];
-    std::string resources_location = argv[2];
-    std::string urdf_file_name = argv[3];
-    std::string parameter_file_name = argv[4];
+    std::string urdf_file_name = argv[2];
+    std::string parameter_file_name = argv[3];
 
     ros::init(argc, argv, solver_id + "_test_node");
     std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
 
-    ROS_INFO("Creating the solver object");
+    ROS_INFO("Creating the solver object\n");
 
     // galileo::legged::GalileoLeggedRos go1_solver(nh, solver_id);
 
@@ -86,14 +85,14 @@ int main(int argc, char **argv)
     galileo_ros::ContactSequence contact_sequence_msg;
     galileo_ros::GalileoCommand galileo_cmd_msg;
 
-    ROS_INFO("Generating problem data messages");
+    ROS_INFO("Generating problem data messages\n");
 
-    getProblemDataMessages(resources_location, urdf_file_name, parameter_file_name,
+    getProblemDataMessages(urdf_file_name, parameter_file_name,
                            model_location_msg,
                            parameter_location_msg,
                            contact_sequence_msg, galileo_cmd_msg);
 
-    ROS_INFO("Publishing model location, parameter location and contact sequence");
+    ROS_INFO("Publishing model location, parameter location and contact sequence\n");
 
     ros::Publisher model_location_pub = nh->advertise<galileo_ros::RobotModel>(solver_id + "_model_location", 1);
     ros::Publisher parameter_location_pub = nh->advertise<galileo_ros::ParameterFileLocation>(solver_id + "_parameter_location", 1);
@@ -104,21 +103,21 @@ int main(int argc, char **argv)
     galileo_ros::InitState init_state;
     init_state.request.call = true;
 
-    ROS_INFO("calling init state");
+    ROS_INFO("calling init state\n");
     ros::spinOnce();
     while (!init_state_client.call(init_state))
     {
-        ROS_INFO("still init state");
+        ROS_INFO("still init state\n");
         ros::spinOnce();
         ros::Duration(0.3).sleep();
     }
 
-    ROS_INFO("called init state");
+    ROS_INFO("called init state\n");
 
     while (true)
     {
         init_state_client.call(init_state);
-        ROS_INFO("model set: %d, solver parameters set: %d, contact sequence set: %d, fully initted: %d",
+        ROS_INFO("model set: %d, solver parameters set: %d, contact sequence set: %d, fully initted: %d\n",
                  init_state.response.model_set,
                  init_state.response.solver_parameters_set,
                  init_state.response.contact_sequence_set,
@@ -127,22 +126,22 @@ int main(int argc, char **argv)
         if (!init_state.response.model_set)
         {
 
-            ROS_INFO("Publishing model location");
+            ROS_INFO("Publishing model location\n");
             model_location_pub.publish(model_location_msg);
         }
         else if (!init_state.response.solver_parameters_set)
         {
-            ROS_INFO("Publishing parameter location");
+            ROS_INFO("Publishing parameter location\n");
             parameter_location_pub.publish(parameter_location_msg);
         }
         else if (!init_state.response.contact_sequence_set)
         {
-            ROS_INFO("Publishing contact sequence");
+            ROS_INFO("Publishing contact sequence\n");
             contact_sequence_pub.publish(contact_sequence_msg);
         }
         else if (!init_state.response.fully_initted)
         {
-            ROS_INFO("Publishing init command");
+            ROS_INFO("Publishing init command\n");
             command_publisher.publish(galileo_cmd_msg);
             break;
         }
