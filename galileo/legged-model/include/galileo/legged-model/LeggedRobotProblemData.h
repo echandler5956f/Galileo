@@ -25,7 +25,8 @@ namespace galileo
                                        casadi::SX x,
                                        casadi::SX u,
                                        casadi::SX t,
-                                       casadi::SX X0)
+                                       casadi::SX X0,
+                                       casadi::SX Xf)
                 {
                     this->gp_data = gp_data_;
                     this->states = states_;
@@ -81,6 +82,7 @@ namespace galileo
                     this->legged_decision_problem_data.t = t;
 
                     this->legged_decision_problem_data.X0 = X0;
+                    this->legged_decision_problem_data.Xf = Xf;
                 }
                 std::shared_ptr<opt::PhaseSequence<contact::ContactMode>> phase_sequence;
                 std::shared_ptr<opt::GeneralProblemData> gp_data;

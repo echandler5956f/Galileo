@@ -30,6 +30,7 @@ namespace galileo
                 casadi::SX t;
 
                 casadi::SX X0;
+                casadi::SX Xf;
             };
 
             template <class ProblemData>

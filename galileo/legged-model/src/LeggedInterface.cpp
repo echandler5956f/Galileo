@@ -99,7 +99,7 @@ namespace galileo
                                                                      states_, std::make_shared<legged::ADModel>(robot_->cmodel),
                                                                      std::make_shared<legged::ADData>(robot_->cdata),
                                                                      robot_->getEndEffectors(),
-                                                                     robot_->cx, robot_->cu, robot_->cdt, initial_state);
+                                                                     robot_->cx, robot_->cu, robot_->cdt, initial_state, target_state);
         }
 
         // TODO: Generate a reference trajectory somewhere and share it betwen the objective and initial guess
