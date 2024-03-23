@@ -87,42 +87,6 @@ namespace galileo
             void VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
 
             /**
-             * @brief Set the solution to the problem.
-             */
-            void SetSolution(const casadi::MXVector &solution_to_set)
-            {
-                std::lock_guard<std::mutex> lock(solution_mutex_);
-                solution_ = solution_to_set;
-            }
-
-            /**
-             * @brief Access the last known solution to the problem.
-             */
-            void AccessSolution(casadi::MXVector &solution_accessed)
-            {
-                std::lock_guard<std::mutex> lock(solution_mutex_);
-                solution_accessed = solution_;
-            }
-
-            /**
-             * @brief Set the solution to the problem.
-             */
-            void SetSolution(const casadi::MXVector &solution_to_set)
-            {
-                std::lock_guard<std::mutex> lock(solution_mutex_);
-                solution_ = solution_to_set;
-            }
-
-            /**
-             * @brief Access the last known solution to the problem.
-             */
-            void AccessSolution(casadi::MXVector &solution_accessed)
-            {
-                std::lock_guard<std::mutex> lock(solution_mutex_);
-                solution_accessed = solution_;
-            }
-
-            /**
              * @brief Add a surface to the environment.
              */
             void addSurface(const environment::SurfaceData &surface) { surfaces_->push_back(surface); }
@@ -194,10 +158,8 @@ namespace galileo
 
             std::shared_ptr<contact::ContactSequence> contact_sequence_; /**< The gait. */
 
-            casadi::MXVector solution_; /**< The last solution found. */
-            std::mutex solution_mutex_;
-
             std::shared_ptr<opt::solution::Solution> solution_interface_; /**< The solution interface. */
+            std::mutex solution_mutex_;
 
             std::shared_ptr<tools::MeshcatInterface> meshcat_interface; /**< The meshcat interface. */
 

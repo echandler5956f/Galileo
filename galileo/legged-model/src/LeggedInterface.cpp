@@ -211,10 +211,10 @@ namespace galileo
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem
-            std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
+            std::lock_guard<std::mutex> lock_traj(trajectory_opt_mutex_);
             trajectory_opt_->optimize();
 
-            std::lock_guard<std::mutex> lock(solution_mutex_);
+            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             //@todo Akshay5312, reevaluate thread safety
             solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
