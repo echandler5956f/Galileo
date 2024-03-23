@@ -1,6 +1,7 @@
 #pragma once
 
 #include "galileo/opt/Constraint.h"
+#include "galileo/math/LieAlgebra.h"
 #include "galileo/legged-model/ContactSequence.h"
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
@@ -44,6 +45,9 @@ namespace galileo
                     contact::ContactMode mode = problem_data.legged_decision_problem_data.contact_sequence->getPhase(phase_index).mode;
                     std::shared_ptr<legged::LeggedRobotStates> states = problem_data.legged_decision_problem_data.states;
 
+                    casadi::SX X0 = problem_data.legged_decision_problem_data.X0;
+                    casadi::SX Xf = problem_data.legged_decision_problem_data.Xf;
+
                     casadi::SX initial_guess_x = casadi::SX::zeros(states->nx, 1);
                     casadi::SX initial_guess_u = casadi::SX::zeros(states->nu, 1);
 
@@ -58,7 +62,15 @@ namespace galileo
                             initial_guess_u(std::get<0>(states->frame_id_to_index_range[ee.first]) + 2) = mass * g / num_in_contact;
                         }
                     }
-                    initial_guess_x = problem_data.legged_decision_problem_data.X0;
+
+                    double t_f = problem_data.legged_decision_problem_data.contact_sequence->getDT();
+
+                    // linearly interpolate between initial and final states
+                    initial_guess_x =X0 + (Xf -X0) * problem_data.legged_decision_problem_data.t / t_f;
+
+                    casadi::SX quat1 = X0(casadi::Slice(states->q_index + 3, states->q_index + states->nqb));
+                    casadi::SX quat2 = Xf(casadi::Slice(states->q_index + 3, states->q_index + states->nqb));
+                    initial_guess_x(casadi::Slice(states->q_index + 3, states->q_index + states->nqb)) = math::quat_slerp(quat1, quat2, problem_data.legged_decision_problem_data.t / t_f);
                     decision_data.initial_guess = casadi::Function("DecisionInitialGuess", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{initial_guess_x, initial_guess_u});
                     decision_data.lower_bound = casadi::Function("DecisionLowerBounds", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{-casadi::inf * casadi::SX::ones(states->ndx, 1), -casadi::inf * casadi::SX::ones(states->nu, 1)});
                     decision_data.upper_bound = casadi::Function("DecisionUpperBounds", casadi::SXVector{problem_data.legged_decision_problem_data.t}, casadi::SXVector{casadi::inf * casadi::SX::ones(states->ndx, 1), casadi::inf * casadi::SX::ones(states->nu, 1)});
