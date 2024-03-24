@@ -178,6 +178,15 @@ namespace galileo
 
             res.solution_horizon = getSolutionDT();
 
+            std::vector<int> ee_dofs;
+
+            for (auto &ee : getEndEffectors())
+            {
+                ee_dofs.push_back(ee.second->is_6d ? 6 : 3);
+            }
+
+            res.ee_dofs = ee_dofs;
+
             std::cout << "horizon: " << res.solution_horizon << '\n';
 
             res.times_evaluated = req.times;

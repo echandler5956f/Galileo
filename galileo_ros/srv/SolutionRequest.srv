@@ -13,3 +13,6 @@ int32       nu
 #   X_qj[i] is the value of joint joint_names[i]
 int32       qj_index
 string[]    joint_names
+
+
+int32[] ee_dofs

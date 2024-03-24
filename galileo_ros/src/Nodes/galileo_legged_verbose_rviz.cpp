@@ -89,9 +89,6 @@ int main(int argc, char **argv)
                 std::vector<double> Xt = getSolutionAtTimeIdx(msg, i);
 
                 std::vector<double> q_t(Xt.begin() + robot.si->q_index, Xt.begin() + robot.si->q_index + robot.si->nq);
-                std::vector<double> u_t = getSolutionForceAtTimeIdx(msg, i);
-
-                double ee_dof = u_t.size() / num_end_effectors;
 
                 Eigen::VectorXd q = Eigen::Map<Eigen::VectorXd>(q_t.data(), q_t.size());
 
@@ -127,7 +124,7 @@ int main(int argc, char **argv)
                 position_marker.action = visualization_msgs::Marker::ADD;
 
                 position_marker.scale.x = 0.01;
-                position_marker.color.g = 0.30;
+                position_marker.color.g = 0.60;
                 position_marker.color.r = 0.30;
                 position_marker.color.a = 1.0;
                 position_marker.points = points[end_effector.first];
@@ -150,10 +147,9 @@ int main(int argc, char **argv)
 
             Eigen::VectorXd u = Eigen::Map<Eigen::VectorXd>(u_t.data(), u_t.size());
 
-            int ee_dof = u_t.size() / num_end_effectors;
             auto robot_end_effectors = robot.getEndEffectors();
 
-            int ee_local_index = 0;
+            int ee_local_start_index = 0;
 
             for (auto &end_effector : robot.getEndEffectors())
             {
@@ -168,13 +164,17 @@ int main(int argc, char **argv)
                 force_marker.scale.x = 0.01;
                 force_marker.scale.y = 0.01;
                 force_marker.scale.z = 0.01;
-                force_marker.color.b = 0.30;
-                force_marker.color.r = 0.30;
+                force_marker.color.b = 0.90;
+                force_marker.color.g = 0.30;
                 force_marker.color.a = 1.0;
 
-                double force_scaling = 0.01;
+                double force_scaling = 0.005;
 
-                Eigen::Vector3d force = Eigen::Map<Eigen::VectorXd>(u_t.data() + ee_dof * ee_local_index, ee_dof).head(3);
+                int ee_dof = end_effector.second->is_6d ? 6 : 3;
+
+                Eigen::Vector3d force = Eigen::Map<Eigen::VectorXd>(u_t.data() + ee_local_start_index, ee_dof).head(3);
+
+                ee_local_start_index += ee_dof;
 
                 force = force * force_scaling;
 
@@ -193,7 +193,6 @@ int main(int argc, char **argv)
                 force_marker.points.push_back(termination_point);
 
                 end_effector_force_publisher[end_effector.first].publish(force_marker);
-                ee_local_index += 1;
             }
 
             horizon = msg.response.solution_horizon;
