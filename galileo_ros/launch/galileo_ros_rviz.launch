@@ -10,7 +10,7 @@
     <!-- <param name="ignore_timestamp" type="bool" value="true"/> -->
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" />
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find galileo_ros)/rviz/go1_.rviz" />
 
 
   <node name="galileo_ros_legged_rviz_node" type="galileo_ros_legged_rviz_node" pkg="galileo_ros" output="screen">

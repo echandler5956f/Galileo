@@ -70,17 +70,13 @@ int main(int argc, char **argv)
 
                 std::cout << "time " << msg.response.times_evaluated[i] << "; q: " << q.transpose() << std::endl;
 
+                pinocchio::forwardKinematics(robot.model, robot.data, q);
+                pinocchio::updateFramePlacements(robot.model, robot.data);
                 for (auto &end_effector : robot.getEndEffectors())
                 {
-                    pinocchio::forwardKinematics(robot.model, robot.data, q);
                     auto pin_point_ = robot.data.oMi[end_effector.first];
 
                     Eigen::Vector3d point_position = pin_point_.translation();
-                    auto rot = pin_point_.rotation();
-
-                    std::cout << "; q: " << q.transpose() << std::endl
-                              << "rot: " << rot << std::endl;
-
                     std::cout << "time " << msg.response.times_evaluated[i] << "; q: " << q.transpose() << std::endl;
 
                     std::cout << "end effector " << end_effector.first << " FK: " << std::setprecision(10) << point_position << std::endl;
