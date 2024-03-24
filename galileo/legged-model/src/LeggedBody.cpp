@@ -222,13 +222,13 @@ namespace galileo
             casadi::SX q_joints_int_result = si->get_q(cx)(casadi::Slice(si->nqb, si->nq)) + si->get_q_d(cdx)(casadi::Slice(si->nvb, si->nv)) * cdt;
 
             casadi::Dict opts;
-            // // opts["cse"] = true;
-            // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // opts["jit_options.compiler"] = "gcc";
-            // // opts["jit_options.temp_suffix"] = false;
-            // opts["compiler"] = "shell";
-            // // opts["jit_cleanup"] = false;
+            // opts["cse"] = true;
+            opts["jit"] = true;
+            opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            opts["jit_options.compiler"] = "gcc";
+            // opts["jit_options.temp_suffix"] = false;
+            opts["compiler"] = "shell";
+            // opts["jit_cleanup"] = false;
 
             fint = casadi::Function("Fint",
                                     {cx, cdx, cdt},
@@ -245,13 +245,13 @@ namespace galileo
             casadi::SX lie_group_diff_result =  math::lie_group_diff(qb, qb2, cdt);
 
             casadi::Dict opts;
-            // // opts["cse"] = true;
-            // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // opts["jit_options.compiler"] = "gcc";
-            // // opts["jit_options.temp_suffix"] = false;
-            // opts["compiler"] = "shell";
-            // // opts["jit_cleanup"] = false;
+            // opts["cse"] = true;
+            opts["jit"] = true;
+            opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            opts["jit_options.compiler"] = "gcc";
+            // opts["jit_options.temp_suffix"] = false;
+            opts["compiler"] = "shell";
+            // opts["jit_cleanup"] = false;
 
             fdiff = casadi::Function("Fdiff",
                                      {cx, cx2, cdt},
@@ -272,13 +272,13 @@ namespace galileo
             casadi::SX quat_distance_result = math::quat_distance(quat1, quat2);
 
             casadi::Dict opts;
-            // // opts["cse"] = true;
-            // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // opts["jit_options.compiler"] = "gcc";
-            // // opts["jit_options.temp_suffix"] = false;
-            // opts["compiler"] = "shell";
-            // // opts["jit_cleanup"] = false;
+            // opts["cse"] = true;
+            opts["jit"] = true;
+            opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            opts["jit_options.compiler"] = "gcc";
+            // opts["jit_options.temp_suffix"] = false;
+            opts["compiler"] = "shell";
+            // opts["jit_cleanup"] = false;
 
             f_state_error = casadi::Function("F_state_error",
                                              {cx, cx2},

@@ -5,12 +5,12 @@
 
 std::map<std::string, double> ConvertSolutionToJointMap(const galileo_ros::SolutionRequest &msg)
 {
-    // For now we only concern ourself with the first state
-    std::vector<double> Xt = msg.X_t_wrapped(msg.X_t_wrapped.begin(), msg.X_t_wrapped.begin() + msg.nx);
 
-    std::vector<std::string> joint_names = msg.joint_names;
+    std::vector<double> Xt(msg.response.X_t_wrapped.begin(), msg.response.X_t_wrapped.begin() + msg.response.nx);
 
-    std::vector<double> qj_t = Xt(Xt.begin() + msg.qj_index, Xt.begin() + msg.qj_index + joint_names.size());
+    std::vector<std::string> joint_names = msg.response.joint_names;
+
+    std::vector<double> qj_t(Xt.begin() + msg.response.qj_index, Xt.begin() + msg.response.qj_index + joint_names.size());
 
     // map the joint names to the joint values
     std::map<std::string, double> joint_values;
@@ -37,7 +37,7 @@ sensor_msgs::JointState getJointStateMessage(std::map<std::string, double> joint
 
 void setTransformationOn(const galileo_ros::SolutionRequest &msg, geometry_msgs::TransformStamped &body_transform)
 {
-    std::vector<double> transformation = msg.X_t_wrapped(msg.X_t_wrapped.begin() + msg.q_index, msg.X_t_wrapped.begin() + msg.q_index + 7);
+    std::vector<double> transformation(msg.response.X_t_wrapped.begin() + msg.response.qj_index - 7, msg.response.X_t_wrapped.begin() + msg.response.qj_index);
 
     body_transform.header.stamp = ros::Time::now();
     body_transform.transform.translation.x = transformation[0];
@@ -52,15 +52,14 @@ void setTransformationOn(const galileo_ros::SolutionRequest &msg, geometry_msgs:
 int main(int argc, char **argv)
 {
     // Initialize the ROS node
-    ros::init(argc, argv, "galileo_legged_rvis_node");
+    ros::init(argc, argv, "galileo_ros_legged_rvis_node");
     ros::NodeHandle nh;
-
-    if (argc != 2)
+    std::string solver_id;
+    if (!nh.getParam("galileo_ros/solver_id", solver_id))
     {
-        ROS_ERROR("Usage: rosrun galileo_ros galileo_legged_rvis_node <solver_id>");
+        ROS_ERROR("Failed to get parameters");
         return 1;
     }
-    std::string solver_id = argv[1];
 
     // Create a publisher to publish the solution
     //
@@ -87,16 +86,16 @@ int main(int argc, char **argv)
         if (solution_client.call(solution_request))
         {
             // Convert the solution to a map of joint values
-            std::map<std::string, double> joint_values = ConvertSolutionToJointMap(solution_request.response);
+            std::map<std::string, double> joint_values = ConvertSolutionToJointMap(solution_request);
 
             // Create a JointState message
             sensor_msgs::JointState joint_state_msg = getJointStateMessage(joint_values);
 
-            setTransformationOn(solution_request.response, body_transform);
+            setTransformationOn(solution_request, body_transform);
 
             // Publish the JointState message
             state_publisher.publish(joint_state_msg);
-            tf_broadcaster.sendTransform(body_transform);
+            tf_broadcaster.publish(body_transform);
         }
 
         // Spin once to process callbacks and sleep to maintain the loop rate

@@ -18,6 +18,13 @@ std::vector<double> getX0(int nx, int q_index)
     return X0;
 }
 
+std::vector<double> getXf(int nx, int q_index)
+{
+    std::vector<double> Xf = getX0(nx, q_index);
+    Xf[q_index] = 0.2;
+    return Xf;
+}
+
 void getProblemDataMessages(std::string urdf_name, std::string parameter_file_name,
                             galileo_ros::RobotModel &robot_model_cmd,
                             galileo_ros::ParameterFileLocation &parameter_location_cmd,
@@ -27,13 +34,20 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
     std::string parameter_location = parameter_file_name;
 
     robot_model_cmd.model_file_location = model_location;
-    robot_model_cmd.end_effector_names = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
+
+    std::string end_effectors[] = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
+    robot_model_cmd.end_effector_names = std::vector<std::string>(end_effectors, end_effectors + sizeof(end_effectors) / sizeof(std::string));
 
     parameter_location_cmd.parameter_file_location = parameter_location;
 
-    std::vector<int> knot_num = {180};
-    std::vector<double> knot_time = {1.0};
+    std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
+    std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
+        {0, 0, 0, 0},
+        {0, -1, -1, 0},
+        {-1, 0, 0, -1},
+        {0, -1, -1, 0},
+        {-1, 0, 0, -1},
         {0, 0, 0, 0}};
 
     for (int phase_number = 0; phase_number < knot_num.size(); phase_number++)
@@ -45,16 +59,15 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
         contact_sequence_cmd.phases.push_back(phase);
     }
 
-    std::string end_effectors[] = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
-
-    galileo::legged::LeggedBody robot(model_location, 4, end_effectors);
+    galileo::legged::LeggedBody robot(model_location, robot_model_cmd.end_effector_names.size(), end_effectors);
 
     std::vector<double> X0 = getX0(robot.si->nx, robot.si->q_index);
+    std::vector<double> Xf = getXf(robot.si->nx, robot.si->q_index);
 
     galileo_cmd_msg.command_type = "init";
 
     galileo_cmd_msg.X_initial = X0;
-    galileo_cmd_msg.X_goal = X0;
+    galileo_cmd_msg.X_goal = Xf;
 }
 
 int main(int argc, char **argv)
@@ -100,21 +113,21 @@ int main(int argc, char **argv)
     galileo_ros::InitState init_state;
     init_state.request.call = true;
 
-    ROS_INFO("calling init state\n");
+    ROS_INFO("Calling init state\n");
     ros::spinOnce();
     while (!init_state_client.call(init_state))
     {
-        ROS_INFO("still init state\n");
+        ROS_INFO("Still initing state\n");
         ros::spinOnce();
         ros::Duration(0.3).sleep();
     }
 
-    ROS_INFO("called init state\n");
+    ROS_INFO("Called init state\n");
 
     while (true)
     {
         init_state_client.call(init_state);
-        ROS_INFO("model set: %d, solver parameters set: %d, contact sequence set: %d, fully initted: %d\n",
+        ROS_INFO("Model set: %d, solver parameters set: %d, contact sequence set: %d, fully initted: %d\n",
                  init_state.response.model_set,
                  init_state.response.solver_parameters_set,
                  init_state.response.contact_sequence_set,

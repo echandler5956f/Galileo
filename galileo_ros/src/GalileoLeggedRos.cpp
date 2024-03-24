@@ -28,6 +28,7 @@ namespace galileo
         {
             init_state_service_ = nh_->advertiseService(solver_id_ + "_init_state_service", &GalileoLeggedRos::InitStateServiceCallback, this);
             get_solution_service_ = nh_->advertiseService(solver_id_ + "_get_solution", &GalileoLeggedRos::GetSolutionCallback, this);
+            write_sol_plot_cons_service_ = nh_->advertiseService(solver_id_ + "_write_sol_plot_cons", &GalileoLeggedRos::WriteSolPlotConsCallback, this);
         }
 
         void GalileoLeggedRos::ModelLocationCallback(const galileo_ros::RobotModel::ConstPtr &msg)
@@ -95,8 +96,8 @@ namespace galileo
             auto X0 = casadi::DM(msg->X_initial);
             auto Xf = casadi::DM(msg->X_goal);
 
-            assert(X0.size() == states()->nx);
-            assert(Xf.size() == states()->nx);
+            assert(X0.size1() == states()->nx);
+            assert(Xf.size1() == states()->nx);
 
             Initialize(X0, Xf);
         }
@@ -106,8 +107,8 @@ namespace galileo
             auto X0 = casadi::DM(msg->X_initial);
             auto Xf = casadi::DM(msg->X_goal);
 
-            assert(X0.size() == states()->nx);
-            assert(Xf.size() == states()->nx);
+            assert(X0.size1() == states()->nx);
+            assert(Xf.size1() == states()->nx);
 
             Update(X0, Xf);
         }
@@ -126,6 +127,17 @@ namespace galileo
 
             return true;
         }
+
+        void GalileoLeggedRos::GeneralCommandCallback(const galileo_ros::GalileoCommand::ConstPtr &msg)
+            {
+                if (msg->command_type == "init")
+                {
+                    std::cout << "Initializing solver" << std::endl;
+                    InitializationCallback(msg);
+                }
+
+                UpdateCallback(msg);
+            }
 
         bool GalileoLeggedRos::GetSolutionCallback(galileo_ros::SolutionRequest::Request &req, galileo_ros::SolutionRequest::Response &res)
         {
@@ -157,6 +169,17 @@ namespace galileo
 
             res.times_evaluated = req.times;
             res.solution_exists = true;
+
+            return true;
+        }
+
+        bool GalileoLeggedRos::WriteSolPlotConsCallback(galileo_ros::WriteSolPlotCons::Request &req, galileo_ros::WriteSolPlotCons::Response &res)
+        {
+            Eigen::MatrixXd state_solution = Eigen::MatrixXd::Zero(states()->nx, req.times.size());
+            Eigen::MatrixXd input_solution = Eigen::MatrixXd::Zero(states()->nu, req.times.size());
+
+            Eigen::Map<Eigen::VectorXd> query_times(req.times.data(), req.times.size());
+            VisualizeSolutionAndConstraints(query_times, state_solution, input_solution);
 
             return true;
         }

@@ -33,12 +33,12 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedInterface::LeggedInterface()
+        LeggedInterface::LeggedInterface(std::string sol_data_dir, std::string plot_dir)
         {
             surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
             solution_interface_ = std::make_shared<galileo::opt::solution::Solution>();
-            meshcat_interface = std::make_shared<galileo::tools::MeshcatInterface>("../examples/visualization/solution_data/");
-            plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>("../examples/visualization/plots/");
+            meshcat_interface = std::make_shared<galileo::tools::MeshcatInterface>(sol_data_dir);
+            plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>(plot_dir);
         }
 
         void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names)
@@ -72,8 +72,8 @@ namespace galileo
                 imported_vars[key] = value;
             }
 
-            // opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
-            // opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
+            opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
+            opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
 
             opts_["ipopt.linear_solver"] = "ma97";
             opts_["ipopt.ma97_order"] = "metis";
@@ -213,7 +213,7 @@ namespace galileo
 
         void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
-            std::cout << "Updating" << std::endl;
+            std::cout << "Updating..." << std::endl;
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem
@@ -238,7 +238,6 @@ namespace galileo
             std::unique_lock<std::mutex> lock_sol(solution_mutex_);
             std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
             lock_sol.unlock();
-            std::cout << "Size of constraints: " << constraints.size() << std::endl;
 
             Eigen::MatrixXd subMatrix = state_result.block(states_->q_index, 0, states_->nq, state_result.cols());
             meshcat_interface->WriteTimes(query_times, "sol_times.csv");
@@ -247,7 +246,7 @@ namespace galileo
 
             opt::solution::solution_t solution(query_times, state_result, input_result);
             // plotting_interface->PlotSolution(solution, {},{}, {}, {}, {}, {});
-            std::cout << "Plotting constraints" << std::endl;
+            std::cout << "Plotting constraints..." << std::endl;
             plotting_interface->PlotConstraints(constraints);
         }
 

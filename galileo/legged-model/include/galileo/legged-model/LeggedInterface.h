@@ -35,7 +35,7 @@ namespace galileo
             using EnvironmentSurfaces = galileo::legged::environment::EnvironmentSurfaces;
             using LeggedTrajOpt = galileo::opt::TrajectoryOpt<LeggedRobotProblemData, galileo::legged::contact::ContactMode>;
 
-            LeggedInterface();
+            LeggedInterface(std::string sol_data_dir = "../examples/visualization/solution_data/", std::string plot_dir = "../examples/visualization/plots/");
 
             /**
              * @brief Load the model from a file.

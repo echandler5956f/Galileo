@@ -15,6 +15,7 @@
 #include "galileo_ros/EnvironmentSurface.h"
 #include "galileo_ros/GalileoCommand.h"
 #include "galileo_ros/SolutionRequest.h"
+#include "galileo_ros/WriteSolPlotCons.h"
 #include "galileo_ros/InitState.h"
 
 namespace galileo
@@ -24,7 +25,7 @@ namespace galileo
         class GalileoLeggedRos : public LeggedInterface
         {
         public:
-            GalileoLeggedRos(std::shared_ptr<ros::NodeHandle> nh, std::string solver_id) : LeggedInterface(), nh_(nh), solver_id_(solver_id)
+            GalileoLeggedRos(std::shared_ptr<ros::NodeHandle> nh, std::string solver_id, std::string sol_data_dir = "", std::string plot_dir = "") : LeggedInterface(sol_data_dir, plot_dir), nh_(nh), solver_id_(solver_id)
             {
                 InitPublishers();
                 InitSubscribers();
@@ -56,16 +57,7 @@ namespace galileo
             // Callback for initialization service, checks if the solver can be initialized
             bool InitStateServiceCallback(galileo_ros::InitState::Request &req, galileo_ros::InitState::Response &res);
 
-            void GeneralCommandCallback(const galileo_ros::GalileoCommand::ConstPtr &msg)
-            {
-                if (msg->command_type == "init")
-                {
-                    std::cout << "initiating solver" << std::endl;
-                    InitializationCallback(msg);
-                }
-
-                UpdateCallback(msg);
-            }
+            void GeneralCommandCallback(const galileo_ros::GalileoCommand::ConstPtr &msg);
 
             // Callback for initialization command subscriber, initializes the solver
             void InitializationCallback(const galileo_ros::GalileoCommand::ConstPtr &msg);
@@ -73,6 +65,8 @@ namespace galileo
             void UpdateCallback(const galileo_ros::GalileoCommand::ConstPtr &msg);
 
             bool GetSolutionCallback(galileo_ros::SolutionRequest::Request &req, galileo_ros::SolutionRequest::Response &res);
+
+            bool WriteSolPlotConsCallback(galileo_ros::WriteSolPlotCons::Request &req, galileo_ros::WriteSolPlotCons::Response &res);
 
             std::shared_ptr<ros::NodeHandle> nh_;
             std::string solver_id_;
@@ -86,6 +80,7 @@ namespace galileo
 
             ros::ServiceServer init_state_service_;
             ros::ServiceServer get_solution_service_;
+            ros::ServiceServer write_sol_plot_cons_service_;
         };
 
     }

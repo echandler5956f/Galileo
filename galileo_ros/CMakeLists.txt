@@ -31,6 +31,7 @@ add_service_files(
   FILES
   SolutionRequest.srv
   InitState.srv
+  WriteSolPlotCons.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
