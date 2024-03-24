@@ -6,6 +6,7 @@ add_compile_options(-std=c++17)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  tf
   std_msgs
   sensor_msgs
   message_generation
@@ -47,7 +48,7 @@ generate_messages(
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS roscpp std_msgs message_runtime
+ CATKIN_DEPENDS roscpp tf std_msgs message_runtime
 )
 
 ###########
@@ -96,5 +97,15 @@ add_executable(${PROJECT_NAME}_legged_solver_node
 target_link_libraries(${PROJECT_NAME}_legged_solver_node ${PROJECT_NAME} casadi Eigen3::Eigen galileo )
 
 target_link_libraries(${PROJECT_NAME}_legged_solver_node
+   ${catkin_LIBRARIES}
+)
+
+add_executable(${PROJECT_NAME}_legged_rviz_node
+  src/Nodes/galileo_legged_rviz_node.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_legged_rviz_node ${PROJECT_NAME})
+
+target_link_libraries(${PROJECT_NAME}_legged_rviz_node
    ${catkin_LIBRARIES}
 )

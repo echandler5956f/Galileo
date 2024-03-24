@@ -1,0 +1,13 @@
+<launch>
+    <param name="robot_description" command = "$(find xacro)/xacro --inorder $(find galileo_go1_description)/urdf/go1.urdf" />
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+        <!-- <param name="ignore_timestamp" type="bool" value="true"/> -->
+    </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" />
+
+  <node name="galileo_ros_legged_rviz_node" type="galileo_ros_legged_rviz_node" pkg="galileo_ros" output="screen">
+  </node>
+  
+</launch>

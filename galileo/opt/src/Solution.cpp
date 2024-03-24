@@ -16,10 +16,12 @@ namespace galileo
             {
                 if (query_times.size() == 0)
                 {
+                    std::cout << "No query times provided" << std::endl;
                     return false;
                 }
                 if (solution_segments_.size() == 0)
                 {
+                    std::cout << "No solution segments provided" << std::endl;
                     return false;
                 }
 
@@ -32,18 +34,17 @@ namespace galileo
                         if (query_times(i) >= solution_segments_[j].initial_time && query_times(i) <= solution_segments_[j].end_time)
                         {
                             int state_deg = solution_segments_[j].state_degree + 1;
-                            size_t state_index = ((query_times(i) > solution_segments_[j].state_times.array()).count() - 1) / state_deg;
+                            size_t state_index = ((query_times(i) >= solution_segments_[j].state_times.array()).count() - 1) / state_deg;
                             Eigen::MatrixXd state_terms = solution_segments_[j].solx_segment.block(0, state_index * state_deg, solution_segments_[j].solx_segment.rows(), state_deg);
-                            double state_knot_start_time = solution_segments_[j].state_times[state_index * state_deg - 1];
+                            double state_knot_start_time = solution_segments_[j].state_times[state_index * state_deg];
                             double state_knot_end_time = solution_segments_[j].state_times[(state_index * state_deg) + state_deg - 1];
-
                             double state_scaled_time = (query_times(i) - state_knot_start_time) / (state_knot_end_time - state_knot_start_time);
                             state_result.col(i) = solution_segments_[j].state_poly.barycentricInterpolation(state_scaled_time, state_terms);
 
                             int input_deg = solution_segments_[j].input_degree + 1;
-                            size_t input_index = ((query_times(i) > solution_segments_[j].input_times.array()).count() - 1) / input_deg;
+                            size_t input_index = ((query_times(i) >= solution_segments_[j].input_times.array()).count() - 1) / input_deg;
                             Eigen::MatrixXd input_terms = solution_segments_[j].solu_segment.block(0, input_index * state_deg, solution_segments_[j].solu_segment.rows(), input_deg);
-                            double input_knot_start_time = solution_segments_[j].input_times[input_index * input_deg - 1];
+                            double input_knot_start_time = solution_segments_[j].input_times[input_index * input_deg];
                             double input_knot_end_time = solution_segments_[j].input_times[(input_index * input_deg) + input_deg - 1];
                             double input_scaled_time = (query_times(i) - input_knot_start_time) / (input_knot_end_time - input_knot_start_time);
                             input_result.col(i) = solution_segments_[j].input_poly.barycentricInterpolation(input_scaled_time, input_terms);
@@ -101,10 +102,6 @@ namespace galileo
                 eigenToCasadi(state_result, dm_state_result);
                 eigenToCasadi(input_result, dm_input_result);
                 eigenToCasadi(query_times, dm_times);
-
-                std::cout << "dm_state_result: " << dm_state_result.size1() << " x " << dm_state_result.size2() << std::endl;
-                std::cout << "dm_input_result: " << dm_input_result.size1() << " x " << dm_input_result.size2() << std::endl;
-                std::cout << "dm_times: " << dm_times.size1() << " x " << dm_times.size2() << std::endl;
 
                 for (size_t i = 0; i < constraint_data_segments_.size(); ++i)
                 {

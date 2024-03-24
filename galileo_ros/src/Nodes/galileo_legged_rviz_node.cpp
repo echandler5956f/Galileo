@@ -52,7 +52,7 @@ void setTransformationOn(const galileo_ros::SolutionRequest &msg, geometry_msgs:
 int main(int argc, char **argv)
 {
     // Initialize the ROS node
-    ros::init(argc, argv, "galileo_ros_legged_rvis_node");
+    ros::init(argc, argv, "galileo_ros_legged_rviz_node");
     ros::NodeHandle nh;
     std::string solver_id;
     if (!nh.getParam("galileo_ros/solver_id", solver_id))
@@ -62,40 +62,59 @@ int main(int argc, char **argv)
     }
 
     // Create a publisher to publish the solution
-    //
     ros::Publisher state_publisher = nh.advertise<sensor_msgs::JointState>("/joint_states", 1);
-    ros::Publisher tf_broadcaster = nh.advertise<tf::TransformBroadcaster>("/tf", 1);
 
     // Create a ServiceClient to request the solution
-
     ros::ServiceClient solution_client = nh.serviceClient<galileo_ros::SolutionRequest>(solver_id + "_get_solution");
     geometry_msgs::TransformStamped body_transform;
-    body_transform.header.frame_id = "odom";
-    body_transform.child_frame_id = "body";
+    body_transform.header.frame_id = "world";
+    body_transform.child_frame_id = "base";
+
+    // Create a TransformBroadcaster
+    tf::TransformBroadcaster tf_broadcaster;
+    std::cout << "Starting loop" << std::endl;
 
     // Main loop
     ros::Rate loop_rate(50); // 50 Hz
+    ros::Time start_time = ros::Time::now(); // Get the start time
     while (ros::ok())
     {
         // Request the solution
         galileo_ros::SolutionRequest solution_request;
 
-        // SET TO 0 FOR NOW
-        solution_request.request.times = {0};
+        ros::Time current_time = ros::Time::now(); // Get the current time
+        double elapsed_time = (current_time - start_time).toSec(); // Calculate the elapsed time in seconds
+        elapsed_time = fmod(elapsed_time, 1.3); // Keep the elapsed time between 0 and 1.2 seconds
+        solution_request.request.times = {elapsed_time};
 
         if (solution_client.call(solution_request))
         {
+            std::cout << "Solution received" << std::endl;
             // Convert the solution to a map of joint values
             std::map<std::string, double> joint_values = ConvertSolutionToJointMap(solution_request);
+
+            std::cout << "Publishing solution" << std::endl;
 
             // Create a JointState message
             sensor_msgs::JointState joint_state_msg = getJointStateMessage(joint_values);
 
+            std::cout << "Setting transformation" << std::endl;
+
             setTransformationOn(solution_request, body_transform);
+
+            std::cout << "Publishing transformation" << std::endl;
 
             // Publish the JointState message
             state_publisher.publish(joint_state_msg);
-            tf_broadcaster.publish(body_transform);
+
+            std::cout << "Getting transformation" << std::endl;
+
+            // Broadcast the transform
+            tf::StampedTransform tf_transform;
+            tf::transformStampedMsgToTF(body_transform, tf_transform);
+
+            std::cout << "Broadcasting transformation" << std::endl;
+            tf_broadcaster.sendTransform(tf_transform);
         }
 
         // Spin once to process callbacks and sleep to maintain the loop rate

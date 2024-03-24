@@ -35,7 +35,7 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
 
     robot_model_cmd.model_file_location = model_location;
 
-    std::string end_effectors[] = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
+    std::string end_effectors[] = {"FL_foot", "FR_foot", "RL_foot", "RR_foot"};
     robot_model_cmd.end_effector_names = std::vector<std::string>(end_effectors, end_effectors + sizeof(end_effectors) / sizeof(std::string));
 
     parameter_location_cmd.parameter_file_location = parameter_location;

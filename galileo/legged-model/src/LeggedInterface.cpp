@@ -223,23 +223,28 @@ namespace galileo
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             //@todo Akshay5312, reevaluate thread safety
             solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
+            std::cout << "Updated solution" << std::endl;
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
+            std::cout << "Updated constraints" << std::endl;
         }
 
         bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
+            std::cout << "Getting solution..." << std::endl;
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             return solution_interface_->GetSolution(query_times, state_result, input_result);
         }
 
         void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
-
+            std::cout << "Visualizing solution and constraints..." << std::endl;
             std::unique_lock<std::mutex> lock_sol(solution_mutex_);
             std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
             lock_sol.unlock();
+            std::cout << "Got constraints" << std::endl;
 
             Eigen::MatrixXd subMatrix = state_result.block(states_->q_index, 0, states_->nq, state_result.cols());
+            std::cout << "Writing to files..." << std::endl;
             meshcat_interface->WriteTimes(query_times, "sol_times.csv");
             meshcat_interface->WriteJointPositions(subMatrix, "sol_states.csv");
             meshcat_interface->WriteMetadata(model_file_location_, "metadata.csv");

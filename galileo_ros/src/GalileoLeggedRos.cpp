@@ -141,8 +141,8 @@ namespace galileo
 
         bool GalileoLeggedRos::GetSolutionCallback(galileo_ros::SolutionRequest::Request &req, galileo_ros::SolutionRequest::Response &res)
         {
-            Eigen::MatrixXd state_solution;
-            Eigen::MatrixXd input_solution;
+            Eigen::MatrixXd state_solution = Eigen::MatrixXd::Zero(states()->nx, req.times.size());
+            Eigen::MatrixXd input_solution = Eigen::MatrixXd::Zero(states()->nu, req.times.size());
 
             Eigen::Map<Eigen::VectorXd> query_times(req.times.data(), req.times.size());
             bool solution_exists = GetSolution(query_times, state_solution, input_solution);
@@ -157,6 +157,8 @@ namespace galileo
             std::vector<double> input_vec(input_solution.data(), input_solution.data() + input_solution.size());
 
             res.joint_names = getJointNames();
+            res.joint_names.erase(res.joint_names.begin(), res.joint_names.begin() + 2); // delete the universe and root_joint
+            
             res.qj_index = states()->qj_index;
 
             res.X_t_wrapped = state_vec;
