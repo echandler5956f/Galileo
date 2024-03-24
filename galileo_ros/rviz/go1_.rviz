@@ -327,7 +327,7 @@ Visualization Manager:
       Marker Topic: /42_positions
       Name: Marker
       Namespaces:
-        s::VoidConstPtr ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -335,7 +335,7 @@ Visualization Manager:
       Marker Topic: /42_positions
       Name: Marker
       Namespaces:
-        s::VoidConstPtr ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -343,7 +343,7 @@ Visualization Manager:
       Marker Topic: /56_positions
       Name: Marker
       Namespaces:
-        r ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        s::VoidConstPtr ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -351,7 +351,7 @@ Visualization Manager:
       Marker Topic: /56_forces
       Name: Marker
       Namespaces:
-        onCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        os::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -359,7 +359,7 @@ Visualization Manager:
       Marker Topic: /14_forces
       Name: Marker
       Namespaces:
-        x: true
+        "Force: ": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -367,7 +367,7 @@ Visualization Manager:
       Marker Topic: /28_forces
       Name: Marker
       Namespaces:
-        VoidConstPtr ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        f: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -375,7 +375,7 @@ Visualization Manager:
       Marker Topic: /56_forces
       Name: Marker
       Namespaces:
-        onCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        os::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -383,7 +383,15 @@ Visualization Manager:
       Marker Topic: /42_forces
       Name: Marker
       Namespaces:
-        os::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        VoidConstPtr ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /com_projected
+      Name: Marker
+      Namespaces:
+        com_projected: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -414,7 +422,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.466251254081726
+      Distance: 0.3086637258529663
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -430,9 +438,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.14039818942546844
+      Pitch: -1.059601068496704
       Target Frame: <Fixed Frame>
-      Yaw: 5.113578796386719
+      Yaw: 4.483579158782959
     Saved: ~
 Window Geometry:
   Displays:
@@ -450,5 +458,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 825
-  Y: 197
+  X: 648
+  Y: 160

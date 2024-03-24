@@ -52,6 +52,9 @@ int main(int argc, char **argv)
     ros::Subscriber vis_time_sub = nh->subscribe("/visualization_time", 1, &visualizationTimeCallback);
 
     std::map<int, ros::Publisher> end_effector_position_pubs;
+    ros::Publisher com_traj_publisher = nh->advertise<visualization_msgs::Marker>("/com_traj", 1);
+    ros::Publisher com_projected_publisher = nh->advertise<visualization_msgs::Marker>("/com_projected", 1);
+
     std::map<int, ros::Publisher> end_effector_force_publisher;
 
     for (auto &end_effector : robot.getEndEffectors())
@@ -84,6 +87,8 @@ int main(int argc, char **argv)
             int num_times = msg.response.times_evaluated.size();
             std::map<int, std::vector<geometry_msgs::Point>> points;
 
+            std::vector<geometry_msgs::Point> com_traj;
+
             for (int i = 0; i < num_times; i++)
             {
                 std::vector<double> Xt = getSolutionAtTimeIdx(msg, i);
@@ -111,7 +116,23 @@ int main(int argc, char **argv)
 
                     points[end_effector.first].push_back(point);
                 }
+
+                // GET COM POSITION
+                Eigen::Vector3d com_pos = pinocchio::centerOfMass(robot.model, robot.data, q);
+                geometry_msgs::Point com_point;
+                com_point.x = com_pos[0];
+                com_point.y = com_pos[1];
+                com_point.z = com_pos[2];
+                com_traj.push_back(com_point);
             }
+
+            int ee_idx = 0;
+
+            std::vector<std::vector<double>> force_colors{
+                {38, 115, 126},
+                {87, 187, 91},
+                {139, 38, 53},
+                {16, 29, 66}};
 
             for (auto &end_effector : robot.getEndEffectors())
             {
@@ -123,13 +144,40 @@ int main(int argc, char **argv)
                 position_marker.type = visualization_msgs::Marker::LINE_STRIP;
                 position_marker.action = visualization_msgs::Marker::ADD;
 
-                position_marker.scale.x = 0.01;
-                position_marker.color.g = 0.60;
-                position_marker.color.r = 0.30;
+                position_marker.scale.x = 0.005;
+                position_marker.scale.y = 0.005;
+                position_marker.scale.z = 0.005;
+
+                position_marker.color.r = force_colors[ee_idx][0] / 255.0;
+                position_marker.color.g = force_colors[ee_idx][1] / 255.0;
+                position_marker.color.b = force_colors[ee_idx][2] / 255.0;
+
                 position_marker.color.a = 1.0;
                 position_marker.points = points[end_effector.first];
                 end_effector_position_pubs[end_effector.first].publish(position_marker);
+
+                ee_idx++;
             }
+
+            visualization_msgs::Marker com_traj_marker;
+            com_traj_marker.header.frame_id = "world";
+            com_traj_marker.header.stamp = ros::Time::now();
+            com_traj_marker.ns = "com_traj";
+            com_traj_marker.id = 0;
+            com_traj_marker.type = visualization_msgs::Marker::LINE_STRIP;
+            com_traj_marker.action = visualization_msgs::Marker::ADD;
+
+            com_traj_marker.scale.x = 0.005;
+            com_traj_marker.scale.y = 0.005;
+            com_traj_marker.scale.z = 0.005;
+
+            com_traj_marker.color.r = 0.50;
+            com_traj_marker.color.g = 0.50;
+            com_traj_marker.color.b = 0.50;
+
+            com_traj_marker.color.a = 1.0;
+            com_traj_marker.points = com_traj;
+            com_traj_publisher.publish(com_traj_marker);
 
             // get the forces of each end effector _now_ and send them in a message
             int index_of_time_closest_to_t = 0;
@@ -144,13 +192,53 @@ int main(int argc, char **argv)
             }
 
             std::vector<double> u_t = getSolutionForceAtTimeIdx(msg, index_of_time_closest_to_t);
+            std::vector<double> X_t = getSolutionAtTimeIdx(msg, index_of_time_closest_to_t);
+
+            std::vector<double> q_t(X_t.begin() + robot.si->q_index, X_t.begin() + robot.si->q_index + robot.si->nq);
+
+            Eigen::VectorXd q = Eigen::Map<Eigen::VectorXd>(q_t.data(), q_t.size());
+
+            pinocchio::framesForwardKinematics(robot.model, robot.data, q);
+            pinocchio::updateFramePlacements(robot.model, robot.data);
+
+            Eigen::VectorXd com_pos = pinocchio::centerOfMass(robot.model, robot.data, q);
+
+            geometry_msgs::Point com_proj_point;
+
+            com_proj_point.x = com_pos[0];
+            com_proj_point.y = com_pos[1];
+            com_proj_point.z = 0;
+
+            std::cout << "COM: " << com_proj_point.x << " " << com_proj_point.y << " " << com_proj_point.z << std::endl;
+
+            visualization_msgs::Marker com_proj_marker;
+            com_proj_marker.header.frame_id = "world";
+            com_proj_marker.header.stamp = ros::Time::now();
+            com_proj_marker.ns = "com_projected";
+            com_proj_marker.id = 0;
+            com_proj_marker.type = visualization_msgs::Marker::SPHERE;
+            com_proj_marker.action = visualization_msgs::Marker::ADD;
+
+            com_proj_marker.scale.x = 0.02;
+            com_proj_marker.scale.y = 0.02;
+            com_proj_marker.scale.z = 0.02;
+
+            com_proj_marker.color.r = 0.50;
+            com_proj_marker.color.g = 0.50;
+            com_proj_marker.color.b = 0.50;
+
+            com_proj_marker.color.a = 1.0;
+
+            com_proj_marker.points.push_back(com_proj_point);
+            com_proj_marker.points.push_back(com_proj_point);
+
+            com_projected_publisher.publish(com_proj_marker);
 
             Eigen::VectorXd u = Eigen::Map<Eigen::VectorXd>(u_t.data(), u_t.size());
-
             auto robot_end_effectors = robot.getEndEffectors();
-
             int ee_local_start_index = 0;
 
+            ee_idx = 0;
             for (auto &end_effector : robot.getEndEffectors())
             {
                 visualization_msgs::Marker force_marker;
@@ -164,11 +252,14 @@ int main(int argc, char **argv)
                 force_marker.scale.x = 0.01;
                 force_marker.scale.y = 0.01;
                 force_marker.scale.z = 0.01;
-                force_marker.color.b = 0.90;
-                force_marker.color.g = 0.30;
+
+                force_marker.color.r = force_colors[ee_idx][0] / 255.0;
+                force_marker.color.g = force_colors[ee_idx][1] / 255.0;
+                force_marker.color.b = force_colors[ee_idx][2] / 255.0;
+
                 force_marker.color.a = 1.0;
 
-                double force_scaling = 0.005;
+                double force_scaling = 0.002;
 
                 int ee_dof = end_effector.second->is_6d ? 6 : 3;
 
@@ -188,11 +279,10 @@ int main(int argc, char **argv)
                 termination_point.y = point.y + force[1];
                 termination_point.z = point.z + force[2];
 
-                std::cout << "Force: " << force.transpose() << std::endl;
-
                 force_marker.points.push_back(termination_point);
 
                 end_effector_force_publisher[end_effector.first].publish(force_marker);
+                ee_idx++;
             }
 
             horizon = msg.response.solution_horizon;
