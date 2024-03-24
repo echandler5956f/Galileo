@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(galileo_go1_description)
+project(galileo_huron_description)
 
 find_package(catkin REQUIRED COMPONENTS
     genmsg

@@ -42,7 +42,7 @@ namespace galileo
                     this->friction_cone_problem_data.x = x;
                     this->friction_cone_problem_data.u = u;
                     this->friction_cone_problem_data.t = t;
-                    this->friction_cone_problem_data.mu = 0.35;
+                    this->friction_cone_problem_data.mu = 0.7;
                     this->friction_cone_problem_data.approximation_order = FrictionConeProblemData::ApproximationOrder::FIRST_ORDER;
 
                     this->contact_constraint_problem_data.environment_surfaces = environment_surfaces;
@@ -65,7 +65,7 @@ namespace galileo
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
 
-                    this->velocity_constraint_problem_data.ideal_offset_height = 0.08;
+                    this->velocity_constraint_problem_data.ideal_offset_height = 0.25;
                     this->velocity_constraint_problem_data.max_following_leeway_planar = 0.25;
                     this->velocity_constraint_problem_data.min_following_leeway_planar = 1e-2;
 

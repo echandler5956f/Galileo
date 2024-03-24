@@ -29,6 +29,9 @@ namespace galileo
             cdt = casadi::SX::sym("dt");
 
             q_AD = Eigen::Map<ConfigVectorAD>(static_cast<std::vector<ADScalar>>(si->get_q(cx)).data(), model.nq, 1);
+            pinocchio::forwardKinematics(cmodel, cdata, q_AD);
+            pinocchio::framesForwardKinematics(cmodel, cdata, q_AD);
+            pinocchio::updateFramePlacements(cmodel, cdata);
             createGeneralFunctions();
         }
 
@@ -170,8 +173,6 @@ namespace galileo
         {
             pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
             pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
-            pinocchio::forwardKinematics(cmodel, cdata, q_AD);
-            pinocchio::updateFramePlacements(cmodel, cdata);
 
             casadi::SX mass = cdata.mass[0];
             casadi::SX g = casadi::SX::zeros(3, 1);

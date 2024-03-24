@@ -78,8 +78,8 @@ namespace galileo
             opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
             opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
 
-            // opts_["ipopt.linear_solver"] = "ma97";
-            // opts_["ipopt.ma97_order"] = "metis";
+            opts_["ipopt.linear_solver"] = "ma97";
+            opts_["ipopt.ma97_order"] = "metis";
             // opts_["snopt.Major iterations limit"] = 1;
             // opts_["snopt.Minor iterations limit"] = 1;
             // opts_["snopt.Iterations limit"] = 1;
@@ -141,9 +141,12 @@ namespace galileo
 
             pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
 
+            galileo::legged::contact::RobotEndEffectors ees = getEndEffectors();
             casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
-            // Hardcoded for 3-joint quadrupeds for now
-            U_ref(casadi::Slice(2, 11, 3)) = 9.81 * robot_->cdata.mass[0] / robot_->num_end_effectors_;
+            for (auto ee : ees)
+            {
+                U_ref(casadi::Slice(std::get<0>(states_->frame_id_to_index_range[ee.second->frame_id]) + 2)) = 9.81 * robot_->cdata.mass[0] / robot_->num_end_effectors_;
+            }
             casadi::SX u_error = robot_->cu - U_ref;
 
             L = casadi::Function("L",
@@ -159,7 +162,6 @@ namespace galileo
         std::vector<LeggedInterface::LeggedConstraintBuilderType>
         LeggedInterface::getLeggedConstraintBuilders() const
         {
-
             LeggedConstraintBuilderType friction_cone_constraint_builder =
                 std::make_shared<constraints::FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
@@ -252,8 +254,15 @@ namespace galileo
             meshcat_interface->WriteJointPositions(subMatrix, "sol_states.csv");
             meshcat_interface->WriteMetadata(model_file_location_, "metadata.csv");
 
-            opt::solution::solution_t solution(query_times, state_result, input_result);
-            // plotting_interface->PlotSolution(solution, {},{}, {}, {}, {}, {});
+            opt::solution::solution_t solution(query_times, state_result.transpose(), input_result.transpose());
+
+            std::cout << "Plotting solution..." << std::endl;
+            plotting_interface->PlotSolution(solution, {std::make_tuple(states_->q_index, states_->q_index + 3), std::make_tuple(states_->q_index + 3, states_->q_index + states_->nqb)},
+                                             {},
+                                             {"Positions", "Orientations"},
+                                             {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                                             {},
+                                             {});
             std::cout << "Plotting constraints..." << std::endl;
             plotting_interface->PlotConstraints(constraints);
         }

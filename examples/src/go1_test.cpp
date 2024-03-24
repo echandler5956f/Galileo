@@ -8,13 +8,13 @@ int main(int argc, char **argv)
     // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.05};
     // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110,  0b1111}; // trot
 
-    // std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
-    // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
-    // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110, 0b1001, 0b0110, 0b1111}; // trot
+    std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
+    std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
+    std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110, 0b1001, 0b0110, 0b1111}; // trot
 
-    std::vector<int> knot_num = {30, 30, 30};
-    std::vector<double> knot_time = {0.05, 0.3, 0.05};
-    std::vector<uint> mask_vec = {0b1111, 0b0000, 0b1111}; // jump
+    // std::vector<int> knot_num = {30, 30, 30};
+    // std::vector<double> knot_time = {0.05, 0.3, 0.05};
+    // std::vector<uint> mask_vec = {0b1111, 0b0000, 0b1111}; // jump
 
     // std::vector<int> knot_num = {5, 30};
     // std::vector<double> knot_time = {0.05, 0.3};
@@ -26,9 +26,9 @@ int main(int argc, char **argv)
     for (int i = 0; i < mask_vec.size(); i++)
     {
         tmp_surfaces.clear();
-        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < end_effector_names.size(); j++)
         {
-            if (mask_vec[i] & (8 >> j))
+            if (mask_vec[i] & (int(pow(2, end_effector_names.size() - 1))  >> j))
             {
                 tmp_surfaces.push_back(0);
             }

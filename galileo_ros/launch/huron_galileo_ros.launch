@@ -1,0 +1,20 @@
+<launch>
+  <arg name="urdf_filename" default="$(find galileo_huron_description)/urdf/huron.urdf" />
+  <arg name="parameters_location" default="$(find galileo_huron_description)/SolverParameters/huron_solver_parameters.txt" />
+  <arg name="solver_id" default="galileo_huron" />
+  <arg name="sol_data_dir" default="$(find galileo_ros)../examples/visualization/solution_data/" />
+  <arg name="plot_dir" default="$(find galileo_ros)../examples/visualization/plots/" />
+
+  <param name="galileo_ros/urdf_filename" value="$(arg urdf_filename)"/>
+  <param name="galileo_ros/parameters_location" value="$(arg parameters_location)"/>
+  <param name="galileo_ros/solver_id" value="$(arg solver_id)"/>
+  <param name="galileo_ros/sol_data_dir" value="$(arg sol_data_dir)"/>
+  <param name="galileo_ros/plot_dir" value="$(arg plot_dir)"/>
+
+  <node name="galileo_ros_legged_solver_node" type="galileo_ros_legged_solver_node" pkg="galileo_ros" output="screen">
+  </node>
+  
+  <node name="galileo_ros_legged_initialization_node" type="galileo_ros_legged_initialization_node" pkg="galileo_ros" output="screen">
+  </node>
+  
+</launch>
