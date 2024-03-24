@@ -75,7 +75,7 @@ int main(int argc, char **argv)
     std::cout << "Starting loop" << std::endl;
 
     // Main loop
-    ros::Rate loop_rate(50); // 50 Hz
+    ros::Rate loop_rate(60); // 60 Hz
     ros::Time start_time = ros::Time::now(); // Get the start time
     while (ros::ok())
     {
@@ -89,31 +89,31 @@ int main(int argc, char **argv)
 
         if (solution_client.call(solution_request))
         {
-            std::cout << "Solution received" << std::endl;
+            // std::cout << "Solution received" << std::endl;
             // Convert the solution to a map of joint values
             std::map<std::string, double> joint_values = ConvertSolutionToJointMap(solution_request);
 
-            std::cout << "Publishing solution" << std::endl;
+            // std::cout << "Publishing solution" << std::endl;
 
             // Create a JointState message
             sensor_msgs::JointState joint_state_msg = getJointStateMessage(joint_values);
 
-            std::cout << "Setting transformation" << std::endl;
+            // std::cout << "Setting transformation" << std::endl;
 
             setTransformationOn(solution_request, body_transform);
 
-            std::cout << "Publishing transformation" << std::endl;
+            // std::cout << "Publishing transformation" << std::endl;
 
             // Publish the JointState message
             state_publisher.publish(joint_state_msg);
 
-            std::cout << "Getting transformation" << std::endl;
+            // std::cout << "Getting transformation" << std::endl;
 
             // Broadcast the transform
             tf::StampedTransform tf_transform;
             tf::transformStampedMsgToTF(body_transform, tf_transform);
 
-            std::cout << "Broadcasting transformation" << std::endl;
+            // std::cout << "Broadcasting transformation" << std::endl;
             tf_broadcaster.sendTransform(tf_transform);
         }
 

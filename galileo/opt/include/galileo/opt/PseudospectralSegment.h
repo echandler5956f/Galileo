@@ -2,6 +2,7 @@
 
 #include "galileo/opt/Segment.h"
 #include "galileo/opt/LagrangePolynomial.h"
+#include "galileo/tools/CasadiConversions.h"
 #include <chrono>
 
 namespace galileo

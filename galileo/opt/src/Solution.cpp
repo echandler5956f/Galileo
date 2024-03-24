@@ -64,30 +64,6 @@ namespace galileo
                 constraint_data_segments_ = constarint_data_segments;
             }
 
-            // specialized implementation using memcpy; not really needed elsewhere
-            void eigenToCasadi(const Eigen::MatrixXd &eigen_matrix, casadi::DM &casadi_matrix)
-            {
-                size_t rows = eigen_matrix.rows();
-                size_t cols = eigen_matrix.cols();
-
-                casadi_matrix.resize(rows, cols);
-                casadi_matrix = casadi::DM::zeros(rows, cols);
-
-                std::memcpy(casadi_matrix.ptr(), eigen_matrix.data(), sizeof(double) * rows * cols);
-            }
-
-            // specialized implementation using memcpy; not really needed elsewhere
-            void casadiToEigen(const casadi::DM &casadi_matrix, Eigen::MatrixXd &eigen_matrix)
-            {
-                size_t rows = casadi_matrix.size1();
-                size_t cols = casadi_matrix.size2();
-
-                eigen_matrix.resize(rows, cols);
-                eigen_matrix.setZero(rows, cols);
-
-                std::memcpy(eigen_matrix.data(), casadi_matrix.ptr(), sizeof(double) * rows * cols);
-            }
-
             std::vector<std::vector<constraint_evaluations_t>> Solution::GetConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
             {
                 GetSolution(query_times, state_result, input_result);
@@ -99,9 +75,9 @@ namespace galileo
                 casadi::DM dm_input_result;
                 casadi::DM dm_times;
 
-                eigenToCasadi(state_result, dm_state_result);
-                eigenToCasadi(input_result, dm_input_result);
-                eigenToCasadi(query_times, dm_times);
+                tools::eigenToCasadi(state_result, dm_state_result);
+                tools::eigenToCasadi(input_result, dm_input_result);
+                tools::eigenToCasadi(query_times, dm_times);
 
                 for (size_t i = 0; i < constraint_data_segments_.size(); ++i)
                 {
@@ -126,11 +102,11 @@ namespace galileo
                                                 .at(0);
 
                         Eigen::MatrixXd eval;
-                        casadiToEigen(con_eval, eval);
+                        tools::casadiToEigen(con_eval, eval);
                         Eigen::MatrixXd lb;
-                        casadiToEigen(con_lb, lb);
+                        tools::casadiToEigen(con_lb, lb);
                         Eigen::MatrixXd ub;
-                        casadiToEigen(con_ub, ub);
+                        tools::casadiToEigen(con_ub, ub);
 
                         eval.transposeInPlace();
                         lb.transposeInPlace();
