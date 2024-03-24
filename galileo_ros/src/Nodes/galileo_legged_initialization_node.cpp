@@ -59,26 +59,21 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
 
 int main(int argc, char **argv)
 {
-    // ros::start();
-    // ros::Rate loop_rate(10);
-
-    if (argc != 4)
-    {
-        std::cerr << "Usage: rosrun galileo_ros galileo_legged_test_node <solver_id> <urdf_file_name> <parameter_file_name>" << std::endl;
-        std::cerr << "<urdf_file_name> and <parameter_file_name> must exist" << std::endl;
-        return 1;
-    }
-
-    std::string solver_id = argv[1];
-    std::string urdf_file_name = argv[2];
-    std::string parameter_file_name = argv[3];
-
-    ros::init(argc, argv, solver_id + "_test_node");
+    ros::init(argc, argv, "galileo_ros_legged_initialization_node");
     std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
 
-    ROS_INFO("Creating the solver object\n");
+    std::string solver_id;
+    std::string urdf_file_name;
+    std::string parameter_file_name;
 
-    // galileo::legged::GalileoLeggedRos go1_solver(nh, solver_id);
+    // Get parameters from the parameter server
+    if (!nh->getParam("galileo_ros/solver_id", solver_id) ||
+        !nh->getParam("galileo_ros/urdf_filename", urdf_file_name) ||
+        !nh->getParam("galileo_ros/parameters_location", parameter_file_name))
+    {
+        ROS_ERROR("Failed to get parameters");
+        return 1;
+    }
 
     galileo_ros::RobotModel model_location_msg;
     galileo_ros::ParameterFileLocation parameter_location_msg;

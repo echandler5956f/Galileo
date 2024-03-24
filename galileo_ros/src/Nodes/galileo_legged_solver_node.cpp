@@ -4,18 +4,19 @@
 
 int main(int argc, char **argv)
 {
+    ros::init(argc, argv, "galileo_ros_legged_solver_node");
 
-    if (argc != 2)
+    std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
+    std::string solver_id;
+
+    // Get parameters from the parameter server
+    if (!nh->getParam("galileo_ros/solver_id", solver_id))
     {
-        std::cerr << "Usage: rosrun galileo_ros galileo_legged_test_node <solver_id> " << std::endl;
+        ROS_ERROR("Failed to get parameters");
         return 1;
     }
 
-    std::string solver_id = argv[1];
-
-    ros::init(argc, argv, solver_id + "_solver_node");
-    std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
-
+    ROS_INFO("Creating the solver object\n");
     galileo::legged::GalileoLeggedRos galileo_legged_solver(nh, solver_id);
 
     ros::spin();
