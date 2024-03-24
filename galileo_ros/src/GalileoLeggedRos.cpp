@@ -67,10 +67,10 @@ namespace galileo
                 for (auto &csurface_id : phase.contact_surface_ids)
                 {
 
-                    mask_bin *= 2;
+                    mask_bin /= 2;
                     if (csurface_id != galileo::legged::environment::NO_SURFACE)
                     {
-                        mask_bin += 1;
+                        mask_bin += pow(2, getEndEffectors().size() - 1);
                     }
                 }
                 mask_vec.push_back(mask_bin);
