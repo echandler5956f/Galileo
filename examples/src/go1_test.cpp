@@ -8,9 +8,13 @@ int main(int argc, char **argv)
     // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.05};
     // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110,  0b1111}; // trot
 
-    std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
-    std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
-    std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110, 0b1001, 0b0110, 0b1111}; // trot
+    // std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
+    // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
+    // std::vector<uint> mask_vec = {0b1111, 0b1001, 0b0110, 0b1001, 0b0110, 0b1111}; // trot
+
+    std::vector<int> knot_num = {30, 30, 30};
+    std::vector<double> knot_time = {0.05, 0.3, 0.05};
+    std::vector<uint> mask_vec = {0b1111, 0b0000, 0b1111}; // jump
 
     // std::vector<int> knot_num = {5, 30};
     // std::vector<double> knot_time = {0.05, 0.3};

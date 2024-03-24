@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
         ros::Time current_time = ros::Time::now(); // Get the current time
         double elapsed_time = (current_time - start_time).toSec(); // Calculate the elapsed time in seconds
-        elapsed_time = fmod(elapsed_time, 1.3); // Keep the elapsed time between 0 and 1.2 seconds
+        elapsed_time = fmod(elapsed_time, 0.4); // TODO make this a parameter in the launch file
         solution_request.request.times = {elapsed_time};
 
         if (solution_client.call(solution_request))
