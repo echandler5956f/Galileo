@@ -129,15 +129,15 @@ namespace galileo
         }
 
         void GalileoLeggedRos::GeneralCommandCallback(const galileo_ros::GalileoCommand::ConstPtr &msg)
+        {
+            if (msg->command_type == "init")
             {
-                if (msg->command_type == "init")
-                {
-                    std::cout << "Initializing solver" << std::endl;
-                    InitializationCallback(msg);
-                }
-
-                UpdateCallback(msg);
+                std::cout << "Initializing solver" << std::endl;
+                InitializationCallback(msg);
             }
+
+            UpdateCallback(msg);
+        }
 
         bool GalileoLeggedRos::GetSolutionCallback(galileo_ros::SolutionRequest::Request &req, galileo_ros::SolutionRequest::Response &res)
         {
@@ -145,6 +145,13 @@ namespace galileo
             Eigen::MatrixXd input_solution = Eigen::MatrixXd::Zero(states()->nu, req.times.size());
 
             Eigen::Map<Eigen::VectorXd> query_times(req.times.data(), req.times.size());
+
+            std::cout << "Getting solutions at ";
+            for (auto &time : req.times)
+            {
+                std::cout << time << " ";
+            }
+            std::cout << '\n';
             bool solution_exists = GetSolution(query_times, state_solution, input_solution);
 
             if (!solution_exists)
@@ -158,7 +165,7 @@ namespace galileo
 
             res.joint_names = getJointNames();
             res.joint_names.erase(res.joint_names.begin(), res.joint_names.begin() + 2); // delete the universe and root_joint
-            
+
             res.qj_index = states()->qj_index;
 
             res.X_t_wrapped = state_vec;
@@ -168,6 +175,8 @@ namespace galileo
             res.nu = input_solution.rows();
 
             res.solution_horizon = getSolutionDT();
+
+            std::cout << "horizon: " << res.solution_horizon << '\n';
 
             res.times_evaluated = req.times;
             res.solution_exists = true;

@@ -3,10 +3,15 @@
 #include <sensor_msgs/JointState.h>
 #include <tf/transform_broadcaster.h>
 
-std::map<std::string, double> ConvertSolutionToJointMap(const galileo_ros::SolutionRequest &msg)
+std::vector<double> getSolutionAtTimeIdx(const galileo_ros::SolutionRequest &msg, int t_idx = 0)
+{
+    return std::vector<double>(msg.response.X_t_wrapped.begin() + msg.response.nx * t_idx, msg.response.X_t_wrapped.begin() + msg.response.nx * (1 + t_idx));
+}
+
+std::map<std::string, double> ConvertSolutionToJointMap(const galileo_ros::SolutionRequest &msg, int t_idx = 0)
 {
 
-    std::vector<double> Xt(msg.response.X_t_wrapped.begin(), msg.response.X_t_wrapped.begin() + msg.response.nx);
+    std::vector<double> Xt = getSolutionAtTimeIdx(msg, t_idx);
 
     std::vector<std::string> joint_names = msg.response.joint_names;
 
@@ -51,6 +56,7 @@ void setTransformationOn(const galileo_ros::SolutionRequest &msg, geometry_msgs:
 
 int main(int argc, char **argv)
 {
+    double horizon = 0.4;
     // Initialize the ROS node
     ros::init(argc, argv, "galileo_ros_legged_rviz_node");
     ros::NodeHandle nh;
@@ -75,16 +81,16 @@ int main(int argc, char **argv)
     std::cout << "Starting loop" << std::endl;
 
     // Main loop
-    ros::Rate loop_rate(60); // 60 Hz
+    ros::Rate loop_rate(60);                 // 60 Hz
     ros::Time start_time = ros::Time::now(); // Get the start time
     while (ros::ok())
     {
         // Request the solution
         galileo_ros::SolutionRequest solution_request;
 
-        ros::Time current_time = ros::Time::now(); // Get the current time
+        ros::Time current_time = ros::Time::now();                 // Get the current time
         double elapsed_time = (current_time - start_time).toSec(); // Calculate the elapsed time in seconds
-        elapsed_time = fmod(elapsed_time, 0.4); // TODO make this a parameter in the launch file
+        elapsed_time = fmod(elapsed_time, horizon);                // TODO make this a parameter in the launch file
         solution_request.request.times = {elapsed_time};
 
         if (solution_client.call(solution_request))
@@ -92,6 +98,9 @@ int main(int argc, char **argv)
             // std::cout << "Solution received" << std::endl;
             // Convert the solution to a map of joint values
             std::map<std::string, double> joint_values = ConvertSolutionToJointMap(solution_request);
+
+            // get the horizon that the optimization is valid over
+            horizon = solution_request.response.solution_horizon;
 
             // std::cout << "Publishing solution" << std::endl;
 

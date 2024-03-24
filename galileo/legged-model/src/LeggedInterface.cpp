@@ -60,6 +60,8 @@ namespace galileo
             // Load the parameters from the given parameter file.
             std::map<std::string, std::string> imported_vars;
             std::ifstream file(parameter_file_location);
+            // assert that file exists
+            assert(file.is_open());
             std::string row;
 
             while (std::getline(file, row))
@@ -70,13 +72,14 @@ namespace galileo
                 std::getline(ss, key, ',');
                 std::getline(ss, value, '\n');
                 imported_vars[key] = value;
+                std::cout << key << " : " << value << std::endl;
             }
 
             opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
             opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
 
-            opts_["ipopt.linear_solver"] = "ma97";
-            opts_["ipopt.ma97_order"] = "metis";
+            // opts_["ipopt.linear_solver"] = "ma97";
+            // opts_["ipopt.ma97_order"] = "metis";
             // opts_["snopt.Major iterations limit"] = 1;
             // opts_["snopt.Minor iterations limit"] = 1;
             // opts_["snopt.Iterations limit"] = 1;

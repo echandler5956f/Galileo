@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   std_msgs
   sensor_msgs
+  geometry_msgs
+  visualization_msgs
   message_generation
 )
 
@@ -40,6 +42,8 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   sensor_msgs
+  geometry_msgs
+  visualization_msgs
 )
 
 ###################################
@@ -107,5 +111,15 @@ add_executable(${PROJECT_NAME}_legged_rviz_node
 target_link_libraries(${PROJECT_NAME}_legged_rviz_node ${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}_legged_rviz_node
+   ${catkin_LIBRARIES}
+)
+
+add_executable(${PROJECT_NAME}_legged_verbose_rviz
+  src/Nodes/galileo_legged_verbose_rviz.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_legged_verbose_rviz ${PROJECT_NAME} casadi Eigen3::Eigen galileo)
+
+target_link_libraries(${PROJECT_NAME}_legged_verbose_rviz
    ${catkin_LIBRARIES}
 )
