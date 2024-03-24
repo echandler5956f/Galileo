@@ -66,13 +66,18 @@ namespace galileo
                 for (auto &csurface_id : phase.contact_surface_ids)
                 {
 
-                    mask_bin << 1;
+                    mask_bin *= 2;
                     if (csurface_id != galileo::legged::environment::NO_SURFACE)
                     {
-                        mask_bin |= 1;
+                        mask_bin += 1;
                     }
                 }
                 mask_vec.push_back(mask_bin);
+
+                for (auto &csurface_id : phase.contact_surface_ids)
+                {
+                    std::cout << csurface_id << " ";
+                }
             }
 
             setContactSequence(knot_nums, knot_times, mask_vec, contact_surface_ids);
@@ -81,6 +86,7 @@ namespace galileo
         void GalileoLeggedRos::SurfaceCallback(const galileo_ros::EnvironmentSurface::ConstPtr &msg)
         {
             // UNIMPLEMENTED
+            std::cout << "Surface callback adds infinite ground" << std::endl;
             addSurface(environment::createInfiniteGround());
         }
 
@@ -111,11 +117,12 @@ namespace galileo
 
             std::cout << "Checking if the solver can be initialized" << std::endl;
 
-            res.model_set = RobotModelLoaded();
-            res.solver_parameters_set = ParametersLoaded();
-            res.contact_sequence_set = PhasesSet();
-            res.fully_initted = FullyInitialized();
-            res.solution_set = SolutionSet();
+            res.model_set = isRobotModelLoaded();
+            res.solver_parameters_set = isParametersLoaded();
+            res.contact_sequence_set = isPhasesSet();
+            res.environment_surface_set = isSurfaceSet();
+            res.fully_initted = isFullyInitialized();
+            res.solution_set = isSolutionSet();
 
             return true;
         }

@@ -23,7 +23,7 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
                             galileo_ros::ParameterFileLocation &parameter_location_cmd,
                             galileo_ros::ContactSequence &contact_sequence_cmd, galileo_ros::GalileoCommand &galileo_cmd_msg)
 {
-    std::string model_location =  urdf_name;
+    std::string model_location = urdf_name;
     std::string parameter_location = parameter_file_name;
 
     robot_model_cmd.model_file_location = model_location;
@@ -84,6 +84,7 @@ int main(int argc, char **argv)
     galileo_ros::ParameterFileLocation parameter_location_msg;
     galileo_ros::ContactSequence contact_sequence_msg;
     galileo_ros::GalileoCommand galileo_cmd_msg;
+    galileo_ros::EnvironmentSurface surface_msg;
 
     ROS_INFO("Generating problem data messages\n");
 
@@ -98,6 +99,7 @@ int main(int argc, char **argv)
     ros::Publisher parameter_location_pub = nh->advertise<galileo_ros::ParameterFileLocation>(solver_id + "_parameter_location", 1);
     ros::Publisher contact_sequence_pub = nh->advertise<galileo_ros::ContactSequence>(solver_id + "_contact_sequence", 1);
     ros::Publisher command_publisher = nh->advertise<galileo_ros::GalileoCommand>(solver_id + "_command", 1);
+    ros::Publisher surface_pub = nh->advertise<galileo_ros::EnvironmentSurface>(solver_id + "_add_environment_surface", 1);
     ros::ServiceClient init_state_client = nh->serviceClient<galileo_ros::InitState>(solver_id + "_init_state_service");
 
     galileo_ros::InitState init_state;
@@ -133,6 +135,11 @@ int main(int argc, char **argv)
         {
             ROS_INFO("Publishing parameter location\n");
             parameter_location_pub.publish(parameter_location_msg);
+        }
+        else if (!init_state.response.environment_surface_set)
+        {
+            ROS_INFO("Publishing environment surface\n");
+            surface_pub.publish(surface_msg);
         }
         else if (!init_state.response.contact_sequence_set)
         {

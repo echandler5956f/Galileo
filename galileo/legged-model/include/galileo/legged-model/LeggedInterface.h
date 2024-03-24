@@ -64,8 +64,6 @@ namespace galileo
             void setContactSequence(std::vector<int> knot_num, std::vector<double> knot_time, std::vector<uint> mask_vec,
                                     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces);
 
-            bool CanInitialize() const { return (robot_ != nullptr) && parameters_set_ && phases_set_; }
-
             /**
              * @brief Initialize the problem
              */
@@ -150,11 +148,13 @@ namespace galileo
             }
 
             // Checking solution state
-            bool RobotModelLoaded() const { return robot_ != nullptr; }
-            bool ParametersLoaded() const { return parameters_set_; }
-            bool PhasesSet() const { return phases_set_; }
-            bool FullyInitialized() const { return fully_initialized_; }
-            bool SolutionSet() const { return solution_interface_ == nullptr ? false : solution_interface_->isSolutionSet(); }
+            bool isRobotModelLoaded() const { return robot_ != nullptr; }
+            bool isParametersLoaded() const { return parameters_set_; }
+            bool isPhasesSet() const { return phases_set_; }
+            bool isFullyInitialized() const { return fully_initialized_; }
+            bool isSolutionSet() const { return solution_interface_ == nullptr ? false : solution_interface_->isSolutionSet(); }
+            bool isSurfaceSet() const { return surfaces_ == nullptr ? false : surfaces_->size(); }
+            bool CanInitialize() const { return isRobotModelLoaded() && isParametersLoaded() && isPhasesSet() && isSurfaceSet(); }
 
         private:
             /**
