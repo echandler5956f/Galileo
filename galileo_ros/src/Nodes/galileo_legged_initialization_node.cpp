@@ -40,22 +40,27 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
 
     parameter_location_cmd.parameter_file_location = parameter_location;
 
-    // std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
-    // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
-    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
-    //     {0, 0, 0, 0},
-    //     {0, -1, -1, 0},
-    //     {-1, 0, 0, -1},
-    //     {0, -1, -1, 0},
-    //     {-1, 0, 0, -1},
-    //     {0, 0, 0, 0}}; // trot
-
-    std::vector<int> knot_num = {30, 30, 30};
-    std::vector<double> knot_time = {0.05, 0.3, 0.05};
+    std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
+    std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
         {0, 0, 0, 0},
-        {-1, -1, -1, -1},
-        {0, 0, 0, 0}}; // jump
+        {0, -1, -1, 0},
+        {-1, 0, 0, -1},
+        {0, -1, -1, 0},
+        {-1, 0, 0, -1},
+        {0, 0, 0, 0}}; // trot
+
+    // std::vector<int> knot_num = {30, 30, 30};
+    // std::vector<double> knot_time = {0.15, 0.3, 0.15};
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
+    //     {0, 0, 0, 0},
+    //     {-1, -1, -1, -1},
+    //     {0, 0, 0, 0}}; // jump/
+
+    // std::vector<int> knot_num = {50};
+    // std::vector<double> knot_time = {0.6};
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
+    //     {0, 0, 0, 0}}; // stand
 
     for (int phase_number = 0; phase_number < knot_num.size(); phase_number++)
     {

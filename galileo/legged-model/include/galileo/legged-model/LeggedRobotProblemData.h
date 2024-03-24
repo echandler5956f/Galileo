@@ -42,7 +42,7 @@ namespace galileo
                     this->friction_cone_problem_data.x = x;
                     this->friction_cone_problem_data.u = u;
                     this->friction_cone_problem_data.t = t;
-                    this->friction_cone_problem_data.mu = 0.7;
+                    this->friction_cone_problem_data.mu = 0.35;
                     this->friction_cone_problem_data.approximation_order = FrictionConeProblemData::ApproximationOrder::FIRST_ORDER;
 
                     this->contact_constraint_problem_data.environment_surfaces = environment_surfaces;

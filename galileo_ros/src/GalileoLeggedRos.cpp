@@ -160,6 +160,8 @@ namespace galileo
                 return false;
             }
 
+            std::cout << input_solution << '\n';
+
             std::vector<double> state_vec(state_solution.data(), state_solution.data() + state_solution.size());
             std::vector<double> input_vec(input_solution.data(), input_solution.data() + input_solution.size());
 

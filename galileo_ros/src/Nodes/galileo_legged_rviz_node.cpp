@@ -2,6 +2,7 @@
 #include "galileo_ros/SolutionRequest.h"
 #include <sensor_msgs/JointState.h>
 #include <tf/transform_broadcaster.h>
+#include <std_msgs/Float64.h>
 
 std::vector<double> getSolutionAtTimeIdx(const galileo_ros::SolutionRequest &msg, int t_idx = 0)
 {
@@ -56,7 +57,7 @@ void setTransformationOn(const galileo_ros::SolutionRequest &msg, geometry_msgs:
 
 int main(int argc, char **argv)
 {
-    double horizon = 0.4;
+    double horizon = 0.6;
     // Initialize the ROS node
     ros::init(argc, argv, "galileo_ros_legged_rviz_node");
     ros::NodeHandle nh;
@@ -69,6 +70,8 @@ int main(int argc, char **argv)
 
     // Create a publisher to publish the solution
     ros::Publisher state_publisher = nh.advertise<sensor_msgs::JointState>("/joint_states", 1);
+
+    ros::Publisher vis_time = nh.advertise<std_msgs::Float64>("/visualization_time", 1);
 
     // Create a ServiceClient to request the solution
     ros::ServiceClient solution_client = nh.serviceClient<galileo_ros::SolutionRequest>(solver_id + "_get_solution");
@@ -92,6 +95,10 @@ int main(int argc, char **argv)
         double elapsed_time = (current_time - start_time).toSec(); // Calculate the elapsed time in seconds
         elapsed_time = fmod(elapsed_time, horizon);                // TODO make this a parameter in the launch file
         solution_request.request.times = {elapsed_time};
+
+        std_msgs::Float64 vis_time_msg;
+        vis_time_msg.data = elapsed_time;
+        vis_time.publish(vis_time_msg);
 
         if (solution_client.call(solution_request))
         {
