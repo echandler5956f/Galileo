@@ -23,7 +23,7 @@ std::vector<double> getX0(int nx, int q_index)
         X0.push_back(0);
     }
 
-    for (int j = 0; j < 19; j++)
+    for (int j = 0; j < 37; j++)
     {
         X0[q_index + j] = q0_vec(j);
     }
@@ -34,7 +34,7 @@ std::vector<double> getX0(int nx, int q_index)
 std::vector<double> getXf(int nx, int q_index)
 {
     std::vector<double> Xf = getX0(nx, q_index);
-    Xf[q_index] = 0.4;
+    Xf[q_index] = 0.125;
     return Xf;
 }
 
@@ -64,15 +64,20 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
     //     {0, -1},
     //     {0, 0}}; // static walk
 
-    std::vector<int> knot_num = {25, 16, 16, 16, 16, 25};
-    std::vector<double> knot_time = {0.25, 0.1667, 0.1667, 0.1667, 0.1667, 0.25};
+    // std::vector<int> knot_num = {25, 16, 16, 16, 16, 25};
+    // std::vector<double> knot_time = {0.25, 0.1667, 0.1667, 0.1667, 0.1667, 0.25};
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
+    // {0, 0,},
+    // {0, -1},
+    // {-1, 0},
+    // {0, -1},
+    // {-1, 0},
+    // {0, 0,}}; // walking
+
+    std::vector<int> knot_num = {100};
+    std::vector<double> knot_time = {0.5};
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
-    {0, 0,},
-    {0, -1},
-    {-1, 0},
-    {0, -1},
-    {-1, 0},
-    {0, 0,}}; // walking
+    {0, 0,}}; // leaning
 
 
     // std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};

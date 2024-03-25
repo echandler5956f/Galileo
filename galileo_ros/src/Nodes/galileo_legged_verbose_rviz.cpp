@@ -42,8 +42,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::string end_effectors[] = {"FL_foot", "FR_foot", "RL_foot", "RR_foot"};
-    int num_end_effectors = 4;
+    std::string end_effectors[] = {"l_foot", "r_foot"};
+    int num_end_effectors = 2;
 
     // Load the URDF model to a leggedmodel
     galileo::legged::LeggedBody robot(urdf_file_name, num_end_effectors, end_effectors);
@@ -249,9 +249,9 @@ int main(int argc, char **argv)
                 force_marker.type = visualization_msgs::Marker::ARROW;
                 force_marker.action = visualization_msgs::Marker::ADD;
 
-                force_marker.scale.x = 0.01;
-                force_marker.scale.y = 0.01;
-                force_marker.scale.z = 0.01;
+                force_marker.scale.x = 0.03;
+                force_marker.scale.y = 0.03;
+                force_marker.scale.z = 0.03;
 
                 force_marker.color.r = force_colors[ee_idx][0] / 255.0;
                 force_marker.color.g = force_colors[ee_idx][1] / 255.0;
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
 
                 force_marker.color.a = 1.0;
 
-                double force_scaling = 0.002;
+                double force_scaling = 0.0007;
 
                 int ee_dof = end_effector.second->is_6d ? 6 : 3;
 
