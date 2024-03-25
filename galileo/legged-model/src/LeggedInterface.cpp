@@ -138,9 +138,9 @@ namespace galileo
             /*Both f_state_error and fdiff work for the quaternion error, but fdiff uses the quaternion logarithm, so it is more accurate albeit slightly more expensive*/
             casadi::SX X_error = robot_->f_state_error(casadi::SXVector{robot_->cx, target_state}).at(0);
             // casadi::SX X_error = robot_->fdiff(casadi::SXVector{rrobot_->cx, target_state, 1.}).at(0);
-
+            // robot_->model.getFrameId("base_link", )
             pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
-
+            // robot_->cmodel.names()
             galileo::legged::contact::RobotEndEffectors ees = getEndEffectors();
             casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
             for (auto ee : ees)

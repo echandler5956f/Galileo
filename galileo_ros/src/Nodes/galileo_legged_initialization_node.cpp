@@ -21,7 +21,7 @@ std::vector<double> getX0(int nx, int q_index)
 std::vector<double> getXf(int nx, int q_index)
 {
     std::vector<double> Xf = getX0(nx, q_index);
-    Xf[q_index] = 0.2;
+    Xf[q_index] = 0.4;
     return Xf;
 }
 
@@ -36,19 +36,31 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
     robot_model_cmd.model_file_location = model_location;
 
     // std::string end_effectors[] = {"FL_foot", "FR_foot", "RL_foot", "RR_foot"};
-    std::string end_effectors[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
+    // std::string end_effectors[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
+    std::string end_effectors[] = {"l_foot", "r_foot"};
     robot_model_cmd.end_effector_names = std::vector<std::string>(end_effectors, end_effectors + sizeof(end_effectors) / sizeof(std::string));
 
     parameter_location_cmd.parameter_file_location = parameter_location;
 
-    std::vector<int> knot_num = {25, 16, 8, 16, 25};
-    std::vector<double> knot_time = {0.25, 0.1667, 0.08, 0.1667, 0.25};
+    // std::vector<int> knot_num = {25, 16, 8, 16, 25};
+    // std::vector<double> knot_time = {0.25, 0.1667, 0.08, 0.1667, 0.25};
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
+    //     {0, 0},
+    //     {-1, 0},
+    //     {0, 0},
+    //     {0, -1},
+    //     {0, 0}}; // static walk
+
+    std::vector<int> knot_num = {25, 16, 16, 16, 16, 25};
+    std::vector<double> knot_time = {0.25, 0.1667, 0.1667, 0.1667, 0.1667, 0.25};
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
-        {0, 0},
-        {-1, 0},
-        {0, 0},
-        {0, -1},
-        {0, 0}}; // static walk
+    {0, 0,},
+    {0, -1},
+    {-1, 0},
+    {0, -1},
+    {-1, 0},
+    {0, 0,}}; // walking
+
 
     // std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
     // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
