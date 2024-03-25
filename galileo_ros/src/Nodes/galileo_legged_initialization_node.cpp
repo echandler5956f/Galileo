@@ -2,7 +2,20 @@
 
 std::vector<double> getX0(int nx, int q_index)
 {
-    galileo::legged::ConfigVector q0_vec = (galileo::legged::ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
+    // galileo::legged::ConfigVector q0_vec = (galileo::legged::ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
+    Eigen::VectorXd q0_vec = Eigen::VectorXd::Zero(37);
+    q0_vec(2) = 0.864977;
+    q0_vec(6) = 1.;
+
+    q0_vec(11) = -1.5;
+    q0_vec(27) = -0.5;
+    q0_vec(28) = 1.;
+    q0_vec(29) = -0.5;
+
+    q0_vec(19) = 1.5;
+    q0_vec(33) = -0.5;
+    q0_vec(34) = 1.;
+    q0_vec(35) = -0.5;
 
     std::vector<double> X0;
     for (int j = 0; j < nx; j++)
