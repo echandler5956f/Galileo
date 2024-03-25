@@ -26,7 +26,7 @@ std::vector<double> getX0(int nx, int q_index)
 std::vector<double> getXf(int nx, int q_index)
 {
     std::vector<double> Xf = getX0(nx, q_index);
-    Xf[q_index + 1] = 0.4;
+    Xf[q_index] = 0.4;
     return Xf;
 }
 
