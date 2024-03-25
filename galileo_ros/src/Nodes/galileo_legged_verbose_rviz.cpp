@@ -147,9 +147,9 @@ int main(int argc, char **argv)
                 position_marker.type = visualization_msgs::Marker::LINE_STRIP;
                 position_marker.action = visualization_msgs::Marker::ADD;
 
-                position_marker.scale.x = 0.005;
-                position_marker.scale.y = 0.005;
-                position_marker.scale.z = 0.005;
+                position_marker.scale.x = 0.015;
+                position_marker.scale.y = 0.015;
+                position_marker.scale.z = 0.015;
 
                 position_marker.color.r = force_colors[ee_idx][0] / 255.0;
                 position_marker.color.g = force_colors[ee_idx][1] / 255.0;
