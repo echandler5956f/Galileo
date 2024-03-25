@@ -26,7 +26,7 @@ std::vector<double> getX0(int nx, int q_index)
 std::vector<double> getXf(int nx, int q_index)
 {
     std::vector<double> Xf = getX0(nx, q_index);
-    Xf[q_index + 1] = 0.4;
+    Xf[q_index] = 0.4;
     return Xf;
 }
 
@@ -77,15 +77,44 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
     //     {0, 0},
     // }; // static walk
 
-    std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
-    std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
+    // std::vector<int> knot_num = {5, 15, 5, 15, 5, 15, 5, 15, 5};
+    // std::vector<double> knot_time = {0.05, 0.15, 0.05, 0.15, 0.05, 0.15, 0.05, 0.15, 0.05};
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
+    //     {0, 0, 0, 0},
+    //     {-1, 0, 0, -1},
+    //     {-1, -1, -1, -1},
+    //     {0, -1, -1, 0},
+    //     {-1, -1, -1, -1},
+    //     {-1, 0, 0, -1},
+    //     {-1, -1, -1, -1},
+    //     {0, -1, -1, 0},
+    //     {0, 0, 0, 0}}; // trot
+
+    // std::vector<int> knot_num = {10, 30, 10, 30, 10};
+    // std::vector<double> knot_time = {0.05, 0.15, 0.05, 0.15, 0.05};
+    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
+    //     {0, 0, 0, 0},
+    //     {-1, 0, 0, -1},
+    //     {-1, -1, -1, -1},
+    //     {0, -1, -1, 0},
+    //     // {-1, -1, -1, -1},
+    //     // {-1, 0, 0, -1},
+    //     // {-1, -1, -1, -1},
+    //     // {0, -1, -1, 0},
+    //     {0, 0, 0, 0}}; // trot
+
+    std::vector<int> knot_num = {15, 5, 10, 5, 7, 5, 10, 5, 15};
+    std::vector<double> knot_time = {0.15, 0.05, 0.1, 0.05, 0.07, 0.05, 0.1, 0.05, 0.15};
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
         {0, 0, 0, 0},
-        {0, -1, -1, 0},
-        {-1, 0, 0, -1},
-        {0, -1, -1, 0},
-        {-1, 0, 0, -1},
-        {0, 0, 0, 0}}; // trot
+        {-1, -1, 0, 0},
+        {-1, -1, -1, -1},
+        {0, 0, -1, -1},
+        {0, 0, 0, 0},
+        {-1, -1, 0, 0},
+        {-1, -1, -1, -1},
+        {0, 0, -1, -1},
+        {0, 0, 0, 0}}; // gallop
 
     // std::vector<int> knot_num = {30, 30, 30};
     // std::vector<double> knot_time = {0.15, 0.3, 0.15};

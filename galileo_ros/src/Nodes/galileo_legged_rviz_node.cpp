@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
 
-        double realtime_factor = 1;
+        double realtime_factor = 1.0;
         // Request the solution
         galileo_ros::SolutionRequest solution_request;
 
