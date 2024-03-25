@@ -27,9 +27,11 @@ void visualizationTimeCallback(const std_msgs::Float64::ConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-    std::string end_effectors[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
+    // std::string end_effectors[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
+    // int num_end_effectors = 2;
 
-    int num_end_effectors = 2;
+    std::string end_effectors[] = {"FL_foot", "FR_foot", "RL_foot", "RR_foot"};
+    int num_end_effectors = 4;
 
     ros::init(argc, argv, "galileo_ros_legged_verbose_rviz_node");
 
