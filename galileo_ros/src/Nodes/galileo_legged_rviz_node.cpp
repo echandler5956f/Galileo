@@ -88,11 +88,14 @@ int main(int argc, char **argv)
     ros::Time start_time = ros::Time::now(); // Get the start time
     while (ros::ok())
     {
+
+        double realtime_factor = 0.3333;
         // Request the solution
         galileo_ros::SolutionRequest solution_request;
 
         ros::Time current_time = ros::Time::now();                 // Get the current time
         double elapsed_time = (current_time - start_time).toSec(); // Calculate the elapsed time in seconds
+        elapsed_time *= realtime_factor;                           // Speed up the simulation
         elapsed_time = fmod(elapsed_time, horizon);                // TODO make this a parameter in the launch file
         solution_request.request.times = {elapsed_time};
 

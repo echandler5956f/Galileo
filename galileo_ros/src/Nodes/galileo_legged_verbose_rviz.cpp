@@ -27,6 +27,10 @@ void visualizationTimeCallback(const std_msgs::Float64::ConstPtr &msg)
 
 int main(int argc, char **argv)
 {
+    std::string end_effectors[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
+
+    int num_end_effectors = 2;
+
     ros::init(argc, argv, "galileo_ros_legged_verbose_rviz_node");
 
     std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
@@ -41,9 +45,6 @@ int main(int argc, char **argv)
         ROS_ERROR("Failed to get parameters");
         return 1;
     }
-
-    std::string end_effectors[] = {"FL_foot", "FR_foot", "RL_foot", "RR_foot"};
-    int num_end_effectors = 4;
 
     // Load the URDF model to a leggedmodel
     galileo::legged::LeggedBody robot(urdf_file_name, num_end_effectors, end_effectors);
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
     msg.request.times = {0};
 
     double horizon = 0.6;
-    double dt = 0.0123;
+    double dt = 0.0023;
 
     while (ros::ok())
     {
@@ -167,13 +168,13 @@ int main(int argc, char **argv)
             com_traj_marker.type = visualization_msgs::Marker::LINE_STRIP;
             com_traj_marker.action = visualization_msgs::Marker::ADD;
 
-            com_traj_marker.scale.x = 0.005;
-            com_traj_marker.scale.y = 0.005;
-            com_traj_marker.scale.z = 0.005;
+            com_traj_marker.scale.x = 0.015;
+            com_traj_marker.scale.y = 0.015;
+            com_traj_marker.scale.z = 0.015;
 
-            com_traj_marker.color.r = 0.50;
-            com_traj_marker.color.g = 0.50;
-            com_traj_marker.color.b = 0.50;
+            com_traj_marker.color.r = 1.00;
+            com_traj_marker.color.g = 0.40;
+            com_traj_marker.color.b = 0.40;
 
             com_traj_marker.color.a = 1.0;
             com_traj_marker.points = com_traj;
@@ -208,8 +209,6 @@ int main(int argc, char **argv)
             com_proj_point.x = com_pos[0];
             com_proj_point.y = com_pos[1];
             com_proj_point.z = 0;
-
-            std::cout << "COM: " << com_proj_point.x << " " << com_proj_point.y << " " << com_proj_point.z << std::endl;
 
             visualization_msgs::Marker com_proj_marker;
             com_proj_marker.header.frame_id = "world";
@@ -249,8 +248,8 @@ int main(int argc, char **argv)
                 force_marker.type = visualization_msgs::Marker::ARROW;
                 force_marker.action = visualization_msgs::Marker::ADD;
 
-                force_marker.scale.x = 0.01;
-                force_marker.scale.y = 0.01;
+                force_marker.scale.x = 0.03;
+                force_marker.scale.y = 0.03;
                 force_marker.scale.z = 0.01;
 
                 force_marker.color.r = force_colors[ee_idx][0] / 255.0;

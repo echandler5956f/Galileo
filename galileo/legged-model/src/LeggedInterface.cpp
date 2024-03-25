@@ -78,8 +78,8 @@ namespace galileo
             opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
             opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
 
-            opts_["ipopt.linear_solver"] = "ma97";
-            opts_["ipopt.ma97_order"] = "metis";
+            // opts_["ipopt.linear_solver"] = "ma97";
+            // opts_["ipopt.ma97_order"] = "metis";
             // opts_["snopt.Major iterations limit"] = 1;
             // opts_["snopt.Minor iterations limit"] = 1;
             // opts_["snopt.Iterations limit"] = 1;

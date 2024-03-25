@@ -17,8 +17,8 @@
   </node>
 
 
-  <!-- <node name="galileo_ros_legged_verbose_rviz" type="galileo_ros_legged_verbose_rviz" pkg="galileo_ros" output="screen">  
-  </node> -->
+  <node name="galileo_ros_legged_verbose_rviz" type="galileo_ros_legged_verbose_rviz" pkg="galileo_ros" output="screen">  
+  </node>
 
   
 </launch>

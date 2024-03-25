@@ -16,7 +16,7 @@ namespace galileo
 
                 infinite_ground.b = Eigen::VectorXd::Zero(1);
                 std::cout << "infinite_ground.b: " << infinite_ground.b << std::endl;
-                infinite_ground.polytope_local_chebyshev_center = Eigen::MatrixXd::Zero(1, 2);
+                infinite_ground.polytope_local_chebyshev_center = Eigen::Vector2d::Zero();
                 return infinite_ground;
             }
 

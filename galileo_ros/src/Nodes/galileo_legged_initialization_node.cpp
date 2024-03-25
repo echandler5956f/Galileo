@@ -2,7 +2,12 @@
 
 std::vector<double> getX0(int nx, int q_index)
 {
-    galileo::legged::ConfigVector q0_vec = (galileo::legged::ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
+    // galileo::legged::ConfigVector q0_vec = (galileo::legged::ConfigVector(19) << 0., 0., 0.339, 0., 0., 0., 1., 0., 0.67, -1.30, 0., 0.67, -1.3, 0., 0.67, -1.3, 0., 0.67, -1.3).finished();
+
+    // huron
+    galileo::legged::ConfigVector q0_vec = (galileo::legged::ConfigVector(19) << 0, 0, 1.0627, 0, 0, 0, 1,
+                                            0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000, 0.0000, 0.0000, -0.3207, 0.7572, -0.4365, 0.0000)
+                                               .finished();
 
     std::vector<double> X0;
     for (int j = 0; j < nx; j++)
@@ -21,7 +26,7 @@ std::vector<double> getX0(int nx, int q_index)
 std::vector<double> getXf(int nx, int q_index)
 {
     std::vector<double> Xf = getX0(nx, q_index);
-    Xf[q_index] = 0.2;
+    Xf[q_index + 1] = 0.6;
     return Xf;
 }
 
@@ -41,14 +46,36 @@ void getProblemDataMessages(std::string urdf_name, std::string parameter_file_na
 
     parameter_location_cmd.parameter_file_location = parameter_location;
 
-    std::vector<int> knot_num = {25, 16, 8, 16, 25};
-    std::vector<double> knot_time = {0.25, 0.1667, 0.08, 0.1667, 0.25};
+    std::vector<int> knot_num = {25, 16, 8, 16,
+                                 25,
+                                 16, 8, 16, 25};
+
+    std::vector<double> knot_time = {
+        0.25,
+        0.1667,
+        0.08,
+        0.1667,
+
+        0.25,
+
+        0.1667,
+        0.08,
+        0.1667,
+        0.25,
+    };
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
         {0, 0},
         {-1, 0},
         {0, 0},
         {0, -1},
-        {0, 0}}; // static walk
+
+        {0, 0},
+
+        {-1, 0},
+        {0, 0},
+        {0, -1},
+        {0, 0},
+    }; // static walk
 
     // std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
     // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};

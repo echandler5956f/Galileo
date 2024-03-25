@@ -87,7 +87,6 @@ namespace galileo
         void GalileoLeggedRos::SurfaceCallback(const galileo_ros::EnvironmentSurface::ConstPtr &msg)
         {
             // UNIMPLEMENTED
-            std::cout << "Surface callback adds infinite ground" << std::endl;
             addSurface(environment::createInfiniteGround());
         }
 
@@ -115,9 +114,6 @@ namespace galileo
 
         bool GalileoLeggedRos::InitStateServiceCallback(galileo_ros::InitState::Request &req, galileo_ros::InitState::Response &res)
         {
-
-            std::cout << "Checking if the solver can be initialized" << std::endl;
-
             res.model_set = isRobotModelLoaded();
             res.solver_parameters_set = isParametersLoaded();
             res.contact_sequence_set = isPhasesSet();
@@ -132,7 +128,6 @@ namespace galileo
         {
             if (msg->command_type == "init")
             {
-                std::cout << "Initializing solver" << std::endl;
                 InitializationCallback(msg);
             }
 
@@ -146,12 +141,6 @@ namespace galileo
 
             Eigen::Map<Eigen::VectorXd> query_times(req.times.data(), req.times.size());
 
-            std::cout << "Getting solutions at ";
-            for (auto &time : req.times)
-            {
-                std::cout << time << " ";
-            }
-            std::cout << '\n';
             bool solution_exists = GetSolution(query_times, state_solution, input_solution);
 
             if (!solution_exists)
@@ -159,8 +148,6 @@ namespace galileo
                 res.solution_exists = false;
                 return false;
             }
-
-            std::cout << input_solution << '\n';
 
             std::vector<double> state_vec(state_solution.data(), state_solution.data() + state_solution.size());
             std::vector<double> input_vec(input_solution.data(), input_solution.data() + input_solution.size());
@@ -186,8 +173,6 @@ namespace galileo
             }
 
             res.ee_dofs = ee_dofs;
-
-            std::cout << "horizon: " << res.solution_horizon << '\n';
 
             res.times_evaluated = req.times;
             res.solution_exists = true;
