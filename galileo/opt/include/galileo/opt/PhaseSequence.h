@@ -160,7 +160,7 @@ namespace galileo
 
             /**
              * @brief Cumulative sum of the phase timings.
-             * 
+             *
              * @return const std::vector<double> The cumulative sum of the phase timings.
              */
             const std::vector<double> getPhaseTiming() const;
@@ -364,9 +364,12 @@ namespace galileo
         {
             std::vector<double> phase_timing;
             phase_timing.push_back(0);
+            PHASE_SEQUENCE_ERROR error_status;
             for (int i = 0; i < getNumPhases(); i++)
             {
-                phase_timing.push_back(phase_timing.back() + phase_sequence_[i].time_value);
+                double t_i;
+                getTimeAtPhase(i, t_i, error_status);
+                phase_timing.push_back(t_i);
             }
             return phase_timing;
         }

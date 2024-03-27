@@ -4,7 +4,7 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedBody::LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[])
+        LeggedBody::LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], casadi::Dict general_function_casadi_options)
         {
             model = Model();
             std::vector<std::string> ee_name_vect;
@@ -32,7 +32,8 @@ namespace galileo
             pinocchio::forwardKinematics(cmodel, cdata, q_AD);
             pinocchio::framesForwardKinematics(cmodel, cdata, q_AD);
             pinocchio::updateFramePlacements(cmodel, cdata);
-            createGeneralFunctions();
+
+            createGeneralFunctions(general_function_casadi_options);
         }
 
         std::vector<pinocchio::JointIndex> getJointIndicesFromRootToFrame(const pinocchio::Model &model, pinocchio::FrameIndex frame_id)
@@ -150,12 +151,12 @@ namespace galileo
             return R;
         }
 
-        void LeggedBody::createGeneralFunctions()
+        void LeggedBody::createGeneralFunctions(casadi::Dict casadi_opts)
         {
-            createGeneralDynamics();
-            createFint();
-            createFdiff();
-            createErrorFunction();
+            createGeneralDynamics(casadi_opts);
+            createFint(casadi_opts);
+            createFdiff(casadi_opts);
+            createErrorFunction(casadi_opts);
         }
 
         template <typename SCALAR_T>
@@ -169,7 +170,7 @@ namespace galileo
             return Ab_inv;
         }
 
-        void LeggedBody::createGeneralDynamics()
+        void LeggedBody::createGeneralDynamics(casadi::Dict casadi_opts)
         {
             pinocchio::centerOfMass(cmodel, cdata, q_AD, false);
             pinocchio::computeCentroidalMap(cmodel, cdata, q_AD);
@@ -192,20 +193,12 @@ namespace galileo
             casadi::SX cv(si->nv, 1);
             pinocchio::casadi::copy(tmp_v_AD1, cv);
 
-            casadi::Dict opts;
-            // // opts["cse"] = true;
-            // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // opts["jit_options.compiler"] = "gcc";
-            // // opts["jit_options.temp_suffix"] = false;
-            // opts["compiler"] = "shell";
-            // // opts["jit_cleanup"] = false;
-
             general_dynamics = casadi::Function("F",
                                                 {cx, cu_general},
                                                 {vertcat((si->get_general_forces(cu_general) - mass * g) / mass,
                                                          si->get_general_torques(cu_general) / mass,
-                                                         cv)}, opts);
+                                                         cv)},
+                                                casadi_opts);
 
             TangentVectorAD vb_AD2 = Ab_inv * (mass * h_AD - Ag.rightCols(si->nvju) * vju_AD);
             TangentVectorAD tmp_v_AD2(si->nv, 1);
@@ -215,53 +208,37 @@ namespace galileo
             pinocchio::updateFramePlacements(cmodel, cdata);
         }
 
-        void LeggedBody::createFint()
+        void LeggedBody::createFint(casadi::Dict casadi_opts)
         {
             casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
             casadi::SX vb = si->get_q_d(cdx)(casadi::Slice(0, si->nvb));
-            casadi::SX lie_group_int_result =  math::lie_group_int(qb, vb, cdt);
+            casadi::SX lie_group_int_result = math::lie_group_int(qb, vb, cdt);
             casadi::SX q_joints_int_result = si->get_q(cx)(casadi::Slice(si->nqb, si->nq)) + si->get_q_d(cdx)(casadi::Slice(si->nvb, si->nv)) * cdt;
-
-            casadi::Dict opts;
-            // // opts["cse"] = true;
-            // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // opts["jit_options.compiler"] = "gcc";
-            // // opts["jit_options.temp_suffix"] = false;
-            // opts["compiler"] = "shell";
-            // // opts["jit_cleanup"] = false;
 
             fint = casadi::Function("Fint",
                                     {cx, cdx, cdt},
                                     {vertcat(si->get_ch(cx) + si->get_ch_d(cdx) * cdt,
                                              lie_group_int_result,
-                                             q_joints_int_result)}, opts);
+                                             q_joints_int_result)},
+                                    casadi_opts);
         }
 
-        void LeggedBody::createFdiff()
+        void LeggedBody::createFdiff(casadi::Dict casadi_opts)
         {
             casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
             casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
             casadi::SX qb2 = si->get_q(cx2)(casadi::Slice(0, si->nqb));
-            casadi::SX lie_group_diff_result =  math::lie_group_diff(qb, qb2, cdt);
-
-            casadi::Dict opts;
-            // // opts["cse"] = true;
-            // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // opts["jit_options.compiler"] = "gcc";
-            // // opts["jit_options.temp_suffix"] = false;
-            // opts["compiler"] = "shell";
-            // // opts["jit_cleanup"] = false;
+            casadi::SX lie_group_diff_result = math::lie_group_diff(qb, qb2, cdt);
 
             fdiff = casadi::Function("Fdiff",
                                      {cx, cx2, cdt},
                                      {vertcat((si->get_ch(cx2) - si->get_ch(cx)) / cdt,
                                               lie_group_diff_result,
-                                              (si->get_qj(cx2) - si->get_qj(cx)) / cdt)}, opts);
+                                              (si->get_qj(cx2) - si->get_qj(cx)) / cdt)},
+                                     casadi_opts);
         }
 
-        void LeggedBody::createErrorFunction()
+        void LeggedBody::createErrorFunction(casadi::Dict casadi_opts)
         {
             casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
             casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
@@ -269,24 +246,16 @@ namespace galileo
 
             casadi::SX quat1 = qb(casadi::Slice(3, si->nqb));
             casadi::SX quat2 = qb2(casadi::Slice(3, si->nqb));
-            
-            casadi::SX quat_distance_result = math::quat_distance(quat1, quat2);
 
-            casadi::Dict opts;
-            // // opts["cse"] = true;
-            // opts["jit"] = true;
-            // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // opts["jit_options.compiler"] = "gcc";
-            // // opts["jit_options.temp_suffix"] = false;
-            // opts["compiler"] = "shell";
-            // // opts["jit_cleanup"] = false;
+            casadi::SX quat_distance_result = math::quat_distance(quat1, quat2);
 
             f_state_error = casadi::Function("F_state_error",
                                              {cx, cx2},
                                              {vertcat(si->get_ch(cx2) - si->get_ch(cx),
                                                       qb(casadi::Slice(0, 3)) - qb2(casadi::Slice(0, 3)),
                                                       quat_distance_result,
-                                                      si->get_qj(cx2) - si->get_qj(cx))}, opts);
+                                                      si->get_qj(cx2) - si->get_qj(cx))},
+                                             casadi_opts);
         }
 
         void LeggedBody::fillModeDynamics(bool print_ees_info)
@@ -359,7 +328,8 @@ namespace galileo
                 contact_sequence->phase_sequence_[i].phase_dynamics = casadi::Function("F_mode",
                                                                                        {cx, cu},
                                                                                        {general_dynamics(casadi::SXVector{cx, u_general})
-                                                                                            .at(0)}, opts);
+                                                                                            .at(0)},
+                                                                                       opts);
             }
         }
 
