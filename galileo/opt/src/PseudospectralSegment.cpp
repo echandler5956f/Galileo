@@ -304,7 +304,6 @@ namespace galileo
             std::vector<tuple_size_t> ranges_G;
             end_time = std::chrono::high_resolution_clock::now();
             duration = end_time - start_time;
-            // std::cout << "Time to map collocation equations: " << duration.count() << std::endl;
 
             start_time = std::chrono::high_resolution_clock::now();
             /*Map the constraint to each collocation point, and then map the mapped constraint to each knot segment*/
@@ -328,7 +327,6 @@ namespace galileo
             }
             end_time = std::chrono::high_resolution_clock::now();
             duration = end_time - start_time;
-            // std::cout << "Time to map general constraints: " << duration.count() << std::endl;
 
             general_lbg.resize(N, 1);
             general_ubg.resize(N, 1);
@@ -346,7 +344,7 @@ namespace galileo
             }
             end_time = std::chrono::high_resolution_clock::now();
             duration = end_time - start_time;
-            // std::cout << "Time to fill general constraint bounds: " << duration.count() << std::endl;
+
             auto Ndxknot = st_m->ndx * (knot_num + 1);
             auto Ndx = st_m->ndx * (dX_poly.d + 1) * knot_num + st_m->ndx;
             auto Ndxcol = Ndx - Ndxknot;

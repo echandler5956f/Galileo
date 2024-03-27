@@ -81,7 +81,6 @@ int main(int argc, char **argv)
 
     // Create a TransformBroadcaster
     tf::TransformBroadcaster tf_broadcaster;
-    std::cout << "Starting loop" << std::endl;
 
     // Main loop
     ros::Rate loop_rate(60);                 // 60 Hz
@@ -105,34 +104,24 @@ int main(int argc, char **argv)
 
         if (solution_client.call(solution_request))
         {
-            // std::cout << "Solution received" << std::endl;
             // Convert the solution to a map of joint values
             std::map<std::string, double> joint_values = ConvertSolutionToJointMap(solution_request);
 
             // get the horizon that the optimization is valid over
             horizon = solution_request.response.solution_horizon;
 
-            // std::cout << "Publishing solution" << std::endl;
-
             // Create a JointState message
             sensor_msgs::JointState joint_state_msg = getJointStateMessage(joint_values);
 
-            // std::cout << "Setting transformation" << std::endl;
-
             setTransformationOn(solution_request, body_transform);
-
-            // std::cout << "Publishing transformation" << std::endl;
 
             // Publish the JointState message
             state_publisher.publish(joint_state_msg);
-
-            // std::cout << "Getting transformation" << std::endl;
 
             // Broadcast the transform
             tf::StampedTransform tf_transform;
             tf::transformStampedMsgToTF(body_transform, tf_transform);
 
-            // std::cout << "Broadcasting transformation" << std::endl;
             tf_broadcaster.sendTransform(tf_transform);
         }
 

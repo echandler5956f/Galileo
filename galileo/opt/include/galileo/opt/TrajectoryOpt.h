@@ -555,7 +555,6 @@ namespace galileo
         template <class ProblemData, class MODE_T>
         std::vector<solution::solution_segment_data_t> TrajectoryOpt<ProblemData, MODE_T>::getSolutionSegments()
         {
-            std::cout << "Getting solution segments" << std::endl;
             std::vector<solution::solution_segment_data_t> result;
             auto solx = sol[0];
             auto solu = sol[1];
@@ -594,7 +593,6 @@ namespace galileo
 
                 result.push_back(segment_data);
             }
-            std::cout << "Finished getting solution segments" << std::endl;
             return result;
         }
     }

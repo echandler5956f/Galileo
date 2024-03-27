@@ -95,7 +95,7 @@ namespace galileo
              *
              *  @param print_ees_info Whether to print the end effector contact information.
              */
-            void fillModeDynamics(bool print_ees_info = false);
+            void fillModeDynamics(casadi::Dict casadi_opts);
 
             /**
              * @brief Get the Contact Combination object from a binary combination mask.

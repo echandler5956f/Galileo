@@ -74,11 +74,6 @@ namespace galileo
                     }
                 }
                 mask_vec.push_back(mask_bin);
-
-                for (auto &csurface_id : phase.contact_surface_ids)
-                {
-                    std::cout << csurface_id << " ";
-                }
             }
 
             setContactSequence(knot_nums, knot_times, mask_vec, contact_surface_ids);

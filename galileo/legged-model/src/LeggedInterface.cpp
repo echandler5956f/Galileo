@@ -235,7 +235,6 @@ namespace galileo
 
         bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
-            std::cout << "Getting solution..." << std::endl;
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             return solution_interface_->GetSolution(query_times, state_result, input_result);
         }

@@ -171,6 +171,13 @@ namespace galileo
                  */
                 void UpdateSolution(std::vector<solution_segment_data_t> solution_segments);
 
+                enum AccessSolutionError
+                {
+                    OK,
+                    NO_QUERY_TIMES_PROVIDED,
+                    SOLUTION_DNE
+                };
+
                 /**
                  * @brief Get the solution at a set of query times.
                  *
@@ -180,7 +187,23 @@ namespace galileo
                  *
                  * @return bool True if the solution exists at the query times.
                  */
-                bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+                bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+                {
+                    AccessSolutionError sol_error;
+                    return GetSolution(query_times, state_result, input_result, sol_error);
+                }
+
+                /**
+                 * @brief Get the solution at a set of query times.
+                 *
+                 * @param query_times A vector of times at which to query the solution.
+                 * @param state_result The state result at each query time.
+                 * @param input_result The input result at each query time.
+                 * @param sol_error An error code that is set if this fails to get a solution.
+                 *
+                 * @return bool True if the solution exists at the query times.
+                 */
+                bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const;
 
                 /**
                  * @brief Update the constraints with new constraint data segments.
@@ -214,7 +237,7 @@ namespace galileo
                 tuple_size_t getSegmentIndices(const Eigen::VectorXd &times, double start_time, double end_time) const;
 
                 /**
-                 * @brief Get if this constains a solution
+                 * @brief Get if this contains a solution
                  *
                  * @return bool True if the solution set is not empty.
                  */

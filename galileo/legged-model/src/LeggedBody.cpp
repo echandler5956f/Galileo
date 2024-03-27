@@ -258,7 +258,7 @@ namespace galileo
                                              casadi_opts);
         }
 
-        void LeggedBody::fillModeDynamics(bool print_ees_info)
+        void LeggedBody::fillModeDynamics(casadi::Dict casadi_opts)
         {
             casadi::SXVector foot_forces;
             casadi::SXVector foot_poss;
@@ -273,11 +273,9 @@ namespace galileo
 
                 for (auto ee : mode.combination_definition)
                 {
-                    std::string print_info;
                     auto end_effector_ptr = ees_[ee.first];
                     if (ee.second)
                     {
-                        print_info = "At phase " + std::to_string(i) + " " + end_effector_ptr->frame_name + " is in contact.";
                         auto foot_pos = cdata.oMf[end_effector_ptr->frame_id].translation() - cdata.com[0];
 
                         casadi::SX cfoot_pos(3, 1);
@@ -299,11 +297,6 @@ namespace galileo
                         foot_poss.push_back(cfoot_pos);
                         foot_taus.push_back(ctau_ee);
                     }
-                    else
-                        print_info = "At phase " + std::to_string(i) + " " + end_effector_ptr->frame_name + " is NOT in contact.";
-
-                    if (print_ees_info)
-                        std::cout << print_info << std::endl;
                 }
 
                 casadi::SX total_f_input = casadi::SX::zeros(3, 1);
@@ -316,20 +309,11 @@ namespace galileo
 
                 casadi::SX u_general = vertcat(casadi::SXVector{total_f_input, total_tau_input, si->get_vju(cu)});
 
-                casadi::Dict opts;
-                // // opts["cse"] = true;
-                // opts["jit"] = true;
-                // opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-                // opts["jit_options.compiler"] = "gcc";
-                // // opts["jit_options.temp_suffix"] = false;
-                // opts["compiler"] = "shell";
-                // opts["jit_cleanup"] = false;
-
                 contact_sequence->phase_sequence_[i].phase_dynamics = casadi::Function("F_mode",
                                                                                        {cx, cu},
                                                                                        {general_dynamics(casadi::SXVector{cx, u_general})
                                                                                             .at(0)},
-                                                                                       opts);
+                                                                                       casadi_opts);
             }
         }
 

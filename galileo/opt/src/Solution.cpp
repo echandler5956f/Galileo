@@ -12,16 +12,17 @@ namespace galileo
             }
 
             // state_result and input_result should be initialized to the correct size before calling GetSolution!
-            bool Solution::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+            bool Solution::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const
             {
                 if (query_times.size() == 0)
                 {
-                    std::cout << "No query times provided" << std::endl;
+                    sol_error = AccessSolutionError::NO_QUERY_TIMES_PROVIDED;
                     return false;
                 }
                 if (solution_segments_.size() == 0)
                 {
-                    std::cout << "No solution segments provided" << std::endl;
+
+                    sol_error = AccessSolutionError::SOLUTION_DNE;
                     return false;
                 }
 
@@ -55,7 +56,6 @@ namespace galileo
 
                 auto clock_end_time = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> elapsed_time = clock_end_time - clock_start_time;
-                std::cout << "GetSolution took " << elapsed_time.count() << " seconds" << std::endl;
                 return true;
             }
 
@@ -67,7 +67,7 @@ namespace galileo
             std::vector<std::vector<constraint_evaluations_t>> Solution::GetConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
             {
                 GetSolution(query_times, state_result, input_result);
-                auto clock_start_time = std::chrono::high_resolution_clock::now();
+
                 std::vector<std::vector<constraint_evaluations_t>> constraint_evaluations;
                 std::vector<constraint_evaluations_t> phase_constraint_evaluations;
 
@@ -123,9 +123,7 @@ namespace galileo
 
                     constraint_evaluations.push_back(phase_constraint_evaluations);
                 }
-                auto clock_end_time = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed_time = clock_end_time - clock_start_time;
-                std::cout << "GetConstraints took " << elapsed_time.count() << " seconds" << std::endl;
+
                 return constraint_evaluations;
             }
 

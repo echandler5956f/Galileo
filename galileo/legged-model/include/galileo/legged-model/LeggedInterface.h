@@ -54,7 +54,8 @@ namespace galileo
             {
                 assert(robot_ != nullptr);
                 robot_->contact_sequence = contact_sequence;
-                robot_->fillModeDynamics(false);
+                casadi::Dict empty_opts;
+                robot_->fillModeDynamics(empty_opts);
                 phases_set_ = true;
             }
 
