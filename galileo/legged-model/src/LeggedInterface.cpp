@@ -72,7 +72,6 @@ namespace galileo
                 std::getline(ss, key, ',');
                 std::getline(ss, value, '\n');
                 imported_vars[key] = value;
-                std::cout << key << " : " << value << std::endl;
             }
 
             opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
@@ -195,14 +194,10 @@ namespace galileo
             assert(CanInitialize());
 
             // Create the problem data from the loaded parameter values
-            std::cout << "Creating problem data..." << std::endl;
             CreateProblemData(initial_state, target_state);
 
-            std::cout << "Creating trajectory optimizer..." << std::endl;
             // Create the trajectory optimizer.
             CreateTrajOpt();
-
-            std::cout << "Initialization complete." << std::endl;
 
             fully_initialized_ = true;
         }
@@ -218,7 +213,6 @@ namespace galileo
 
         void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
-            std::cout << "Updating..." << std::endl;
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem
@@ -228,9 +222,8 @@ namespace galileo
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             //@todo Akshay5312, reevaluate thread safety
             solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
-            std::cout << "Updated solution" << std::endl;
+
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
-            std::cout << "Updated constraints" << std::endl;
         }
 
         bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
@@ -241,28 +234,25 @@ namespace galileo
 
         void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
-            std::cout << "Visualizing solution and constraints..." << std::endl;
             std::unique_lock<std::mutex> lock_sol(solution_mutex_);
             std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
             lock_sol.unlock();
-            std::cout << "Got constraints" << std::endl;
 
             Eigen::MatrixXd subMatrix = state_result.block(states_->q_index, 0, states_->nq, state_result.cols());
-            std::cout << "Writing to files..." << std::endl;
+
             meshcat_interface->WriteTimes(query_times, "sol_times.csv");
             meshcat_interface->WriteJointPositions(subMatrix, "sol_states.csv");
             meshcat_interface->WriteMetadata(model_file_location_, "metadata.csv");
 
             opt::solution::solution_t solution(query_times, state_result.transpose(), input_result.transpose());
 
-            std::cout << "Plotting solution..." << std::endl;
             plotting_interface->PlotSolution(solution, {std::make_tuple(states_->q_index, states_->q_index + 3), std::make_tuple(states_->q_index + 3, states_->q_index + states_->nqb)},
                                              {},
                                              {"Positions", "Orientations"},
                                              {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
                                              {},
                                              {});
-            std::cout << "Plotting constraints..." << std::endl;
+
             plotting_interface->PlotConstraints(constraints);
         }
 
