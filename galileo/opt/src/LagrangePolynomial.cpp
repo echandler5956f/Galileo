@@ -95,7 +95,6 @@ namespace galileo
 
         Eigen::VectorXd LagrangePolynomial::barycentricInterpolation(double t, const Eigen::MatrixXd &terms) const
         {
-            // std::cout << "t: " << t << std::endl;
             assert(terms.cols() == tau_root.size());
             assert(t >= -casadi::eps && t <= 1);
             if (piecewise_constant)

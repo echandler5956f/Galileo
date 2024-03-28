@@ -50,7 +50,7 @@ namespace galileo
                         {
                             environment::SurfaceID surface = mode.getSurfaceID((*ee.second));
 
-                            auto surface_data = (*problem_data.contact_constraint_problem_data.environment_surfaces)[surface];
+                            environment::SurfaceData surface_data = (*problem_data.contact_constraint_problem_data.environment_surfaces)[surface];
 
                             // Get surface data, Copy into symbolic Casadi Expr.
                             int n_constraints = surface_data.A.rows();
@@ -74,38 +74,47 @@ namespace galileo
 
                             casadi::SX upper_bound = casadi::SX(n_constraints, 1);
                             pinocchio::casadi::copy(
-                                Eigen::VectorXd::Constant(n_constraints, -std::numeric_limits<double>::infinity()),
+                                Eigen::VectorXd::Constant(n_constraints, 0),
                                 upper_bound);
 
                             // Get foot position in global frame
                             pinocchio::SE3Tpl<legged::ADScalar, 0> frame_omf_data = problem_data.contact_constraint_problem_data.ad_data->oMf[ee.first];
                             auto foot_pos = frame_omf_data.translation();
-                            casadi::SX c_foot_pos_in_world = casadi::SX::sym("foot_pos", 3);
+                            casadi::SX c_foot_pos_in_world = casadi::SX::sym("foot_pos", 3, 1);
                             pinocchio::casadi::copy(foot_pos, c_foot_pos_in_world);
 
                             // Get foot position in surface frame
-                            auto foot_pos_offset = (c_foot_pos_in_world - symbolic_surface_translation);
-                            auto foot_pos_in_surface = casadi::SX::mtimes(symbolic_surface_rotation, foot_pos_offset);
+                            casadi::SX foot_pos_offset = (c_foot_pos_in_world - symbolic_surface_translation);
+                            casadi::SX foot_pos_in_surface = casadi::SX::mtimes(symbolic_surface_rotation, foot_pos_offset);
 
-                            casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_A, foot_pos_in_surface(casadi::Slice(1, 2))) - symbolic_b;
+                            casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_A, foot_pos_in_surface(casadi::Slice(0, 2))) - symbolic_b;
 
-                            G_vec.push_back(evaluated_vector);
+                            // // if all zeros, then infinite ground
+                            // if (surface_data.A(0) != 0 && surface_data.A(1) != 0)
+                            // {
+                            //     std::cout << "HEREREWFWFW" << std::endl;
+                            //     G_vec.push_back(evaluated_vector);
 
-                            lower_bound_vec.push_back(lower_bound);
-                            upper_bound_vec.push_back(upper_bound);
+                            //     lower_bound_vec.push_back(lower_bound);
+                            //     upper_bound_vec.push_back(upper_bound);
+                            // }
+
+                            G_vec.push_back(foot_pos_in_surface(2));
+                            lower_bound_vec.push_back(casadi::SX::zeros(1, 1));
+                            upper_bound_vec.push_back(casadi::SX::zeros(1, 1));
                         }
                     }
 
                     constraint_data.G = casadi::Function("G_Contact",
-                                                         casadi::SXVector{problem_data.contact_constraint_problem_data.x, problem_data.contact_constraint_problem_data.u}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
+                                                         casadi::SXVector{problem_data.contact_constraint_problem_data.x, problem_data.contact_constraint_problem_data.u}, casadi::SXVector{vertcat(G_vec)});
 
                     constraint_data.lower_bound = casadi::Function("lower_bound_Contact",
                                                                    casadi::SXVector{problem_data.contact_constraint_problem_data.t},
-                                                                   casadi::SXVector{casadi::SX::vertcat(lower_bound_vec)});
+                                                                   casadi::SXVector{vertcat(lower_bound_vec)});
 
-                    constraint_data.lower_bound = casadi::Function("upper_bound_Contact",
+                    constraint_data.upper_bound = casadi::Function("upper_bound_Contact",
                                                                    casadi::SXVector{problem_data.contact_constraint_problem_data.t},
-                                                                   casadi::SXVector{casadi::SX::vertcat(upper_bound_vec)});
+                                                                   casadi::SXVector{vertcat(upper_bound_vec)});
 
                     constraint_data.metadata.name = "Contact Constraint";
                 }

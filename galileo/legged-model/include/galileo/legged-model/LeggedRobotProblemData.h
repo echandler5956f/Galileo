@@ -31,6 +31,8 @@ namespace galileo
                     this->gp_data = gp_data_;
                     this->states = states_;
 
+                    phase_sequence = contact_sequence;
+
                     this->friction_cone_problem_data.environment_surfaces = environment_surfaces;
                     this->friction_cone_problem_data.contact_sequence = contact_sequence;
                     this->friction_cone_problem_data.states = states;
@@ -63,7 +65,7 @@ namespace galileo
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
 
-                    this->velocity_constraint_problem_data.ideal_offset_height = 0.08;
+                    this->velocity_constraint_problem_data.ideal_offset_height = 0.25;
                     this->velocity_constraint_problem_data.max_following_leeway_planar = 0.25;
                     this->velocity_constraint_problem_data.min_following_leeway_planar = 1e-2;
 

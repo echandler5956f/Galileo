@@ -30,11 +30,39 @@ namespace galileo
              * @brief Construct a new Legged Body object.
              *
              * @param location The location of the URDF file.
+             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
+             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             */
+            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, casadi::Dict general_function_casadi_options);
+
+            /**
+             * @brief Construct a new Legged Body object.
+             *
+             * @param location The location of the URDF file.
+             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
+             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             */
+            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names) : LeggedBody(location, end_effector_names, casadi::Dict()){};
+
+            /**
+             * @brief Construct a new Legged Body object.
+             *
+             * @param location The location of the URDF file.
              * @param num_ees The number of end effectors.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
-             *
+             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
              */
-            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[]);
+            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], casadi::Dict general_function_casadi_options) : LeggedBody(location, std::vector<std::string>(end_effector_names, end_effector_names + num_ees), general_function_casadi_options){};
+
+            /**
+             * @brief Construct a new Legged Body object.
+             *
+             * @param location The location of the URDF file.
+             * @param num_ees The number of end effectors.
+             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
+             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             */
+            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[]) : LeggedBody(location, num_ees, end_effector_names, casadi::Dict()){};
 
             /**
              * @brief Provide the string IDs that correspond to the pinocchio end effector frames.
@@ -45,9 +73,9 @@ namespace galileo
 
             /**
              * @brief Apply the foot velocity cost to the input cost weight matrix.
-             * 
+             *
              * This cost is taken w.r.t the Jacobian at the initial configuration and acts as a hueristic to prevent large foot velocities.
-             * 
+             *
              * @param R_taskspace The input cost weight matrix.
              * @param q0 The initial configuration.
              * @return Eigen::MatrixXd The updated cost weight matrix.
@@ -64,38 +92,38 @@ namespace galileo
              * @brief Create the generalized dynamics, fint, and fdiff functions.
              *
              */
-            void createGeneralFunctions();
+            void createGeneralFunctions(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the phase-invariant centroidal momentum dynamics (summed wrenches).
              *
              */
-            void createGeneralDynamics();
+            void createGeneralDynamics(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the state integrator function to translate from the tangent space to the state space.
              *
              */
-            void createFint();
+            void createFint(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the state derivative function to translate from the state space to the tangent space.
              *
              */
-            void createFdiff();
+            void createFdiff(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the state error function.
              *
              */
-            void createErrorFunction();
+            void createErrorFunction(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the mode dynamics for each mode using the General Dynamics.
              *
              *  @param print_ees_info Whether to print the end effector contact information.
              */
-            void fillModeDynamics(bool print_ees_info = false);
+            void fillModeDynamics(casadi::Dict casadi_opts);
 
             /**
              * @brief Get the Contact Combination object from a binary combination mask.

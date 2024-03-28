@@ -15,4 +15,4 @@ using namespace math;
 
 const std::string go1_location = "../resources/go1/urdf/go1.urdf";
 const std::string go1_parameter_location = "../resources/go1/SolverParameters/go1_solver_parameters.txt";
-const std::vector<std::string> end_effector_names = {"FL_foot", "RL_foot", "FR_foot", "RR_foot"};
+const std::vector<std::string> end_effector_names = {"FL_foot", "FR_foot", "RL_foot", "RR_foot"};

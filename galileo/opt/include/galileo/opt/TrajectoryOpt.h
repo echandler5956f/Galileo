@@ -13,50 +13,50 @@ namespace galileo
 
         /**
          * @brief Callback function called at each iteration, used for debugging and plotting.
-         * 
+         *
          */
         class IterationCallback : public casadi::Callback
         {
         public:
             /**
              * @brief Sparsity of the decision variables.
-             * 
+             *
              */
             casadi::Sparsity x_;
 
             /**
              * @brief Sparsity of the objective function.
-             * 
+             *
              */
             casadi::Sparsity f_;
 
             /**
              * @brief Sparsity of the constraints.
-             * 
+             *
              */
             casadi::Sparsity g_;
 
             /**
              * @brief Sparsity of the Lagrange multipliers for the decision variables.
-             * 
+             *
              */
             casadi::Sparsity lam_x_;
 
             /**
              * @brief Sparsity of the Lagrange multipliers for the constraints.
-             * 
+             *
              */
             casadi::Sparsity lam_g_;
 
             /**
              * @brief Sparsity of the Lagrange multipliers for the parameters.
-             * 
+             *
              */
             casadi::Sparsity lam_p_;
 
             /**
              * @brief Construct a new Iteration Callback object.
-             * 
+             *
              */
             IterationCallback()
             {
@@ -65,13 +65,13 @@ namespace galileo
 
             /**
              * @brief Destroy the Iteration Callback object.
-             * 
+             *
              */
             ~IterationCallback() override {}
 
             /**
              * @brief Set the sparsity of the decision variables, objective function, constraints, Lagrange multipliers for the decision variables, constraints, and parameters.
-             * 
+             *
              * @param x Sparsity of the decision variables
              * @param f Sparsity of the objective function
              * @param g Sparsity of the constraints
@@ -91,7 +91,7 @@ namespace galileo
 
             /**
              * @brief Initialize the callback function.
-             * 
+             *
              */
             void init() override
             {
@@ -99,21 +99,21 @@ namespace galileo
 
             /**
              * @brief Get the number of inputs.
-             * 
+             *
              * @return casadi_int The number of inputs
              */
             casadi_int get_n_in() override { return 6; }
 
             /**
              * @brief Get the number of outputs.
-             * 
+             *
              * @return casadi_int The number of outputs
              */
             casadi_int get_n_out() override { return 1; }
 
             /**
              * @brief Evaluate the callback function.
-             * 
+             *
              * @param arg The arguments to the callback function
              * @return std::vector<casadi::DM> The result of the callback function
              */
@@ -124,7 +124,7 @@ namespace galileo
 
             /**
              * @brief Get the sparsity of the input at index i.
-             * 
+             *
              * @param i The index of the input
              * @return casadi::Sparsity The sparsity of the input
              */
@@ -185,14 +185,14 @@ namespace galileo
 
             /**
              * @brief Collect the solution segments for each phase
-             * 
+             *
              * @return std::vector<solution::solution_segment_data_t> The solution segments
              */
             std::vector<solution::solution_segment_data_t> getSolutionSegments();
 
             /**
              * @brief Get the constraint data segments for each phase.
-             * 
+             *
              * @return std::vector<std::vector<ConstraintData>> The constraint data segments
              */
             std::vector<std::vector<ConstraintData>> getConstraintDataSegments() const;
@@ -555,7 +555,6 @@ namespace galileo
         template <class ProblemData, class MODE_T>
         std::vector<solution::solution_segment_data_t> TrajectoryOpt<ProblemData, MODE_T>::getSolutionSegments()
         {
-            std::cout << "Getting solution segments" << std::endl;
             std::vector<solution::solution_segment_data_t> result;
             auto solx = sol[0];
             auto solu = sol[1];
@@ -594,7 +593,6 @@ namespace galileo
 
                 result.push_back(segment_data);
             }
-            std::cout << "Finished getting solution segments" << std::endl;
             return result;
         }
     }

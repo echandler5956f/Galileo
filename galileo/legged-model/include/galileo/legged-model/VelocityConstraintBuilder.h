@@ -682,27 +682,29 @@ namespace galileo
                         // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
                         if (ee.second->is_6d)
                         {
+                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint for " + ee.second->frame_name);
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
                             constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz", "wx", "wy", "wz"});
                             i += 6;
                         }
                         else
                         {
-                            // constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
-                            // constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
-                            // i += 3;
-                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vx " + ee.second->frame_name);
-                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                            constraint_data.metadata.plot_names.push_back({"Vx"});
-                            i += 1;
-                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vy " + ee.second->frame_name);
-                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                            constraint_data.metadata.plot_names.push_back({"Vy"});
-                            i += 1;
-                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vz " + ee.second->frame_name);
-                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                            constraint_data.metadata.plot_names.push_back({"Vz"});
-                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
+                            constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
+                            i += 3;
+                            // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vx " + ee.second->frame_name);
+                            // constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            // constraint_data.metadata.plot_names.push_back({"Vx"});
+                            // i += 1;
+                            // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vy " + ee.second->frame_name);
+                            // constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            // constraint_data.metadata.plot_names.push_back({"Vy"});
+                            // i += 1;
+                            // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint Vz " + ee.second->frame_name);
+                            // constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            // constraint_data.metadata.plot_names.push_back({"Vz"});
+                            // i += 1;
                         }
                     }
                     else

@@ -235,14 +235,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/base_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/base_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/base_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/base_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -337,14 +337,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_hip_yaw_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_hip_yaw_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_hip_yaw_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_hip_yaw_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -378,14 +378,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_hip_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_hip_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_hip_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_hip_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -419,14 +419,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_hip_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_hip_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_hip_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_hip_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -460,14 +460,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_knee_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_knee_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_knee_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_knee_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -501,7 +501,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_ankle_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_ankle_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.77647 0.75686 0.73725 1"/>
@@ -510,7 +510,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_ankle_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_ankle_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.77647 0.75686 0.73725 1"/>
@@ -546,7 +546,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_ankle_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_ankle_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.77647 0.75686 0.73725 1"/>
@@ -555,7 +555,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r_ankle_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r_ankle_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.77647 0.75686 0.73725 1"/>
@@ -580,7 +580,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r1_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r1_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -604,7 +604,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r2_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r2_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -628,7 +628,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r3_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r3_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -652,7 +652,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/r4_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/r4_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -697,14 +697,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_hip_yaw_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_hip_yaw_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_hip_yaw_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_hip_yaw_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -738,14 +738,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_hip_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_hip_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_hip_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_hip_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -779,14 +779,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_hip_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_hip_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_hip_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_hip_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -820,14 +820,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_knee_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_knee_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_knee_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_knee_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="grey"/>
     </collision>
@@ -861,7 +861,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_ankle_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_ankle_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.89804 0.91765 0.92941 1"/>
@@ -870,7 +870,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_ankle_pitch_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_ankle_pitch_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.89804 0.91765 0.92941 1"/>
@@ -906,7 +906,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_ankle_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_ankle_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.77647 0.75686 0.73725 1"/>
@@ -915,7 +915,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l_ankle_roll_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l_ankle_roll_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="">
         <color rgba="0.77647 0.75686 0.73725 1"/>
@@ -940,7 +940,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l1_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l1_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -964,7 +964,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l2_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l2_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -988,7 +988,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l3_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l3_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -1012,7 +1012,7 @@
     <visual>
       <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="resources/huron/meshes/l4_foot_ft_link.STL" scale="1 1 1"/>
+        <mesh filename="package://galileo_huron_description/meshes/l4_foot_ft_link.STL" scale="1 1 1"/>
       </geometry>
       <material name="green"/>
     </visual>

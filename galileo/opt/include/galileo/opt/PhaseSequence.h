@@ -159,6 +159,13 @@ namespace galileo
             const std::vector<Phase> &getPhaseSequence() { return phase_sequence_; }
 
             /**
+             * @brief Cumulative sum of the phase timings.
+             *
+             * @return const std::vector<double> The cumulative sum of the phase timings.
+             */
+            const std::vector<double> getPhaseStartTimes() const;
+
+            /**
              * @brief A vector of Phase objects.
              *
              * This vector represents a sequence of phases.
@@ -352,5 +359,19 @@ namespace galileo
             phase = phase_sequence_[phase_index];
         }
 
+        template <typename MODE_T>
+        const std::vector<double> PhaseSequence<MODE_T>::getPhaseStartTimes() const
+        {
+            std::vector<double> phase_timing;
+            phase_timing.push_back(0);
+            PHASE_SEQUENCE_ERROR error_status;
+            for (int i = 0; i < getNumPhases(); i++)
+            {
+                double t_i;
+                getTimeAtPhase(i, t_i, error_status);
+                phase_timing.push_back(t_i);
+            }
+            return phase_timing;
+        }
     }
 }
