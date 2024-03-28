@@ -5,6 +5,7 @@
 #include <std_msgs/Float64.h>
 
 #include <galileo/legged-model/LeggedBody.h>
+#include <galileo/tools/ReadFromFile.h>
 
 #include "galileo_ros/SolutionRequest.h"
 
@@ -27,27 +28,29 @@ void visualizationTimeCallback(const std_msgs::Float64::ConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-    std::string end_effectors[] = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
-
-    int num_end_effectors = 2;
-
     ros::init(argc, argv, "galileo_ros_legged_verbose_rviz_node");
 
     std::shared_ptr<ros::NodeHandle> nh = std::make_shared<ros::NodeHandle>();
 
     std::string solver_id;
     std::string urdf_file_name;
+    std::string problem_parameter_file_name;
 
     // Get parameters from the parameter server
     if (!nh->getParam("galileo_ros/solver_id", solver_id) ||
-        !nh->getParam("galileo_ros/urdf_filename", urdf_file_name))
+        !nh->getParam("galileo_ros/urdf_filename", urdf_file_name) ||
+        !nh->getParam("galileo_ros/problem_parameters_location", problem_parameter_file_name))
     {
         ROS_ERROR("Failed to get parameters");
         return 1;
     }
 
+    std::map<std::string, std::string> problem_parameters = galileo::tools::readFromFile(problem_parameter_file_name);
+
+    std::vector<std::string> end_effectors = galileo::tools::readAsVector(problem_parameters["end_effector_names"]);
+
     // Load the URDF model to a leggedmodel
-    galileo::legged::LeggedBody robot(urdf_file_name, num_end_effectors, end_effectors);
+    galileo::legged::LeggedBody robot(urdf_file_name, end_effectors);
 
     ros::ServiceClient solution_client = nh->serviceClient<galileo_ros::SolutionRequest>(solver_id + "_get_solution");
     ros::Subscriber vis_time_sub = nh->subscribe("/visualization_time", 1, &visualizationTimeCallback);

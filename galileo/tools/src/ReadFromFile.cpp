@@ -38,8 +38,6 @@ namespace galileo
             size_t firstParenthesis = vector_as_string.find_first_of("(");
             size_t lastParenthesis = vector_as_string.find_last_of(")");
 
-            std::cout << "vector_as_string: " << vector_as_string << std::endl;
-
             if (firstParenthesis == std::string::npos || lastParenthesis == std::string::npos)
             {
                 std::cerr << "Could not find parenthesis in string; must be formatted as \"( value_1, value_2, value_3 ... value_l)\" " << std::endl;
@@ -55,6 +53,7 @@ namespace galileo
                 vectorString = vectorString.substr(comma + 1);
                 comma = vectorString.find(",");
             }
+            vector_out.push_back(vectorString);
 
             return vector_out;
         }

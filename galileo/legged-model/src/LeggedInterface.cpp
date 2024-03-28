@@ -88,9 +88,6 @@ namespace galileo
             Eigen::VectorXd Q_diag = ReadVector(imported_vars["Q_diag"]);
             Eigen::VectorXd R_diag = ReadVector(imported_vars["R_diag"]);
 
-            std::cout << "R_diag is " << R_diag.size() << std::endl;
-            std::cout << "U = " << states_->nu << std::endl;
-
             assert(Q_diag.size() == states_->ndx);
             assert(R_diag.size() == states_->nu);
 

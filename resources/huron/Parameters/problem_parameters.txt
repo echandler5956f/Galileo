@@ -1,4 +1,4 @@
-end_effector_names, (l_foot_v_ft_link, r_foot_v_ft_link)
+end_effector_names, (l_foot_v_ft_link,r_foot_v_ft_link)
 knot_num, (25, 16, 8, 16, 25, 16, 8, 16, 25)
 knot_time, (0.25, 0.1667, 0.08, 0.1667, 0.25, 0.1667, 0.08, 0.1667, 0.25)
 contact_combinations, ((0, 0),(-1, 0),(0, 0),(0, -1),(0, 0),(-1, 0),(0, 0),(0, -1),(0, 0))
