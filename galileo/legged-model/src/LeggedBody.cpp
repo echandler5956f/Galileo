@@ -4,23 +4,18 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedBody::LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], casadi::Dict general_function_casadi_options)
+        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, casadi::Dict general_function_casadi_options)
         {
             model = Model();
-            std::vector<std::string> ee_name_vect;
-            ee_name_vect.resize(num_ees);
-            for (int i = 0; i < num_ees; ++i)
-            {
-                ee_name_vect[i] = end_effector_names[i];
-            }
+
             pinocchio::urdf::buildModel(location, pinocchio::JointModelFreeFlyer(), model);
             data = Data(model);
             cmodel = model.cast<ADScalar>();
             cdata = ADData(cmodel);
-            setEndEffectors(ee_name_vect);
+            setEndEffectors(end_effector_names);
             generateContactCombination();
             si = std::make_shared<legged::LeggedRobotStates>(model.nq, model.nv, ees_);
-            contact_sequence = std::make_shared<contact::ContactSequence>(num_ees);
+            contact_sequence = std::make_shared<contact::ContactSequence>(end_effector_names.size());
 
             cx = casadi::SX::sym("x", si->nx);
             cdx = casadi::SX::sym("dx", si->ndx);

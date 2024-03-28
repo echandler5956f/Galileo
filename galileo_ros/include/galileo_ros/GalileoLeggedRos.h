@@ -71,16 +71,16 @@ namespace galileo
             std::shared_ptr<ros::NodeHandle> nh_;
             std::string solver_id_;
 
-            ros::Subscriber model_location_subscriber_;
-            ros::Subscriber parameter_location_subscriber_;
-            ros::Subscriber contact_sequence_subscriber_;
-            ros::Subscriber surface_subscriber_;
+            ros::Subscriber model_location_subscriber_;     // Subscriber for model file location and end effector names
+            ros::Subscriber parameter_location_subscriber_; // Subscriber for parameter value file location
+            ros::Subscriber contact_sequence_subscriber_;   // Subscriber for setting the "contact sequence"
+            ros::Subscriber surface_subscriber_;            // Subscriber for adding an environment surface. Unimplemented
 
-            ros::Subscriber command_subscriber_;
+            ros::Subscriber command_subscriber_; // Subscriber for galileo commands comprising of an initial and final state, as well as an "update" function
 
-            ros::ServiceServer init_state_service_;
-            ros::ServiceServer get_solution_service_;
-            ros::ServiceServer write_sol_plot_cons_service_;
+            ros::ServiceServer init_state_service_;          // Service for checking if the solver can be initialized
+            ros::ServiceServer get_solution_service_;        // Service for getting the solution at a set of query times
+            ros::ServiceServer write_sol_plot_cons_service_; // Service for writing the solution and plotting the constraints
         };
 
     }

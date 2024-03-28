@@ -30,11 +30,39 @@ namespace galileo
              * @brief Construct a new Legged Body object.
              *
              * @param location The location of the URDF file.
+             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
+             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             */
+            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, casadi::Dict general_function_casadi_options);
+
+            /**
+             * @brief Construct a new Legged Body object.
+             *
+             * @param location The location of the URDF file.
+             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
+             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             */
+            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names) : LeggedBody(location, end_effector_names, casadi::Dict()){};
+
+            /**
+             * @brief Construct a new Legged Body object.
+             *
+             * @param location The location of the URDF file.
              * @param num_ees The number of end effectors.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
              * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
              */
-            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], casadi::Dict general_function_casadi_options = casadi::Dict());
+            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], casadi::Dict general_function_casadi_options) : LeggedBody(location, std::vector<std::string>(end_effector_names, end_effector_names + num_ees), general_function_casadi_options){};
+
+            /**
+             * @brief Construct a new Legged Body object.
+             *
+             * @param location The location of the URDF file.
+             * @param num_ees The number of end effectors.
+             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
+             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             */
+            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[]) : LeggedBody(location, num_ees, end_effector_names, casadi::Dict()){};
 
             /**
              * @brief Provide the string IDs that correspond to the pinocchio end effector frames.
