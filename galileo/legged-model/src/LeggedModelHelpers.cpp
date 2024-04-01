@@ -1,4 +1,40 @@
 #include "galileo/legged-model/LeggedModelHelpers.h"
+
+namespace
+{
+    std::vector<std::vector<galileo::legged::environment::SurfaceID>> readContactSurfaces(std::vector<std::string> contact_surfaces_str)
+    {
+        std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
+        std::vector<galileo::legged::environment::SurfaceID> current_contact_surface_combination;
+
+        for (int i = 0; i < contact_surfaces_str.size(); i++)
+        {
+            bool some_vector_read = false;
+            if (contact_surfaces_str[i].find_first_of('(') != std::string::npos)
+            {
+                int parenthesis_index = contact_surfaces_str[i].find_first_of('(');
+                contact_surfaces_str[i] = contact_surfaces_str[i].substr(parenthesis_index + 1);
+            }
+
+            if (contact_surfaces_str[i].find_last_of(')') != std::string::npos)
+            {
+                some_vector_read = true;
+                int parenthesis_index = contact_surfaces_str[i].find_last_of(')');
+                contact_surfaces_str[i] = contact_surfaces_str[i].substr(0, parenthesis_index);
+            }
+
+            current_contact_surface_combination.push_back(std::stoi(contact_surfaces_str[i]));
+
+            if (some_vector_read)
+            {
+                contact_surfaces.push_back(current_contact_surface_combination);
+                current_contact_surface_combination.clear();
+            }
+        }
+
+        return contact_surfaces;
+    }
+}
 namespace galileo
 {
     namespace legged
@@ -8,46 +44,16 @@ namespace galileo
 
             std::vector<double> getXfromq(int nx, int q_index, std::vector<double> q)
             {
-                assert(q_index + q.size() < nx);
+                std::cout << "nx: " << nx << std::endl;
+                std::cout << "q_index: " << q_index << std::endl;
+                std::cout << "q.size(): " << q.size() << std::endl;
+                assert(q_index + q.size() <= nx);
 
                 std::vector<double> X;
                 std::fill(X.begin(), X.end(), 0);
                 std::copy(q.begin(), q.end(), X.begin() + q_index);
 
                 return X;
-            }
-
-            std::vector<std::vector<galileo::legged::environment::SurfaceID>> readContactSurfaces(std::vector<std::string> contact_surfaces_str)
-            {
-                std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
-                std::vector<galileo::legged::environment::SurfaceID> current_contact_surface_combination;
-
-                for (int i = 0; i < contact_surfaces_str.size(); i++)
-                {
-                    bool some_vector_read = false;
-                    if (contact_surfaces_str[i].find_first_of('(') != std::string::npos)
-                    {
-                        int parenthesis_index = contact_surfaces_str[i].find_first_of('(');
-                        contact_surfaces_str[i] = contact_surfaces_str[i].substr(parenthesis_index + 1);
-                    }
-
-                    if (contact_surfaces_str[i].find_last_of(')') != std::string::npos)
-                    {
-                        some_vector_read = true;
-                        int parenthesis_index = contact_surfaces_str[i].find_last_of(')');
-                        contact_surfaces_str[i] = contact_surfaces_str[i].substr(0, parenthesis_index);
-                    }
-
-                    current_contact_surface_combination.push_back(std::stoi(contact_surfaces_str[i]));
-
-                    if (some_vector_read)
-                    {
-                        contact_surfaces.push_back(current_contact_surface_combination);
-                        current_contact_surface_combination.clear();
-                    }
-                }
-
-                return contact_surfaces;
             }
 
             void ReadProblemFromParameterFile(std::string problem_parameter_file_name,
@@ -75,8 +81,9 @@ namespace galileo
                 assert(knot_time.size() == knot_num.size());
 
                 std::vector<std::string> contact_surfaces_str = galileo::tools::readAsVector(data_map["contact_combinations"]);
-                assert(contact_surfaces_str.size() == knot_num.size());
+
                 contact_surfaces = readContactSurfaces(contact_surfaces_str);
+                assert(contact_surfaces.size() == knot_num.size());
 
                 std::vector<std::string> q0_str = galileo::tools::readAsVector(data_map["q0"]);
                 std::vector<std::string> qf_str = galileo::tools::readAsVector(data_map["qf"]);

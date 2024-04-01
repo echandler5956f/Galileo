@@ -16,15 +16,6 @@ namespace galileo
             std::vector<double> getXfromq(int nx, int q_index, std::vector<double> q);
 
             /**
-             * @brief Reads a vector of "phases" comprised of contact surfaces.
-             *
-             * @param contact_surfaces_str Vector of strings, Element "i" corresponds to the "i"th phase and is formatted as "(surface_for_end_effector_1,surface_for_end_effector_2,...,surface_for_end_effector_n)"
-             * @return std::vector<std::vector<galileo::legged::environment::SurfaceID>> Vector of phases, each phase is a vector of SurfaceID's, one for each end effector
-             *
-             */
-            std::vector<std::vector<galileo::legged::environment::SurfaceID>> readContactSurfaces(std::vector<std::string> contact_surfaces_str);
-
-            /**
              * @brief Reads the problem parameters from a file.
              *
              * @param problem_parameter_file_name Name of the file containing the problem parameters.

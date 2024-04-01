@@ -26,13 +26,13 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
         qf);
 
     std::string model_location = urdf_name;
-    std::string solver_parameter_location = solver_parameter_file_name;
+    std::string solver_parameter_location_filename = solver_parameter_file_name;
 
     robot_model_cmd.model_file_location = model_location;
 
     robot_model_cmd.end_effector_names = end_effectors;
 
-    solver_parameter_location.parameter_file_location = solver_parameter_location;
+    solver_parameter_location.parameter_file_location = solver_parameter_location_filename;
 
     for (int phase_number = 0; phase_number < knot_num.size(); phase_number++)
     {
@@ -45,8 +45,8 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
 
     galileo::legged::LeggedBody robot(model_location, end_effectors);
 
-    std::vector<double> X0 = getXfromq(robot.si->nx, robot.si->q_index, q0);
-    std::vector<double> Xf = getXfromq(robot.si->nx, robot.si->q_index, qf);
+    std::vector<double> X0 = galileo::legged::helper::getXfromq(robot.si->nx, robot.si->q_index, q0);
+    std::vector<double> Xf = galileo::legged::helper::getXfromq(robot.si->nx, robot.si->q_index, qf);
 
     galileo_cmd_msg.command_type = "init";
 

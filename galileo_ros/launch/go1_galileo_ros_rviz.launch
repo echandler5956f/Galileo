@@ -1,10 +1,14 @@
 <launch>  
 
-  <arg name="urdf_filename" default="$(find galileo_go1_description)/urdf/go1.urdf" />
+  <arg name="urdf_filename" default="$(find galileo_go1_description)/urdf/go1.urdf" />  
+  <arg name="solver_id" default="galileo_go1" />
+  <arg name="problem_parameters_location" default="$(find galileo_go1_description)/Parameters/problem_parameters.txt" />
+
 
   <param name="galileo_ros/urdf_filename" value="$(arg urdf_filename)"/>
-
   <param name="robot_description" command = "$(find xacro)/xacro --inorder $(find galileo_go1_description)/urdf/go1.urdf" />
+  <param name="galileo_ros/solver_id" value="$(arg solver_id)"/>
+  <param name="galileo_ros/problem_parameters_location" value="$(arg problem_parameters_location)"/>
 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <!-- <param name="ignore_timestamp" type="bool" value="true"/> -->
