@@ -14,6 +14,7 @@ find_package(OpenMP)
 
 add_executable(huron_test src/huron_test.cpp)
 add_executable(go1_test src/go1_test.cpp)
+add_executable(atlas_test src/atlas_test.cpp)
 
 target_link_libraries(huron_test 
     PUBLIC
@@ -23,11 +24,16 @@ target_link_libraries(go1_test
     PUBLIC
     galileo
 )
+target_link_libraries(atlas_test 
+    PUBLIC
+    galileo
+)
 
 if (OpenMP_CXX_FOUND)
     # Link your target with the OpenMP library
     target_link_libraries(huron_test PUBLIC OpenMP::OpenMP_CXX)
     target_link_libraries(go1_test PUBLIC OpenMP::OpenMP_CXX)
+    target_link_libraries(atlas_test PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
 target_include_directories(huron_test
@@ -35,6 +41,10 @@ target_include_directories(huron_test
     ${PROJECT_SOURCE_DIR}/include
 )
 target_include_directories(go1_test
+    PRIVATE 
+    ${PROJECT_SOURCE_DIR}/include
+)
+target_include_directories(atlas_test
     PRIVATE 
     ${PROJECT_SOURCE_DIR}/include
 )

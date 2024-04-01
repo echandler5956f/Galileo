@@ -11,10 +11,11 @@ namespace galileo
             {
                 SurfaceData infinite_ground;
                 infinite_ground.surface_transform = Eigen::Transform<double, 3, Eigen::Affine>::Identity();
-                infinite_ground.A = {0, 0};
+                infinite_ground.A = Eigen::MatrixXd::Zero(1, 2);
 
                 infinite_ground.b = Eigen::VectorXd::Zero(1);
-                infinite_ground.polytope_local_chebyshev_center = {0, 0};
+
+                infinite_ground.polytope_local_chebyshev_center = Eigen::Vector2d::Zero();
                 return infinite_ground;
             }
 

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>galileo_ros</name>
+  <version>0.0.0</version>
+  <description>The galileo_ros package</description>
+  
+
+  <maintainer email="akshayjaitly@hotmail.com">Akshay Jaitly</maintainer>
+  <maintainer email="eechandler@wpi.edu">Ethan Chandler</maintainer>
+
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>MIT</license>
+
+
+  <url type="repository">https://github.com/echandler5956f/Galileo</url>
+
+
+  <author email="akshayjaitly@hotmail.com">Akshay Jaitly</author>
+  <author  email="eechandler@wpi.edu">Ethan Chandler</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>tf</build_depend>
+
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>std_srvs</build_export_depend>
+  <build_export_depend>tf</build_export_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>tf</exec_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

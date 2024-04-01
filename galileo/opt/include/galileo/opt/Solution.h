@@ -2,6 +2,7 @@
 
 #include "galileo/opt/LagrangePolynomial.h"
 #include "galileo/opt/Constraint.h"
+#include "galileo/tools/CasadiConversions.h"
 #include <Eigen/Dense>
 #include <string>
 
@@ -15,7 +16,7 @@ namespace galileo
         {
             /**
              * @brief Struct for storing a solution.
-             * 
+             *
              */
             struct solution_t
             {
@@ -79,7 +80,7 @@ namespace galileo
 
             /**
              * @brief Struct for storing solution segment data.
-             * 
+             *
              */
             struct solution_segment_data_t
             {
@@ -170,45 +171,77 @@ namespace galileo
                  */
                 void UpdateSolution(std::vector<solution_segment_data_t> solution_segments);
 
+                enum AccessSolutionError
+                {
+                    OK,
+                    NO_QUERY_TIMES_PROVIDED,
+                    SOLUTION_DNE
+                };
+
                 /**
                  * @brief Get the solution at a set of query times.
                  *
                  * @param query_times A vector of times at which to query the solution.
                  * @param state_result The state result at each query time.
                  * @param input_result The input result at each query time.
+                 *
+                 * @return bool True if the solution exists at the query times.
                  */
-                void GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
+                bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+                {
+                    AccessSolutionError sol_error;
+                    return GetSolution(query_times, state_result, input_result, sol_error);
+                }
+
+                /**
+                 * @brief Get the solution at a set of query times.
+                 *
+                 * @param query_times A vector of times at which to query the solution.
+                 * @param state_result The state result at each query time.
+                 * @param input_result The input result at each query time.
+                 * @param sol_error An error code that is set if this fails to get a solution.
+                 *
+                 * @return bool True if the solution exists at the query times.
+                 */
+                bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const;
 
                 /**
                  * @brief Update the constraints with new constraint data segments.
-                 * 
+                 *
                  * @param constarint_data_segments A vector of constraint data segments.
                  */
                 void UpdateConstraints(std::vector<std::vector<galileo::opt::ConstraintData>> constarint_data_segments);
 
                 /**
-                 * @brief Get the constraint evaluations at a set of query times. 
-                 * 
-                 * You should call either GetSolution or GetConstraints, but not both. 
+                 * @brief Get the constraint evaluations at a set of query times.
+                 *
+                 * You should call either GetSolution or GetConstraints, but not both.
                  * Calling GetConstraints will call GetSolution internally and fill in the state and input results.
-                 * 
+                 *
                  * @param query_times A vector of times at which to query the constraints.
                  * @param state_result The state result at each query time. This is found by calling GetSolution.
                  * @param input_result The input result at each query time. This is found by calling GetSolution.
-                 * 
+                 *
                  * @return std::vector<std::vector<constraint_evaluations_t>> A vector of constraint evaluations.
                  */
                 std::vector<std::vector<constraint_evaluations_t>> GetConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const;
 
                 /**
                  * @brief Get the segment indices for a given time range.
-                 * 
+                 *
                  * @param times The times at which the solution is evaluated.
                  * @param start_time Start time of the segment
                  * @param end_time End time of the segment
                  * @return tuple_size_t A tuple of the start and end indices of the segment in the times vector.
                  */
                 tuple_size_t getSegmentIndices(const Eigen::VectorXd &times, double start_time, double end_time) const;
+
+                /**
+                 * @brief Get if this contains a solution
+                 *
+                 * @return bool True if the solution set is not empty.
+                 */
+                bool isSolutionSet() const { return !solution_segments_.empty(); }
 
             private:
                 /**
@@ -219,7 +252,7 @@ namespace galileo
 
                 /**
                  * @brief The constraint data segments.
-                 * 
+                 *
                  */
                 std::vector<std::vector<galileo::opt::ConstraintData>> constraint_data_segments_;
             };

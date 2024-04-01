@@ -76,32 +76,29 @@ namespace galileo
 
         void PseudospectralSegment::initializeSegmentTimeVector(casadi::DM &global_times)
         {
-            segment_times = casadi::DM::zeros(knot_num * (dX_poly.d + 1), 1);
-            collocation_times = casadi::DM::zeros(knot_num * dX_poly.d, 1);
-            knot_times = casadi::DM::zeros(knot_num + 1, 1);
-            int i = 0;
-            int unique_i = 0;
-            int j = 0;
-            double kh = 0.0;
+            std::vector<double> vec_knot_times;
+            std::vector<double> vec_collocation_times;
+            std::vector<double> vec_segment_times;
+            double kh = 0;
             for (int k = 0; k < knot_num; ++k)
             {
                 kh = k * h;
-                segment_times(i, 0) = kh;
-                knot_times(k, 0) = kh;
-                ++i;
-                for (j = 0; j < dX_poly.d; ++j)
+                vec_knot_times.push_back(kh);
+                for (int i = 0; i < dX_poly.d; ++i)
                 {
-                    segment_times(i, 0) = kh + dX_poly.tau_root[j + 1] * h;
-                    if (i > 0 && unique_i < collocation_times.size1())
-                    {
-                        collocation_times(unique_i, 0) = segment_times(i, 0);
-                        ++unique_i;
-                    }
-                    ++i;
+                    vec_collocation_times.push_back(kh + dX_poly.tau_root[i + 1] * h);
                 }
             }
-            knot_times(knot_times.size1() - 2, 0) = T - h;
-            knot_times(knot_times.size1() - 1, 0) = T;
+            vec_knot_times.push_back(T);
+
+            vec_segment_times.reserve(vec_knot_times.size() - 1 + vec_collocation_times.size());
+            vec_segment_times.insert(vec_segment_times.end(), vec_knot_times.begin(), vec_knot_times.end() - 1);
+            vec_segment_times.insert(vec_segment_times.end(), vec_collocation_times.begin(), vec_collocation_times.end());
+            std::sort(vec_segment_times.begin(), vec_segment_times.end());
+
+            tools::vectorToCasadi<casadi::DM>(vec_segment_times, (dX_poly.d + 1) * knot_num, 1, segment_times);
+            tools::vectorToCasadi<casadi::DM>(vec_collocation_times, dX_poly.d * knot_num, 1, collocation_times);
+            tools::vectorToCasadi<casadi::DM>(vec_knot_times, knot_num + 1, 1, knot_times);
 
             double start_time = 0.0;
             if (global_times.is_empty() == false)
@@ -116,110 +113,39 @@ namespace galileo
             }
             collocation_times += start_time;
             knot_times += start_time;
-            // std::cout << "Knot times: " << knot_times << std::endl;
-            // std::cout << "Collocation times: " << collocation_times << std::endl;
-            // std::cout << "Segment times: " << segment_times << std::endl;
         }
 
-        // void PseudospectralSegment::initializeSegmentTimeVector(casadi::DM &global_times)
-        // {
-        //     std::cout << "tau_root: " << std::endl;
-        //     for (size_t i = 0; i < dX_poly.tau_root.size(); ++i)
-        //     {
-        //         std::cout << dX_poly.tau_root[i] << std::endl;
-        //     }
-
-        //     /*Segment times include all unique knot point and collocation point times*/
-        //     segment_times = casadi::DM::zeros(knot_num * dX_poly.d + 1, 1);
-        //     /*Each collocation point time.
-        //     We are using flipped LGR points, so this means the left endpoint is not included, but the right endpoint is.*/
-        //     collocation_times = casadi::DM::zeros(knot_num * dX_poly.d, 1);
-        //     /*Each knot point time.*/
-        //     knot_times = casadi::DM::zeros(knot_num + 1, 1);
-
-        //     /*Lets say we have 1 phase, with 2 knot segments, and we are interpolating with a third degree Lagrange polynomial.
-        //     Assume we are using the flipped LGR points (scheme='radau'). Additionally, assume that T = 2.0
-
-        //     Then, the knot point times are
-        //     [0.0, 1.0, 2.0]
-
-        //     The collocation times are then
-        //     [0.155051, 0.644949, 1.0, 1.155051, 1.644949, 2.0]
-
-        //     and the total segment times are:
-        //     [0.0, 0.155051, 0.644949, 1.0, 1.155051, 1.644949, 2.0]
-        //     */
-        //    segment_times(0, 0) = 0.0;
-        //     for (int k = 0; k < knot_num; ++k)
-        //     {
-        //         knot_times(k, 0) = k * h;
-        //         for (int j = 0; j < dX_poly.d + 1; ++j)
-        //         {
-        //             if (j < dX_poly.d)
-        //             {
-        //                 collocation_times(k * dX_poly.d + j, 0) = k * h + dX_poly.tau_root[j + 1] * h;
-        //                 segment_times(k * dX_poly.d + j + 1, 0) = k * h + dX_poly.tau_root[j + 1] * h;
-        //             }
-        //         }
-        //     }
-        //     knot_times(knot_num, 0) = T;
-
-        //     double start_time = 0.0;
-        //     if (global_times.is_empty() == false)
-        //     {
-        //         start_time = global_times(global_times.size1() - 1, 0).get_elements()[0];
-        //         segment_times += start_time;
-        //         global_times = vertcat(global_times, segment_times);
-        //     }
-        //     else
-        //     {
-        //         global_times = segment_times;
-        //     }
-        //     collocation_times += start_time;
-        //     knot_times += start_time;
-
-        //     std::cout << "Collocation times: " << collocation_times << std::endl;
-        //     std::cout << "Knot times: " << knot_times << std::endl;
-        //     std::cout << "Segment times: " << segment_times << std::endl;
-        //     abort();
-        // }
-
+        // This has a high chance of being different than initializeSegmentTimeVector in the future
         void PseudospectralSegment::initializeInputTimeVector(casadi::DM &global_times)
         {
-            u_segment_times = casadi::DM::zeros(knot_num * (U_poly.d + 1), 1);
-            u_collocation_times = casadi::DM::zeros(knot_num * U_poly.d, 1);
-            u_knot_times = casadi::DM::zeros(knot_num + 1, 1);
-            int i = 0;
-            int unique_i = 0;
-            int j = 0;
-            double kh = 0.0;
+            std::vector<double> vec_u_knot_times;
+            std::vector<double> vec_u_collocation_times;
+            std::vector<double> vec_u_segment_times;
+            double kh = 0;
             for (int k = 0; k < knot_num; ++k)
             {
                 kh = k * h;
-                u_segment_times(i, 0) = kh;
-                u_knot_times(k, 0) = kh;
-                ++i;
-                for (j = 0; j < U_poly.d; ++j)
+                vec_u_knot_times.push_back(kh);
+                for (int i = 0; i < U_poly.d; ++i)
                 {
-                    u_segment_times(i, 0) = kh + U_poly.tau_root[j + 1] * h;
-                    if (i > 0 && unique_i < u_collocation_times.size1())
-                    {
-                        u_collocation_times(unique_i, 0) = u_segment_times(i, 0);
-                        ++unique_i;
-                    }
-                    ++i;
+                    vec_u_collocation_times.push_back(kh + U_poly.tau_root[i + 1] * h);
                 }
             }
-            u_knot_times(u_knot_times.size1() - 2, 0) = T - h;
-            u_knot_times(u_knot_times.size1() - 1, 0) = T;
+            vec_u_knot_times.push_back(T);
+
+            vec_u_segment_times.reserve(vec_u_knot_times.size() - 1 + vec_u_collocation_times.size());
+            vec_u_segment_times.insert(vec_u_segment_times.end(), vec_u_knot_times.begin(), vec_u_knot_times.end() - 1);
+            vec_u_segment_times.insert(vec_u_segment_times.end(), vec_u_collocation_times.begin(), vec_u_collocation_times.end());
+            std::sort(vec_u_segment_times.begin(), vec_u_segment_times.end());
+
+            tools::vectorToCasadi<casadi::DM>(vec_u_segment_times, (U_poly.d + 1) * knot_num, 1, u_segment_times);
+            tools::vectorToCasadi<casadi::DM>(vec_u_collocation_times, U_poly.d * knot_num, 1, u_collocation_times);
+            tools::vectorToCasadi<casadi::DM>(vec_u_knot_times, knot_num + 1, 1, u_knot_times);
 
             double start_time = knot_times(0, 0).get_elements()[0];
             u_segment_times += start_time;
             u_collocation_times += start_time;
             u_knot_times += start_time;
-            // std::cout << "Input knot times: " << u_knot_times << std::endl;
-            // std::cout << "Input collocation times: " << u_collocation_times << std::endl;
-            // std::cout << "Input segment times: " << u_segment_times << std::endl;
         }
 
         void PseudospectralSegment::initializeKnotSegments(casadi::DM x0_global_, casadi::MX x0_local_)
@@ -241,7 +167,7 @@ namespace galileo
                 Uc_var_vec.push_back(casadi::MX::sym("U_" + std::to_string(k), st_m->nu * U_poly.d, 1));
             }
 
-            /*We do knot_num + 1 so we have a decision variable for the final state. knot_num is the number of knot segments, which corresponds to knot_num + 1 knot points*/
+            /*We do knot_num + 1 so we have a decision variable for the final state. knot_num -1 is the number of knot segments, which corresponds to knot_num knot points*/
             for (int k = 0; k < knot_num + 1; ++k)
             {
                 dX0_var_vec.push_back(casadi::MX::sym("dX0_" + std::to_string(k), st_m->ndx, 1));
@@ -378,7 +304,6 @@ namespace galileo
             std::vector<tuple_size_t> ranges_G;
             end_time = std::chrono::high_resolution_clock::now();
             duration = end_time - start_time;
-            // std::cout << "Time to map collocation equations: " << duration.count() << std::endl;
 
             start_time = std::chrono::high_resolution_clock::now();
             /*Map the constraint to each collocation point, and then map the mapped constraint to each knot segment*/
@@ -402,7 +327,6 @@ namespace galileo
             }
             end_time = std::chrono::high_resolution_clock::now();
             duration = end_time - start_time;
-            // std::cout << "Time to map general constraints: " << duration.count() << std::endl;
 
             general_lbg.resize(N, 1);
             general_ubg.resize(N, 1);
@@ -420,7 +344,7 @@ namespace galileo
             }
             end_time = std::chrono::high_resolution_clock::now();
             duration = end_time - start_time;
-            // std::cout << "Time to fill general constraint bounds: " << duration.count() << std::endl;
+
             auto Ndxknot = st_m->ndx * (knot_num + 1);
             auto Ndx = st_m->ndx * (dX_poly.d + 1) * knot_num + st_m->ndx;
             auto Ndxcol = Ndx - Ndxknot;

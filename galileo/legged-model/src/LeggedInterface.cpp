@@ -33,12 +33,12 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedInterface::LeggedInterface()
+        LeggedInterface::LeggedInterface(std::string sol_data_dir, std::string plot_dir)
         {
             surfaces_ = std::make_shared<galileo::legged::environment::EnvironmentSurfaces>();
             solution_interface_ = std::make_shared<galileo::opt::solution::Solution>();
-            meshcat_interface = std::make_shared<galileo::tools::MeshcatInterface>("../examples/visualization/solution_data/");
-            plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>("../examples/visualization/plots/");
+            meshcat_interface = std::make_shared<galileo::tools::MeshcatInterface>(sol_data_dir);
+            plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>(plot_dir);
         }
 
         void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names)
@@ -60,6 +60,8 @@ namespace galileo
             // Load the parameters from the given parameter file.
             std::map<std::string, std::string> imported_vars;
             std::ifstream file(parameter_file_location);
+            // assert that file exists
+            assert(file.is_open());
             std::string row;
 
             while (std::getline(file, row))
@@ -72,11 +74,11 @@ namespace galileo
                 imported_vars[key] = value;
             }
 
-            // opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
-            // opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
+            opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
+            opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
 
-            opts_["ipopt.linear_solver"] = "ma97";
-            opts_["ipopt.ma97_order"] = "metis";
+            // opts_["ipopt.linear_solver"] = "ma97";
+            // opts_["ipopt.ma97_order"] = "metis";
             // opts_["snopt.Major iterations limit"] = 1;
             // opts_["snopt.Minor iterations limit"] = 1;
             // opts_["snopt.Iterations limit"] = 1;
@@ -91,10 +93,13 @@ namespace galileo
 
             cost_params_.Q_diag = Q_diag;
             cost_params_.R_diag = R_diag;
+
+            parameters_set_ = true;
         }
 
         void LeggedInterface::CreateProblemData(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
+            assert(robot_ != nullptr); // Model must be loaded
             casadi::Function L, Phi;
 
             CreateCost(initial_state, target_state, L, Phi);
@@ -113,10 +118,8 @@ namespace galileo
         // TODO: Generate a reference trajectory somewhere and share it betwen the objective and initial guess
         void LeggedInterface::CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &L, casadi::Function &Phi)
         {
-            // Hardcoded costs for now
-            // Updates the robot running and terminal costs L and Phi.
+            assert(robot_ != nullptr);
 
-            // HARDCODE COST WEIGHTS
             casadi::DM X0 = initial_state;
 
             assert(cost_params_.Q_diag.size() == states_->ndx);
@@ -137,9 +140,12 @@ namespace galileo
 
             pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
 
+            galileo::legged::contact::RobotEndEffectors ees = getEndEffectors();
             casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
-            // Hardcoded for 3-joint quadrupeds for now
-            U_ref(casadi::Slice(2, 11, 3)) = 9.81 * robot_->cdata.mass[0] / robot_->num_end_effectors_;
+            for (auto ee : ees)
+            {
+                U_ref(casadi::Slice(std::get<0>(states_->frame_id_to_index_range[ee.second->frame_id]) + 2)) = 9.81 * robot_->cdata.mass[0] / robot_->num_end_effectors_;
+            }
             casadi::SX u_error = robot_->cu - U_ref;
 
             L = casadi::Function("L",
@@ -155,7 +161,6 @@ namespace galileo
         std::vector<LeggedInterface::LeggedConstraintBuilderType>
         LeggedInterface::getLeggedConstraintBuilders() const
         {
-
             LeggedConstraintBuilderType friction_cone_constraint_builder =
                 std::make_shared<constraints::FrictionConeConstraintBuilder<LeggedRobotProblemData>>();
 
@@ -170,6 +175,7 @@ namespace galileo
 
         void LeggedInterface::setContactSequence(std::vector<int> knot_num, std::vector<double> knot_time, std::vector<uint> mask_vec, std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces)
         {
+            assert(robot_ != nullptr); // Model must be loaded
             std::shared_ptr<contact::ContactSequence> contact_sequence = std::make_shared<contact::ContactSequence>(robot_->num_end_effectors_);
 
             for (size_t j = 0; j < mask_vec.size(); ++j)
@@ -185,9 +191,11 @@ namespace galileo
 
         void LeggedInterface::Initialize(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
-            // Hardcoded initialization for now
+            assert(CanInitialize());
+
             // Create the problem data from the loaded parameter values
             CreateProblemData(initial_state, target_state);
+
             // Create the trajectory optimizer.
             CreateTrajOpt();
 
@@ -199,6 +207,7 @@ namespace galileo
             auto constraint_builders = getLeggedConstraintBuilders();
             decision_builder_ = std::make_shared<galileo::legged::constraints::LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
+            std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, "ipopt");
         }
 
@@ -207,30 +216,43 @@ namespace galileo
             UpdateProblemBoundaries(initial_state, target_state);
 
             // Solve the problem
+            std::lock_guard<std::mutex> lock_traj(trajectory_opt_mutex_);
             trajectory_opt_->optimize();
 
+            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
+            //@todo Akshay5312, reevaluate thread safety
             solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
+
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
         }
 
-        void LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
-            solution_interface_->GetSolution(query_times, state_result, input_result);
+            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
+            return solution_interface_->GetSolution(query_times, state_result, input_result);
         }
 
-        void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result) const
+        void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
+            std::unique_lock<std::mutex> lock_sol(solution_mutex_);
             std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
-            std::cout << "Size of constraints: " << constraints.size() << std::endl;
+            lock_sol.unlock();
 
             Eigen::MatrixXd subMatrix = state_result.block(states_->q_index, 0, states_->nq, state_result.cols());
+
             meshcat_interface->WriteTimes(query_times, "sol_times.csv");
             meshcat_interface->WriteJointPositions(subMatrix, "sol_states.csv");
             meshcat_interface->WriteMetadata(model_file_location_, "metadata.csv");
-            
-            opt::solution::solution_t solution(query_times, state_result, input_result);
-            // plotting_interface->PlotSolution(solution, {},{}, {}, {}, {}, {});
-            std::cout << "Plotting constraints" << std::endl;
+
+            opt::solution::solution_t solution(query_times, state_result.transpose(), input_result.transpose());
+
+            plotting_interface->PlotSolution(solution, {std::make_tuple(states_->q_index, states_->q_index + 3), std::make_tuple(states_->q_index + 3, states_->q_index + states_->nqb)},
+                                             {},
+                                             {"Positions", "Orientations"},
+                                             {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                                             {},
+                                             {});
+
             plotting_interface->PlotConstraints(constraints);
         }
 
@@ -245,6 +267,7 @@ namespace galileo
             problem_data_->gp_data->L = L;
             problem_data_->gp_data->Phi = Phi;
 
+            std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
             trajectory_opt_->initFiniteElements(1, initial_state);
         }
 
