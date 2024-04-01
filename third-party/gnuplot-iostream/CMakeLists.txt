@@ -1,5 +1,3 @@
-set(dir "${CMAKE_CURRENT_SOURCE_DIR}")
-
 FILE(GLOB_RECURSE HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
 )
@@ -7,6 +5,12 @@ FILE(GLOB_RECURSE HEADER_FILES
 set(INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
 target_include_directories(galileo
+        PUBLIC
+        $<BUILD_INTERFACE:${INCLUDE_DIRS}>
+        $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(galileo_tests
         PUBLIC
         $<BUILD_INTERFACE:${INCLUDE_DIRS}>
         $<INSTALL_INTERFACE:include>

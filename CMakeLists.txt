@@ -4,6 +4,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 project(Galileo)
 
 # Enable parallelism in the GNU Standard C++ Library
@@ -25,6 +30,16 @@ if(BUILD_WITH_OPENMP)
   endif()
 endif()
 
+# Google Test
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL http://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 # libgalileo
 add_library(galileo SHARED galileo.cc)
 set_target_properties(galileo PROPERTIES LINKER_LANGUAGE CXX)
@@ -36,6 +51,11 @@ set(CMAKE_CXX_FLAGS "-g -O3 -fopenmp -lgomp -no-pie -ggdb -Wall \
     -Wextra -Wcast-align -Wdisabled-optimization -Wformat=2 \
     -Winit-self -Wmissing-include-dirs -Woverloaded-virtual \
     -Wshadow -Wsign-promo")
+
+# Test target
+enable_testing()
+
+add_executable(galileo_tests galileo.cc)
 
 add_subdirectory(third-party)
 add_subdirectory(galileo)
@@ -107,3 +127,12 @@ if(NOT TARGET uninstall)
 endif()
 
 add_subdirectory(examples)
+
+target_link_libraries(
+  galileo_tests
+  galileo
+  GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(galileo_tests)

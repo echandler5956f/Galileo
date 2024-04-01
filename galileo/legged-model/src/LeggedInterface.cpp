@@ -41,16 +41,9 @@ namespace galileo
             plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>("../examples/visualization/plots/");
         }
 
-        void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names)
+        void LeggedInterface::LoadModel(const std::string model_file_location, const std::vector<std::string> end_effector_names)
         {
-            std::string *end_effector_names_array = new std::string[end_effector_names.size()];
-
-            for (size_t i = 0; i < end_effector_names.size(); ++i)
-            {
-                end_effector_names_array[i] = end_effector_names[i];
-            }
-
-            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array);
+            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names);
             states_ = robot_->si;
             model_file_location_ = model_file_location;
         }
