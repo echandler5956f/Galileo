@@ -14,5 +14,5 @@ using namespace tools;
 using namespace math;
 
 const std::string atlas_location = "../resources/atlas/urdf/atlas.urdf";
-const std::string atlas_parameter_location = "../resources/atlas/SolverParameters/atlas_solver_parameters.txt";
+const std::string atlas_parameter_location = "../resources/atlas/SolverParameters/solver_parameters.txt";
 const std::vector<std::string> end_effector_names = {"l_foot", "r_foot"};

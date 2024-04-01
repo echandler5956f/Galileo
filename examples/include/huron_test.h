@@ -14,5 +14,5 @@ using namespace tools;
 using namespace math;
 
 const std::string huron_location = "../resources/huron/urdf/huron.urdf";
-const std::string huron_parameter_location = "../resources/huron/SolverParameters/huron_solver_parameters.txt";
+const std::string huron_parameter_location = "../resources/huron/SolverParameters/solver_parameters.txt";
 const std::vector<std::string> end_effector_names = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
