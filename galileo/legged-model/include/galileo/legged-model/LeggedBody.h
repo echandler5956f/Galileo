@@ -30,11 +30,10 @@ namespace galileo
              * @brief Construct a new Legged Body object.
              *
              * @param location The location of the URDF file.
-             * @param num_ees The number of end effectors.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
              *
              */
-            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[]);
+            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names);
 
             /**
              * @brief Provide the string IDs that correspond to the pinocchio end effector frames.

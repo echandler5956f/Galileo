@@ -4,8 +4,9 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedBody::LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[])
+        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names)
         {
+            size_t num_ees = end_effector_names.size();
             model = Model();
             std::vector<std::string> ee_name_vect;
             ee_name_vect.resize(num_ees);

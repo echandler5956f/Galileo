@@ -39,7 +39,7 @@ namespace galileo
             /**
              * @brief Load the model from a file.
              */
-            void LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names);
+            void LoadModel(const std::string model_file_location, const std::vector<std::string> end_effector_names);
 
             /**
              * @brief Load the parameters from a file.
