@@ -1,5 +1,5 @@
 Variable Name,Value
 Q_diag,(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 25, 5, 5, 25, 5, 5, 25, 5, 5, 25)
 R_diag,(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500)
-ipopt.max_iter,6
+ipopt.max_iter,250
 ipopt.fixed_variable_treatment,make_constraint
