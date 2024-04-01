@@ -44,13 +44,9 @@ namespace galileo
 
             std::vector<double> getXfromq(int nx, int q_index, std::vector<double> q)
             {
-                std::cout << "nx: " << nx << std::endl;
-                std::cout << "q_index: " << q_index << std::endl;
-                std::cout << "q.size(): " << q.size() << std::endl;
                 assert(q_index + q.size() <= nx);
 
-                std::vector<double> X;
-                std::fill(X.begin(), X.end(), 0);
+                std::vector<double> X(nx, 0); // Initialize X with size nx, fill with 0s
                 std::copy(q.begin(), q.end(), X.begin() + q_index);
 
                 return X;
