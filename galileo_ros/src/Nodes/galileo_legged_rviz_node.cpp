@@ -62,7 +62,10 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "galileo_ros_legged_rviz_node");
     ros::NodeHandle nh;
     std::string solver_id;
-    if (!nh.getParam("galileo_ros/solver_id", solver_id))
+
+    std::string body_frame_name;
+
+    if (!nh.getParam("galileo_ros/solver_id", solver_id) || !nh.getParam("galileo_ros/robot_body_frame_name", body_frame_name))
     {
         ROS_ERROR("Failed to get parameters");
         return 1;
@@ -77,7 +80,7 @@ int main(int argc, char **argv)
     ros::ServiceClient solution_client = nh.serviceClient<galileo_ros::SolutionRequest>(solver_id + "_get_solution");
     geometry_msgs::TransformStamped body_transform;
     body_transform.header.frame_id = "world";
-    body_transform.child_frame_id = "pelvis";
+    body_transform.child_frame_id = body_frame_name;
 
     // Create a TransformBroadcaster
     tf::TransformBroadcaster tf_broadcaster;
