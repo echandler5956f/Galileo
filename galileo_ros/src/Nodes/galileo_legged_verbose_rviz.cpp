@@ -261,7 +261,7 @@ int main(int argc, char **argv)
 
                 force_marker.color.a = 1.0;
 
-                double force_scaling = 0.002;
+                double force_scaling = 0.0007;
 
                 int ee_dof = end_effector.second->is_6d ? 6 : 3;
 

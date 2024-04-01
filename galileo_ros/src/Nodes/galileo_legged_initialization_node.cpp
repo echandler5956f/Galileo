@@ -11,7 +11,7 @@ std::vector<double> getXfromq(int nx, int q_index, std::vector<double> q)
         X.push_back(0);
     }
 
-    for (int j = 0; j < 19; j++)
+    for (int j = 0; j < 37; j++)
     {
         X[q_index + j] = q[j];
     }

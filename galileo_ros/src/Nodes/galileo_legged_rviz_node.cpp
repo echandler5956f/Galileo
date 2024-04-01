@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     ros::ServiceClient solution_client = nh.serviceClient<galileo_ros::SolutionRequest>(solver_id + "_get_solution");
     geometry_msgs::TransformStamped body_transform;
     body_transform.header.frame_id = "world";
-    body_transform.child_frame_id = "base";
+    body_transform.child_frame_id = "pelvis";
 
     // Create a TransformBroadcaster
     tf::TransformBroadcaster tf_broadcaster;
