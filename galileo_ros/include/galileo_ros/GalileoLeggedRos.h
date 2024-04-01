@@ -1,6 +1,7 @@
 #pragma once
 
 #include <galileo/legged-model/LeggedInterface.h>
+#include <galileo/legged-model/LeggedModelHelpers.h>
 
 #include <ros/ros.h>
 #include <ros/package.h>

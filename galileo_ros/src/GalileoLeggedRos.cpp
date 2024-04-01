@@ -62,19 +62,9 @@ namespace galileo
                 knot_times.push_back(phase.knot_time);
 
                 contact_surface_ids.push_back(phase.contact_surface_ids);
-
-                uint mask_bin = 0;
-                for (auto &csurface_id : phase.contact_surface_ids)
-                {
-
-                    mask_bin /= 2;
-                    if (csurface_id != galileo::legged::environment::NO_SURFACE)
-                    {
-                        mask_bin += pow(2, getEndEffectors().size() - 1);
-                    }
-                }
-                mask_vec.push_back(mask_bin);
             }
+
+            mask_vec = helper::getMaskVectorFromContactSurfaces(contact_surface_ids);
 
             setContactSequence(knot_nums, knot_times, mask_vec, contact_surface_ids);
         }

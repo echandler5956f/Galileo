@@ -1,151 +1,38 @@
 #include "galileo_ros/GalileoLeggedRos.h"
 
 #include <galileo/tools/ReadFromFile.h>
-
-std::vector<double> getXfromq(int nx, int q_index, std::vector<double> q)
-{
-    std::vector<double> X;
-
-    for (int j = 0; j < nx; j++)
-    {
-        X.push_back(0);
-    }
-
-    for (int j = 0; j < 37; j++)
-    {
-        X[q_index + j] = q[j];
-    }
-
-    return X;
-}
-
-std::vector<std::vector<galileo::legged::environment::SurfaceID>> readContactSurfaces(std::vector<std::string> contact_surfaces_str)
-{
-    std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
-    std::vector<galileo::legged::environment::SurfaceID> current_contact_surface_combination;
-
-    for (int i = 0; i < contact_surfaces_str.size(); i++)
-    {
-        bool some_vector_read = false;
-        if (contact_surfaces_str[i].find_first_of('(') != std::string::npos)
-        {
-            int parenthesis_index = contact_surfaces_str[i].find_first_of('(');
-            contact_surfaces_str[i] = contact_surfaces_str[i].substr(parenthesis_index + 1);
-        }
-
-        if (contact_surfaces_str[i].find_last_of(')') != std::string::npos)
-        {
-            some_vector_read = true;
-            int parenthesis_index = contact_surfaces_str[i].find_last_of(')');
-            contact_surfaces_str[i] = contact_surfaces_str[i].substr(0, parenthesis_index);
-        }
-
-        current_contact_surface_combination.push_back(std::stoi(contact_surfaces_str[i]));
-
-        if (some_vector_read)
-        {
-            contact_surfaces.push_back(current_contact_surface_combination);
-            current_contact_surface_combination.clear();
-        }
-    }
-
-    return contact_surfaces;
-}
+#include <galileo/legged-model/LeggedModelHelpers.h>
 
 void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_file_name, std::string problem_parameter_file_name,
                             galileo_ros::RobotModel &robot_model_cmd,
-                            galileo_ros::ParameterFileLocation &parameter_location_cmd,
+                            galileo_ros::ParameterFileLocation &solver_parameter_location,
                             galileo_ros::ContactSequence &contact_sequence_cmd, galileo_ros::GalileoCommand &galileo_cmd_msg)
 {
-    std::string model_location = urdf_name;
-    std::string parameter_location = solver_parameter_file_name;
 
-    robot_model_cmd.model_file_location = model_location;
-
-    std::map<std::string, std::string> data_map = galileo::tools::readFromFile(problem_parameter_file_name);
-
-    std::vector<std::string> end_effectors = galileo::tools::readAsVector(data_map["end_effector_names"]);
-    robot_model_cmd.end_effector_names = end_effectors;
-
-    std::vector<std::string> knot_num_str = galileo::tools::readAsVector(data_map["knot_num"]);
+    std::vector<std::string> end_effectors;
     std::vector<int> knot_num;
-    std::transform(knot_num_str.begin(), knot_num_str.end(), std::back_inserter(knot_num), [](const std::string &str)
-                   { return std::stoi(str); });
-
-    std::vector<std::string> knot_time_str = galileo::tools::readAsVector(data_map["knot_time"]);
     std::vector<double> knot_time;
-    std::transform(knot_time_str.begin(), knot_time_str.end(), std::back_inserter(knot_time), [](const std::string &str)
-                   { return std::stod(str); });
-
-    std::vector<std::string> contact_surfaces_str = galileo::tools::readAsVector(data_map["contact_combinations"]);
-
-    std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = readContactSurfaces(contact_surfaces_str);
-    parameter_location_cmd.parameter_file_location = parameter_location;
-
-    if (knot_num.size() != knot_time.size() || knot_num.size() != contact_surfaces.size())
-    {
-        ROS_ERROR("Mismatch in number of knot_num, knot_time and contact_surfaces");
-        return;
-    }
-
-    std::vector<std::string> q0_str = galileo::tools::readAsVector(data_map["q0"]);
-    std::vector<std::string> qf_str = galileo::tools::readAsVector(data_map["qf"]);
-
+    std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
     std::vector<double> q0;
     std::vector<double> qf;
 
-    std::transform(q0_str.begin(), q0_str.end(), std::back_inserter(q0), [](const std::string &str)
-                   { return std::stod(str); });
-    std::transform(qf_str.begin(), qf_str.end(), std::back_inserter(qf), [](const std::string &str)
-                   { return std::stod(str); });
+    galileo::legged::helper::ReadProblemFromParameterFile(
+        problem_parameter_file_name,
+        end_effectors,
+        knot_num,
+        knot_time,
+        contact_surfaces,
+        q0,
+        qf);
 
-    // std::vector<int> knot_num = {25, 16, 8, 16,
-    //                              25,
-    //                              16, 8, 16, 25};
-    // std::vector<double> knot_time = {
-    //     0.25,
-    //     0.1667,
-    //     0.08,
-    //     0.1667,
-    //     0.25,
-    //     0.1667,
-    //     0.08,
-    //     0.1667,
-    //     0.25,
-    // };
-    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
-    //     {0, 0},
-    //     {-1, 0},
-    //     {0, 0},
-    //     {0, -1},
-    //     {0, 0},
-    //     {-1, 0},
-    //     {0, 0},
-    //     {0, -1},
-    //     {0, 0},
-    // }; // static walk
+    std::string model_location = urdf_name;
+    std::string solver_parameter_location = solver_parameter_file_name;
 
-    // std::vector<int> knot_num = {5, 30, 30, 30, 30, 5};
-    // std::vector<double> knot_time = {0.05, 0.3, 0.3, 0.3, 0.3, 0.05};
-    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
-    //     {0, 0, 0, 0},
-    //     {0, -1, -1, 0},
-    //     {-1, 0, 0, -1},
-    //     {0, -1, -1, 0},
-    //     {-1, 0, 0, -1},
-    //     {0, 0, 0, 0}}; // trot
+    robot_model_cmd.model_file_location = model_location;
 
-    // std::vector<int> knot_num = {30, 30, 30};
-    // std::vector<double> knot_time = {0.15, 0.3, 0.15};
-    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
-    //     {0, 0, 0, 0},
-    //     {-1, -1, -1, -1},
-    //     {0, 0, 0, 0}}; // jump/
+    robot_model_cmd.end_effector_names = end_effectors;
 
-    // std::vector<int> knot_num = {50};
-    // std::vector<double> knot_time = {0.6};
-    // std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces = {
-    //     {0, 0, 0, 0}}; // stand
+    solver_parameter_location.parameter_file_location = solver_parameter_location;
 
     for (int phase_number = 0; phase_number < knot_num.size(); phase_number++)
     {

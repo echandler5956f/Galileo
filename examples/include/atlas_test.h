@@ -6,6 +6,8 @@
 #include "galileo/tools/GNUPlotInterface.h"
 #include "galileo/math/Quat2Euler.h"
 
+#include "galileo/legged-model/LeggedModelHelpers.h"
+
 using namespace galileo;
 using namespace legged;
 using namespace opt;
@@ -14,5 +16,6 @@ using namespace tools;
 using namespace math;
 
 const std::string atlas_location = "../resources/atlas/urdf/atlas.urdf";
-const std::string atlas_parameter_location = "../resources/atlas/SolverParameters/solver_parameters.txt";
+const std::string solver_parameter_location = "../resources/atlas/Parameters/solver_parameters.txt";
+const std::string problem_parameter_location = "../resources/atlas/Parameters/problem_parameters.txt";
 const std::vector<std::string> end_effector_names = {"l_foot", "r_foot"};

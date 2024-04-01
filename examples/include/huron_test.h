@@ -6,6 +6,8 @@
 #include "galileo/tools/GNUPlotInterface.h"
 #include "galileo/math/Quat2Euler.h"
 
+#include "galileo/legged-model/LeggedModelHelpers.h"
+
 using namespace galileo;
 using namespace legged;
 using namespace opt;
@@ -14,5 +16,5 @@ using namespace tools;
 using namespace math;
 
 const std::string huron_location = "../resources/huron/urdf/huron.urdf";
-const std::string huron_parameter_location = "../resources/huron/SolverParameters/solver_parameters.txt";
-const std::vector<std::string> end_effector_names = {"l_foot_v_ft_link", "r_foot_v_ft_link"};
+const std::string solver_parameter_location = "../resources/huron/Parameters/solver_parameters.txt";
+const std::string problem_parameter_location = "../resources/huron/Parameters/problem_parameters.txt";
