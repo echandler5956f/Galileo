@@ -4,11 +4,10 @@ namespace galileo
 {
     namespace opt
     {
-        PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F_, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_)
+        PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F_, casadi::Function L_, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_)
         {
             auto Fint_ = problem->Fint;
             auto Fdiff_ = problem->Fdiff;
-            auto L_ = problem->L;
 
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
             assert(h_ > 0 && "h must be a positive duration");
@@ -58,7 +57,7 @@ namespace galileo
             Uc.clear();
 
             dX_poly = LagrangePolynomial(d);
-            U_poly = LagrangePolynomial(d);
+            U_poly = LagrangePolynomial(d - 1);
 
             for (int j = 0; j < dX_poly.d; ++j)
             {
@@ -172,10 +171,7 @@ namespace galileo
             {
                 dX0_var_vec.push_back(casadi::MX::sym("dX0_" + std::to_string(k), st_m->ndx, 1));
                 X0_var_vec.push_back(Fint(casadi::MXVector{x0_global_, dX0_var_vec[k], 1.0}).at(0));
-                // if (k < knot_num)
-                // {
                 U0_var_vec.push_back(casadi::MX::sym("U0_" + std::to_string(k), st_m->nu, 1));
-                // }
             }
         }
 
@@ -216,7 +212,6 @@ namespace galileo
                 /*dXc must exist in a Euclidean space, but we need x_c in order to evaluate the objective. Fint can simply return dXc[j] if the states are already Euclidean*/
                 casadi::SX x_c = Fint(casadi::SXVector{X0, dXc[j], dt_j}).at(0);
                 casadi::SX u_c = U_poly.barycentricInterpolation(dX_poly.tau_root[j], tmp_u);
-                // casadi::SX u_c = Uc[0];
 
                 x_at_c.push_back(x_c);
                 u_at_c.push_back(u_c);
@@ -230,7 +225,6 @@ namespace galileo
                 casadi::SXVector L_out = L(casadi::SXVector{x_c, u_c});
                 /*This is fine as long as the cost is not related to the Lie Group elements. See the state integrator and dX for clarity*/
                 Qf += dX_poly.B[j + 1] * L_out.at(0) * h;
-                // Qf += U_poly.B(j + 1) * L_out.at(1) * h;
 
                 dXf += dX_poly.D[j + 1] * dXc[j];
             }

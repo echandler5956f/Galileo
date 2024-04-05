@@ -143,6 +143,7 @@ namespace galileo
             R.topLeftCorner(totalContactDim, totalContactDim) = R_taskspace.topLeftCorner(totalContactDim, totalContactDim);
             // Joint velocities
             R.bottomRightCorner(si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.bottomRightCorner(totalContactDim, totalContactDim) * baseToFeetJacobians;
+            std::cout << "R: " << R << std::endl;
             return R;
         }
 
@@ -192,8 +193,7 @@ namespace galileo
                                                 {cx, cu_general},
                                                 {vertcat((si->get_general_forces(cu_general) - mass * g) / mass,
                                                          si->get_general_torques(cu_general) / mass,
-                                                         cv)},
-                                                casadi_opts);
+                                                         cv)});
 
             TangentVectorAD vb_AD2 = Ab_inv * (mass * h_AD - Ag.rightCols(si->nvju) * vju_AD);
             TangentVectorAD tmp_v_AD2(si->nv, 1);
@@ -307,9 +307,22 @@ namespace galileo
                 contact_sequence->phase_sequence_[i].phase_dynamics = casadi::Function("F_mode",
                                                                                        {cx, cu},
                                                                                        {general_dynamics(casadi::SXVector{cx, u_general})
-                                                                                            .at(0)},
-                                                                                       casadi_opts);
+                                                                                            .at(0)});
             }
+        }
+
+        casadi::SX LeggedBody::weightCompensatingInputsForPhase(size_t phase_index)
+        {
+            casadi::SX weight_compensating_inputs = casadi::SX::zeros(si->nu, 1);
+            contact::ContactMode mode = contact_sequence->phase_sequence_[phase_index].mode;
+            for (auto ee : ees_)
+            {
+                if (mode[(*ee.second)])
+                {
+                    weight_compensating_inputs(casadi::Slice(std::get<0>(si->frame_id_to_index_range[ee.second->frame_id]) + 2)) = 9.81 * cdata.mass[0] / contact_sequence->numEndEffectorsInContactAtPhase(phase_index);
+                }
+            }
+            return weight_compensating_inputs;
         }
 
         contact::ContactCombination LeggedBody::getContactCombination(int contact_mask) { return contact_combinations_[contact_mask]; }

@@ -157,7 +157,7 @@ namespace galileo
             bool isSurfaceSet() const { return surfaces_ == nullptr ? false : surfaces_->size(); }
             bool CanInitialize() const { return isRobotModelLoaded() && isParametersLoaded() && isPhasesSet() && isSurfaceSet(); }
 
-        private:
+        protected:
             /**
              * @brief Create the trajectory optimizer.
              */
@@ -166,7 +166,7 @@ namespace galileo
             /**
              * @brief Create the running and terminal costs.
              */
-            void CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &L, casadi::Function &Phi);
+            void CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &Phi);
 
             /**
              * @brief update the problem data with new boundary conditions
@@ -195,6 +195,8 @@ namespace galileo
 
             casadi::Dict opts_;
 
+            std::string solver_type_ = "ipopt";
+
             std::shared_ptr<opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
 
             std::shared_ptr<LeggedTrajOpt> trajectory_opt_; /**< The trajectory optimizer. */
@@ -208,8 +210,11 @@ namespace galileo
             {
                 Eigen::VectorXd Q_diag;
                 Eigen::VectorXd R_diag;
+                double terminal_weight = 1.0;
             };
             CostParameters cost_params_;
+
+            std::map<std::string, double> constraint_params_;
 
             std::string body_name_ = "base";
 

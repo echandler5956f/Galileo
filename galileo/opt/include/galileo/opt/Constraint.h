@@ -22,14 +22,12 @@ namespace galileo
                 allowing for states to lie on a manifold. Fint is the function which maps these
                 deviations back to the actual state space
              * @param Fdiff_ Continuous-time function. The ineverse function of Fint. This is used to generate the initial guess for the states.
-             * @param L_ Running cost
              * @param Phi_ Terminal cost
              */
-            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdiff_, casadi::Function L_, casadi::Function Phi_)
+            GeneralProblemData(casadi::Function Fint_, casadi::Function Fdiff_, casadi::Function Phi_)
             {
                 this->Fint = Fint_;
                 this->Fdiff = Fdiff_;
-                this->L = L_;
                 this->Phi = Phi_;
             }
 
@@ -46,12 +44,6 @@ namespace galileo
              *
              */
             casadi::Function Fdiff;
-
-            /**
-             * @brief The "running" or integrated cost function.
-             *
-             */
-            casadi::Function L;
 
             /**
              * @brief The terminal cost function.

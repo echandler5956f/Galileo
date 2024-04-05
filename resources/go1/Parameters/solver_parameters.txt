@@ -1,5 +1,20 @@
 Variable Name,Value
-Q_diag,(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 25, 5, 5, 25, 5, 5, 25, 5, 5, 25)
-R_diag,(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500)
-ipopt.max_iter,250
+Q_diag,(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5)
+R_diag,(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5)
+terminal_weight,1e3
+
+mu,0.7
+normal_force_max,150
+ideal_offset_height,0.08
+footstep_height_scaling,0.15
+max_following_leeway_planar,50
+min_following_leeway_planar,1e-8
+footstep_vel_start,0
+footstep_vel_end,0
+
+solver,ipopt
+ipopt.max_iter,5
 ipopt.fixed_variable_treatment,make_constraint
+ipopt.linear_solver,ma97
+ipopt.ma97_order,metis
+ipopt.hessian_approximation,limited-memory

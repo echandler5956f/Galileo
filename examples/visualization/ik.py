@@ -31,24 +31,16 @@ for i in range(len(names)):
     print(f"{i}: {names[i]}")
 
 q = np.zeros(model.nq)
-q[2] = 0.788527 + 0.07645
-print(q[2])
+q[2] = 0.3639958
 q[6] = 1
 
-q[2+6] = 0
-
-q[5 + 6] = -1.5
-q[21+6] = -0.5 # hip y
-q[22+6] = 1. # knee y
-q[23+6] = -0.5 # ankle y
-
-q[13+6] = 1.5
-q[27+6] = -0.5 # hip y
-q[28+6] = 1. # knee y
-q[29+6] = -0.5 # ankle y
+q[1+6] = 0.1
+q[2+6] = 1.00
+q[3+6] = -2.00
+print(q)
 
 pin.framesForwardKinematics(model, data, q)
-foot_pos = data.oMf[model.getFrameId("r_foot", pin.BODY)].translation
+foot_pos = data.oMf[model.getFrameId("FL_foot", pin.BODY)].translation
 print(foot_pos)
 
 viz = MeshcatVisualizer(robot)

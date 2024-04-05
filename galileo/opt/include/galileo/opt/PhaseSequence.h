@@ -55,6 +55,8 @@ namespace galileo
                  */
                 casadi::Function phase_dynamics;
 
+                casadi::Function phase_cost;
+
                 /**
                  * @brief Number of knot points for which the phase applies over.
                  *
@@ -280,14 +282,22 @@ namespace galileo
             return phase_sequence_.size() - 1;
         }
 
+        // TODO: There's a very strange bug with this function! Accessing dt_ causes a segfault when called in LeggedRos, even though it is properly initialized....
         template <typename MODE_T>
         int PhaseSequence<MODE_T>::getPhaseIndexAtTime(double t, PHASE_SEQUENCE_ERROR &error_status) const
         {
+            std::cout << "Inside getPhaseIndexAtTime" << std::endl;
+            std::cout << "t: " << t << std::endl;
+            std::cout << "dt_: " << dt_ << std::endl;
+            std::cout << "Entering if statement" << std::endl;
             if ((t < 0) || (t > dt_))
             {
+                std::cout << "t < 0: " << (t < 0) << std::endl;
+                std::cout << "t > dt_: " << (t > dt_) << std::endl;
                 error_status = PHASE_SEQUENCE_ERROR::NOT_IN_DT;
                 return -1;
             }
+            std::cout << "Passed the if statement" << std::endl;
 
             for (int i = getNumPhases() - 1; i > 0; i--)
             {
@@ -298,6 +308,7 @@ namespace galileo
                     return i;
                 }
             }
+            std::cout << "Returning -1" << std::endl;
             return -1;
         }
 
@@ -322,15 +333,17 @@ namespace galileo
             return -1;
         }
 
+        // TODO: There's a very strang bug in "getPhaseIndexAtTime"... See above.
         template <typename MODE_T>
         void PhaseSequence<MODE_T>::getPhaseAtTime(double t, Phase &phase, PHASE_SEQUENCE_ERROR &error_status) const
         {
+            std::cout << "Inside getPhaseAtTime" << std::endl;
             int phase_index = getPhaseIndexAtTime(t, error_status);
             if (error_status != PHASE_SEQUENCE_ERROR::OK)
             {
                 return;
             }
-
+            std::cout << "Phase index: " << phase_index << std::endl;
             phase = phase_sequence_[phase_index];
         }
 

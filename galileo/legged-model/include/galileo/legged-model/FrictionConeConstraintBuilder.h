@@ -27,7 +27,7 @@ namespace galileo
                 casadi::SX t;
 
                 float mu = 0.7;
-                float regularization = 25; /*Convex smoothing*/
+                float normal_force_max = 250; /*Add a bound to the normal force. Makes the WBC happier*/
 
                 enum ApproximationOrder
                 {
@@ -145,44 +145,39 @@ namespace galileo
                 contact::ContactMode mode = problem_data.friction_cone_problem_data.contact_sequence->getPhase(phase_index).mode;
 
                 constraint_data.metadata.name = "Friction Cone Constraint";
+                uint num_constraints = getNumConstraintPerEEPerState(problem_data);
                 int i = 0;
                 for (auto ee : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
                     if (mode[(*ee.second)])
                     {
-                        constraint_data.metadata.plot_titles.push_back("Normal Force for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                        constraint_data.metadata.plot_names.push_back({"Fz"});
-                        i += 1;
+                        if (problem_data.friction_cone_problem_data.approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
+                        {
+                            constraint_data.metadata.plot_titles.push_back("Normal Force for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(num_constraints - 1, num_constraints));
+                            constraint_data.metadata.plot_names.push_back({"Fz"});
+                            i += 1;
+                        }
+                        else
+                        {
+                            constraint_data.metadata.plot_titles.push_back("Lorentz Cone Constraint " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Lorentz Cone Constraint"});
+                            i += 1;
+                        }
                     }
                     else
                     {
-                        constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Fx " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                        constraint_data.metadata.plot_names.push_back({"Fx"});
-                        i += 1;
-                        constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Fy " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                        constraint_data.metadata.plot_names.push_back({"Fy"});
-                        i += 1;
-                        constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Fz " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                        constraint_data.metadata.plot_names.push_back({"Fz"});
-                        i += 1;
+                        constraint_data.metadata.plot_titles.push_back("Swing Force Constraint " + ee.second->frame_name);
+                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
+                        constraint_data.metadata.plot_names.push_back({"Fx", "Fy", "Fz"});
+                        i += 3;
                         if (ee.second->is_6d)
                         {
-                            constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Tau x " + ee.second->frame_name);
-                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                            constraint_data.metadata.plot_names.push_back({"Tau x"});
-                            i += 1;
-                            constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Tau y " + ee.second->frame_name);
-                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                            constraint_data.metadata.plot_names.push_back({"Tau y"});
-                            i += 1;
-                            constraint_data.metadata.plot_titles.push_back("Swing Force Constraint Tau z " + ee.second->frame_name);
-                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                            constraint_data.metadata.plot_names.push_back({"Tau z"});
-                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Swing Torque Constraint " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
+                            constraint_data.metadata.plot_names.push_back({"Tau x", "Tau y", "Tau z"});
+                            i += 3;
                         }
                     }
                 }
@@ -219,18 +214,20 @@ namespace galileo
                     /* If the end effector is in contact*/
                     else
                     {
-                        lower_bound_vec.push_back(casadi::SX::zeros(1));
-                        upper_bound_vec.push_back(casadi::inf);
+                        casadi::SX lb = -casadi::inf * casadi::SX::ones(num_constraints, 1);
+                        /*TODO: Add an option for a normal force bound for the second order constraint*/
+                        if (problem_data.friction_cone_problem_data.approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
+                        {
+                            lb(num_constraints - 1) = -problem_data.friction_cone_problem_data.normal_force_max;
+                        }
 
-                        // lower_bound_vec.push_back(-casadi::inf * casadi::SX::ones(num_constraints, 1));
-                        // upper_bound_vec.push_back(casadi::SX::zeros(num_constraints, 1));
+                        lower_bound_vec.push_back(lb);
+                        upper_bound_vec.push_back(casadi::SX::zeros(num_constraints, 1));
                     }
                 }
 
                 lower_bound = casadi::Function("lower_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{vertcat(lower_bound_vec)});
                 upper_bound = casadi::Function("upper_bound", casadi::SXVector{problem_data.friction_cone_problem_data.t}, casadi::SXVector{vertcat(upper_bound_vec)});
-                // std::cout << "G_FrictionCone Lower Bound at Phase " << phase_index << ": " << lower_bound << std::endl;
-                // std::cout << "G_FrictionCone Upper Bound at Phase " << phase_index << ": " << upper_bound << std::endl;
             }
 
             template <class ProblemData>
@@ -249,7 +246,6 @@ namespace galileo
                     G_vec.push_back(G_out);
                 }
                 G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, u_in}, casadi::SXVector{casadi::SX::vertcat(G_vec)});
-                // std::cout << "G_FrictionCone Evaluation at Phase " << phase_index << ": " << G << std::endl;
             }
 
             template <class ProblemData>
@@ -287,31 +283,14 @@ namespace galileo
                 casadi::SX symbolic_rotated_cone_constraint = casadi::SX(casadi::Sparsity::dense(rotated_cone_constraint.rows(), 1));
                 pinocchio::casadi::copy(rotated_cone_constraint, symbolic_rotated_cone_constraint);
 
-                // great care must be taken in doing this to ensure that the appropriate u is passed into this function.
                 casadi::SX evaluated_vector = casadi::SX::mtimes(symbolic_rotated_cone_constraint, f_ee);
                 if (approximation_order == FrictionConeProblemData::ApproximationOrder::FIRST_ORDER)
                 {
-                    //@todo (ethan)
-                    // SET CASADI FUNCTION
-                    //  Function = rotated_cone_constraint * GRF(EndEffector)
-                    // G_out = evaluated_vector;
-                    G_out = f_ee(2);
-                    // casadi::SX forcesInWorldFrame = f_ee;
-                    // casadi::SX localForce = casadi::SX::mtimes(symbolic_rotation, f_ee);
-                    // casadi::SX local_tangent_norm = sqrt(localForce(0) * localForce(0) + localForce(1) * localForce(1) + problem_data.friction_cone_problem_data.regularization);
-                    // casadi::SX dCone_dF = vertcat(casadi::SXVector{-localForce(0) / local_tangent_norm, -localForce(1) / local_tangent_norm, problem_data.friction_cone_problem_data.mu});
-                    // casadi::SX dCone_du = casadi::SX::mtimes(dCone_dF.T(), symbolic_rotation);
-                    // casadi::SX dfdu = dCone_du;
-                    // G_out = problem_data.friction_cone_problem_data.mu * localForce(2) - local_tangent_norm + casadi::SX::mtimes(dfdu, f_ee);
+                    G_out = evaluated_vector;
                 }
                 else
                 {
-                    //@todo (ethan)
-                    // SET CASADI FUNCTION
-                    //  evaluated_vector = (rotated_cone_constraint * GRF(EndEffector))
-                    //  Function = (evaluated_vector[2] - evaluated_vector.head(2).normSquared());
-                    // G_out = evaluated_vector(2) - sqrt(evaluated_vector(0) * evaluated_vector(0) + evaluated_vector(1) * evaluated_vector(1) + casadi::eps);
-                    G_out = f_ee(2);
+                    G_out = evaluated_vector(2) - sqrt(evaluated_vector(0) * evaluated_vector(0) + evaluated_vector(1) * evaluated_vector(1) + casadi::eps);
                 }
             }
 

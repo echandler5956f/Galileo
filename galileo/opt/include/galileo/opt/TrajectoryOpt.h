@@ -407,7 +407,7 @@ namespace galileo
                 auto phase = sequence->phase_sequence_[i];
 
                 start_time = std::chrono::high_resolution_clock::now();
-                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
+                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, phase.phase_cost, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
                 end_time = std::chrono::high_resolution_clock::now();
                 elapsed = end_time - start_time;
                 // std::cout << "Elapsed time for segment creation: " << elapsed.count() << std::endl;
@@ -517,7 +517,9 @@ namespace galileo
             casadi::Dict stats = solver.stats();
             if (nonlinear_solver_name == "ipopt")
             {
-                time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_hess_l"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
+                time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
+                if (stats.find("t_wall_nlp_hess_l") != stats.end())
+                    time_from_funcs += (double)stats["t_wall_nlp_hess_l"];
                 time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
                 std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
                 std::cout << "Total seconds from Ipopt w/o function: " << time_just_solver << std::endl;
@@ -587,9 +589,6 @@ namespace galileo
 
                 state_count += (pseg->getStateDegree() + 1) * pseg->getKnotNum();
                 input_count += (pseg->getInputDegree() + 1) * pseg->getKnotNum();
-
-                // tuple_size_t segment_indices = getSegmentIndices(times, segment_data.initial_time, segment_data.end_time);
-                // segment_times_ranges.push_back(segment_indices);
 
                 result.push_back(segment_data);
             }

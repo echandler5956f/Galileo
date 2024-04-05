@@ -32,11 +32,6 @@ namespace galileo
 
                 casadi::SX X0;
                 casadi::SX Xf;
-
-                // max height of CoM trajectory for initial guess
-                double grf_reference = 100.0;
-                double beta = -0.105;
-                double gamma = 0.4;
             };
 
             template <class ProblemData>
