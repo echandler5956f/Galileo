@@ -60,6 +60,7 @@ namespace galileo
             for (std::size_t i = 0; i < ee_names.size(); ++i)
             {
                 auto ee_name = ee_names[i];
+                // Check if the frame exists in the model.
                 assert(model.existFrame(ee_name, pinocchio::BODY));
                 // Throw an error otherwise.
                 std::shared_ptr<contact::EndEffector> ee_obj_ptr = std::make_shared<contact::EndEffector>();

@@ -1,0 +1,14 @@
+{
+    "configuration": "default",
+    "documentId": "3a9ecdc57a39a5990d2d43de",
+    "documentMicroversion": "ead9780cf8f697ff9853613e",
+    "documentVersion": "0345130ecec36a7e550ce3a4",
+    "elementId": "08c877353bad99f6e4ae31ae",
+    "fullConfiguration": "default",
+    "id": "MTEs2Ge0PjWhKFYqP",
+    "isStandardContent": false,
+    "name": "Gripper_3 <2>",
+    "partId": "JFD",
+    "suppressed": false,
+    "type": "Part"
+}

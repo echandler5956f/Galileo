@@ -1,0 +1,14 @@
+{
+    "configuration": "default",
+    "documentId": "62c6eda8343c4aeb6d19229f",
+    "documentMicroversion": "7663103859734483f923fafd",
+    "documentVersion": "11142f92c24ef0a65ecf6a9e",
+    "elementId": "b28467c80fa6eb255bb492ef",
+    "fullConfiguration": "default",
+    "id": "M3FdFcK+GTeaOCUu8",
+    "isStandardContent": false,
+    "name": "BatteryBox <1>",
+    "partId": "JFD",
+    "suppressed": false,
+    "type": "Part"
+}
