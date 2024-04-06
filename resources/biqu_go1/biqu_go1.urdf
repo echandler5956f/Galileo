@@ -1281,7 +1281,7 @@
 </inertial>
 </link>
 
-<joint name="j4" type="fixed">
+<joint name="j4" type="revolute">
 <origin xyz="-0.11954000000000081227 1.3322676295501878485e-15 0.0089999999999997928879" rpy="1.5707963267948974462 0.28661171544860569727 1.5707963267948994446" />
 <parent link="link3" />
 <child link="gripper" />
@@ -1290,7 +1290,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="j3" type="fixed">
+<joint name="j3" type="revolute">
 <origin xyz="-0.20509002189797093108 -1.4672502470544634967e-05 0.090080000000000437499" rpy="3.141592653589788231 -1.9419648726808066193e-14 2.1321987590919362354" />
 <parent link="link2" />
 <child link="link3" />
@@ -1299,7 +1299,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="j2" type="fixed">
+<joint name="j2" type="revolute">
 <origin xyz="0.02464672915636164155 0.00019467250247003336366 -0.03309002189797083382" rpy="-1.570796326794896558 -1.2791473275524971598 1.5707963267950091346" />
 <parent link="link1" />
 <child link="link2" />
@@ -1308,7 +1308,7 @@
 <joint_properties friction="0.0"/>
 </joint>
 
-<joint name="base_to_link1" type="fixed">
+<joint name="base_to_link1" type="revolute">
 <origin xyz="-9.0021897970907725772e-05 -0.0011442452478826114701 0.10063457269783626646" rpy="3.141592653589793116 4.758088539404329584e-24 -0.21065212834965882371" />
 <parent link="arm" />
 <child link="link1" />
