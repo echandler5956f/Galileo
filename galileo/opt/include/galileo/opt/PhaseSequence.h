@@ -55,6 +55,10 @@ namespace galileo
                  */
                 casadi::Function phase_dynamics;
 
+                /**
+                 * @brief Cost function for this phase.
+                 *
+                 */
                 casadi::Function phase_cost;
 
                 /**
@@ -286,18 +290,11 @@ namespace galileo
         template <typename MODE_T>
         int PhaseSequence<MODE_T>::getPhaseIndexAtTime(double t, PHASE_SEQUENCE_ERROR &error_status) const
         {
-            std::cout << "Inside getPhaseIndexAtTime" << std::endl;
-            std::cout << "t: " << t << std::endl;
-            std::cout << "dt_: " << dt_ << std::endl;
-            std::cout << "Entering if statement" << std::endl;
             if ((t < 0) || (t > dt_))
             {
-                std::cout << "t < 0: " << (t < 0) << std::endl;
-                std::cout << "t > dt_: " << (t > dt_) << std::endl;
                 error_status = PHASE_SEQUENCE_ERROR::NOT_IN_DT;
                 return -1;
             }
-            std::cout << "Passed the if statement" << std::endl;
 
             for (int i = getNumPhases() - 1; i > 0; i--)
             {
@@ -308,7 +305,6 @@ namespace galileo
                     return i;
                 }
             }
-            std::cout << "Returning -1" << std::endl;
             return -1;
         }
 
@@ -337,13 +333,11 @@ namespace galileo
         template <typename MODE_T>
         void PhaseSequence<MODE_T>::getPhaseAtTime(double t, Phase &phase, PHASE_SEQUENCE_ERROR &error_status) const
         {
-            std::cout << "Inside getPhaseAtTime" << std::endl;
             int phase_index = getPhaseIndexAtTime(t, error_status);
             if (error_status != PHASE_SEQUENCE_ERROR::OK)
             {
                 return;
             }
-            std::cout << "Phase index: " << phase_index << std::endl;
             phase = phase_sequence_[phase_index];
         }
 

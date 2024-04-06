@@ -39,10 +39,6 @@ def display_traj(qs: np.ndarray, dts: np.ndarray):
     for k in range(np.size(dts, 0)):
         display_scene(qs[:, k], dts[k, 0])
 
-# display_scene(new_sol[:, 0], 1e-1)
-# while True:
-#     time.sleep(1)
-
 while True:
     display_traj(new_sol, new_times)
     time.sleep(1)

@@ -143,7 +143,6 @@ namespace galileo
             R.topLeftCorner(totalContactDim, totalContactDim) = R_taskspace.topLeftCorner(totalContactDim, totalContactDim);
             // Joint velocities
             R.bottomRightCorner(si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.bottomRightCorner(totalContactDim, totalContactDim) * baseToFeetJacobians;
-            std::cout << "R: " << R << std::endl;
             return R;
         }
 
