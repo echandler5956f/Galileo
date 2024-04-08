@@ -85,7 +85,7 @@ namespace galileo
 
             /*Extract the constraint parameters. TODO: Find a better way to do this...*/
 
-           if (imported_vars.find("mu") != imported_vars.end())
+            if (imported_vars.find("mu") != imported_vars.end())
                 constraint_params_["mu"] = std::stod(imported_vars["mu"]);
             if (imported_vars.find("normal_force_max") != imported_vars.end())
                 constraint_params_["normal_force_max"] = std::stod(imported_vars["normal_force_max"]);
@@ -118,6 +118,30 @@ namespace galileo
                     opts_["ipopt.hessian_approximation"] = imported_vars["ipopt.hessian_approximation"];
                 if (imported_vars.find("ipopt.ma97_order") != imported_vars.end())
                     opts_["ipopt.ma97_order"] = imported_vars["ipopt.ma97_order"];
+                if (imported_vars.find("pass_nonlinear_variables") != imported_vars.end())
+                    opts_["pass_nonlinear_variables"] = (imported_vars["pass_nonlinear_variables"] == "true");
+
+                if (imported_vars.find("ipopt.limited_memory_aug_solver ") != imported_vars.end())
+                    opts_["ipopt.limited_memory_aug_solver"] = imported_vars["ipopt.limited_memory_aug_solver"];
+                if (imported_vars.find("ipopt.limited_memory_max_history") != imported_vars.end())
+                    opts_["ipopt.limited_memory_max_history"] = std::stoi(imported_vars["ipopt.limited_memory_max_history"]);
+                if (imported_vars.find("ipopt.limited_memory_update_type") != imported_vars.end())
+                    opts_["ipopt.limited_memory_update_type"] = imported_vars["ipopt.limited_memory_update_type"];
+                if (imported_vars.find("ipopt.limited_memory_initialization") != imported_vars.end())
+                    opts_["ipopt.limited_memory_initialization"] = imported_vars["ipopt.limited_memory_initialization"];
+                if (imported_vars.find("ipopt.limited_memory_init_val") != imported_vars.end())
+                    opts_["ipopt.limited_memory_init_val"] = std::stod(imported_vars["ipopt.limited_memory_init_val"]);
+
+                if (imported_vars.find("ipopt.limited_memory_init_val_max") != imported_vars.end())
+                    opts_["ipopt.limited_memory_init_val_max"] = std::stod(imported_vars["ipopt.limited_memory_init_val_max"]);
+                if (imported_vars.find("ipopt.limited_memory_init_val_min") != imported_vars.end())
+                    opts_["ipopt.limited_memory_init_val_min"] = std::stod(imported_vars["ipopt.limited_memory_init_val_min"]);
+                if (imported_vars.find("ipopt.limited_memory_max_skipping") != imported_vars.end())
+                    opts_["ipopt.limited_memory_max_skipping"] = std::stoi(imported_vars["ipopt.limited_memory_max_skipping"]);
+                if (imported_vars.find("ipopt.limited_memory_special_for_resto") != imported_vars.end())
+                    opts_["ipopt.limited_memory_special_for_resto"] = imported_vars["ipopt.limited_memory_special_for_resto"];
+                if (imported_vars.find("ipopt.hessian_approximation_space") != imported_vars.end())
+                    opts_["ipopt.hessian_approximation_space"] = imported_vars["ipopt.hessian_approximation_space"];
             }
             else if (solver_type_ == "snopt")
             {
@@ -171,7 +195,12 @@ namespace galileo
             Eigen::MatrixXd Q_mat = cost_params_.Q_diag.asDiagonal();
 
             assert(cost_params_.R_diag.size() == states_->nu);
-            Eigen::MatrixXd R_mat = cost_params_.R_diag.asDiagonal();
+            Eigen::MatrixXd R_taskspace = cost_params_.R_diag.asDiagonal();
+
+            casadi::DM q0_dm = states_->get_q(X0);
+            Eigen::VectorXd q0 = Eigen::Map<Eigen::VectorXd>(q0_dm.get_elements().data(), q0_dm.size1() * q0_dm.size2());
+
+            Eigen::MatrixXd R_mat = robot_->initializeInputCostWeight(R_taskspace, q0);
 
             casadi::SX Q = casadi::SX::zeros(states_->ndx, states_->ndx);
             casadi::SX R = casadi::SX::zeros(states_->nu, states_->nu);
@@ -190,9 +219,9 @@ namespace galileo
                 casadi::SX U_ref = robot_->weightCompensatingInputsForPhase(i);
                 casadi::SX u_error = robot_->cu - U_ref;
                 casadi::Function L = casadi::Function("L_" + std::to_string(i),
-                                    {robot_->cx, robot_->cu},
-                                    {0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
-                                    0.5 * casadi::SX::dot(u_error, casadi::SX::mtimes(R, u_error))});
+                                                      {robot_->cx, robot_->cu},
+                                                      {0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
+                                                       0.5 * casadi::SX::dot(u_error, casadi::SX::mtimes(R, u_error))});
                 robot_->contact_sequence->phase_sequence_[i].phase_cost = L;
             }
 
@@ -290,7 +319,7 @@ namespace galileo
 
             opt::solution::solution_t solution(query_times, state_result.transpose(), input_result.transpose());
 
-             // Collect the data specific to each end effector
+            // Collect the data specific to each end effector
             std::vector<std::tuple<size_t, size_t>> wrench_indices;
             std::vector<std::vector<std::string>> wrench_legend_names;
             std::vector<std::string> ee_plot_names;

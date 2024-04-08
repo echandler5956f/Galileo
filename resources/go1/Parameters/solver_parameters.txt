@@ -18,3 +18,16 @@ ipopt.fixed_variable_treatment,make_constraint
 ipopt.linear_solver,ma97
 ipopt.ma97_order,metis
 ipopt.hessian_approximation,limited-memory
+
+ipopt.limited_memory_aug_solver,sherman-morrison
+ipopt.limited_memory_max_history,5
+ipopt.limited_memory_update_type,bfgs
+ipopt.limited_memory_initialization,scalar1
+ipopt.limited_memory_init_val,1
+ipopt.limited_memory_init_val_max,1e8
+ipopt.limited_memory_init_val_min,1e-8
+ipopt.limited_memory_max_skipping,2
+ipopt.limited_memory_special_for_resto,no
+ipopt.hessian_approximation_space,nonlinear-variables
+
+pass_nonlinear_variables,true
