@@ -381,7 +381,6 @@ namespace galileo
             std::shared_ptr<DecisionData> Wdata = std::make_shared<DecisionData>();
 
             size_t num_phases = sequence->getNumPhases();
-
             printf("Starting initialization\n");
             auto begin_time = std::chrono::high_resolution_clock::now();
             auto start_time = std::chrono::high_resolution_clock::now();
@@ -404,7 +403,7 @@ namespace galileo
                 // std::cout << "Elapsed time for constraint building: " << elapsed.count() << std::endl;
 
                 constraint_datas_for_phase.push_back(G);
-                auto phase = sequence->phase_sequence_[i];
+                auto phase = sequence->getPhase(i);
 
                 start_time = std::chrono::high_resolution_clock::now();
                 std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, phase.phase_cost, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);

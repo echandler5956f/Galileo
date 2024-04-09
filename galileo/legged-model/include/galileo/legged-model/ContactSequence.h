@@ -97,7 +97,7 @@ namespace galileo
 
                 /**
                  * @brief Returns the number of end effectors in contact.
-                 * 
+                 *
                  * @return int The number of end effectors in contact.
                  */
                 int numEndEffectorsInContact() const;
@@ -131,7 +131,7 @@ namespace galileo
 
                 /**
                  * @brief Gets an identifier which represents the mode of the phase. This lets us know if two modes are identical.
-                 * 
+                 *
                  * @param phase_index The index of the phase to get the mode ID for.
                  * @return const int The mode ID of the phase.
                  */
@@ -139,7 +139,7 @@ namespace galileo
 
                 /**
                  * @brief Gets the number of end effectors in the contact sequence.
-                 * 
+                 *
                  * @return const int& The number of end effectors in the contact sequence.
                  */
                 const int &num_end_effectors() { return num_end_effectors_; }
@@ -155,7 +155,7 @@ namespace galileo
 
                 /**
                  * @brief Gets the number of end effectors in contact at a given phase.
-                 * 
+                 *
                  * @param phase_index The index of the phase to get the number of end effectors in contact for.
                  * @return int The number of end effectors in contact at the given phase.
                  */

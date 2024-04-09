@@ -15,8 +15,6 @@ footstep_vel_end,0
 solver,ipopt
 ipopt.max_iter,5
 ipopt.fixed_variable_treatment,make_constraint
-ipopt.linear_solver,ma97
-ipopt.ma97_order,metis
 ipopt.hessian_approximation,limited-memory
 
 ipopt.limited_memory_aug_solver,sherman-morrison

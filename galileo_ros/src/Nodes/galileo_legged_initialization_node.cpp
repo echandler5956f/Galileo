@@ -106,7 +106,14 @@ int main(int argc, char **argv)
 
     while (true)
     {
+        // std::cout << "Waiting for initialization" << std::endl;
         init_state_client.call(init_state);
+        // std::cout << "Model set: " << init_state.response.model_set << std::endl;
+        // std::cout << "Solver parameters set: " << init_state.response.solver_parameters_set << std::endl;
+        // std::cout << "Environment surface set: " << init_state.response.environment_surface_set << std::endl;
+        // std::cout << "Contact sequence set: " << init_state.response.contact_sequence_set << std::endl;
+        // std::cout << "Fully initted: " << init_state.response.fully_initted << std::endl;
+
         if (!init_state.response.model_set)
         {
             model_location_pub.publish(model_location_msg);

@@ -66,6 +66,15 @@ namespace galileo
                                     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces);
 
             /**
+             * @brief Get the contact sequence.
+             */
+            const std::shared_ptr<contact::ContactSequence> getContactSequence() const
+            {
+                assert(robot_ != nullptr);
+                return robot_->getContactSequence();
+            }
+
+            /**
              * @brief Initialize the problem
              */
             void Initialize(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
@@ -183,8 +192,6 @@ namespace galileo
             std::shared_ptr<LeggedRobotProblemData> problem_data_; /**< The problem data. */
 
             std::shared_ptr<EnvironmentSurfaces> surfaces_; /**< The surfaces. */
-
-            std::shared_ptr<contact::ContactSequence> contact_sequence_; /**< The gait. */
 
             std::shared_ptr<opt::solution::Solution> solution_interface_; /**< The solution interface. */
             std::mutex solution_mutex_;

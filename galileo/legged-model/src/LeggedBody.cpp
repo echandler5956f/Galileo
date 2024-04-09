@@ -257,9 +257,9 @@ namespace galileo
             casadi::SXVector foot_forces;
             casadi::SXVector foot_poss;
             casadi::SXVector foot_taus;
-            for (std::size_t i = 0; i < contact_sequence->phase_sequence_.size(); ++i)
+            for (std::size_t i = 0; i < contact_sequence->getPhases().size(); ++i)
             {
-                contact::ContactMode mode = contact_sequence->phase_sequence_[i].mode;
+                contact::ContactMode mode = contact_sequence->getPhases()[i].mode;
 
                 foot_forces.clear();
                 foot_poss.clear();
@@ -303,17 +303,17 @@ namespace galileo
 
                 casadi::SX u_general = vertcat(casadi::SXVector{total_f_input, total_tau_input, si->get_vju(cu)});
 
-                contact_sequence->phase_sequence_[i].phase_dynamics = casadi::Function("F_mode",
-                                                                                       {cx, cu},
-                                                                                       {general_dynamics(casadi::SXVector{cx, u_general})
-                                                                                            .at(0)});
+                contact_sequence->FillPhaseDynamics(i, casadi::Function("F_mode",
+                                                                        {cx, cu},
+                                                                        {general_dynamics(casadi::SXVector{cx, u_general})
+                                                                             .at(0)}));
             }
         }
 
         casadi::SX LeggedBody::weightCompensatingInputsForPhase(size_t phase_index)
         {
             casadi::SX weight_compensating_inputs = casadi::SX::zeros(si->nu, 1);
-            contact::ContactMode mode = contact_sequence->phase_sequence_[phase_index].mode;
+            contact::ContactMode mode = contact_sequence->getPhases()[phase_index].mode;
             for (auto ee : ees_)
             {
                 if (mode[(*ee.second)])

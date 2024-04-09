@@ -214,7 +214,7 @@ namespace galileo
 
             pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
 
-            for (std::size_t i = 0; i < robot_->contact_sequence->phase_sequence_.size(); ++i)
+            for (std::size_t i = 0; i < robot_->contact_sequence->getPhases().size(); ++i)
             {
                 casadi::SX U_ref = robot_->weightCompensatingInputsForPhase(i);
                 casadi::SX u_error = robot_->cu - U_ref;
@@ -222,7 +222,7 @@ namespace galileo
                                                       {robot_->cx, robot_->cu},
                                                       {0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
                                                        0.5 * casadi::SX::dot(u_error, casadi::SX::mtimes(R, u_error))});
-                robot_->contact_sequence->phase_sequence_[i].phase_cost = L;
+                robot_->contact_sequence->FillPhaseCost(i, L);
             }
 
             // TODO: Add the terminal cost weight to a parameter file
@@ -281,6 +281,7 @@ namespace galileo
             decision_builder_ = std::make_shared<galileo::legged::constraints::LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
             std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
+
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, solver_type_);
         }
 

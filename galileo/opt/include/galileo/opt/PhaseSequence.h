@@ -25,11 +25,23 @@ namespace galileo
                 NOT_IN_DT // The time is out of bounds
             };
 
+            struct Phase;
+
             /**
              * @brief Construct a new Phase Sequence object.
              *
              */
             PhaseSequence() {}
+
+            PhaseSequence(const PhaseSequence &other);
+
+            PhaseSequence(const std::vector<MODE_T> &modes, const std::vector<int> &knot_points, const std::vector<double> &dt);
+
+            PhaseSequence(const std::vector<Phase> &phases);
+
+            PhaseSequence &operator=(const PhaseSequence &other);
+
+            PhaseSequence &operator=(const std::vector<Phase> &phases);
 
             /**
              * @brief Destroy the Phase Sequence object.
@@ -172,13 +184,37 @@ namespace galileo
             const std::vector<double> getPhaseStartTimes() const;
 
             /**
+             * @brief Get the phases in the Phase sequence.
+             *
+             */
+            const std::vector<Phase> &getPhases() const { return phase_sequence_; }
+
+            /**
+             * @brief Adds dynamics to the specified phase.
+             */
+            const Phase &FillPhaseDynamics(int phase_idx, const casadi::Function &phase_dynamics)
+            {
+                phase_sequence_[phase_idx].phase_dynamics = phase_dynamics;
+                return phase_sequence_[phase_idx];
+            }
+
+            /**
+             * @brief Adds a phase cost to the specified phase.
+             */
+            const Phase &FillPhaseCost(int phase_idx, const casadi::Function &phase_cost)
+            {
+                phase_sequence_[phase_idx].phase_cost = phase_cost;
+                return phase_sequence_[phase_idx];
+            }
+
+        protected:
+            /**
              * @brief A vector of Phase objects.
              *
              * This vector represents a sequence of phases.
              */
             std::vector<Phase> phase_sequence_;
 
-        protected:
             /**
              * @brief Adds a new phase to the Phase sequence.
              *
@@ -246,6 +282,53 @@ namespace galileo
         };
 
         template <typename MODE_T>
+        PhaseSequence<MODE_T>::PhaseSequence(const PhaseSequence &other)
+        {
+            phase_sequence_ = other.phase_sequence_;
+            phase_offset_ = other.phase_offset_;
+            dt_ = other.dt_;
+            total_knots_ = other.total_knots_;
+        }
+
+        template <typename MODE_T>
+        PhaseSequence<MODE_T>::PhaseSequence(const std::vector<MODE_T> &modes, const std::vector<int> &knot_points, const std::vector<double> &dt)
+        {
+            for (int i = 0; i < modes.size(); i++)
+            {
+                commonAddPhase(modes[i], knot_points[i], dt[i]);
+            }
+        }
+
+        template <typename MODE_T>
+        PhaseSequence<MODE_T>::PhaseSequence(const std::vector<Phase> &phases)
+        {
+            for (int i = 0; i < phases.size(); i++)
+            {
+                commonAddPhase(phases[i].mode, phases[i].knot_points, phases[i].time_value);
+            }
+        }
+
+        template <typename MODE_T>
+        PhaseSequence<MODE_T> &PhaseSequence<MODE_T>::operator=(const PhaseSequence &other)
+        {
+            phase_sequence_ = other.phase_sequence_;
+            phase_offset_ = other.phase_offset_;
+            dt_ = other.dt_;
+            total_knots_ = other.total_knots_;
+            return *this;
+        }
+
+        template <typename MODE_T>
+        PhaseSequence<MODE_T> &PhaseSequence<MODE_T>::operator=(const std::vector<Phase> &phases)
+        {
+            for (int i = 0; i < phases.size(); i++)
+            {
+                commonAddPhase(phases[i].mode, phases[i].knot_points, phases[i].time_value);
+            }
+            return *this;
+        }
+
+        template <typename MODE_T>
         int PhaseSequence<MODE_T>::commonAddPhase(const MODE_T &mode, int knot_points, double dt)
         {
             Phase new_phase;
@@ -299,6 +382,7 @@ namespace galileo
             for (int i = getNumPhases() - 1; i > 0; i--)
             {
                 bool is_in_phase_i = (t >= phase_offset_[i].t0_offset);
+                std::cout << "t: " << t << " t0_offset: " << phase_offset_[i].t0_offset << " is_in_phase_i: " << is_in_phase_i << std::endl;
                 if (is_in_phase_i)
                 {
                     error_status = PHASE_SEQUENCE_ERROR::OK;

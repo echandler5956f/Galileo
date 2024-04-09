@@ -17,5 +17,4 @@ string[]    joint_names
 
 int32[] ee_dofs
 
-# The mode (represented as an 8 bit integer) at each requested time
-int8[] modes
+ContactSequence contact_sequences

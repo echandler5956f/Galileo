@@ -14,6 +14,7 @@
 #include "galileo_ros/RobotModel.h"
 #include "galileo_ros/ParameterFileLocation.h"
 #include "galileo_ros/ContactSequence.h"
+#include "galileo_ros/ContactPhase.h"
 #include "galileo_ros/EnvironmentSurface.h"
 #include "galileo_ros/GalileoCommand.h"
 #include "galileo_ros/SolutionRequest.h"

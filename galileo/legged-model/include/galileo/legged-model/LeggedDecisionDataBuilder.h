@@ -59,7 +59,7 @@ namespace galileo
 
                     for (auto ee : problem_data.legged_decision_problem_data.robot_end_effectors)
                     {
-                        contact::ContactMode mode = contact_sequence->phase_sequence_[phase_index].mode;
+                        contact::ContactMode mode = contact_sequence->getPhase(phase_index).mode;
                         int num_in_contact = mode.numEndEffectorsInContact();
                         if (mode[(*ee.second)])
                         {

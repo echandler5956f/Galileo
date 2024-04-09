@@ -196,22 +196,22 @@ namespace galileo
 
             // TODO: Add the contact modes to the service response so the WBC knows which end effectors are in contact
 
-            // for (auto t : req.times)
-            // {
-            //     contact::ContactSequence::CONTACT_SEQUENCE_ERROR error_status;
-            //     opt::PhaseSequence<contact::ContactMode>::Phase phase;
-            //     std::cout << "t: " << t << std::endl;
-            //     contact_sequence_->getPhaseAtTime(t, phase, error_status);
-            //     std::cout << "Error status: " << error_status << std::endl;
-            //     std::cout << "Num EE in contact at time " << t << " is " << phase.mode.numEndEffectorsInContact() << std::endl;
-            //     int8_t contact_mask = 0;
-            //     for (auto &ee : getEndEffectors())
-            //     {
-            //         contact_mask <<= 1;
-            //         contact_mask |= phase.mode.combination_definition[ee.first] ? 1 : 0;
-            //     }
-            //     res.modes.push_back(contact_mask);
-            // }
+            auto contact_sequence = robot_->getContactSequence();
+
+            galileo_ros::ContactSequence contact_sequence_msg;
+            for (auto &phase : contact_sequence->getPhases())
+            {
+                galileo_ros::ContactPhase phase_msg;
+                phase_msg.knot_num = phase.knot_points;
+                phase_msg.knot_time = phase.time_value;
+
+                for (auto &contact_surface_id : phase.mode.contact_surfaces)
+                {
+                    phase_msg.contact_surface_ids.push_back(contact_surface_id);
+                }
+
+                contact_sequence_msg.phases.push_back(phase_msg);
+            }
 
             res.times_evaluated = req.times;
             res.solution_exists = true;

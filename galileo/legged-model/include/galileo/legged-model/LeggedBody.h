@@ -160,6 +160,11 @@ namespace galileo
             contact::RobotEndEffectors getEndEffectors();
 
             /**
+             * @brief Get the contact sequence.
+             */
+            const std::shared_ptr<contact::ContactSequence> &getContactSequence() const { return contact_sequence; }
+
+            /**
              * @brief The pinocchio model of the robot.
              *
              */
