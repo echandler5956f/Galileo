@@ -377,6 +377,15 @@ namespace galileo
 
             if (!Wdata->lower_bound.is_null() && !Wdata->upper_bound.is_null())
             {
+                // casadi::SX t = casadi::SX::sym("t");
+                // casadi::Function lbdx = casadi::Function("lbdx", casadi::SXVector{t}, casadi::SXVector{Fdiff(casadi::SXVector{x0_global, Wdata->lower_bound(t).at(0), 1.0}).at(0)});
+                // casadi::Function ubdx = casadi::Function("ubdx", casadi::SXVector{t}, casadi::SXVector{Fdiff(casadi::SXVector{x0_global, Wdata->upper_bound(t).at(0), 1.0}).at(0)});
+
+                // general_lbw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(lbdx.map(knot_num + 1, "serial")(knot_times).at(0), Ndxknot, 1);
+                // general_ubw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(ubdx.map(knot_num + 1, "serial")(knot_times).at(0), Ndxknot, 1);
+                // general_lbw(casadi::Slice(Ndxknot, Ndx)) = casadi::DM::reshape(lbdx.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0), Ndxcol, 1);
+                // general_ubw(casadi::Slice(Ndxknot, Ndx)) = casadi::DM::reshape(ubdx.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0), Ndxcol, 1);
+                
                 general_lbw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(Wdata->lower_bound.map(knot_num + 1, "serial")(knot_times).at(0), Ndxknot, 1);
                 general_ubw(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(Wdata->upper_bound.map(knot_num + 1, "serial")(knot_times).at(0), Ndxknot, 1);
                 general_lbw(casadi::Slice(Ndxknot, Ndx)) = casadi::DM::reshape(Wdata->lower_bound.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0), Ndxcol, 1);

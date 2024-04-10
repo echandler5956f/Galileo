@@ -67,9 +67,9 @@ namespace galileo
         void LeggedInterface::LoadParameters(std::string parameter_file_location)
         {
             // Load the parameters from the given parameter file.
-            std::map<std::string, std::string> imported_vars;
+            std::map<std::string, std::tuple<std::string, std::string>> imported_vars;
             std::ifstream file(parameter_file_location);
-            // assert that file exists
+            // Assert that file exists
             assert(file.is_open());
             std::string row;
 
@@ -78,90 +78,87 @@ namespace galileo
                 std::stringstream ss(row);
                 std::string key;
                 std::string value;
-                std::getline(ss, key, ',');
-                std::getline(ss, value, '\n');
-                imported_vars[key] = value;
+                std::string type;
+                std::getline(ss, key, '|');
+                std::getline(ss, value, '|');
+                std::getline(ss, type, '\n');
+                imported_vars[key] = std::make_tuple(value, type);
             }
 
-            /*Extract the constraint parameters. TODO: Find a better way to do this...*/
-
-            if (imported_vars.find("mu") != imported_vars.end())
-                constraint_params_["mu"] = std::stod(imported_vars["mu"]);
-            if (imported_vars.find("normal_force_max") != imported_vars.end())
-                constraint_params_["normal_force_max"] = std::stod(imported_vars["normal_force_max"]);
-            if (imported_vars.find("ideal_offset_height") != imported_vars.end())
-                constraint_params_["ideal_offset_height"] = std::stod(imported_vars["ideal_offset_height"]);
-            if (imported_vars.find("footstep_height_scaling") != imported_vars.end())
-                constraint_params_["footstep_height_scaling"] = std::stod(imported_vars["footstep_height_scaling"]);
-            if (imported_vars.find("max_following_leeway_planar") != imported_vars.end())
-                constraint_params_["max_following_leeway_planar"] = std::stod(imported_vars["max_following_leeway_planar"]);
-            if (imported_vars.find("min_following_leeway_planar") != imported_vars.end())
-                constraint_params_["min_following_leeway_planar"] = std::stod(imported_vars["min_following_leeway_planar"]);
-            if (imported_vars.find("footstep_vel_start") != imported_vars.end())
-                constraint_params_["footstep_vel_start"] = std::stod(imported_vars["footstep_vel_start"]);
-            if (imported_vars.find("footstep_vel_end") != imported_vars.end())
-                constraint_params_["footstep_vel_end"] = std::stod(imported_vars["footstep_vel_end"]);
-
-            /*Extract the solver parameters. TODO: Find a better way to do this...*/
-
-            solver_type_ = imported_vars["solver"];
-
-            if (solver_type_ == "ipopt")
+            for (auto &var : imported_vars)
             {
-                if (imported_vars.find("ipopt.fixed_variable_treatment") != imported_vars.end())
-                    opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
-                if (imported_vars.find("ipopt.max_iter") != imported_vars.end())
-                    opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
-                if (imported_vars.find("ipopt.linear_solver") != imported_vars.end())
-                    opts_["ipopt.linear_solver"] = imported_vars["ipopt.linear_solver"];
-                if (imported_vars.find("ipopt.hessian_approximation") != imported_vars.end())
-                    opts_["ipopt.hessian_approximation"] = imported_vars["ipopt.hessian_approximation"];
-                if (imported_vars.find("ipopt.ma97_order") != imported_vars.end())
-                    opts_["ipopt.ma97_order"] = imported_vars["ipopt.ma97_order"];
-                if (imported_vars.find("pass_nonlinear_variables") != imported_vars.end())
-                    opts_["pass_nonlinear_variables"] = (imported_vars["pass_nonlinear_variables"] == "true");
+                // If the first word up until "." is "constraints" then it is a constraint parameter for the legged model
+                if (var.first.substr(0, var.first.find(".")) == "constraints")
+                {
+                    // Remove the "constraints." prefix
+                    std::string key = var.first.substr(var.first.find(".") + 1);
+                    // Remove the "constraints." prefix
+                    std::string value = std::get<0>(var.second);
+                    // Remove the "constraints." prefix
+                    std::string type = std::get<1>(var.second);
+                    if (type == "double")
+                    {
+                        constraint_params_[key] = std::stod(value);
+                        std::cout << "Constraint parameter: " << key << " = " << constraint_params_[key] << std::endl;
+                    }
+                }
 
-                if (imported_vars.find("ipopt.limited_memory_aug_solver ") != imported_vars.end())
-                    opts_["ipopt.limited_memory_aug_solver"] = imported_vars["ipopt.limited_memory_aug_solver"];
-                if (imported_vars.find("ipopt.limited_memory_max_history") != imported_vars.end())
-                    opts_["ipopt.limited_memory_max_history"] = std::stoi(imported_vars["ipopt.limited_memory_max_history"]);
-                if (imported_vars.find("ipopt.limited_memory_update_type") != imported_vars.end())
-                    opts_["ipopt.limited_memory_update_type"] = imported_vars["ipopt.limited_memory_update_type"];
-                if (imported_vars.find("ipopt.limited_memory_initialization") != imported_vars.end())
-                    opts_["ipopt.limited_memory_initialization"] = imported_vars["ipopt.limited_memory_initialization"];
-                if (imported_vars.find("ipopt.limited_memory_init_val") != imported_vars.end())
-                    opts_["ipopt.limited_memory_init_val"] = std::stod(imported_vars["ipopt.limited_memory_init_val"]);
-
-                if (imported_vars.find("ipopt.limited_memory_init_val_max") != imported_vars.end())
-                    opts_["ipopt.limited_memory_init_val_max"] = std::stod(imported_vars["ipopt.limited_memory_init_val_max"]);
-                if (imported_vars.find("ipopt.limited_memory_init_val_min") != imported_vars.end())
-                    opts_["ipopt.limited_memory_init_val_min"] = std::stod(imported_vars["ipopt.limited_memory_init_val_min"]);
-                if (imported_vars.find("ipopt.limited_memory_max_skipping") != imported_vars.end())
-                    opts_["ipopt.limited_memory_max_skipping"] = std::stoi(imported_vars["ipopt.limited_memory_max_skipping"]);
-                if (imported_vars.find("ipopt.limited_memory_special_for_resto") != imported_vars.end())
-                    opts_["ipopt.limited_memory_special_for_resto"] = imported_vars["ipopt.limited_memory_special_for_resto"];
-                if (imported_vars.find("ipopt.hessian_approximation_space") != imported_vars.end())
-                    opts_["ipopt.hessian_approximation_space"] = imported_vars["ipopt.hessian_approximation_space"];
-            }
-            else if (solver_type_ == "snopt")
-            {
-                opts_["snopt.Major iterations limit"] = std::stoi(imported_vars["snopt.Major iterations limit"]);
-                opts_["snopt.Minor iterations limit"] = std::stoi(imported_vars["snopt.Minor iterations limit"]);
-                opts_["snopt.Iterations limit"] = std::stoi(imported_vars["snopt.Iterations limit"]);
-                opts_["snopt.Cold Start/Warm Start"] = imported_vars["snopt.Cold Start/Warm Start"];
+                // If the first word up until "." is "nlp" then it is a nlp parameter
+                if (var.first.substr(0, var.first.find(".")) == "nlp")
+                {
+                    // Remove the "nlp." prefix
+                    std::string key = var.first.substr(var.first.find(".") + 1);
+                    // Remove the "nlp." prefix
+                    std::string value = std::get<0>(var.second);
+                    // Remove the "nlp." prefix
+                    std::string type = std::get<1>(var.second);
+                    if (type == "int")
+                        opts_[key] = std::stoi(value);
+                    else if (type == "double")
+                        opts_[key] = std::stod(value);
+                    else if (type == "string")
+                        opts_[key] = value;
+                    else if (type == "bool")
+                        opts_[key] = (value == "true");
+                    else if (type == "vector")
+                        continue;
+                }
             }
 
             // Extract the string value from imported_vars
-            Eigen::VectorXd Q_diag = ReadVector(imported_vars["Q_diag"]);
-            Eigen::VectorXd R_diag = ReadVector(imported_vars["R_diag"]);
+            Eigen::VectorXd Q_diag = ReadVector(std::get<0>(imported_vars["cost.Q_diag"]));
+            Eigen::VectorXd R_diag = ReadVector(std::get<0>(imported_vars["cost.R_diag"]));
+
+            casadi::DM joint_lb = casadi::DM::zeros(states_->nvju, 1);
+            casadi::DM joint_ub = casadi::DM::zeros(states_->nvju, 1);
+            Eigen::VectorXd joint_lb_vec = robot_->model.lowerPositionLimit.block(states_->nqb, 0, states_->nvju, 1);
+            Eigen::VectorXd joint_ub_vec = robot_->model.upperPositionLimit.block(states_->nqb, 0, states_->nvju, 1);
+            tools::eigenToCasadi(joint_lb_vec, joint_lb);
+            tools::eigenToCasadi(joint_ub_vec, joint_ub);
+
+            assert(joint_lb.rows() == states_->nvju);
+            assert(joint_ub.rows() == states_->nvju);
+
+            joint_limits_.lower = joint_lb;
+            joint_limits_.upper = joint_ub;
 
             assert(Q_diag.size() == states_->ndx);
             assert(R_diag.size() == states_->nu);
 
             cost_params_.Q_diag = Q_diag;
             cost_params_.R_diag = R_diag;
-            if (imported_vars.find("terminal_weight") != imported_vars.end())
-                cost_params_.terminal_weight = std::stod(imported_vars["terminal_weight"]);
+            
+            std::cout << "Q_diag: " << cost_params_.Q_diag.transpose() << std::endl;
+            std::cout << "R_diag: " << cost_params_.R_diag.transpose() << std::endl;
+
+            if (imported_vars.find("cost.terminal_weight") != imported_vars.end())
+            {
+                cost_params_.terminal_weight = std::stod(std::get<0>(imported_vars["cost.terminal_weight"]));
+                std::cout << "Terminal weight: " << cost_params_.terminal_weight << std::endl;
+            }
+
+            if (imported_vars.find("solver") != imported_vars.end())
+                solver_type_ = std::get<0>(imported_vars["solver"]);
 
             parameters_set_ = true;
         }
@@ -181,7 +178,7 @@ namespace galileo
                                                                      states_, std::make_shared<legged::ADModel>(robot_->cmodel),
                                                                      std::make_shared<legged::ADData>(robot_->cdata),
                                                                      robot_->getEndEffectors(),
-                                                                     robot_->cx, robot_->cu, robot_->cdt, initial_state, target_state, constraint_params_);
+                                                                     robot_->cx, robot_->cu, robot_->cdt, initial_state, target_state, joint_limits_, constraint_params_);
         }
 
         // TODO: Generate a reference trajectory somewhere and share it betwen the objective and initial guess

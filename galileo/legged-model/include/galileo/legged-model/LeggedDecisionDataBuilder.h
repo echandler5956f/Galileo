@@ -18,6 +18,12 @@ namespace galileo
     {
         namespace constraints
         {
+            struct JointLimits
+            {
+                casadi::DM lower;
+                casadi::DM upper;
+            };
+
             struct LeggedDecisionProblemData
             {
                 std::shared_ptr<environment::EnvironmentSurfaces> environment_surfaces;
@@ -32,6 +38,8 @@ namespace galileo
 
                 casadi::SX X0;
                 casadi::SX Xf;
+
+                JointLimits joint_limits;
             };
 
             template <class ProblemData>
@@ -83,9 +91,15 @@ namespace galileo
                     casadi::SX quat2 = Xf(casadi::Slice(states->q_index + 3, states->q_index + states->nqb));
                     initial_guess_x(casadi::Slice(states->q_index + 3, states->q_index + states->nqb)) = math::quat_slerp(quat1, quat2, t / t_f);
 
+                    casadi::SX lbx = -casadi::inf * casadi::SX::ones(states->ndx, 1);
+                    casadi::SX ubx = casadi::inf * casadi::SX::ones(states->ndx, 1);
+
+                    lbx(casadi::Slice(states->qj_index - 1, states->qj_index - 1 + states->nvju)) = casadi::SX(problem_data.legged_decision_problem_data.joint_limits.lower) - states->get_qj(X0);
+                    ubx(casadi::Slice(states->qj_index - 1, states->qj_index - 1 + states->nvju)) = casadi::SX(problem_data.legged_decision_problem_data.joint_limits.upper) - states->get_qj(X0);
+
                     decision_data.initial_guess = casadi::Function("DecisionInitialGuess", casadi::SXVector{t}, casadi::SXVector{initial_guess_x, initial_guess_u});
-                    decision_data.lower_bound = casadi::Function("DecisionLowerBounds", casadi::SXVector{t}, casadi::SXVector{-casadi::inf * casadi::SX::ones(states->ndx, 1), -casadi::inf * casadi::SX::ones(states->nu, 1)});
-                    decision_data.upper_bound = casadi::Function("DecisionUpperBounds", casadi::SXVector{t}, casadi::SXVector{casadi::inf * casadi::SX::ones(states->ndx, 1), casadi::inf * casadi::SX::ones(states->nu, 1)});
+                    decision_data.lower_bound = casadi::Function("DecisionLowerBounds", casadi::SXVector{t}, casadi::SXVector{lbx, -casadi::inf * casadi::SX::ones(states->nu, 1)});
+                    decision_data.upper_bound = casadi::Function("DecisionUpperBounds", casadi::SXVector{t}, casadi::SXVector{ubx, casadi::inf * casadi::SX::ones(states->nu, 1)});
 
                     // // print initial guess for 0 to t_f in 100 steps
                     // std::cout << "--------------------------------" << std::endl;

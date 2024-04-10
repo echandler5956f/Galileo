@@ -26,6 +26,7 @@ namespace galileo
                                        casadi::SX t,
                                        casadi::SX X0,
                                        casadi::SX Xf,
+                                       JointLimits joint_limits,
                                        std::map<std::string, double> opts)
                 {
                     this->gp_data = gp_data_;
@@ -91,6 +92,7 @@ namespace galileo
                     this->legged_decision_problem_data.t = t;
                     this->legged_decision_problem_data.X0 = X0;
                     this->legged_decision_problem_data.Xf = Xf;
+                    this->legged_decision_problem_data.joint_limits = joint_limits;
                 }
                 std::shared_ptr<opt::PhaseSequence<contact::ContactMode>> phase_sequence;
                 std::shared_ptr<opt::GeneralProblemData> gp_data;

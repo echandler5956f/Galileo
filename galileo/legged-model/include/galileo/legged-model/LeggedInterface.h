@@ -19,6 +19,7 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/tools/GNUPlotInterface.h"
 #include "galileo/tools/MeshcatInterface.h"
+#include "galileo/tools/CasadiConversions.h"
 
 namespace galileo
 {
@@ -220,6 +221,8 @@ namespace galileo
                 double terminal_weight = 1.0;
             };
             CostParameters cost_params_;
+
+            constraints::JointLimits joint_limits_;
 
             std::map<std::string, double> constraint_params_;
 
