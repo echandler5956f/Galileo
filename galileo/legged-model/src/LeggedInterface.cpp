@@ -142,6 +142,11 @@ namespace galileo
             joint_limits_.lower = joint_lb;
             joint_limits_.upper = joint_ub;
 
+            std::cout << "ndx: " << states_->ndx << std::endl;
+            std::cout << "nu: " << states_->nu << std::endl;
+            std::cout << "Q Size: " << Q_diag.size() << std::endl;
+            std::cout << "R Size: " << R_diag.size() << std::endl;
+
             assert(Q_diag.size() == states_->ndx);
             assert(R_diag.size() == states_->nu);
 
