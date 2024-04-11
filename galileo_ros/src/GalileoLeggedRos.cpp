@@ -99,11 +99,17 @@ namespace galileo
 
         bool GalileoLeggedRos::InitStateServiceCallback(galileo_ros::InitState::Request &req, galileo_ros::InitState::Response &res)
         {
+
             res.model_set = isRobotModelLoaded();
+
             res.solver_parameters_set = isParametersLoaded();
+
             res.contact_sequence_set = isPhasesSet();
+
             res.environment_surface_set = isSurfaceSet();
+
             res.fully_initted = isFullyInitialized();
+
             res.solution_set = isSolutionSet();
 
             return true;
