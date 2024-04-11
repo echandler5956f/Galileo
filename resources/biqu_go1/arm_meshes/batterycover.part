@@ -1,0 +1,14 @@
+{
+    "configuration": "default",
+    "documentId": "a14e7c1541d0d53d50c6d1c5",
+    "documentMicroversion": "46b8097347061ffc1beb964e",
+    "documentVersion": "5121568ea1b3c7eec6ba49c0",
+    "elementId": "4b8cd5e00f2e55bf80ab4a06",
+    "fullConfiguration": "default",
+    "id": "MjmdIdfDrvixwklY0",
+    "isStandardContent": false,
+    "name": "BatteryCover <1>",
+    "partId": "JFD",
+    "suppressed": false,
+    "type": "Part"
+}
