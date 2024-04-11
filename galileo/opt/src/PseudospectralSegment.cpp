@@ -177,7 +177,6 @@ namespace galileo
 
         void PseudospectralSegment::initializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata)
         {
-            auto start_time = std::chrono::high_resolution_clock::now();
             /*Collocation equations*/
             casadi::SXVector eq;
             /*State at the end of the collocation interval*/
@@ -228,11 +227,7 @@ namespace galileo
 
                 dXf += dX_poly.D[j + 1] * dXc[j];
             }
-            auto end_time = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> duration = end_time - start_time;
-            // std::cout << "Time to initialize collocation equations: " << duration.count() << std::endl;
 
-            start_time = std::chrono::high_resolution_clock::now();
             casadi::Dict opts;
             // // opts["cse"] = true;
             // opts["jit"] = true;
@@ -241,42 +236,25 @@ namespace galileo
             // // opts["jit_options.temp_suffix"] = false;
             // opts["compiler"] = "shell";
 
-            auto collocation_constraint = casadi::Function("feq",
-                                                           casadi::SXVector{X0, vertcat(dXc), dX0, U0, vertcat(Uc)},
+            casadi::SX vcat_dXc = vertcat(dXc);
+            casadi::SX vcat_Uc = vertcat(Uc);
+            casadi::SXVector function_inputs = {X0, vcat_dXc, dX0, U0, vcat_Uc};
+
+
+            casadi::Function collocation_constraint = casadi::Function("feq",
+                                                           function_inputs,
                                                            casadi::SXVector{vertcat(eq)}, opts);
-            // collocation_constraint.generate("feq");
-            // int flag1 = system("gcc -fPIC -shared -O3 feq.c -o feq.so");
-            // casadi_assert(flag1==0, "Compilation failed");
-            // auto collocation_constraint_new = external("feq");
 
-            // auto collocation_constraint_adj1 = collocation_constraint.reverse(1);
-            // collocation_constraint_adj1.generate("adj1_feq");
-            // int flag2 = system("gcc -fPIC -shared -O3 adj1_feq.c -o adj1_feq.so");
-            // casadi_assert(flag2==0, "Compilation failed");
-            // auto collocation_constraint_adj = external("adj1_feq");
-
-            auto xf_constraint = casadi::Function("fxf",
-                                                  casadi::SXVector{X0, vertcat(dXc), dX0, U0, vertcat(Uc)},
+            casadi::Function xf_constraint = casadi::Function("fxf",
+                                                  function_inputs,
                                                   casadi::SXVector{dXf}, opts);
-            // xf_constraint.generate("fxf");
-            // int flag2 = system("gcc -fPIC -shared -O3 fxf.c -o fxf.so");
-            // casadi_assert(flag2==0, "Compilation failed");
-            // xf_constraint = external("fxf");
 
-            auto uf_constraint = casadi::Function("fuf",
-                                                  casadi::SXVector{X0, vertcat(dXc), dX0, U0, vertcat(Uc)},
+            casadi::Function uf_constraint = casadi::Function("fuf",
+                                                  function_inputs,
                                                   casadi::SXVector{uf}, opts);
-            // uf_constraint.generate("fuf");
-            // int flag2 = system("gcc -fPIC -shared -O3 fuf.c -o fuf.so");
-            // casadi_assert(flag2==0, "Compilation failed");
-            // uf_constraint = external("fuf");
 
-            auto q_cost = casadi::Function("fxq", casadi::SXVector{Lc, X0, vertcat(dXc), dX0, U0, vertcat(Uc)},
+            casadi::Function q_cost = casadi::Function("fxq", casadi::SXVector{Lc, X0, vcat_dXc, dX0, U0, vcat_Uc},
                                            casadi::SXVector{Lc + Qf}, opts);
-            // q_cost.generate("fxq");
-            // int flag3 = system("gcc -fPIC -shared -O3 fxq.c -o fxq.so");
-            // casadi_assert(flag3==0, "Compilation failed");
-            // q_cost = external("fxq");
 
             /*Implicit discrete-time equations*/
             collocation_constraint_map = collocation_constraint.map(knot_num, "openmp");
@@ -286,24 +264,22 @@ namespace galileo
             q_cost_fold = q_cost.fold(knot_num);
 
             sol_map_func = casadi::Function("sol_map",
-                                            casadi::SXVector{X0, vertcat(dXc), dX0, U0, vertcat(Uc)},
+                                            function_inputs,
                                             casadi::SXVector{horzcat(tmp_x), horzcat(tmp_u)})
                                .map(knot_num, "serial");
 
             casadi_int N = collocation_constraint_map.size1_out(0) * collocation_constraint_map.size2_out(0) +
                            xf_constraint_map.size1_out(0) * xf_constraint_map.size2_out(0) +
                            uf_constraint_map.size1_out(0) * uf_constraint_map.size2_out(0);
-            auto tmp = N;
+            casadi_int tmp = N;
 
             std::vector<tuple_size_t> ranges_G;
-            end_time = std::chrono::high_resolution_clock::now();
-            duration = end_time - start_time;
 
-            start_time = std::chrono::high_resolution_clock::now();
+            casadi::SXVector tmap_symbolic_input = casadi::SXVector{horzcat(x_at_c), horzcat(u_at_c)};
             /*Map the constraint to each collocation point, and then map the mapped constraint to each knot segment*/
             for (size_t i = 0; i < G.size(); ++i)
             {
-                auto g_data = G[i];
+                ConstraintData  g_data = G[i];
 
                 assert(g_data.G.n_in() == 2 && "G must have 2 inputs");
                 g_data.G.assert_size_in(0, st_m->nx, 1);
@@ -311,62 +287,58 @@ namespace galileo
                 assert(g_data.lower_bound.n_in() == 1 && "G lower_bound must have 1 inputs");
                 assert(g_data.lower_bound.n_out() == 1 && "G lower_bound must have 1 output");
                 g_data.lower_bound.assert_size_in(0, 1, 1);
-                auto tmap = casadi::Function(g_data.G.name() + "_map",
-                                             casadi::SXVector{X0, vertcat(dXc), dX0, U0, vertcat(Uc)},
-                                             casadi::SXVector{vertcat(g_data.G.map(dX_poly.d, "serial")((casadi::SXVector{horzcat(x_at_c), horzcat(u_at_c)})))})
+                casadi::Function tmap = casadi::Function(g_data.G.name() + "_map",
+                                             function_inputs,
+                                             casadi::SXVector{vertcat(g_data.G.map(dX_poly.d, "serial")((tmap_symbolic_input)))})
                                 .map(knot_num, "serial");
                 general_constraint_maps.push_back(tmap);
                 ranges_G.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
                 N += tmap.size1_out(0) * tmap.size2_out(0);
             }
-            end_time = std::chrono::high_resolution_clock::now();
-            duration = end_time - start_time;
 
             general_lbg.resize(N, 1);
             general_ubg.resize(N, 1);
             general_lbg(casadi::Slice(0, tmp)) = casadi::DM::zeros(tmp, 1);
             general_ubg(casadi::Slice(0, tmp)) = casadi::DM::zeros(tmp, 1);
 
-            start_time = std::chrono::high_resolution_clock::now();
+            ConstraintData g_data;
+
             for (std::size_t i = 0; i < G.size(); ++i)
             {
-                auto g_data = G[i];
+                g_data = G[i];
                 general_lbg(casadi::Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i]))), 0) =
                     casadi::DM::reshape(vertcat(g_data.lower_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
                 general_ubg(casadi::Slice(casadi_int(std::get<0>(ranges_G[i])), casadi_int(std::get<1>(ranges_G[i]))), 0) =
                     casadi::DM::reshape(vertcat(g_data.upper_bound.map(knot_num * (dX_poly.d), "serial")(collocation_times)), std::get<1>(ranges_G[i]) - std::get<0>(ranges_G[i]), 1);
             }
-            end_time = std::chrono::high_resolution_clock::now();
-            duration = end_time - start_time;
 
-            auto Ndxknot = st_m->ndx * (knot_num + 1);
-            auto Ndx = st_m->ndx * (dX_poly.d + 1) * knot_num + st_m->ndx;
-            auto Ndxcol = Ndx - Ndxknot;
+            int Ndxknot = st_m->ndx * (knot_num + 1);
+            int Ndx = st_m->ndx * (dX_poly.d + 1) * knot_num + st_m->ndx;
+            int Ndxcol = Ndx - Ndxknot;
 
-            auto Nuknot = st_m->nu * (knot_num + 1);
-            auto Nu = st_m->nu * (U_poly.d + 1) * knot_num + st_m->nu;
-            auto Nucol = Nu - Nuknot;
+            int Nuknot = st_m->nu * (knot_num + 1);
+            int Nu = st_m->nu * (U_poly.d + 1) * knot_num + st_m->nu;
+            int Nucol = Nu - Nuknot;
             w0 = casadi::DM::zeros(Ndx + Nu, 1);
             general_lbw = -casadi::DM::inf(Ndx + Nu, 1);
             general_ubw = casadi::DM::inf(Ndx + Nu, 1);
 
-            /*Transform initial guess for x to an initial guess for dx, using f_dif, the inverse of f_int*/
-            start_time = std::chrono::high_resolution_clock::now();
+            /*Transform initial guess for x to an initial guess for dx, using f_diff, the inverse of f_int*/
             casadi::MX xkg_sym = casadi::MX::sym("xkg", st_m->nx, 1);
             casadi::MX xckg_sym = casadi::MX::sym("Xckg", st_m->nx * dX_poly.d, 1);
             if (!Wdata->initial_guess.is_null())
             {
-                auto xg = Wdata->initial_guess.map(knot_num + 1, "serial")(knot_times).at(0);
+                casadi::DM xg = Wdata->initial_guess.map(knot_num + 1, "serial")(knot_times).at(0);
                 casadi::Function dxg_func = casadi::Function("xg_fun", casadi::MXVector{xkg_sym}, casadi::MXVector{Fdiff(casadi::MXVector{x0_global, xkg_sym, 1.0}).at(0)})
                                                 .map(knot_num + 1, "serial");
                 w0(casadi::Slice(0, Ndxknot)) = casadi::DM::reshape(dxg_func(casadi::DMVector{xg}).at(0), Ndxknot, 1);
                 /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
                 Thus, dxc_k = fdiff(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
-                auto xc_g = Wdata->initial_guess.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0);
+                casadi::DM xc_g = Wdata->initial_guess.map((dX_poly.d) * knot_num, "serial")(collocation_times).at(0);
                 for (casadi_int i = 0; i < knot_num; ++i)
                 {
-                    auto xk = xg(casadi::Slice(i * st_m->nx, (i + 1) * st_m->nx));
-                    auto xck = xc_g(casadi::Slice(i * st_m->nx * dX_poly.d, (i + 1) * st_m->nx * dX_poly.d));
+                    casadi::DM xk = xg(casadi::Slice(i * st_m->nx, (i + 1) * st_m->nx));
+                    casadi::DM xck = xc_g(casadi::Slice(i * st_m->nx * dX_poly.d, (i + 1) * st_m->nx * dX_poly.d));
                     for (casadi_int j = 0; j < dX_poly.d; ++j)
                     {
                         w0(casadi::Slice(Ndxknot + i * st_m->ndx * dX_poly.d + j * st_m->ndx, Ndxknot + i * st_m->ndx * dX_poly.d + (j + 1) * st_m->ndx)) =
@@ -403,8 +375,6 @@ namespace galileo
                 general_lbw(casadi::Slice(Ndx + Nuknot, Ndx + Nu)) = casadi::DM::reshape(Wdata->lower_bound.map((U_poly.d) * knot_num, "serial")(u_collocation_times).at(1), Nucol, 1);
                 general_ubw(casadi::Slice(Ndx + Nuknot, Ndx + Nu)) = casadi::DM::reshape(Wdata->upper_bound.map((U_poly.d) * knot_num, "serial")(u_collocation_times).at(1), Nucol, 1);
             }
-            end_time = std::chrono::high_resolution_clock::now();
-            duration = end_time - start_time;
         }
 
         casadi::MX PseudospectralSegment::processVector(casadi::MXVector &vec) const

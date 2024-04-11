@@ -15,7 +15,6 @@ using namespace constraints;
 using namespace tools;
 using namespace math;
 
-const std::string atlas_location = "../resources/atlas/urdf/atlas.urdf";
+const std::string robot_location = "../resources/atlas/urdf/atlas.urdf";
 const std::string solver_parameter_location = "../resources/atlas/Parameters/solver_parameters.txt";
 const std::string problem_parameter_location = "../resources/atlas/Parameters/problem_parameters.txt";
-const std::vector<std::string> end_effector_names = {"l_foot", "r_foot"};

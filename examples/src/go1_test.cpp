@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
     galileo::legged::LeggedInterface solver_interface;
 
-    solver_interface.LoadModel(go1_location, end_effector_names);
+    solver_interface.LoadModel(robot_location, end_effector_names);
     solver_interface.LoadParameters(solver_parameter_location);
 
     int nx = solver_interface.states()->nx;

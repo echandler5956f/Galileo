@@ -15,6 +15,6 @@ using namespace constraints;
 using namespace tools;
 using namespace math;
 
-const std::string huron_location = "../resources/huron/urdf/huron.urdf";
+const std::string robot_location = "../resources/huron/urdf/huron.urdf";
 const std::string solver_parameter_location = "../resources/huron/Parameters/solver_parameters.txt";
 const std::string problem_parameter_location = "../resources/huron/Parameters/problem_parameters.txt";

@@ -156,7 +156,7 @@ namespace galileo
                             constraint_data.metadata.plot_titles.push_back("Normal Force for " + ee.second->frame_name);
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(num_constraints - 1, num_constraints));
                             constraint_data.metadata.plot_names.push_back({"Fz"});
-                            i += 1;
+                            i += num_constraints;
                         }
                         else
                         {

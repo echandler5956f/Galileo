@@ -5,35 +5,38 @@ int main(int argc, char **argv)
     std::vector<std::string> end_effector_names;
     std::vector<int> knot_num;
     std::vector<double> knot_time;
-    std::vector<uint> mask_vec;
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
 
     std::vector<double> q0_vec;
     std::vector<double> qf_vec;
 
-    galileo::legged::helper::ReadProblemFromParameterFile(
-        problem_parameter_location,
-        end_effector_names,
-        knot_num,
-        knot_time,
-        contact_surfaces,
-        q0_vec,
-        qf_vec);
+    galileo::legged::helper::ReadProblemFromParameterFile(problem_parameter_location,
+                                                          end_effector_names,
+                                                          knot_num,
+                                                          knot_time,
+                                                          contact_surfaces,
+                                                          q0_vec,
+                                                          qf_vec);
 
     galileo::legged::LeggedInterface solver_interface;
 
-    solver_interface.LoadModel(atlas_location, end_effector_names);
+    solver_interface.LoadModel(robot_location, end_effector_names);
     solver_interface.LoadParameters(solver_parameter_location);
 
+    int nx = solver_interface.states()->nx;
+    int q_idx = solver_interface.states()->q_index;
+
     casadi::DM X0;
-    std::vector<double> X0_vec = galileo::legged::helper::getXfromq(solver_interface.states()->nx, solver_interface.states()->q_index, q0_vec);
-    galileo::tools::vectorToCasadi(X0_vec, solver_interface.states()->nx, 1, X0);
+    std::vector<double> X0_vec = galileo::legged::helper::getXfromq(solver_interface.states()->nx, q_idx, q0_vec);
+    galileo::tools::vectorToCasadi(X0_vec, nx, 1, X0);
 
     casadi::DM Xf;
-    std::vector<double> Xf_vec = galileo::legged::helper::getXfromq(solver_interface.states()->nx, solver_interface.states()->q_index, qf_vec);
-    galileo::tools::vectorToCasadi(Xf_vec, solver_interface.states()->nx, 1, Xf);
+    std::vector<double> Xf_vec = galileo::legged::helper::getXfromq(solver_interface.states()->nx, q_idx, qf_vec);
+    galileo::tools::vectorToCasadi(Xf_vec, nx, 1, Xf);
 
     solver_interface.addSurface(environment::createInfiniteGround());
+
+    std::vector<uint> mask_vec = galileo::legged::helper::getMaskVectorFromContactSurfaces(contact_surfaces);
 
     solver_interface.setContactSequence(
         knot_num,
