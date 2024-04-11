@@ -75,13 +75,14 @@ namespace galileo
             // Compute the interpolated value
             Scalar numerator = Scalar::zeros(terms[0].size1(), 1);
             Scalar denominator = Scalar::zeros(terms[0].size1(), 1);
+            Scalar interpolant;
             for (std::size_t i = 0; i < tau_root.size(); ++i)
             {
                 if (std::abs(t - tau_root[i]) < 1e-6)
                 {
                     return terms[i];
                 }
-                Scalar interpolant = Scalar(barycentric_weights[i]) / (t - tau_root[i]);
+                interpolant = Scalar(barycentric_weights[i]) / (t - tau_root[i]);
                 numerator += interpolant * terms[i];
                 denominator += interpolant;
             }
@@ -105,13 +106,14 @@ namespace galileo
             // Compute the interpolated value
             Eigen::VectorXd numerator = Eigen::VectorXd::Zero(terms.rows());
             Eigen::VectorXd denominator = Eigen::VectorXd::Zero(terms.rows());
+            double interpolant;
             for (std::size_t i = 0; i < tau_root.size(); ++i)
             {
                 if (std::abs(t - tau_root[i]) < 1e-6)
                 {
                     return terms.col(i);
                 }
-                double interpolant = barycentric_weights[i] / (t - tau_root[i]);
+                interpolant = barycentric_weights[i] / (t - tau_root[i]);
                 numerator += interpolant * terms.col(i);
                 denominator += Eigen::VectorXd::Constant(terms.rows(), interpolant);
             }

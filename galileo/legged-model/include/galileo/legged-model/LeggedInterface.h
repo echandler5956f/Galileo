@@ -19,6 +19,7 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/tools/GNUPlotInterface.h"
 #include "galileo/tools/MeshcatInterface.h"
+#include "galileo/tools/CasadiConversions.h"
 
 namespace galileo
 {
@@ -64,6 +65,15 @@ namespace galileo
              */
             void setContactSequence(std::vector<int> knot_num, std::vector<double> knot_time, std::vector<uint> mask_vec,
                                     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces);
+
+            /**
+             * @brief Get the contact sequence.
+             */
+            const std::shared_ptr<contact::ContactSequence> getContactSequence() const
+            {
+                assert(robot_ != nullptr);
+                return robot_->getContactSequence();
+            }
 
             /**
              * @brief Initialize the problem
@@ -157,7 +167,7 @@ namespace galileo
             bool isSurfaceSet() const { return surfaces_ == nullptr ? false : surfaces_->size(); }
             bool CanInitialize() const { return isRobotModelLoaded() && isParametersLoaded() && isPhasesSet() && isSurfaceSet(); }
 
-        private:
+        protected:
             /**
              * @brief Create the trajectory optimizer.
              */
@@ -166,7 +176,7 @@ namespace galileo
             /**
              * @brief Create the running and terminal costs.
              */
-            void CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &L, casadi::Function &Phi);
+            void CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &Phi);
 
             /**
              * @brief update the problem data with new boundary conditions
@@ -184,8 +194,6 @@ namespace galileo
 
             std::shared_ptr<EnvironmentSurfaces> surfaces_; /**< The surfaces. */
 
-            std::shared_ptr<contact::ContactSequence> contact_sequence_; /**< The gait. */
-
             std::shared_ptr<opt::solution::Solution> solution_interface_; /**< The solution interface. */
             std::mutex solution_mutex_;
 
@@ -194,6 +202,8 @@ namespace galileo
             std::shared_ptr<tools::GNUPlotInterface> plotting_interface; /**< The plotting interface. */
 
             casadi::Dict opts_;
+
+            std::string solver_type_ = "ipopt";
 
             std::shared_ptr<opt::DecisionDataBuilder<LeggedRobotProblemData>> decision_builder_;
 
@@ -208,8 +218,13 @@ namespace galileo
             {
                 Eigen::VectorXd Q_diag;
                 Eigen::VectorXd R_diag;
+                double terminal_weight = 1.0;
             };
             CostParameters cost_params_;
+
+            constraints::JointLimits joint_limits_;
+
+            std::map<std::string, double> constraint_params_;
 
             std::string body_name_ = "base";
 

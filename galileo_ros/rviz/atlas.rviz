@@ -60,93 +60,277 @@ Visualization Manager:
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
-        LF_FOOT:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LF_calf:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LF_hip:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LF_thigh:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LH_FOOT:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LH_calf:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LH_hip:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LH_thigh:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         Link Tree Style: Links in Alphabetic Order
-        RF_FOOT:
+        center_bottom_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        center_top_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RF_calf:
+        head_hokuyo_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hokuyo_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RF_hip:
+        l_clav:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RF_thigh:
+        l_foot:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RH_FOOT:
+        l_hand:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_hand_force_torque:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RH_calf:
+        l_larm:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RH_hip:
+        l_lfarm:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        RH_thigh:
+        l_lglut:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        base:
+        l_lleg:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        unitree_imu:
+        l_scap:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_situational_awareness_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_situational_awareness_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_talus:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_uarm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_ufarm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_uglut:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_uleg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ltorso:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        mtorso:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pelvis:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        post_spindle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_pitch:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_roll:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_x:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_y:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_z:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_pitch:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_roll:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_x:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_y:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_yaw:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_z:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_clav:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_foot:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_hand:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_hand_force_torque:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_larm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_lfarm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_lglut:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_lleg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_scap:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_situational_awareness_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_situational_awareness_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_talus:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_uarm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_ufarm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_uglut:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_uleg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        utorso:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -159,66 +343,34 @@ Visualization Manager:
       Visual Enabled: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /10_forces
+      Marker Topic: /108_forces
       Name: Marker
       Namespaces:
-        rld: true
+        ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /10_positions
+      Marker Topic: /108_positions
       Name: Marker
       Namespaces:
-        "": true
+        eserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /18_forces
+      Marker Topic: /120_forces
       Name: Marker
       Namespaces:
-        g: true
+        ptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /18_positions
+      Marker Topic: /120_positions
       Name: Marker
       Namespaces:
-        forces: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /26_forces
-      Name: Marker
-      Namespaces:
-        ros::VoidConstPtr ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /26_positions
-      Name: Marker
-      Namespaces:
-        orld: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /34_forces
-      Name: Marker
-      Namespaces:
-        dConstPtr ros::SubscriptionCallbackHelperT<P, Enabled>::deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /34_positions
-      Name: Marker
-      Namespaces:
-        "": true
+        onst ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -249,7 +401,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.447826623916626
+      Distance: 6.814720153808594
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -257,17 +409,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.02148253470659256
-        Y: 0.004740598611533642
-        Z: 0.049025993794202805
+        X: -0.041233476251363754
+        Y: 0.07247625291347504
+        Z: 0.25758954882621765
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4003988206386566
+      Pitch: 0.26039794087409973
       Target Frame: <Fixed Frame>
-      Yaw: 4.64357852935791
+      Yaw: 5.833588123321533
     Saved: ~
 Window Geometry:
   Displays:

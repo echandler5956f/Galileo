@@ -49,8 +49,17 @@ namespace galileo
             {
                 end_effector_names_array[i] = end_effector_names[i];
             }
+            // TODO: Add these options to a parameter file
+            casadi::Dict legged_opts;
+            // // legged_opts["cse"] = true;
+            // legged_opts["jit"] = true;
+            // legged_opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
+            // legged_opts["jit_options.compiler"] = "gcc";
+            // // legged_opts["jit_options.temp_suffix"] = false;
+            // legged_opts["compiler"] = "shell";
+            // // legged_opts["jit_cleanup"] = false;
 
-            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array);
+            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array, legged_opts);
             states_ = robot_->si;
             model_file_location_ = model_file_location;
         }
@@ -58,9 +67,9 @@ namespace galileo
         void LeggedInterface::LoadParameters(std::string parameter_file_location)
         {
             // Load the parameters from the given parameter file.
-            std::map<std::string, std::string> imported_vars;
+            std::map<std::string, std::tuple<std::string, std::string>> imported_vars;
             std::ifstream file(parameter_file_location);
-            // assert that file exists
+            // Assert that file exists
             assert(file.is_open());
             std::string row;
 
@@ -69,30 +78,92 @@ namespace galileo
                 std::stringstream ss(row);
                 std::string key;
                 std::string value;
-                std::getline(ss, key, ',');
-                std::getline(ss, value, '\n');
-                imported_vars[key] = value;
+                std::string type;
+                std::getline(ss, key, '|');
+                std::getline(ss, value, '|');
+                std::getline(ss, type, '\n');
+                imported_vars[key] = std::make_tuple(value, type);
             }
 
-            opts_["ipopt.fixed_variable_treatment"] = imported_vars["ipopt.fixed_variable_treatment"];
-            opts_["ipopt.max_iter"] = std::stoi(imported_vars["ipopt.max_iter"]);
+            for (auto &var : imported_vars)
+            {
+                // If the first word up until "." is "constraints" then it is a constraint parameter for the legged model
+                if (var.first.substr(0, var.first.find(".")) == "constraints")
+                {
+                    // Remove the "constraints." prefix
+                    std::string key = var.first.substr(var.first.find(".") + 1);
+                    // Remove the "constraints." prefix
+                    std::string value = std::get<0>(var.second);
+                    // Remove the "constraints." prefix
+                    std::string type = std::get<1>(var.second);
+                    if (type == "double")
+                    {
+                        constraint_params_[key] = std::stod(value);
+                        std::cout << "Constraint parameter: " << key << " = " << constraint_params_[key] << std::endl;
+                    }
+                }
 
-            // opts_["ipopt.linear_solver"] = "ma97";
-            // opts_["ipopt.ma97_order"] = "metis";
-            // opts_["snopt.Major iterations limit"] = 1;
-            // opts_["snopt.Minor iterations limit"] = 1;
-            // opts_["snopt.Iterations limit"] = 1;
-            // opts_["snopt.Cold Start/Warm Start"] = "Warm";
+                // If the first word up until "." is "nlp" then it is a nlp parameter
+                if (var.first.substr(0, var.first.find(".")) == "nlp")
+                {
+                    // Remove the "nlp." prefix
+                    std::string key = var.first.substr(var.first.find(".") + 1);
+                    // Remove the "nlp." prefix
+                    std::string value = std::get<0>(var.second);
+                    // Remove the "nlp." prefix
+                    std::string type = std::get<1>(var.second);
+                    if (type == "int")
+                        opts_[key] = std::stoi(value);
+                    else if (type == "double")
+                        opts_[key] = std::stod(value);
+                    else if (type == "string")
+                        opts_[key] = value;
+                    else if (type == "bool")
+                        opts_[key] = (value == "true");
+                    else if (type == "vector")
+                        continue;
+                }
+            }
 
             // Extract the string value from imported_vars
-            Eigen::VectorXd Q_diag = ReadVector(imported_vars["Q_diag"]);
-            Eigen::VectorXd R_diag = ReadVector(imported_vars["R_diag"]);
+            Eigen::VectorXd Q_diag = ReadVector(std::get<0>(imported_vars["cost.Q_diag"]));
+            Eigen::VectorXd R_diag = ReadVector(std::get<0>(imported_vars["cost.R_diag"]));
+
+            casadi::DM joint_lb = casadi::DM::zeros(states_->nvju, 1);
+            casadi::DM joint_ub = casadi::DM::zeros(states_->nvju, 1);
+            Eigen::VectorXd joint_lb_vec = robot_->model.lowerPositionLimit.block(states_->nqb, 0, states_->nvju, 1);
+            Eigen::VectorXd joint_ub_vec = robot_->model.upperPositionLimit.block(states_->nqb, 0, states_->nvju, 1);
+            tools::eigenToCasadi(joint_lb_vec, joint_lb);
+            tools::eigenToCasadi(joint_ub_vec, joint_ub);
+
+            assert(joint_lb.rows() == states_->nvju);
+            assert(joint_ub.rows() == states_->nvju);
+
+            joint_limits_.lower = joint_lb;
+            joint_limits_.upper = joint_ub;
+
+            std::cout << "ndx: " << states_->ndx << std::endl;
+            std::cout << "nu: " << states_->nu << std::endl;
+            std::cout << "Q Size: " << Q_diag.size() << std::endl;
+            std::cout << "R Size: " << R_diag.size() << std::endl;
 
             assert(Q_diag.size() == states_->ndx);
-            assert(R_diag.size() == states_->nu);
+            assert(R_diag.size() == states_->nF + states_->nF);
 
             cost_params_.Q_diag = Q_diag;
             cost_params_.R_diag = R_diag;
+            
+            std::cout << "Q_diag: " << cost_params_.Q_diag.transpose() << std::endl;
+            std::cout << "R_diag: " << cost_params_.R_diag.transpose() << std::endl;
+
+            if (imported_vars.find("cost.terminal_weight") != imported_vars.end())
+            {
+                cost_params_.terminal_weight = std::stod(std::get<0>(imported_vars["cost.terminal_weight"]));
+                std::cout << "Terminal weight: " << cost_params_.terminal_weight << std::endl;
+            }
+
+            if (imported_vars.find("solver") != imported_vars.end())
+                solver_type_ = std::get<0>(imported_vars["solver"]);
 
             parameters_set_ = true;
         }
@@ -100,11 +171,11 @@ namespace galileo
         void LeggedInterface::CreateProblemData(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
             assert(robot_ != nullptr); // Model must be loaded
-            casadi::Function L, Phi;
+            casadi::Function Phi;
 
-            CreateCost(initial_state, target_state, L, Phi);
+            CreateCost(initial_state, target_state, Phi);
 
-            std::shared_ptr<opt::GeneralProblemData> gp_data = std::make_shared<opt::GeneralProblemData>(robot_->fint, robot_->fdiff, L, Phi);
+            std::shared_ptr<opt::GeneralProblemData> gp_data = std::make_shared<opt::GeneralProblemData>(robot_->fint, robot_->fdiff, Phi);
 
             problem_data_ = std::make_shared<LeggedRobotProblemData>(gp_data,
                                                                      surfaces_,
@@ -112,11 +183,11 @@ namespace galileo
                                                                      states_, std::make_shared<legged::ADModel>(robot_->cmodel),
                                                                      std::make_shared<legged::ADData>(robot_->cdata),
                                                                      robot_->getEndEffectors(),
-                                                                     robot_->cx, robot_->cu, robot_->cdt, initial_state, target_state);
+                                                                     robot_->cx, robot_->cu, robot_->cdt, initial_state, target_state, joint_limits_, constraint_params_);
         }
 
         // TODO: Generate a reference trajectory somewhere and share it betwen the objective and initial guess
-        void LeggedInterface::CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &L, casadi::Function &Phi)
+        void LeggedInterface::CreateCost(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, casadi::Function &Phi)
         {
             assert(robot_ != nullptr);
 
@@ -125,8 +196,14 @@ namespace galileo
             assert(cost_params_.Q_diag.size() == states_->ndx);
             Eigen::MatrixXd Q_mat = cost_params_.Q_diag.asDiagonal();
 
-            assert(cost_params_.R_diag.size() == states_->nu);
-            Eigen::MatrixXd R_mat = cost_params_.R_diag.asDiagonal();
+            assert(cost_params_.R_diag.size() == states_->nF + states_->nF);
+            Eigen::MatrixXd R_taskspace = cost_params_.R_diag.asDiagonal();
+
+            casadi::DM q0_dm = states_->get_q(X0);
+            Eigen::VectorXd q0 = Eigen::Map<Eigen::VectorXd>(q0_dm.get_elements().data(), q0_dm.size1() * q0_dm.size2());
+
+            std::cout << "Initializing input cost weight matrix..." << std::endl;
+            Eigen::MatrixXd R_mat = robot_->initializeInputCostWeight(R_taskspace, q0);
 
             casadi::SX Q = casadi::SX::zeros(states_->ndx, states_->ndx);
             casadi::SX R = casadi::SX::zeros(states_->nu, states_->nu);
@@ -140,22 +217,21 @@ namespace galileo
 
             pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
 
-            galileo::legged::contact::RobotEndEffectors ees = getEndEffectors();
-            casadi::SX U_ref = casadi::SX::zeros(states_->nu, 1);
-            for (auto ee : ees)
+            for (std::size_t i = 0; i < robot_->contact_sequence->getPhases().size(); ++i)
             {
-                U_ref(casadi::Slice(std::get<0>(states_->frame_id_to_index_range[ee.second->frame_id]) + 2)) = 9.81 * robot_->cdata.mass[0] / robot_->num_end_effectors_;
+                casadi::SX U_ref = robot_->weightCompensatingInputsForPhase(i);
+                casadi::SX u_error = robot_->cu - U_ref;
+                casadi::Function L = casadi::Function("L_" + std::to_string(i),
+                                                      {robot_->cx, robot_->cu},
+                                                      {0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
+                                                       0.5 * casadi::SX::dot(u_error, casadi::SX::mtimes(R, u_error))});
+                robot_->contact_sequence->FillPhaseCost(i, L);
             }
-            casadi::SX u_error = robot_->cu - U_ref;
 
-            L = casadi::Function("L",
-                                 {robot_->cx, robot_->cu},
-                                 {1. * 0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
-                                  1. * 0.5 * casadi::SX::dot(u_error, casadi::SX::mtimes(R, u_error))});
-
+            // TODO: Add the terminal cost weight to a parameter file
             Phi = casadi::Function("Phi",
                                    {robot_->cx},
-                                   {1e3 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
+                                   {cost_params_.terminal_weight * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
         }
 
         std::vector<LeggedInterface::LeggedConstraintBuilderType>
@@ -208,7 +284,8 @@ namespace galileo
             decision_builder_ = std::make_shared<galileo::legged::constraints::LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
 
             std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
-            trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, "ipopt");
+
+            trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, solver_type_);
         }
 
         void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
@@ -246,12 +323,28 @@ namespace galileo
 
             opt::solution::solution_t solution(query_times, state_result.transpose(), input_result.transpose());
 
+            // Collect the data specific to each end effector
+            std::vector<std::tuple<size_t, size_t>> wrench_indices;
+            std::vector<std::vector<std::string>> wrench_legend_names;
+            std::vector<std::string> ee_plot_names;
+            for (auto ee : robot_->getEndEffectors())
+            {
+                wrench_indices.push_back(states_->frame_id_to_index_range[ee.second->frame_id]);
+                if (ee.second->is_6d)
+                    wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
+                else
+                {
+                    wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
+                }
+                ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
+            }
+
             plotting_interface->PlotSolution(solution, {std::make_tuple(states_->q_index, states_->q_index + 3), std::make_tuple(states_->q_index + 3, states_->q_index + states_->nqb)},
-                                             {},
+                                             {wrench_indices},
                                              {"Positions", "Orientations"},
                                              {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
-                                             {},
-                                             {});
+                                             {ee_plot_names},
+                                             {wrench_legend_names});
 
             plotting_interface->PlotConstraints(constraints);
         }
@@ -261,10 +354,9 @@ namespace galileo
             problem_data_->legged_decision_problem_data.X0 = (initial_state);
 
             // Create a new cost
-            casadi::Function L, Phi;
-            CreateCost(initial_state, target_state, L, Phi);
+            casadi::Function Phi;
+            CreateCost(initial_state, target_state, Phi);
 
-            problem_data_->gp_data->L = L;
             problem_data_->gp_data->Phi = Phi;
 
             std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);

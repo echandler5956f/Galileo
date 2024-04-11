@@ -55,7 +55,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/trunk.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/trunk.dae" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
@@ -111,7 +111,7 @@
     <visual>
       <origin rpy="3.141592653589793 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/hip.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -139,7 +139,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/thigh_mirror.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/thigh_mirror.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -173,7 +173,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/calf.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -284,7 +284,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/hip.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -312,7 +312,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/thigh.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/thigh.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -346,7 +346,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/calf.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -457,7 +457,7 @@
     <visual>
       <origin rpy="3.141592653589793 3.141592653589793 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/hip.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -485,7 +485,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/thigh_mirror.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/thigh_mirror.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -519,7 +519,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/calf.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -630,7 +630,7 @@
     <visual>
       <origin rpy="0 3.141592653589793 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/hip.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -658,7 +658,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/thigh.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/thigh.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -692,7 +692,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://biqu_go1_description/go1_meshes/calf.dae" scale="1 1 1"/>
+        <mesh filename="package://galileo_biqu_description/go1_meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -795,7 +795,7 @@
 <visual>
 <origin xyz="-0.043000000000000093703 -0.056249572745411466346 0.053674572697836049617" rpy="1.570796326794896558 6.9388939039074071039e-18 -2.0296264668928948688e-16" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/batterycover.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/batterycover.stl"/>
 </geometry>
 <material name="batterycover_material">
 <color rgba="0.79607843137254896693 0.82352941176470584317 0.9372549019607843146 1.0"/>
@@ -804,13 +804,13 @@
 <collision>
 <origin xyz="-0.043000000000000093703 -0.056249572745411466346 0.053674572697836049617" rpy="1.570796326794896558 6.9388939039074071039e-18 -2.0296264668928948688e-16" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/batterycover.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/batterycover.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="0.027999999999999969358 0.045620425736449282672 -0.0078254274213730105197" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/bar.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/bar.stl"/>
 </geometry>
 <material name="bar_material">
 <color rgba="0.62745098039215685404 0.62745098039215685404 0.62745098039215685404 1.0"/>
@@ -819,13 +819,13 @@
 <collision>
 <origin xyz="0.027999999999999969358 0.045620425736449282672 -0.0078254274213730105197" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/bar.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/bar.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.045499999999999984901 0.18587042725458807757 0.00017457269783627965554" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/nuc_enclosure_right_v8.step.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/nuc_enclosure_right_v8.step.stl"/>
 </geometry>
 <material name="nuc_enclosure_right_v8.step_material">
 <color rgba="0.62745098039215685404 0.62745098039215685404 0.62745098039215685404 1.0"/>
@@ -834,13 +834,13 @@
 <collision>
 <origin xyz="-0.045499999999999984901 0.18587042725458807757 0.00017457269783627965554" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/nuc_enclosure_right_v8.step.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/nuc_enclosure_right_v8.step.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.029000000000002121303 0.050370427254587735177 0.059174572697836602675" rpy="1.570796326794896558 9.0105057071027178548e-17 1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/cap.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/cap.stl"/>
 </geometry>
 <material name="cap_material">
 <color rgba="0.62745098039215685404 0.62745098039215685404 0.62745098039215685404 1.0"/>
@@ -849,13 +849,13 @@
 <collision>
 <origin xyz="-0.029000000000002121303 0.050370427254587735177 0.059174572697836602675" rpy="1.570796326794896558 9.0105057071027178548e-17 1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/cap.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/cap.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-9.0000000000006741274e-05 -0.001039572745412595256 0.037174572697836277824" rpy="-1.570796326794896558 -0 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/motor.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/motor.stl"/>
 </geometry>
 <material name="motor_material">
 <color rgba="1 1 1 1.0"/>
@@ -864,13 +864,13 @@
 <collision>
 <origin xyz="-9.0000000000006741274e-05 -0.001039572745412595256 0.037174572697836277824" rpy="-1.570796326794896558 -0 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/motor.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/motor.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="0.045500000000000005718 0.037870427254587731014 0.00017457269783625623677" rpy="-1.570796326794896558 -2.2204460492410355836e-16 1.57079632679489678" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/nuc_enclosure_left_v27.step.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/nuc_enclosure_left_v27.step.stl"/>
 </geometry>
 <material name="nuc_enclosure_left_v27.step_material">
 <color rgba="0.62745098039215685404 0.62745098039215685404 0.62745098039215685404 1.0"/>
@@ -879,13 +879,13 @@
 <collision>
 <origin xyz="0.045500000000000005718 0.037870427254587731014 0.00017457269783625623677" rpy="-1.570796326794896558 -2.2204460492410355836e-16 1.57079632679489678" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/nuc_enclosure_left_v27.step.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/nuc_enclosure_left_v27.step.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="0 -0.001129572745412591589 0.00017457269783627965554" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base.stl"/>
 </geometry>
 <material name="base_material">
 <color rgba="1 1 1 1.0"/>
@@ -894,13 +894,13 @@
 <collision>
 <origin xyz="0 -0.001129572745412591589 0.00017457269783627965554" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.0030000000000000581757 0.11587042725458805703 0.0041745726978362797388" rpy="0 -0 -1.2325951644077898923e-32" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/nuc.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/nuc.stl"/>
 </geometry>
 <material name="nuc_material">
 <color rgba="0.61568627450980395466 0.81176470588235294379 0.92941176470588238168 1.0"/>
@@ -909,13 +909,13 @@
 <collision>
 <origin xyz="-0.0030000000000000581757 0.11587042725458805703 0.0041745726978362797388" rpy="0 -0 -1.2325951644077898923e-32" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/nuc.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/nuc.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.063000000000000000444 0.045620425736449157772 -0.0078254274213730122545" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/bar.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/bar.stl"/>
 </geometry>
 <material name="bar_material">
 <color rgba="0.62745098039215685404 0.62745098039215685404 0.62745098039215685404 1.0"/>
@@ -924,13 +924,13 @@
 <collision>
 <origin xyz="-0.063000000000000000444 0.045620425736449157772 -0.0078254274213730122545" rpy="-1.570796326794896558 -0 -1.570796326794896558" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/bar.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/bar.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.040500000000000015155 -0.056249572745412590447 0.053674572697836375745" rpy="1.570796326794896558 1.5919291637703030189e-31 1.3010426069826006369e-16" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/batterybox.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/batterybox.stl"/>
 </geometry>
 <material name="batterybox_material">
 <color rgba="0.79607843137254896693 0.82352941176470584317 0.9372549019607843146 1.0"/>
@@ -939,13 +939,13 @@
 <collision>
 <origin xyz="-0.040500000000000015155 -0.056249572745412590447 0.053674572697836375745" rpy="1.570796326794896558 1.5919291637703030189e-31 1.3010426069826006369e-16" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/batterybox.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/batterybox.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="0 -0.001129572745412591589 0.078174572697836286483" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base2.stl"/>
 </geometry>
 <material name="base2_material">
 <color rgba="1 1 1 1.0"/>
@@ -954,7 +954,7 @@
 <collision>
 <origin xyz="0 -0.001129572745412591589 0.078174572697836286483" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base2.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -968,7 +968,7 @@
 <visual>
 <origin xyz="-0.0054332708436385518391 -1.7564075194265171831e-17 -0.033000000000000001554" rpy="3.141592653589793116 -0 -1.5265782411869662363e-17" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link1.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link1.stl"/>
 </geometry>
 <material name="link1_material">
 <color rgba="1 1 1 1.0"/>
@@ -977,13 +977,13 @@
 <collision>
 <origin xyz="-0.0054332708436385518391 -1.7564075194265171831e-17 -0.033000000000000001554" rpy="3.141592653589793116 -0 -1.5265782411869662363e-17" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link1.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link1.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.0054332708436385518391 -1.7564075194265171831e-17 -0.033000000000000001554" rpy="3.141592653589793116 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base2.stl"/>
 </geometry>
 <material name="base2_material">
 <color rgba="1 1 1 1.0"/>
@@ -992,13 +992,13 @@
 <collision>
 <origin xyz="-0.0054332708436385518391 -1.7564075194265171831e-17 -0.033000000000000001554" rpy="3.141592653589793116 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base2.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.046433270843638380088 9.0000000000024088509e-05 -0.033089999999999925029" rpy="1.570796326794896558 -1.5707963267948961139 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/motor.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/motor.stl"/>
 </geometry>
 <material name="motor_material">
 <color rgba="1 1 1 1.0"/>
@@ -1007,7 +1007,7 @@
 <collision>
 <origin xyz="-0.046433270843638380088 9.0000000000024088509e-05 -0.033089999999999925029" rpy="1.570796326794896558 -1.5707963267948961139 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/motor.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/motor.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -1021,7 +1021,7 @@
 <visual>
 <origin xyz="-0.20499999999999801714 -4.8572257327350598644e-16 0.05999999999999967859" rpy="-1.2137888792318470409e-15 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link2.2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link2.2.stl"/>
 </geometry>
 <material name="link2.2_material">
 <color rgba="1 1 1 1.0"/>
@@ -1030,13 +1030,13 @@
 <collision>
 <origin xyz="-0.20499999999999801714 -4.8572257327350598644e-16 0.05999999999999967859" rpy="-1.2137888792318470409e-15 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link2.2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link2.2.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.20499999999999812816 -4.2327252813834093104e-16 0.059999999999999685529" rpy="2.4893298511732086215e-16 6.0581801939752800655e-16 3.1415926535897926719" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base2.stl"/>
 </geometry>
 <material name="base2_material">
 <color rgba="1 1 1 1.0"/>
@@ -1045,13 +1045,13 @@
 <collision>
 <origin xyz="-0.20499999999999812816 -4.2327252813834093104e-16 0.059999999999999685529" rpy="2.4893298511732086215e-16 6.0581801939752800655e-16 3.1415926535897926719" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/base2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/base2.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="2.7755575615628913511e-17 6.9388939039072283776e-18 0.020000000000000003886" rpy="1.570796326794896558 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link2.stl"/>
 </geometry>
 <material name="link2_material">
 <color rgba="1 1 1 1.0"/>
@@ -1060,13 +1060,13 @@
 <collision>
 <origin xyz="2.7755575615628913511e-17 6.9388939039072283776e-18 0.020000000000000003886" rpy="1.570796326794896558 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link2.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.20508999999999993902 8.9999999999472446444e-05 0.019000000000000374228" rpy="-1.570796326794896558 1.0122583203283967912e-15 -1.1794672002304914752e-15" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/motor.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/motor.stl"/>
 </geometry>
 <material name="motor_material">
 <color rgba="1 1 1 1.0"/>
@@ -1075,7 +1075,7 @@
 <collision>
 <origin xyz="-0.20508999999999993902 8.9999999999472446444e-05 0.019000000000000374228" rpy="-1.570796326794896558 1.0122583203283967912e-15 -1.1794672002304914752e-15" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/motor.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/motor.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -1089,7 +1089,7 @@
 <visual>
 <origin xyz="-0.092500000000000845435 1.5543122344752191566e-15 0.014999999999999534539" rpy="1.5707963267948958919 -1.5553548128009674369e-15 -1.5707963267948972241" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/servo.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/servo.stl"/>
 </geometry>
 <material name="servo_material">
 <color rgba="0.61568627450980395466 0.81176470588235294379 0.92941176470588238168 1.0"/>
@@ -1098,13 +1098,13 @@
 <collision>
 <origin xyz="-0.092500000000000845435 1.5543122344752191566e-15 0.014999999999999534539" rpy="1.5707963267948958919 -1.5553548128009674369e-15 -1.5707963267948972241" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/servo.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/servo.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="2.7755575615628913511e-17 0 0.020000000000000010825" rpy="1.57079632679489678 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link3.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link3.stl"/>
 </geometry>
 <material name="link3_material">
 <color rgba="1 1 1 1.0"/>
@@ -1113,13 +1113,13 @@
 <collision>
 <origin xyz="2.7755575615628913511e-17 0 0.020000000000000010825" rpy="1.57079632679489678 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/link3.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/link3.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.10180032389301382767 0.015480877538495141366 -9.4974788687557376576e-05" rpy="4.3016806582246644288e-14 -1.5707963267948166219 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripperlink2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripperlink2.stl"/>
 </geometry>
 <material name="gripperlink2_material">
 <color rgba="0.79607843137254896693 0.82352941176470584317 0.9372549019607843146 1.0"/>
@@ -1128,13 +1128,13 @@
 <collision>
 <origin xyz="-0.10180032389301382767 0.015480877538495141366 -9.4974788687557376576e-05" rpy="4.3016806582246644288e-14 -1.5707963267948166219 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripperlink2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripperlink2.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.10180032389301330031 0.015480877538495224632 -9.4974788687640643303e-05" rpy="4.7133166719546065429e-14 -1.5707963267948155117 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripperlink1.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripperlink1.stl"/>
 </geometry>
 <material name="gripperlink1_material">
 <color rgba="0.79607843137254896693 0.82352941176470584317 0.9372549019607843146 1.0"/>
@@ -1143,7 +1143,7 @@
 <collision>
 <origin xyz="-0.10180032389301330031 0.015480877538495224632 -9.4974788687640643303e-05" rpy="4.7133166719546065429e-14 -1.5707963267948155117 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripperlink1.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripperlink1.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -1157,7 +1157,7 @@
 <visual>
 <origin xyz="0.00067499999999989790389 -0.0040000000000002811085 -0.016499999999999848121" rpy="3.141592653589793116 -2.6886223288726292837e-15 3.1415926535897691352" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_4.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_4.stl"/>
 </geometry>
 <material name="gripper_4_material">
 <color rgba="0.89411764705882357251 0.91372549019607840481 0.92941176470588238168 1.0"/>
@@ -1166,13 +1166,13 @@
 <collision>
 <origin xyz="0.00067499999999989790389 -0.0040000000000002811085 -0.016499999999999848121" rpy="3.141592653589793116 -2.6886223288726292837e-15 3.1415926535897691352" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_4.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_4.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.0078250000000000818901 -0.0040000000000001423306 -0.032499999999999779066" rpy="0.094984357307938374615 -2.818051666908969439e-16 1.5707963267948961139" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_2.stl"/>
 </geometry>
 <material name="gripper_2_material">
 <color rgba="0.89411764705882357251 0.91372549019607840481 0.92941176470588238168 1.0"/>
@@ -1181,13 +1181,13 @@
 <collision>
 <origin xyz="-0.0078250000000000818901 -0.0040000000000001423306 -0.032499999999999779066" rpy="0.094984357307938374615 -2.818051666908969439e-16 1.5707963267948961139" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_2.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_2.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.00076017147315771138594 -0.0015000000000007507328 -0.047649123529255869858" rpy="3.1415926535897922278 0.094984357307933767189 -2.6979513969416627637e-14" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_3.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_3.stl"/>
 </geometry>
 <material name="gripper_3_material">
 <color rgba="0 0.50196078431372548323 1 1.0"/>
@@ -1196,13 +1196,13 @@
 <collision>
 <origin xyz="-0.00076017147315771138594 -0.0015000000000007507328 -0.047649123529255869858" rpy="3.1415926535897922278 0.094984357307933767189 -2.6979513969416627637e-14" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_3.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_3.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="9.0971822251845191332e-05 -0.0015000000000004731771 -0.046531684784240717745" rpy="-3.1415926535897926719 -0.043187700240528231754 3.1415926535897664706" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_3.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_3.stl"/>
 </geometry>
 <material name="gripper_3_material">
 <color rgba="0 0.50196078431372548323 1 1.0"/>
@@ -1211,13 +1211,13 @@
 <collision>
 <origin xyz="9.0971822251845191332e-05 -0.0015000000000004731771 -0.046531684784240717745" rpy="-3.1415926535897926719 -0.043187700240528231754 3.1415926535897664706" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_3.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_3.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="0.00067499999999995341504 0.0089999999999998969713 -0.016499999999999848121" rpy="-3.141592653589793116 -3.1341729464866167256e-15 3.1415926535897691352" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_5.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_5.stl"/>
 </geometry>
 <material name="gripper_5_material">
 <color rgba="0.89411764705882357251 0.91372549019607840481 0.92941176470588238168 1.0"/>
@@ -1226,13 +1226,13 @@
 <collision>
 <origin xyz="0.00067499999999995341504 0.0089999999999998969713 -0.016499999999999848121" rpy="-3.141592653589793116 -3.1341729464866167256e-15 3.1415926535897691352" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_5.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_5.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-5.5511151231257827021e-17 0 -0.0011238668575307142472" rpy="-1.570796326794896558 -1.537093985394676151e-17 6.1870996271311447769e-17" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_8.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_8.stl"/>
 </geometry>
 <material name="gripper_8_material">
 <color rgba="0.90196078431372550543 0.92156862745098033773 0.92941176470588238168 1.0"/>
@@ -1241,13 +1241,13 @@
 <collision>
 <origin xyz="-5.5511151231257827021e-17 0 -0.0011238668575307142472" rpy="-1.570796326794896558 -1.537093985394676151e-17 6.1870996271311447769e-17" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_8.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_8.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="0.0091750000000002940315 -0.0040000000000006141754 -0.032499999999999910905" rpy="0.043187700240529459939 -3.5932039344207654432e-16 1.57079632679489678" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_1.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_1.stl"/>
 </geometry>
 <material name="gripper_1_material">
 <color rgba="0.89411764705882357251 0.91372549019607840481 0.92941176470588238168 1.0"/>
@@ -1256,13 +1256,13 @@
 <collision>
 <origin xyz="0.0091750000000002940315 -0.0040000000000006141754 -0.032499999999999910905" rpy="0.043187700240529459939 -3.5932039344207654432e-16 1.57079632679489678" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/gripper_1.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/gripper_1.stl"/>
 </geometry>
 </collision>
 <visual>
 <origin xyz="-0.00024968640208264392122 0.013499999999999054423 -0.016499999999999848121" rpy="1.570796326794871689 -1.5707963267948907848 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/servo.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/servo.stl"/>
 </geometry>
 <material name="servo_material">
 <color rgba="0.61568627450980395466 0.81176470588235294379 0.92941176470588238168 1.0"/>
@@ -1271,7 +1271,7 @@
 <collision>
 <origin xyz="-0.00024968640208264392122 0.013499999999999054423 -0.016499999999999848121" rpy="1.570796326794871689 -1.5707963267948907848 0" />
 <geometry>
-<mesh filename="package://biqu_go1_description/arm_meshes/servo.stl"/>
+<mesh filename="package://galileo_biqu_description/arm_meshes/servo.stl"/>
 </geometry>
 </collision>
 <inertial>

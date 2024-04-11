@@ -22,13 +22,14 @@ namespace galileo
              *
              * @param problem Pointer to the problem data
              * @param F Dynamics function
+             * @param L Cost function
              * @param st_m_ Pointer to the state indices helper
              * @param d Polynomial degree
              * @param knot_num_ Number of knots in the segment
              * @param h_ Period of each knot segment
              *
              */
-            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_);
+            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -370,10 +371,10 @@ namespace galileo
             casadi::Function xf_constraint_map;
 
             /**
-         * @brief Implicit discrete-time function map. The map which matches the approximated final input expression with the initial
-            input of the next segment.
-         *
-         */
+             * @brief Implicit discrete-time function map. The map which matches the approximated final input expression with the initial
+                input of the next segment.
+            *
+            */
             casadi::Function uf_constraint_map;
 
             /**

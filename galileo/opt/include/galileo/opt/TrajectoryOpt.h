@@ -177,6 +177,15 @@ namespace galileo
             void initFiniteElements(int d, casadi::DM X0);
 
             /**
+             * @brief Advance the finite elements.
+             * 
+             * @param time_advance The time to advance the finite elements
+             * @param X0 The new initial state
+             * @param phase The next phase (we check if we actually need the next phase based on the time_advance)
+             */
+            void advanceFiniteElements(double time_advance, casadi::DM X0, typename PhaseSequence<MODE_T>::Phase phase);
+
+            /**
              * @brief Optimize and return the solution.
              *
              * @return SXVector The solution
@@ -381,16 +390,10 @@ namespace galileo
             std::shared_ptr<DecisionData> Wdata = std::make_shared<DecisionData>();
 
             size_t num_phases = sequence->getNumPhases();
-
-            printf("Starting initialization\n");
-            auto begin_time = std::chrono::high_resolution_clock::now();
-            auto start_time = std::chrono::high_resolution_clock::now();
-            auto end_time = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end_time - start_time;
+            std::cout << "Starting initialization" << std::endl;
 
             for (size_t i = 0; i < num_phases; ++i)
             {
-                start_time = std::chrono::high_resolution_clock::now();
                 G.clear();
                 for (auto builder : builders)
                 {
@@ -399,50 +402,17 @@ namespace galileo
                     G.push_back(con_data);
                 }
                 decision_builder->buildDecisionData(*problem, i, *Wdata);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for constraint building: " << elapsed.count() << std::endl;
 
                 constraint_datas_for_phase.push_back(G);
-                auto phase = sequence->phase_sequence_[i];
+                auto phase = sequence->getPhase(i);
 
-                start_time = std::chrono::high_resolution_clock::now();
-                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for segment creation: " << elapsed.count() << std::endl;
-
-                start_time = std::chrono::high_resolution_clock::now();
+                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, phase.phase_cost, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
                 segment->initializeSegmentTimeVector(global_times);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for local time vector initialization: " << elapsed.count() << std::endl;
-
-                start_time = std::chrono::high_resolution_clock::now();
                 segment->initializeInputTimeVector(global_times);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for input time vector initialization: " << elapsed.count() << std::endl;
-
-                start_time = std::chrono::high_resolution_clock::now();
                 segment->initializeKnotSegments(X0, prev_final_state);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for knot segment initialization: " << elapsed.count() << std::endl;
-
-                start_time = std::chrono::high_resolution_clock::now();
                 segment->initializeExpressionGraph(G, Wdata);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for expression graph initialization: " << elapsed.count() << std::endl;
-
-                start_time = std::chrono::high_resolution_clock::now();
                 segment->evaluateExpressionGraph(J, w, g);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for expression graph evaluation: " << elapsed.count() << std::endl;
 
-                start_time = std::chrono::high_resolution_clock::now();
                 ranges_decision_variables.push_back(segment->get_range_idx_decision_variables());
 
                 trajectory.push_back(segment);
@@ -450,11 +420,7 @@ namespace galileo
                 segment->fill_lbg_ubg(lbg, ubg);
                 segment->fill_lbw_ubw(lbw, ubw);
                 segment->fill_w0(w0);
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for filling lbg, ubg, lbw, ubw, w0: " << elapsed.count() << std::endl;
 
-                start_time = std::chrono::high_resolution_clock::now();
                 /*Initial state constraint*/
                 if (i == 0)
                 {
@@ -481,13 +447,13 @@ namespace galileo
                 {
                     J += gp_data->Phi(casadi::MXVector{prev_final_state}).at(0);
                 }
-                end_time = std::chrono::high_resolution_clock::now();
-                elapsed = end_time - start_time;
-                // std::cout << "Elapsed time for continuity and terminal cost: " << elapsed.count() << std::endl;
             }
-            end_time = std::chrono::high_resolution_clock::now();
-            elapsed = end_time - begin_time;
-            std::cout << "Elapsed time for initialization: " << elapsed.count() << std::endl;
+            std::cout << "Finished initialization" << std::endl;
+        }
+
+        template <class ProblemData, class MODE_T>
+        void TrajectoryOpt<ProblemData, MODE_T>::advanceFiniteElements(double time_advance, casadi::DM X0, typename PhaseSequence<MODE_T>::Phase phase)
+        {
         }
 
         template <class ProblemData, class MODE_T>
@@ -517,7 +483,9 @@ namespace galileo
             casadi::Dict stats = solver.stats();
             if (nonlinear_solver_name == "ipopt")
             {
-                time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_hess_l"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
+                time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
+                if (stats.find("t_wall_nlp_hess_l") != stats.end())
+                    time_from_funcs += (double)stats["t_wall_nlp_hess_l"];
                 time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
                 std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
                 std::cout << "Total seconds from Ipopt w/o function: " << time_just_solver << std::endl;
@@ -587,9 +555,6 @@ namespace galileo
 
                 state_count += (pseg->getStateDegree() + 1) * pseg->getKnotNum();
                 input_count += (pseg->getInputDegree() + 1) * pseg->getKnotNum();
-
-                // tuple_size_t segment_indices = getSegmentIndices(times, segment_data.initial_time, segment_data.end_time);
-                // segment_times_ranges.push_back(segment_indices);
 
                 result.push_back(segment_data);
             }

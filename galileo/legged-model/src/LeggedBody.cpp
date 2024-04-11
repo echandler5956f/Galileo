@@ -57,6 +57,7 @@ namespace galileo
         void LeggedBody::setEndEffectors(const std::vector<std::string> &ee_names)
         {
             std::vector<pinocchio::FrameIndex> ee_ids;
+            int min_index = model.nframes;
             for (std::size_t i = 0; i < ee_names.size(); ++i)
             {
                 auto ee_name = ee_names[i];
@@ -76,6 +77,11 @@ namespace galileo
                 for (const auto &joint_index : joint_indices)
                 {
                     dof += model.joints[joint_index].nq();
+                    ee_obj_ptr->joint_indices.push_back(joint_index);
+                    if (joint_index < min_index)
+                    {
+                        min_index = joint_index;
+                    }
                 }
                 ee_obj_ptr->is_6d = dof == 6;
                 ee_obj_ptr->local_ee_idx = i;
@@ -85,6 +91,16 @@ namespace galileo
             }
             num_end_effectors_ = ee_names.size();
             ee_ids_ = ee_ids;
+            for (auto ee : ees_)
+            {
+                std::cout << "End effector " << ee.second->frame_name << " is associated with the following joints:" << std::endl;
+                for (int i = 0; i < ee.second->joint_indices.size(); i++)
+                {
+                    std::cout << "Name: " << model.names[ee.second->joint_indices[i]] << " - Index: " << ee.second->joint_indices[i] - min_index << std::endl;
+                    ee.second->joint_indices[i] -= min_index;
+
+                }
+            }
         }
 
         void LeggedBody::generateContactCombination()
@@ -125,25 +141,26 @@ namespace galileo
             pinocchio::computeJointJacobians(model, data, q0);
             pinocchio::updateFramePlacements(model, data);
 
-            size_t totalContactDim = 3 * num_end_effectors_;
-
-            Eigen::MatrixXd baseToFeetJacobians(totalContactDim, si->nvju);
-            int i = 0;
-            for (auto ee : ees_)
-            {
-                auto frame_id = ee.first;
-                Eigen::MatrixXd jacobianWorldToContactPointInWorldFrame = Eigen::MatrixXd::Zero(6, si->nv);
-                pinocchio::getFrameJacobian(model, data, frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobianWorldToContactPointInWorldFrame);
-                baseToFeetJacobians.block(3 * i, 0, 3, si->nvju) =
-                    jacobianWorldToContactPointInWorldFrame.block(0, 6, 3, si->nvju);
-                ++i;
-            }
-
+            size_t totalContactDim = si->nF;
             Eigen::MatrixXd R = Eigen::MatrixXd::Zero(si->nu, si->nu);
             // Contact Forces
             R.topLeftCorner(totalContactDim, totalContactDim) = R_taskspace.topLeftCorner(totalContactDim, totalContactDim);
+
+            Eigen::MatrixXd baseToFeetJacobians(totalContactDim, si->nvju);
+            for (auto ee : ees_)
+            {
+                auto frame_id = ee.first;
+                size_t start_index = ee.second->joint_indices[0];
+                size_t size = ee.second->is_6d ? 6 : 3;
+                Eigen::MatrixXd jacobianWorldToContactPointInWorldFrame = Eigen::MatrixXd::Zero(6, si->nv);
+                pinocchio::getFrameJacobian(model, data, frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobianWorldToContactPointInWorldFrame);
+                baseToFeetJacobians.block(start_index, 0, size, si->nvju) =
+                    jacobianWorldToContactPointInWorldFrame.block(0, 6, size, si->nvju); // velocity in base frame x velocity in joint space
+            }
+
             // Joint velocities
-            R.bottomRightCorner(si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.bottomRightCorner(totalContactDim, totalContactDim) * baseToFeetJacobians;
+            R.block(totalContactDim, totalContactDim, si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.block(totalContactDim, totalContactDim, totalContactDim, totalContactDim) * baseToFeetJacobians;
+            std::cout << "R: " << R << std::endl;
             return R;
         }
 
@@ -193,8 +210,7 @@ namespace galileo
                                                 {cx, cu_general},
                                                 {vertcat((si->get_general_forces(cu_general) - mass * g) / mass,
                                                          si->get_general_torques(cu_general) / mass,
-                                                         cv)},
-                                                casadi_opts);
+                                                         cv)});
 
             TangentVectorAD vb_AD2 = Ab_inv * (mass * h_AD - Ag.rightCols(si->nvju) * vju_AD);
             TangentVectorAD tmp_v_AD2(si->nv, 1);
@@ -259,9 +275,9 @@ namespace galileo
             casadi::SXVector foot_forces;
             casadi::SXVector foot_poss;
             casadi::SXVector foot_taus;
-            for (std::size_t i = 0; i < contact_sequence->phase_sequence_.size(); ++i)
+            for (std::size_t i = 0; i < contact_sequence->getPhases().size(); ++i)
             {
-                contact::ContactMode mode = contact_sequence->phase_sequence_[i].mode;
+                contact::ContactMode mode = contact_sequence->getPhases()[i].mode;
 
                 foot_forces.clear();
                 foot_poss.clear();
@@ -305,12 +321,25 @@ namespace galileo
 
                 casadi::SX u_general = vertcat(casadi::SXVector{total_f_input, total_tau_input, si->get_vju(cu)});
 
-                contact_sequence->phase_sequence_[i].phase_dynamics = casadi::Function("F_mode",
-                                                                                       {cx, cu},
-                                                                                       {general_dynamics(casadi::SXVector{cx, u_general})
-                                                                                            .at(0)},
-                                                                                       casadi_opts);
+                contact_sequence->FillPhaseDynamics(i, casadi::Function("F_mode",
+                                                                        {cx, cu},
+                                                                        {general_dynamics(casadi::SXVector{cx, u_general})
+                                                                             .at(0)}));
             }
+        }
+
+        casadi::SX LeggedBody::weightCompensatingInputsForPhase(size_t phase_index)
+        {
+            casadi::SX weight_compensating_inputs = casadi::SX::zeros(si->nu, 1);
+            contact::ContactMode mode = contact_sequence->getPhases()[phase_index].mode;
+            for (auto ee : ees_)
+            {
+                if (mode[(*ee.second)])
+                {
+                    weight_compensating_inputs(casadi::Slice(std::get<0>(si->frame_id_to_index_range[ee.second->frame_id]) + 2)) = 9.81 * cdata.mass[0] / contact_sequence->numEndEffectorsInContactAtPhase(phase_index);
+                }
+            }
+            return weight_compensating_inputs;
         }
 
         contact::ContactCombination LeggedBody::getContactCombination(int contact_mask) { return contact_combinations_[contact_mask]; }

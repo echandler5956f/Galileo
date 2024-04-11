@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
     galileo::legged::LeggedInterface solver_interface;
 
-    solver_interface.LoadModel(go1_location, end_effector_names);
+    solver_interface.LoadModel(robot_location, end_effector_names);
     solver_interface.LoadParameters(solver_parameter_location);
 
     int nx = solver_interface.states()->nx;
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     solver_interface.Initialize(X0, Xf);
     solver_interface.Update(X0, Xf);
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(125, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
     Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(solver_interface.states()->nx, new_times.size());
     Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(solver_interface.states()->nu, new_times.size());
     // solver_interface.GetSolution(new_times, new_states, new_inputs);

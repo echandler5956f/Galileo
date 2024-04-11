@@ -31,7 +31,7 @@ namespace galileo
              *
              * @param location The location of the URDF file.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
-             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
              */
             LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, casadi::Dict general_function_casadi_options);
 
@@ -40,7 +40,7 @@ namespace galileo
              *
              * @param location The location of the URDF file.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
-             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
              */
             LeggedBody(const std::string location, const std::vector<std::string> end_effector_names) : LeggedBody(location, end_effector_names, casadi::Dict()){};
 
@@ -50,7 +50,7 @@ namespace galileo
              * @param location The location of the URDF file.
              * @param num_ees The number of end effectors.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
-             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
              */
             LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], casadi::Dict general_function_casadi_options) : LeggedBody(location, std::vector<std::string>(end_effector_names, end_effector_names + num_ees), general_function_casadi_options){};
 
@@ -60,7 +60,7 @@ namespace galileo
              * @param location The location of the URDF file.
              * @param num_ees The number of end effectors.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
-             * @param general_function_casadi_options options for evaluating F_INT F_DIFF and Dynamics functions. Options include JIT compilation.
+             * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
              */
             LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[]) : LeggedBody(location, num_ees, end_effector_names, casadi::Dict()){};
 
@@ -91,11 +91,15 @@ namespace galileo
             /**
              * @brief Create the generalized dynamics, fint, and fdiff functions.
              *
+             * @param casadi_opts The options passed into the casadi functions.
+             *
              */
             void createGeneralFunctions(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the phase-invariant centroidal momentum dynamics (summed wrenches).
+             *
+             * @param casadi_opts The options passed into the casadi functions.
              *
              */
             void createGeneralDynamics(casadi::Dict casadi_opts);
@@ -103,11 +107,15 @@ namespace galileo
             /**
              * @brief Create the state integrator function to translate from the tangent space to the state space.
              *
+             * @param casadi_opts The options passed into the casadi functions.
+             *
              */
             void createFint(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the state derivative function to translate from the state space to the tangent space.
+             *
+             * @param casadi_opts The options passed into the casadi functions.
              *
              */
             void createFdiff(casadi::Dict casadi_opts);
@@ -115,15 +123,25 @@ namespace galileo
             /**
              * @brief Create the state error function.
              *
+             * @param casadi_opts The options passed into the casadi functions.
+             *
              */
             void createErrorFunction(casadi::Dict casadi_opts);
 
             /**
              * @brief Create the mode dynamics for each mode using the General Dynamics.
              *
-             *  @param print_ees_info Whether to print the end effector contact information.
+             *  @param casadi_opts The options passed into the casadi functions.
              */
             void fillModeDynamics(casadi::Dict casadi_opts);
+
+            /**
+             * @brief Get the forces which compensate for the weight of the robot during a certain phase.
+             *
+             * @param phase_index The index of the phase.
+             * @return casadi::SX The forces which compensate for the weight of the robot at static equilibrium.
+             */
+            casadi::SX weightCompensatingInputsForPhase(size_t phase_index);
 
             /**
              * @brief Get the Contact Combination object from a binary combination mask.
@@ -136,8 +154,15 @@ namespace galileo
             /**
              * @brief Get the End Effectors.
              *
+             * @return contact::RobotEndEffectors The end effectors.
+             *
              */
             contact::RobotEndEffectors getEndEffectors();
+
+            /**
+             * @brief Get the contact sequence.
+             */
+            const std::shared_ptr<contact::ContactSequence> &getContactSequence() const { return contact_sequence; }
 
             /**
              * @brief The pinocchio model of the robot.

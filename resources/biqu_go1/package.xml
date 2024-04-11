@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>biqu_go1_description</name>
+  <name>galileo_biqu_description</name>
   <version>0.0.0</version>
-  <description>The biqu_go1_description package</description>
+  <description>The galileo_biqu_description package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

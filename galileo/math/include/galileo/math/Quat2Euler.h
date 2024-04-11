@@ -43,7 +43,7 @@ namespace galileo
                                                 { return atan2(a, b); });
         }
 
-        Eigen::MatrixXd quaternion2Euler(const Eigen::MatrixXd &quat, RotSeq rotSeq)
+        Eigen::MatrixXd quaternion2Euler(const Eigen::MatrixXd &quat, int rotSeq)
         {
             Eigen::MatrixXd euler(3, quat.cols());
 

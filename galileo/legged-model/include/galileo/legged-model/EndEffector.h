@@ -41,6 +41,12 @@ namespace galileo
                  *
                  */
                 bool is_6d;
+
+                /**
+                 * @brief The joint indices between root and this end-effector frame.
+                 * 
+                 */
+                std::vector<pinocchio::JointIndex> joint_indices;
             };
 
             /**

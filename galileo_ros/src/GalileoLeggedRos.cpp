@@ -22,6 +22,28 @@ namespace galileo
 
             // Subscribe to the initialization command
             command_subscriber_ = nh_->subscribe(solver_id_ + "_command", 1, &GalileoLeggedRos::GeneralCommandCallback, this);
+
+            if (!nh_->getParam("galileo_ros/orientation_definition", orientation_definition_))
+            {
+                /*  This parameter ensures that the orientation from the solution is converted to the desired format. By default (-1), the orientation is described as a quaternion [x, y, z, w]
+
+                    The following are the possible orientation definitions:
+                        zyx = 0
+                        zyz = 1
+                        zxy = 2
+                        zxz = 3
+                        yxz = 4
+                        yxy = 5
+                        yzx = 6
+                        yzy = 7
+                        xyz = 8
+                        xyx = 9
+                        xzy = 10
+                        xzx = 11
+                    From galileo/math/Quat2Euler.h
+                */
+                ROS_INFO("No orientation definition provided, assuming quaternion [x, y, z, w]");
+            }
         }
 
         void GalileoLeggedRos::InitServices()
@@ -139,8 +161,22 @@ namespace galileo
                 res.solution_exists = false;
                 return false;
             }
+            std::vector<double> state_vec;
+            if (orientation_definition_ != -1)
+            {
+                Eigen::MatrixXd new_state(state_solution.rows() - 1, state_solution.cols());
+                Eigen::MatrixXd euler_angles = galileo::math::quaternion2Euler(state_solution.block(states()->q_index + 3, 0, 4, state_solution.cols()), orientation_definition_);
+                new_state << state_solution.topRows(states()->q_index + 3), euler_angles, state_solution.bottomRows(states()->nq - states()->nqb);
 
-            std::vector<double> state_vec(state_solution.data(), state_solution.data() + state_solution.size());
+                res.nx = state_solution.rows() - 1;
+                state_vec = std::vector<double>(new_state.data(), new_state.data() + new_state.size());
+            }
+            else
+            {
+                res.nx = state_solution.rows();
+                state_vec = std::vector<double>(state_solution.data(), state_solution.data() + state_solution.size());
+            }
+
             std::vector<double> input_vec(input_solution.data(), input_solution.data() + input_solution.size());
 
             res.joint_names = getJointNames();
@@ -151,7 +187,6 @@ namespace galileo
             res.X_t_wrapped = state_vec;
             res.U_t_wrapped = input_vec;
 
-            res.nx = state_solution.rows();
             res.nu = input_solution.rows();
 
             res.solution_horizon = getSolutionDT();
@@ -164,6 +199,25 @@ namespace galileo
             }
 
             res.ee_dofs = ee_dofs;
+
+            // TODO: Add the contact modes to the service response so the WBC knows which end effectors are in contact
+
+            auto contact_sequence = robot_->getContactSequence();
+
+            galileo_ros::ContactSequence contact_sequence_msg;
+            for (auto &phase : contact_sequence->getPhases())
+            {
+                galileo_ros::ContactPhase phase_msg;
+                phase_msg.knot_num = phase.knot_points;
+                phase_msg.knot_time = phase.time_value;
+
+                for (auto &contact_surface_id : phase.mode.contact_surfaces)
+                {
+                    phase_msg.contact_surface_ids.push_back(contact_surface_id);
+                }
+
+                contact_sequence_msg.phases.push_back(phase_msg);
+            }
 
             res.times_evaluated = req.times;
             res.solution_exists = true;
