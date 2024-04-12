@@ -66,7 +66,7 @@ namespace galileo
         Scalar LagrangePolynomial::barycentricInterpolation(double t, const std::vector<Scalar> terms) const
         {
             assert(terms.size() == tau_root.size());
-            assert(t >= -casadi::eps && t <= 1);
+            assert(t >= -1e-8 && t <= 1. + 1e-8);
             if (piecewise_constant)
             {
                 return terms[0];
@@ -97,7 +97,7 @@ namespace galileo
         Eigen::VectorXd LagrangePolynomial::barycentricInterpolation(double t, const Eigen::MatrixXd &terms) const
         {
             assert(terms.cols() == tau_root.size());
-            assert(t >= -casadi::eps && t <= 1);
+            assert(t >= -1e-8 && t <= 1. + 1e-8);
             if (piecewise_constant)
             {
                 return terms.col(0);

@@ -68,10 +68,9 @@ namespace galileo
                     for (auto ee : problem_data.legged_decision_problem_data.robot_end_effectors)
                     {
                         contact::ContactMode mode = contact_sequence->getPhase(phase_index).mode;
-                        int num_in_contact = mode.numEndEffectorsInContact();
                         if (mode[(*ee.second)])
                         {
-                            initial_guess_u(std::get<0>(states->frame_id_to_index_range[ee.first]) + 2) = mass * g / num_in_contact;
+                            initial_guess_u(std::get<0>(states->frame_id_to_index_range[ee.first]) + 2) = g * mass / contact_sequence->numEndEffectorsInContactAtPhase(phase_index);
                         }
                     }
                     // linearly interpolate between initial and final states
