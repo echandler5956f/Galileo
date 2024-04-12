@@ -7,7 +7,7 @@ namespace
         std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
         std::vector<galileo::legged::environment::SurfaceID> current_contact_surface_combination;
 
-        for (int i = 0; i < contact_surfaces_str.size(); i++)
+        for (size_t i = 0; i < contact_surfaces_str.size(); i++)
         {
             bool some_vector_read = false;
             if (contact_surfaces_str[i].find_first_of('(') != std::string::npos)

@@ -57,7 +57,7 @@ namespace galileo
         void LeggedBody::setEndEffectors(const std::vector<std::string> &ee_names)
         {
             std::vector<pinocchio::FrameIndex> ee_ids;
-            int min_index = model.nframes;
+            unsigned long min_index = model.nframes;
             for (std::size_t i = 0; i < ee_names.size(); ++i)
             {
                 auto ee_name = ee_names[i];
@@ -93,11 +93,11 @@ namespace galileo
             ee_ids_ = ee_ids;
             for (auto ee : ees_)
             {
-                std::cout << "End effector " << ee.second->frame_name << " is associated with the following joints:" << std::endl;
-                for (int i = 0; i < ee.second->joint_indices.size(); i++)
+                // std::cout << "End effector " << ee.second->frame_name << " is associated with the following joints:" << std::endl; // Useful for debugging
+                for (size_t i = 0; i < ee.second->joint_indices.size(); i++)
                 {
-                    std::cout << "Name: " << model.names[ee.second->joint_indices[i]] << " - Index: " << ee.second->joint_indices[i] - min_index << std::endl;
-                    ee.second->joint_indices[i] -= min_index;
+                    // std::cout << "Name: " << model.names[ee.second->joint_indices[i]] << " - Index: " << ee.second->joint_indices[i] - min_index << std::endl;
+                    ee.second->joint_indices[i] -= min_index; // so that the indices start from 0. We do not account for the case where the joint indices are not contiguous, but so far it hasnt been an issue.
 
                 }
             }
@@ -160,7 +160,6 @@ namespace galileo
 
             // Joint velocities
             R.block(totalContactDim, totalContactDim, si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.block(totalContactDim, totalContactDim, totalContactDim, totalContactDim) * baseToFeetJacobians;
-            std::cout << "R: " << R << std::endl;
             return R;
         }
 

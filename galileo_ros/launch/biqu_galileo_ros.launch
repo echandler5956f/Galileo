@@ -1,8 +1,8 @@
 <launch>
-  <arg name="urdf_filename" default="$(find galileo_biqu_description)/biqu_go1.urdf" />
+  <arg name="urdf_filename" default="$(find galileo_biqu_description)/biqu.urdf" />
   <arg name="solver_parameters_location" default="$(find galileo_biqu_description)/Parameters/solver_parameters.txt" />
   <arg name="problem_parameters_location" default="$(find galileo_biqu_description)/Parameters/problem_parameters.txt" />
-  <arg name="solver_id" default="biqu_go1" />
+  <arg name="solver_id" default="biqu" />
   <arg name="sol_data_dir" default="$(find galileo_ros)../examples/visualization/solution_data/" />
   <arg name="plot_dir" default="$(find galileo_ros)../examples/visualization/plots/" />
 

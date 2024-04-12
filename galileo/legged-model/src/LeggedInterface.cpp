@@ -142,20 +142,12 @@ namespace galileo
             joint_limits_.lower = joint_lb;
             joint_limits_.upper = joint_ub;
 
-            std::cout << "ndx: " << states_->ndx << std::endl;
-            std::cout << "nu: " << states_->nu << std::endl;
-            std::cout << "Q Size: " << Q_diag.size() << std::endl;
-            std::cout << "R Size: " << R_diag.size() << std::endl;
-
             assert(Q_diag.size() == states_->ndx);
             assert(R_diag.size() == states_->nF + states_->nF);
 
             cost_params_.Q_diag = Q_diag;
             cost_params_.R_diag = R_diag;
             
-            std::cout << "Q_diag: " << cost_params_.Q_diag.transpose() << std::endl;
-            std::cout << "R_diag: " << cost_params_.R_diag.transpose() << std::endl;
-
             if (imported_vars.find("cost.terminal_weight") != imported_vars.end())
             {
                 cost_params_.terminal_weight = std::stod(std::get<0>(imported_vars["cost.terminal_weight"]));
@@ -202,7 +194,6 @@ namespace galileo
             casadi::DM q0_dm = states_->get_q(X0);
             Eigen::VectorXd q0 = Eigen::Map<Eigen::VectorXd>(q0_dm.get_elements().data(), q0_dm.size1() * q0_dm.size2());
 
-            std::cout << "Initializing input cost weight matrix..." << std::endl;
             Eigen::MatrixXd R_mat = robot_->initializeInputCostWeight(R_taskspace, q0);
 
             casadi::SX Q = casadi::SX::zeros(states_->ndx, states_->ndx);
