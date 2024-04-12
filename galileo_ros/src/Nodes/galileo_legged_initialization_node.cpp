@@ -39,7 +39,7 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
         galileo_ros::ContactPhase phase;
         phase.knot_num = knot_num[phase_number];
         phase.knot_time = knot_time[phase_number];
-        phase.contact_surface_ids = contact_surfaces[phase_number];
+        phase.mode.contact_surface_ids = contact_surfaces[phase_number];
         contact_sequence_cmd.phases.push_back(phase);
     }
 

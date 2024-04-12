@@ -61,7 +61,7 @@ namespace galileo
                 knot_nums.push_back(phase.knot_num);
                 knot_times.push_back(phase.knot_time);
 
-                contact_surface_ids.push_back(phase.contact_surface_ids);
+                contact_surface_ids.push_back(phase.mode.contact_surface_ids);
             }
 
             mask_vec = helper::getMaskVectorFromContactSurfaces(contact_surface_ids);
@@ -158,6 +158,21 @@ namespace galileo
             }
 
             res.ee_dofs = ee_dofs;
+
+            auto contact_sequence = getRobotModel()->getContactSequence();
+
+            galileo_ros::ContactSequence contact_sequence_msg;
+            for (auto &phase : contact_sequence->getPhases())
+            {
+                galileo_ros::ContactPhase phase_msg;
+                phase_msg.knot_num = phase.knot_points;
+                phase_msg.knot_time = phase.time_value;
+
+                phase_msg.mode.contact_surface_ids = phase.mode.contact_surfaces;
+                phase_msg.mode.ee_names = getRobotModel()->getEndEffectorNames();
+
+                contact_sequence_msg.phases.push_back(phase_msg);
+            }
 
             res.times_evaluated = req.times;
             res.solution_exists = true;
