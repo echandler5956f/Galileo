@@ -306,7 +306,8 @@ namespace galileo
                     casadi::DM xck = xc_g(casadi::Slice(i * st_m_->nx * dX_poly_.d, (i + 1) * st_m_->nx * dX_poly_.d));
                     for (casadi_int j = 0; j < dX_poly_.d; ++j)
                     {
-                        nlp_data_.w0.push_back(reshape(Fdiff_(casadi::DMVector{xk, xck(casadi::Slice(j * st_m_->nx, (j + 1) * st_m_->nx)), h_}).at(0), st_m_->ndx, 1));
+                        double dt_j = (dX_poly_.tau_root[j + 1] - dX_poly_.tau_root[j]) * h_;
+                        nlp_data_.w0.push_back(reshape(Fdiff_(casadi::DMVector{xk, xck(casadi::Slice(j * st_m_->nx, (j + 1) * st_m_->nx)), dt_j}).at(0), st_m_->ndx, 1));
                     }
                 }
 
