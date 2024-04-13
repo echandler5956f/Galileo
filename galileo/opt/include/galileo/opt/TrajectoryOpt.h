@@ -233,8 +233,7 @@ namespace galileo
                 auto phase = sequence_->getPhase(i);
 
                 std::shared_ptr<PseudospectralSegment> segment = std::make_shared<PseudospectralSegment>(gp_data_, phase.phase_dynamics, phase.phase_cost, state_indices_, d, phase.knot_points, phase.time_value / phase.knot_points);
-                segment->InitializeSegmentTimeVector(local_times_);
-                segment->InitializeInputTimeVector(local_times_);
+                segment->InitializeTimeVectors(local_times_);
                 segment->InitializeKnotSegments(X0);
                 segment->InitializeExpressionGraph(G, Wdata);
                 segment->EvaluateExpressionGraph();
@@ -296,8 +295,6 @@ namespace galileo
             casadi::MXDict nlp = {{"x", vertcat(nlp_data_.w)},
                                   {"f", nlp_data_.J},
                                   {"g", vertcat(nlp_data_.g)}};
-
-            std::cout << "w size: " << vertcat(nlp_data_.w).size1() << std::endl;
 
             solver_ = casadi::nlpsol("solver", nonlinear_solver_name_, nlp, opts_);
 

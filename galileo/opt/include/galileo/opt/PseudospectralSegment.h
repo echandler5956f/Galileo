@@ -47,14 +47,7 @@ namespace galileo
              *
              * @param trajectory_times Vector of global times
              */
-            void InitializeSegmentTimeVector(casadi::DM &trajectory_times);
-
-            /**
-             * @brief Initialize the vector of times which coincide to the decision variables U occur at.
-             *
-             * @param trajectory_times Vector of global times
-             */
-            void InitializeInputTimeVector(casadi::DM &trajectory_times);
+            void InitializeTimeVectors(casadi::DM &trajectory_times);
 
             /**
              * @brief Create all the knot segments.
