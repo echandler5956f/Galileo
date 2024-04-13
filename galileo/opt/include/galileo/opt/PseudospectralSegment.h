@@ -1,20 +1,23 @@
 #pragma once
 
-#include "galileo/opt/Segment.h"
+#include "galileo/opt/States.h"
+#include "galileo/opt/ProblemData.h"
 #include "galileo/opt/LagrangePolynomial.h"
 #include "galileo/tools/CasadiConversions.h"
+#include <cassert>
 #include <chrono>
 
 namespace galileo
 {
     namespace opt
     {
+        using tuple_size_t = std::tuple<size_t, size_t>;
 
         /**
          * @brief PseudospectalSegment class.
          *
          */
-        class PseudospectralSegment : public Segment
+        class PseudospectralSegment
         {
         public:
             /**
@@ -23,13 +26,13 @@ namespace galileo
              * @param problem Pointer to the problem data
              * @param F Dynamics function
              * @param L Cost function
-             * @param st_m_ Pointer to the state indices helper
+             * @param st_m Pointer to the state indices helper
              * @param d Polynomial degree
-             * @param knot_num_ Number of knots in the segment
-             * @param h_ Period of each knot segment
+             * @param knot_num Number of knots in the segment
+             * @param h Period of each knot segment
              *
              */
-            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m_, int d, int knot_num_, double h_);
+            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m, int d, int knot_num, double h);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -41,25 +44,24 @@ namespace galileo
             /**
              * @brief Initialize the vector of segment times which constraints are evaluated at.
              *
-             * @param global_times Vector of global times
+             * @param trajectory_times Vector of global times
              */
-            void initializeSegmentTimeVector(casadi::DM &global_times) override;
+            void initializeSegmentTimeVector(casadi::DM &trajectory_times);
 
             /**
              * @brief Initialize the vector of times which coincide to the decision variables U occur at.
              *
-             * @param global_times Vector of global times
+             * @param trajectory_times Vector of global times
              */
-            void initializeInputTimeVector(casadi::DM &global_times) override;
+            void initializeInputTimeVector(casadi::DM &trajectory_times);
 
             /**
              * @brief Create all the knot segments.
              *
              * @param x0_global Global starting state to integrate from (used for initial guess)
-             * @param x0_local Local starting state to integrate from
              *
              */
-            void initializeKnotSegments(casadi::DM x0_global, casadi::MX x0_local) override;
+            void initializeKnotSegments(casadi::DM x0_global);
 
             /**
              * @brief Build the function graph.
@@ -67,7 +69,7 @@ namespace galileo
              * @param G Vector of constraint data
              * @param Wdata Decision bound and initial guess data for the state and input
              */
-            void initializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata) override;
+            void initializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata);
 
             /**
              * @brief Evaluate the expressions with the actual decision variables.
@@ -76,7 +78,7 @@ namespace galileo
              * @param w Decision variable vector to fill
              * @param g Constraint vector to fill
              */
-            void evaluateExpressionGraph(casadi::MX &J0, casadi::MXVector &w, casadi::MXVector &g) override;
+            void evaluateExpressionGraph(casadi::MX &J0, casadi::MXVector &w, casadi::MXVector &g);
 
             /**
              * @brief Extract the solution from the decision variable vector.
@@ -84,42 +86,42 @@ namespace galileo
              * @param w Decision variable vector
              * @return casadi::MX Solution values
              */
-            casadi::MXVector extractSolution(casadi::MX &w) const override;
+            casadi::MXVector extractSolution(casadi::MX &w) const;
 
             /**
              * @brief Get the initial state.
              *
              * @return casadi::MX The initial state
              */
-            casadi::MX getInitialState() const override;
+            casadi::MX getInitialState() const;
 
             /**
              * @brief Get the initial state deviant.
              *
              * @return casadi::MX The initial state deviant
              */
-            casadi::MX getInitialStateDeviant() const override;
+            casadi::MX getInitialStateDeviant() const;
 
             /**
              * @brief Get the final state deviant.
              *
              * @return casadi::MX The final state deviant
              */
-            casadi::MX getFinalStateDeviant() const override;
+            casadi::MX getFinalStateDeviant() const;
 
             /**
              * @brief Get the actual final state.
              *
              * @return casadi::MX The final state.
              */
-            casadi::MX getFinalState() const override;
+            casadi::MX getFinalState() const;
 
             /**
              * @brief Get the segment times vector.
              *
              * @return casadi::DM The segment times vector
              */
-            casadi::DM getSegmentTimes() const override;
+            casadi::DM getSegmentTimes() const;
 
             /**
              * @brief Get the knot times vector.
@@ -165,7 +167,7 @@ namespace galileo
              * @param lbw The vector to be filled with lower bound values on decision variables.
              * @param ubw The vector to be filled with upper bound values on decision variables.
              */
-            void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw) override;
+            void fill_lbw_ubw(std::vector<double> &lbw, std::vector<double> &ubw);
 
             /**
              * @brief Fills the lower bounds on general constraints (lbg) and upper bounds on general constraints (ubg) vectors with values.
@@ -176,7 +178,7 @@ namespace galileo
              * @param lbg The vector to be filled with general lower bound values.
              * @param ubg The vector to be filled with general upper bound values.
              */
-            void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg) override;
+            void fill_lbg_ubg(std::vector<double> &lbg, std::vector<double> &ubg);
 
             /**
              * @brief Fills the initial guess vector (w0) with values.
@@ -186,35 +188,42 @@ namespace galileo
              *
              * @param w0 The vector to be filled with initial guess values.
              */
-            void fill_w0(std::vector<double> &w0) const override;
+            void fill_w0(std::vector<double> &w0) const;
 
             /**
              * @brief Returns the starting and ending index in w.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_decision_variables() const override;
+            tuple_size_t get_range_idx_decision_variables() const;
 
             /**
              * @brief Returns the starting and ending index in g (call after evaluate_expression_graph!).
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_constraint_expressions() const override;
+            tuple_size_t get_range_idx_constraint_expressions() const;
 
             /**
              * @brief Returns the starting and ending index in lbg/ubg.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_constraint_bounds() const override;
+            tuple_size_t get_range_idx_constraint_bounds() const;
 
             /**
              * @brief Returns the starting and ending index in lbw/ubw.
              *
              * @return tuple_size_t The range of indices
              */
-            tuple_size_t get_range_idx_decision_bounds() const override;
+            tuple_size_t get_range_idx_decision_bounds() const;
+
+            /**
+             * @brief Returns the starting and ending index in global time.
+             * 
+             * @return tuple_size_t The range of indices
+             */
+            tuple_size_t get_range_idx_time() const;
 
             /**
              * @brief Get the dXPoly object.
@@ -223,7 +232,7 @@ namespace galileo
              */
             const std::shared_ptr<LagrangePolynomial> get_dXPoly() const
             {
-                return std::make_shared<LagrangePolynomial>(dX_poly);
+                return std::make_shared<LagrangePolynomial>(dX_poly_);
             }
 
             /**
@@ -233,7 +242,7 @@ namespace galileo
              */
             const std::shared_ptr<LagrangePolynomial> get_UPoly() const
             {
-                return std::make_shared<LagrangePolynomial>(U_poly);
+                return std::make_shared<LagrangePolynomial>(U_poly_);
             }
 
             /**
@@ -243,7 +252,7 @@ namespace galileo
              */
             int getStateDegree() const
             {
-                return dX_poly.d;
+                return dX_poly_.d;
             }
 
             /**
@@ -253,7 +262,7 @@ namespace galileo
              */
             int getInputDegree() const
             {
-                return U_poly.d;
+                return U_poly_.d;
             }
 
             /**
@@ -263,7 +272,7 @@ namespace galileo
              */
             int getKnotNum() const
             {
-                return knot_num;
+                return knot_num_;
             }
 
         private:
@@ -291,25 +300,25 @@ namespace galileo
              * @brief Input polynomial. Helper object to store polynomial information for the input.
              *
              */
-            LagrangePolynomial U_poly;
+            LagrangePolynomial U_poly_;
 
             /**
              * @brief State polynomial. Helper object to store polynomial information for the state.
              *
              */
-            LagrangePolynomial dX_poly;
+            LagrangePolynomial dX_poly_;
 
             /**
              * @brief Collocation state decision variables.
              *
              */
-            casadi::MXVector dXc_var_vec;
+            casadi::MXVector dXc_var_vec_;
 
             /**
              * @brief Collocation input decision variables.
              *
              */
-            casadi::MXVector Uc_var_vec;
+            casadi::MXVector Uc_var_vec_;
 
             /**
              * @brief Collocation input decision expressions at the state collocation points.
@@ -317,43 +326,43 @@ namespace galileo
              * Decision variables of control and state are potentially approximated by different degree polynomials.
              *
              */
-            casadi::SXVector U_at_c_vec;
+            casadi::SXVector U_at_c_vec_;
 
             /**
              * @brief Collocation state decision expressions at the collocation points.
              *
              */
-            casadi::SXVector x_at_c_vec;
+            casadi::SXVector x_at_c_vec_;
 
             /**
              * @brief Knot point deviants state decision variables.
              *
              */
-            casadi::MXVector dX0_var_vec;
+            casadi::MXVector dX0_var_vec_;
 
             /**
              * @brief Knot point state expressions (integral functions of the deviants).
              *
              */
-            casadi::MXVector X0_var_vec;
+            casadi::MXVector X0_var_vec_;
 
             /**
              * @brief Knot point input decision variables.
              *
              */
-            casadi::MXVector U0_var_vec;
+            casadi::MXVector U0_var_vec_;
 
             /**
              * @brief casadi::Function map for extracting the solution from the ocp solution vector.
              *
              */
-            casadi::Function sol_map_func;
+            casadi::Function sol_map_func_;
 
             /**
              * @brief Solution function.
              *
              */
-            casadi::Function get_sol_func;
+            casadi::Function get_sol_func_;
 
             /**
              * @brief Implicit discrete-time function map. This function map returns the vector of collocation equations
@@ -361,170 +370,229 @@ namespace galileo
                 dynamics.
              *
              */
-            casadi::Function collocation_constraint_map;
+            casadi::Function collocation_constraint_map_;
 
             /**
              * @brief Implicit discrete-time function map. The map which matches the approximated final state expression with the initial
                 state of the next segment.
              *
              */
-            casadi::Function xf_constraint_map;
+            casadi::Function xf_constraint_map_;
 
             /**
              * @brief Implicit discrete-time function map. The map which matches the approximated final input expression with the initial
                 input of the next segment.
             *
             */
-            casadi::Function uf_constraint_map;
+            casadi::Function uf_constraint_map_;
 
             /**
              * @brief Implicit discrete-time function map. The accumulated cost across all the knot segments found using quadrature rules.
              *
              */
-            casadi::Function q_cost_fold;
+            casadi::Function q_cost_fold_;
 
             /**
              * @brief User defined constraints, which are functions with certain bounds associated with them.
              *
              */
-            std::vector<casadi::Function> general_constraint_maps;
+            std::vector<casadi::Function> general_constraint_maps_;
+
+            /**
+             * @brief Constraint expressions.
+             * 
+             */
+            casadi::MXVector general_g_;
 
             /**
              * @brief Lower bounds associated with the general constraint maps.
              *
              */
-            casadi::DM general_lbg;
+            casadi::DM general_lbg_;
 
             /**
              * @brief Upper bounds associated with the general constraint maps.
              *
              */
-            casadi::DM general_ubg;
+            casadi::DM general_ubg_;
 
             /**
              * @brief Lower bounds associated with the decision variable constraint maps.
              *
              */
-            casadi::DM general_lbw;
+            casadi::DM general_lbw_;
 
             /**
              * @brief Upper bounds associated with the decision variable constraint maps.
              *
              */
-            casadi::DM general_ubw;
+            casadi::DM general_ubw_;
 
             /**
-             * @brief Initial guess for associated with this segment
+             * @brief Initial guess for associated with this segment.
              */
-            casadi::DM w0;
+            casadi::DM w0_;
+
+            /**
+             * @brief Decision variables for this segment.
+             */
+            casadi::MXVector w_;
 
             /**
              * @brief Integrator function.
              *
              */
-            casadi::Function Fint;
+            casadi::Function Fint_;
 
             /**
              * @brief Difference function.
              *
              */
-            casadi::Function Fdiff;
+            casadi::Function Fdiff_;
 
             /**
              * @brief Dynamics function.
              *
              */
-            casadi::Function F;
+            casadi::Function F_;
 
             /**
              * @brief Cost function.
              *
              */
-            casadi::Function L;
+            casadi::Function L_;
 
             /**
              * @brief Collocation states used to build the expression graphs.
              *
              */
-            casadi::SXVector dXc;
+            casadi::SXVector dXc_;
 
             /**
              * @brief Collocation inputs used to build the expression graphs.
              *
              */
-            casadi::SXVector Uc;
+            casadi::SXVector Uc_;
 
             /**
              * @brief Knot states deviants used to build the expression graphs.
              *
              */
-            casadi::SX dX0;
+            casadi::SX dX0_;
 
             /**
              * @brief Knot states used to build the expression graphs.
              *
              */
-            casadi::SX X0;
+            casadi::SX X0_;
 
             /**
              * @brief Knot inputs used to build the expression graphs.
              *
              */
-            casadi::SX U0;
+            casadi::SX U0_;
 
             /**
              * @brief Accumulator expression used to build the expression graphs.
              *
              */
-            casadi::SX Lc;
+            casadi::SX Lc_;
 
             /**
              * @brief Helper for indexing the state variables.
              *
              */
-            std::shared_ptr<States> st_m;
+            std::shared_ptr<States> st_m_;
 
             /**
              * @brief Number of knot segments.
              *
              */
-            int knot_num;
+            int knot_num_;
 
             /**
              * @brief Ordered vector of segment times w.r.t global time including both the knot point times and collocation point times. Note that this coincides with the times for the decision variables of dX0 and dXc.
              *
              */
-            casadi::DM segment_times;
+            casadi::DM segment_times_;
 
             /**
              * @brief Ordered vector of collocation times for this segment w.r.t global time. Note that this coincides with the times for the decision variables of dXc.
              *
              */
-            casadi::DM collocation_times;
+            casadi::DM collocation_times_;
 
             /**
              * @brief Ordered vector of knot times for this segment w.r.t global time. Note that this coincides with the times for the decision variables of dX0.
              *
              */
-            casadi::DM knot_times;
+            casadi::DM knot_times_;
 
             /**
              * @brief Ordered vector of segment times w.r.t global time including both the knot point times and collocation point times. Note that this coincides with the times for the decision variables of U0 and Uc.
              *
              */
-            casadi::DM u_segment_times;
+            casadi::DM u_segment_times_;
 
             /**
              * @brief Ordered vector of collocation times for this segment w.r.t global time. Note that this coincides with the times for the decision variables of Uc.
              *
              */
-            casadi::DM u_collocation_times;
+            casadi::DM u_collocation_times_;
 
             /**
              * @brief Ordered vector of knot times for this segment w.r.t global time. Note that this coincides with the times for the decision variables of U0.
              *
              */
-            casadi::DM u_knot_times;
+            casadi::DM u_knot_times_;
+
+            /**
+             * @brief Global initial state.
+             *
+             */
+            casadi::DM x0_global_;
+
+            /**
+             * @brief Period of EACH KNOT SEGMENT within this pseudospectral segment.
+             *
+             */
+            double h_;
+
+            /**
+             * @brief Total period (helper variable calculated from h and knot_num).
+             *
+             */
+            double T_;
+
+            /**
+             * @brief Starting and ending index of the time vector corresponding to this segment.
+             * 
+             */
+            tuple_size_t t_range_;
+
+            /**
+             * @brief Starting and ending index of the decision variables in w corresponding to this segment.
+             *
+             */
+            tuple_size_t w_range_;
+
+            /**
+             * @brief Starting and ending index of the constraint expressions in g corresponding to this segment.
+             *
+             */
+            tuple_size_t g_range_;
+
+            /**
+             * @brief Starting and ending index of the bounds in lbg/ubg corresponding to this segment.
+             *
+             */
+            tuple_size_t lbg_ubg_range_;
+
+            /**
+             * @brief Starting and ending index of the bounds in lbw/ubw corresponding to this segment.
+             *
+             */
+            tuple_size_t lbw_ubw_range_;
         };
     }
 }

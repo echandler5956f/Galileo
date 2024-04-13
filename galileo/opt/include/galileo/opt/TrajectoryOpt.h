@@ -1,152 +1,14 @@
 #pragma once
 
 #include "galileo/opt/Solution.h"
-#include "galileo/opt/Segment.h"
-#include "galileo/opt/PseudospectralSegment.h"
 #include "galileo/opt/PhaseSequence.h"
+#include "galileo/opt/PseudospectralSegment.h"
 #include <chrono>
 
 namespace galileo
 {
     namespace opt
     {
-
-        /**
-         * @brief Callback function called at each iteration, used for debugging and plotting.
-         *
-         */
-        class IterationCallback : public casadi::Callback
-        {
-        public:
-            /**
-             * @brief Sparsity of the decision variables.
-             *
-             */
-            casadi::Sparsity x_;
-
-            /**
-             * @brief Sparsity of the objective function.
-             *
-             */
-            casadi::Sparsity f_;
-
-            /**
-             * @brief Sparsity of the constraints.
-             *
-             */
-            casadi::Sparsity g_;
-
-            /**
-             * @brief Sparsity of the Lagrange multipliers for the decision variables.
-             *
-             */
-            casadi::Sparsity lam_x_;
-
-            /**
-             * @brief Sparsity of the Lagrange multipliers for the constraints.
-             *
-             */
-            casadi::Sparsity lam_g_;
-
-            /**
-             * @brief Sparsity of the Lagrange multipliers for the parameters.
-             *
-             */
-            casadi::Sparsity lam_p_;
-
-            /**
-             * @brief Construct a new Iteration Callback object.
-             *
-             */
-            IterationCallback()
-            {
-                construct("f");
-            }
-
-            /**
-             * @brief Destroy the Iteration Callback object.
-             *
-             */
-            ~IterationCallback() override {}
-
-            /**
-             * @brief Set the sparsity of the decision variables, objective function, constraints, Lagrange multipliers for the decision variables, constraints, and parameters.
-             *
-             * @param x Sparsity of the decision variables
-             * @param f Sparsity of the objective function
-             * @param g Sparsity of the constraints
-             * @param lam_x Sparsity of the Lagrange multipliers for the decision variables
-             * @param lam_g Sparsity of the Lagrange multipliers for the constraints
-             * @param lam_p Sparsity of the Lagrange multipliers for the parameters
-             */
-            void set_sparsity(casadi::Sparsity x, casadi::Sparsity f, casadi::Sparsity g, casadi::Sparsity lam_x, casadi::Sparsity lam_g, casadi::Sparsity lam_p)
-            {
-                this->x_ = x;
-                this->f_ = f;
-                this->g_ = g;
-                this->lam_x_ = lam_x;
-                this->lam_g_ = lam_g;
-                this->lam_p_ = lam_p;
-            }
-
-            /**
-             * @brief Initialize the callback function.
-             *
-             */
-            void init() override
-            {
-            }
-
-            /**
-             * @brief Get the number of inputs.
-             *
-             * @return casadi_int The number of inputs
-             */
-            casadi_int get_n_in() override { return 6; }
-
-            /**
-             * @brief Get the number of outputs.
-             *
-             * @return casadi_int The number of outputs
-             */
-            casadi_int get_n_out() override { return 1; }
-
-            /**
-             * @brief Evaluate the callback function.
-             *
-             * @param arg The arguments to the callback function
-             * @return std::vector<casadi::DM> The result of the callback function
-             */
-            std::vector<casadi::DM> eval(const std::vector<casadi::DM> &arg) const override
-            {
-                return std::vector<casadi::DM>{0};
-            }
-
-            /**
-             * @brief Get the sparsity of the input at index i.
-             *
-             * @param i The index of the input
-             * @return casadi::Sparsity The sparsity of the input
-             */
-            casadi::Sparsity get_sparsity_in(casadi_int i) override
-            {
-                if (i == 0)
-                    return x_;
-                else if (i == 1)
-                    return f_;
-                else if (i == 2)
-                    return g_;
-                else if (i == 3)
-                    return lam_x_;
-                else if (i == 4)
-                    return lam_g_;
-                else if (i == 5)
-                    return lam_p_;
-                else
-                    throw std::runtime_error("Invalid input index");
-            }
-        };
-
         /**
          * @brief The trajectory optimization class. This class is responsible for
             initializing the finite elements, and optimizing the trajectory.
@@ -208,10 +70,18 @@ namespace galileo
 
         private:
             /**
+             * @brief Truncate part of or all of the first finite elements, such that the trajectory is advanced by time_advance.
+             * 
+             * @param time_advance The time to advance the finite elements
+             * @param X0 The new initial state
+             */
+            void truncateFiniteElements(double time_advance, casadi::DM X0);
+
+            /**
              * @brief A Trajectory is made up of segments of finite elements.
              *
              */
-            std::vector<std::shared_ptr<Segment>> trajectory;
+            std::vector<std::shared_ptr<PseudospectralSegment>> trajectory;
 
             /**
              * @brief The ranges of the segment times.
@@ -342,13 +212,7 @@ namespace galileo
              * @brief Vector of all times where decision variables are evaluated.
              *
              */
-            casadi::DM global_times;
-
-            /**
-             * @brief Callback function called at each iteration, used for debugging and plotting.
-             *
-             */
-            IterationCallback callback;
+            casadi::DM local_times;
         };
 
         template <class ProblemData, class MODE_T>
@@ -369,7 +233,7 @@ namespace galileo
         {
             assert(X0.size1() == state_indices->nx && X0.size2() == 1 && "Initial state must be a column vector");
             trajectory.clear();
-            global_times = casadi::DM(0, 0);
+            local_times = casadi::DM(0, 0);
             w.clear();
             g.clear();
             lbg.clear();
@@ -385,6 +249,9 @@ namespace galileo
 
             std::vector<double> equality_back_nx(state_indices->nx, 0.0);
             std::vector<double> equality_back_ndx(state_indices->ndx, 0.0);
+            casadi::MXVector g_tmp_vector;
+            std::vector<double> lbg_tmp_vector;
+            std::vector<double> ubg_tmp_vector;
 
             std::vector<ConstraintData> G;
             std::shared_ptr<DecisionData> Wdata = std::make_shared<DecisionData>();
@@ -406,38 +273,38 @@ namespace galileo
                 constraint_datas_for_phase.push_back(G);
                 auto phase = sequence->getPhase(i);
 
-                std::shared_ptr<Segment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, phase.phase_cost, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
-                segment->initializeSegmentTimeVector(global_times);
-                segment->initializeInputTimeVector(global_times);
-                segment->initializeKnotSegments(X0, prev_final_state);
+                std::shared_ptr<PseudospectralSegment> segment = std::make_shared<PseudospectralSegment>(gp_data, phase.phase_dynamics, phase.phase_cost, state_indices, d, phase.knot_points, phase.time_value / phase.knot_points);
+                segment->initializeSegmentTimeVector(local_times);
+                segment->initializeInputTimeVector(local_times);
+                segment->initializeKnotSegments(X0);
                 segment->initializeExpressionGraph(G, Wdata);
                 segment->evaluateExpressionGraph(J, w, g);
 
                 ranges_decision_variables.push_back(segment->get_range_idx_decision_variables());
 
-                trajectory.push_back(segment);
-
                 segment->fill_lbg_ubg(lbg, ubg);
                 segment->fill_lbw_ubw(lbw, ubw);
                 segment->fill_w0(w0);
+
+                trajectory.push_back(segment);
 
                 /*Initial state constraint*/
                 if (i == 0)
                 {
                     auto curr_initial_state = segment->getInitialState();
-                    g.push_back(prev_final_state - curr_initial_state);
-                    lbg.insert(lbg.end(), equality_back_nx.begin(), equality_back_nx.end());
-                    ubg.insert(ubg.end(), equality_back_nx.begin(), equality_back_nx.end());
+                    g_tmp_vector.push_back(prev_final_state - curr_initial_state);
+                    lbg_tmp_vector.insert(lbg_tmp_vector.end(), equality_back_nx.begin(), equality_back_nx.end());
+                    ubg_tmp_vector.insert(ubg_tmp_vector.end(), equality_back_nx.begin(), equality_back_nx.end());
                 }
                 /*Continuity constraint for the state deviant between phases*/
                 else if (i > 0)
                 {
                     curr_initial_state_deviant = segment->getInitialStateDeviant();
                     /*For general jump map functions you can use the following syntax:*/
-                    // g.push_back(jump_map_function(MXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
-                    g.push_back(prev_final_state_deviant - curr_initial_state_deviant);
-                    lbg.insert(lbg.end(), equality_back_ndx.begin(), equality_back_ndx.end());
-                    ubg.insert(ubg.end(), equality_back_ndx.begin(), equality_back_ndx.end());
+                    // g_tmp_vector.push_back(jump_map_function(MXVector{prev_final_state_deviant, curr_initial_state_deviant}).at(0));
+                    g_tmp_vector.push_back(prev_final_state_deviant - curr_initial_state_deviant);
+                    lbg_tmp_vector.insert(lbg_tmp_vector.end(), equality_back_ndx.begin(), equality_back_ndx.end());
+                    ubg_tmp_vector.insert(ubg_tmp_vector.end(), equality_back_ndx.begin(), equality_back_ndx.end());
                 }
                 prev_final_state = segment->getFinalState();
                 prev_final_state_deviant = segment->getFinalStateDeviant();
@@ -448,12 +315,42 @@ namespace galileo
                     J += gp_data->Phi(casadi::MXVector{prev_final_state}).at(0);
                 }
             }
+            // Ensures that the initial state constraint and continuity constraints are at the end of the constraint vector for convenience
+            g.insert(g.begin(), g_tmp_vector.begin(), g_tmp_vector.end());
+            lbg.insert(lbg.begin(), lbg_tmp_vector.begin(), lbg_tmp_vector.end());
+            ubg.insert(ubg.begin(), ubg_tmp_vector.begin(), ubg_tmp_vector.end());
             std::cout << "Finished initialization" << std::endl;
         }
 
         template <class ProblemData, class MODE_T>
         void TrajectoryOpt<ProblemData, MODE_T>::advanceFiniteElements(double time_advance, casadi::DM X0, typename PhaseSequence<MODE_T>::Phase phase)
         {
+            truncateFiniteElements(time_advance, X0);
+        }
+
+        template <class ProblemData, class MODE_T>
+        void TrajectoryOpt<ProblemData, MODE_T>::truncateFiniteElements(double time_advance, casadi::DM X0)
+        {
+            // For now we assume that we are advancing 1 phase, and that all phases have the same duration/knot number/degree. 
+            // This is a big assumption that we will fix later.
+
+            lbw.erase(lbw.begin() + std::get<0>(trajectory[0]->get_range_idx_decision_bounds()), lbw.begin() + std::get<1>(trajectory[0]->get_range_idx_decision_bounds()));
+            ubw.erase( ubw.begin() + std::get<0>(trajectory[0]->get_range_idx_decision_bounds()), ubw.begin() + std::get<1>(trajectory[0]->get_range_idx_decision_bounds()));
+            w0.erase(w0.begin() + std::get<0>(trajectory[0]->get_range_idx_decision_bounds()), w0.begin() + std::get<1>(trajectory[0]->get_range_idx_decision_bounds()));
+            w.erase(w.begin() + std::get<0>(trajectory[0]->get_range_idx_decision_variables()), w.begin() + std::get<1>(trajectory[0]->get_range_idx_decision_variables()));
+
+            g.erase(g.begin() + std::get<0>(trajectory[0]->get_range_idx_constraint_expressions()), g.begin() + std::get<1>(trajectory[0]->get_range_idx_constraint_expressions()));
+            lbg.erase(lbg.begin() + std::get<0>(trajectory[0]->get_range_idx_constraint_bounds()), lbg.begin() + std::get<1>(trajectory[0]->get_range_idx_constraint_bounds()));
+            ubg.erase(ubg.begin() + std::get<0>(trajectory[0]->get_range_idx_constraint_bounds()), ubg.begin() + std::get<1>(trajectory[0]->get_range_idx_constraint_bounds()));
+
+            local_times = local_times(casadi::Slice(std::get<1>(trajectory[0]->get_range_idx_time()), local_times.size1()));
+            local_times = local_times - local_times(0);
+
+            trajectory.erase(trajectory.begin());
+
+            g.push_back(X0 - trajectory[0]->getInitialStateDeviant());
+            lbg.insert(lbg.end(), lbg.begin(), lbg.begin() + state_indices->ndx);
+            ubg.insert(ubg.end(), ubg.begin(), ubg.begin() + state_indices->ndx);
         }
 
         template <class ProblemData, class MODE_T>
@@ -528,11 +425,9 @@ namespace galileo
             auto solu = sol[1];
             int state_count = 0;
             int input_count = 0;
-            for (std::shared_ptr<Segment> seg : trajectory)
+            for (std::shared_ptr<PseudospectralSegment> pseg : trajectory)
             {
                 solution::solution_segment_data_t segment_data;
-
-                std::shared_ptr<PseudospectralSegment> pseg = std::dynamic_pointer_cast<PseudospectralSegment>(seg);
 
                 std::vector<double> state_times_vec = pseg->getSegmentTimes().get_elements();
                 std::vector<double> input_times_vec = pseg->getUSegmentTimes().get_elements();

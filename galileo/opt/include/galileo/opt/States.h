@@ -39,5 +39,26 @@ namespace galileo
              */
             int nu;
         };
+
+        /**
+         * @brief Simple slicer class for getting state variables.
+         *
+         */
+        class BasicStates : public States
+        {
+        public:
+            /**
+             * @brief Construct a new Test State object
+             *
+             * @param nx Number of state variables
+             * @param nu Number of control variables
+             */
+            BasicStates(int nx_, int nu_)
+            {
+                this->nx = nx_;
+                this->ndx = nx_;
+                this->nu = nu_;
+            }
+        };
     }
 }

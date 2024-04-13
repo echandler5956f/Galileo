@@ -1,7 +1,7 @@
 #pragma once
 
 #include "galileo/opt/LagrangePolynomial.h"
-#include "galileo/opt/Constraint.h"
+#include "galileo/opt/ProblemData.h"
 #include "galileo/tools/CasadiConversions.h"
 #include <Eigen/Dense>
 #include <string>
