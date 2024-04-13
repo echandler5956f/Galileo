@@ -285,7 +285,7 @@ namespace galileo
 
             // Solve the problem
             std::lock_guard<std::mutex> lock_traj(trajectory_opt_mutex_);
-            trajectory_opt_->optimize();
+            trajectory_opt_->Optimize();
 
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             //@todo Akshay5312, reevaluate thread safety
@@ -351,7 +351,7 @@ namespace galileo
             problem_data_->gp_data->Phi = Phi;
 
             std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
-            trajectory_opt_->initFiniteElements(1, initial_state);
+            trajectory_opt_->InitFiniteElements(1, initial_state);
         }
 
     }

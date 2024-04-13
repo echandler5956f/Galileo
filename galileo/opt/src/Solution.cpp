@@ -40,7 +40,7 @@ namespace galileo
                             double state_knot_start_time = solution_segments_[j].state_times[state_index * state_deg];
                             double state_knot_end_time = solution_segments_[j].state_times[(state_index * state_deg) + state_deg - 1];
                             double state_scaled_time = (query_times(i) - state_knot_start_time) / (state_knot_end_time - state_knot_start_time);
-                            state_result.col(i) = solution_segments_[j].state_poly.barycentricInterpolation(state_scaled_time, state_terms);
+                            state_result.col(i) = solution_segments_[j].state_poly.BarycentricInterpolation(state_scaled_time, state_terms);
 
                             int input_deg = solution_segments_[j].input_degree + 1;
                             size_t input_index = ((query_times(i) >= solution_segments_[j].input_times.array()).count() - 1) / input_deg;
@@ -48,7 +48,7 @@ namespace galileo
                             double input_knot_start_time = solution_segments_[j].input_times[input_index * input_deg];
                             double input_knot_end_time = solution_segments_[j].input_times[(input_index * input_deg) + input_deg - 1];
                             double input_scaled_time = (query_times(i) - input_knot_start_time) / (input_knot_end_time - input_knot_start_time);
-                            input_result.col(i) = solution_segments_[j].input_poly.barycentricInterpolation(input_scaled_time, input_terms);
+                            input_result.col(i) = solution_segments_[j].input_poly.BarycentricInterpolation(input_scaled_time, input_terms);
                             break;
                         }
                     }

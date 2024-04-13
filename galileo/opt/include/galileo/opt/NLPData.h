@@ -6,6 +6,10 @@ namespace galileo
 {
     namespace opt
     {
+        /**
+         * @brief Struct to hold data for a Nonlinear Programming (NLP) problem.
+         * 
+         */
         struct NLPData
         {
             /**
@@ -14,6 +18,23 @@ namespace galileo
              */
             casadi::MXVector w;
 
+            /**
+             * @brief Lower bounds associated with the decision variables.
+             *
+             */
+            casadi::DMVector lbw;
+
+            /**
+             * @brief Upper bounds associated with the decision variables.
+             *
+             */
+            casadi::DMVector ubw;
+
+            /**
+             * @brief Initial guess for the decision variables.
+             */
+            casadi::DMVector w0;
+            
             /**
              * @brief Vector of constraint expressions.
              *
@@ -24,30 +45,13 @@ namespace galileo
              * @brief Vector of general constraint lower bounds.
              *
              */
-            std::vector<double> lbg;
+            casadi::DMVector lbg;
 
             /**
              * @brief Vector of general constraint upper bounds.
              *
              */
-            std::vector<double> ubg;
-
-            /**
-             * @brief Lower bounds associated with the decision variables.
-             *
-             */
-            std::vector<double> lbw;
-
-            /**
-             * @brief Upper bounds associated with the decision variables.
-             *
-             */
-            std::vector<double> ubw;
-
-            /**
-             * @brief Initial guess for the decision variables.
-             */
-            std::vector<double> w0;
+            casadi::DMVector ubg;
 
             /**
              * @brief Expression for objective cost.
