@@ -232,11 +232,14 @@ namespace galileo
                 constraint_datas_for_phase_.push_back(G);
                 auto phase = sequence_->getPhase(i);
 
-                std::shared_ptr<PseudospectralSegment> segment = std::make_shared<PseudospectralSegment>(gp_data_, phase.phase_dynamics, phase.phase_cost, state_indices_, d, phase.knot_points, phase.time_value / phase.knot_points);
+                std::shared_ptr<PseudospectralSegment> segment = std::make_shared<PseudospectralSegment>(gp_data_, phase.phase_dynamics, phase.phase_cost, state_indices_, d, false, phase.knot_points, phase.time_value / phase.knot_points);
                 segment->InitializeTimeVectors(local_times_);
                 segment->InitializeKnotSegments(X0);
+                std::cout << "Initialized segment" << std::endl;
                 segment->InitializeExpressionGraph(G, Wdata);
-                segment->EvaluateExpressionGraph();
+                std::cout << "Initialized expression graph" << std::endl;
+                segment->Update();
+                std::cout << "Updated segment" << std::endl;
                 segment->FillNLPData(nlp_data_);
 
                 ranges_decision_variables_.push_back(segment->getRangeDecisionVariables());

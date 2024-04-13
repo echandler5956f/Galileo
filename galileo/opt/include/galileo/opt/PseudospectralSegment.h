@@ -29,11 +29,12 @@ namespace galileo
              * @param L Cost function
              * @param st_m Pointer to the state indices helper
              * @param d Polynomial degree
+             * @param optimize_dt Flag to optimize the time step
              * @param knot_num Number of knots in the segment
              * @param h Period of each knot segment
              *
              */
-            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m, int d, int knot_num, double h);
+            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m, int d, bool optimize_dt, int knot_num, double h);
 
             /**
              * @brief Initialize the relevant expressions.
@@ -64,6 +65,25 @@ namespace galileo
              * @param Wdata Decision bound and initial guess data for the state and input
              */
             void InitializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata);
+
+            /**
+             * @brief Update a pseudospectral segment.
+             * 
+             * @param w0 Raw values for the decision variables. Should be sized appropriately.
+             */
+            void Update(casadi::DM w0);
+
+            /**
+             * @brief Update a pseudospectral segment, using the old initial guess generator.
+             * 
+             */
+            void Update();
+
+            /**
+             * @brief Evaluate the bounds with the current time segment.
+             * 
+             */
+            void EvaluateBounds();
 
             /**
              * @brief Evaluate the expressions with the actual decision variables.
@@ -269,6 +289,8 @@ namespace galileo
              */
             casadi::MX ProcessOffsetVector(casadi::MXVector &vec) const;
 
+            bool optimize_dt_ = false;
+
             /**
              * @brief Input polynomial. Helper object to store polynomial information for the input.
              *
@@ -316,6 +338,12 @@ namespace galileo
                  *
                  */
                 casadi::MXVector X0_vec;
+
+                /**
+                 * @brief Time step used to evaluate the expression graphs.
+                 * 
+                 */
+                casadi::MX dt;
             };
 
             PseudospectralVariables ps_vars_;
@@ -361,6 +389,12 @@ namespace galileo
                  *
                  */
                 casadi::SX Lc;
+
+                /**
+                 * @brief Time step used to build the expression graphs.
+                 * 
+                 */
+                casadi::SX dt;
             };
 
             ExpressionVariables expr_v_;
@@ -445,6 +479,16 @@ namespace galileo
                  *
                  */
                 std::vector<casadi::Function> gcon_maps;
+
+                std::vector<casadi::Function> lbg_maps;
+                std::vector<casadi::Function> ubg_maps;
+
+                casadi::Function w0_func;
+                casadi::Function lbw_func;
+                casadi::Function ubw_func;
+
+                std::vector<tuple_size_t> ranges_G;
+
             };
 
             PseudospectralFunctions ps_funcs_;
