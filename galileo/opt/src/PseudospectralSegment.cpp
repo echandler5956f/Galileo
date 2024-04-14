@@ -4,13 +4,12 @@ namespace galileo
 {
     namespace opt
     {
-        PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m, int d, bool optimize_dt, int knot_num, double h)
+        PseudospectralSegment::PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m, int d, bool optimize_dt, int knot_num)
         {
             auto Fint = problem->Fint;
             auto Fdiff = problem->Fdiff;
 
             assert(d > 0 && d < 10 && "d must be greater than 0 and less than 10");
-            assert(h > 0 && "h must be a positive duration");
 
             assert(F.n_in() == 2 && "F must have 2 inputs");
             assert(F.n_out() == 1 && "F must have 1 output");
@@ -42,13 +41,11 @@ namespace galileo
             optimize_dt_ = optimize_dt;
 
             knot_num_ = knot_num;
-            h_ = h;
             st_m_ = st_m;
             Fint_ = Fint;
             Fdiff_ = Fdiff;
             F_ = F;
             L_ = L;
-            T_ = (knot_num)*h;
 
             InitializeExpressionVariables(d);
         }
@@ -74,89 +71,6 @@ namespace galileo
             expr_v_.U0 = casadi::SX::sym("U0", st_m_->nu, 1);
             expr_v_.Lc = casadi::SX::sym("Lc", 1, 1);
             expr_v_.dt = casadi::SX::sym("dt", 1, 1);
-        }
-
-        void PseudospectralSegment::InitializeTimeVectors(casadi::DM &trajectory_times)
-        {
-            auto initializeVectors = [&](auto &poly, auto &times, auto &vec_knot_times, auto &vec_collocation_times, auto &vec_segment_times)
-            {
-                double kh = 0;
-                for (int k = 0; k < knot_num_; ++k)
-                {
-                    kh = k * h_;
-                    vec_knot_times.push_back(kh);
-                    for (int i = 0; i < poly.d; ++i)
-                    {
-                        vec_collocation_times.push_back(kh + poly.tau_root[i + 1] * h_);
-                    }
-                }
-                vec_knot_times.push_back(T_);
-
-                vec_segment_times.reserve(vec_knot_times.size() - 1 + vec_collocation_times.size());
-                vec_segment_times.insert(vec_segment_times.end(), vec_knot_times.begin(), vec_knot_times.end() - 1);
-                vec_segment_times.insert(vec_segment_times.end(), vec_collocation_times.begin(), vec_collocation_times.end());
-                std::sort(vec_segment_times.begin(), vec_segment_times.end());
-
-                tools::vectorToCasadi<casadi::DM>(vec_segment_times, (poly.d + 1) * knot_num_, 1, times.segment_times);
-                tools::vectorToCasadi<casadi::DM>(vec_collocation_times, poly.d * knot_num_, 1, times.collocation_times);
-                tools::vectorToCasadi<casadi::DM>(vec_knot_times, knot_num_ + 1, 1, times.knot_times);
-            };
-
-            std::vector<double> vec_knot_times;
-            std::vector<double> vec_collocation_times;
-            std::vector<double> vec_segment_times;
-
-            initializeVectors(dX_poly_, dXtimes_, vec_knot_times, vec_collocation_times, vec_segment_times);
-
-            double start_time = 0.0;
-            if (trajectory_times.is_empty() == false)
-            {
-                start_time = trajectory_times(trajectory_times.size1() - 1, 0).get_elements()[0];
-                dXtimes_.segment_times += start_time;
-                trajectory_times = vertcat(trajectory_times, dXtimes_.segment_times);
-            }
-            else
-            {
-                trajectory_times = dXtimes_.segment_times;
-            }
-            dXtimes_.collocation_times += start_time;
-            dXtimes_.knot_times += start_time;
-
-            vec_knot_times.clear();
-            vec_collocation_times.clear();
-            vec_segment_times.clear();
-
-            initializeVectors(U_poly_, Utimes_, vec_knot_times, vec_collocation_times, vec_segment_times);
-
-            start_time = dXtimes_.knot_times(0, 0).get_elements()[0];
-            Utimes_.segment_times += start_time;
-            Utimes_.collocation_times += start_time;
-            Utimes_.knot_times += start_time;
-        }
-
-        void PseudospectralSegment::InitializeKnotSegments(casadi::DM x0_global)
-        {
-            assert(x0_global.size1() == st_m_->nx && x0_global.size2() == 1 && "x0 must be a column std::vector of size nx");
-            x0_global_ = x0_global;
-
-            ps_vars_.dXc_vec.clear();
-            ps_vars_.Uc_vec.clear();
-            ps_vars_.dX0_vec.clear();
-            ps_vars_.X0_vec.clear();
-            ps_vars_.U0_vec.clear();
-            for (int k = 0; k < knot_num_; ++k)
-            {
-                ps_vars_.dXc_vec.push_back(casadi::MX::sym("dXc_" + std::to_string(k), st_m_->ndx * dX_poly_.d, 1));
-                ps_vars_.Uc_vec.push_back(casadi::MX::sym("U_" + std::to_string(k), st_m_->nu * U_poly_.d, 1));
-            }
-
-            /*We do knot_num + 1 so we have a decision variable for the final state. knot_num -1 is the number of knot segments, which corresponds to knot_num knot points*/
-            for (int k = 0; k < knot_num_ + 1; ++k)
-            {
-                ps_vars_.dX0_vec.push_back(casadi::MX::sym("dX0_" + std::to_string(k), st_m_->ndx, 1));
-                ps_vars_.X0_vec.push_back(Fint_(casadi::MXVector{x0_global_, ps_vars_.dX0_vec[k], 1.0}).at(0));
-                ps_vars_.U0_vec.push_back(casadi::MX::sym("U0_" + std::to_string(k), st_m_->nu, 1));
-            }
         }
 
         void PseudospectralSegment::InitializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata)
@@ -295,16 +209,49 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::Update(casadi::DM w0)
+        void PseudospectralSegment::InitializeKnotSegments(casadi::DM x0_global)
         {
-            nlp_data_.w0.clear();
-            nlp_data_.w0.push_back(w0);
-            EvaluateBounds();
-            EvaluateExpressionGraph();
+            assert(x0_global.size1() == st_m_->nx && x0_global.size2() == 1 && "x0 must be a column std::vector of size nx");
+            x0_global_ = x0_global;
+
+            ps_vars_.dXc_vec.clear();
+            ps_vars_.Uc_vec.clear();
+            ps_vars_.dX0_vec.clear();
+            ps_vars_.X0_vec.clear();
+            ps_vars_.U0_vec.clear();
+            for (int k = 0; k < knot_num_; ++k)
+            {
+                ps_vars_.dXc_vec.push_back(casadi::MX::sym("dXc_" + std::to_string(k), st_m_->ndx * dX_poly_.d, 1));
+                ps_vars_.Uc_vec.push_back(casadi::MX::sym("U_" + std::to_string(k), st_m_->nu * U_poly_.d, 1));
+            }
+
+            /*We do knot_num + 1 so we have a decision variable for the final state. knot_num -1 is the number of knot segments, which corresponds to knot_num knot points*/
+            for (int k = 0; k < knot_num_ + 1; ++k)
+            {
+                ps_vars_.dX0_vec.push_back(casadi::MX::sym("dX0_" + std::to_string(k), st_m_->ndx, 1));
+                ps_vars_.X0_vec.push_back(Fint_(casadi::MXVector{x0_global_, ps_vars_.dX0_vec[k], 1.0}).at(0));
+                ps_vars_.U0_vec.push_back(casadi::MX::sym("U0_" + std::to_string(k), st_m_->nu, 1));
+            }
+
+            ps_vars_.dt = casadi::MX::sym("dt_", 1, 1);
         }
 
-        void PseudospectralSegment::Update()
+        void PseudospectralSegment::Update(const double start_time, const double h, casadi::DM w0)
         {
+            UpdateTimeVectors(start_time, h);
+            UpdateBounds();
+            UpdateExpressionGraph(h);
+
+            nlp_data_.w0.clear();
+            nlp_data_.w0.push_back(w0);
+        }
+
+        void PseudospectralSegment::Update(const double start_time, const double h)
+        {
+            UpdateTimeVectors(start_time, h);
+            UpdateBounds();
+            UpdateExpressionGraph(h);
+
             int Ndxknot = st_m_->ndx * (knot_num_ + 1);
             int Ndx = st_m_->ndx * (dX_poly_.d + 1) * knot_num_ + st_m_->ndx;
             int Ndxcol = Ndx - Ndxknot;
@@ -331,7 +278,7 @@ namespace galileo
                     casadi::DM xck = xc_g(casadi::Slice(i * st_m_->nx * dX_poly_.d, (i + 1) * st_m_->nx * dX_poly_.d));
                     for (casadi_int j = 0; j < dX_poly_.d; ++j)
                     {
-                        double dt_j = (dX_poly_.tau_root[j + 1] - dX_poly_.tau_root[j]) * h_;
+                        double dt_j = (dX_poly_.tau_root[j + 1] - dX_poly_.tau_root[j]) * h;
                         nlp_data_.w0.push_back(reshape(Fdiff_(casadi::DMVector{xk, xck(casadi::Slice(j * st_m_->nx, (j + 1) * st_m_->nx)), dt_j}).at(0), st_m_->ndx, 1));
                     }
                 }
@@ -339,12 +286,56 @@ namespace galileo
                 nlp_data_.w0.push_back(casadi::DM::reshape(ps_funcs_.w0_func.map(knot_num_ + 1, "serial")(Utimes_.knot_times).at(1), Nuknot, 1));
                 nlp_data_.w0.push_back(casadi::DM::reshape(ps_funcs_.w0_func.map((U_poly_.d) * knot_num_, "serial")(Utimes_.collocation_times).at(1), Nucol, 1));
             }
-
-            EvaluateBounds();
-            EvaluateExpressionGraph();
         }
 
-        void PseudospectralSegment::EvaluateBounds()
+        void PseudospectralSegment::UpdateTimeVectors(const double start_time, const double h)
+        {
+            auto initializeVectors = [&](auto &poly, auto &times, auto &vec_knot_times, auto &vec_collocation_times, auto &vec_segment_times)
+            {
+                double kh = 0;
+                for (int k = 0; k < knot_num_; ++k)
+                {
+                    kh = k * h;
+                    vec_knot_times.push_back(kh);
+                    for (int i = 0; i < poly.d; ++i)
+                    {
+                        vec_collocation_times.push_back(kh + poly.tau_root[i + 1] * h);
+                    }
+                }
+                vec_knot_times.push_back(knot_num_ * h);
+
+                vec_segment_times.reserve(vec_knot_times.size() - 1 + vec_collocation_times.size());
+                vec_segment_times.insert(vec_segment_times.end(), vec_knot_times.begin(), vec_knot_times.end() - 1);
+                vec_segment_times.insert(vec_segment_times.end(), vec_collocation_times.begin(), vec_collocation_times.end());
+                std::sort(vec_segment_times.begin(), vec_segment_times.end());
+
+                tools::vectorToCasadi<casadi::DM>(vec_segment_times, (poly.d + 1) * knot_num_, 1, times.segment_times);
+                tools::vectorToCasadi<casadi::DM>(vec_collocation_times, poly.d * knot_num_, 1, times.collocation_times);
+                tools::vectorToCasadi<casadi::DM>(vec_knot_times, knot_num_ + 1, 1, times.knot_times);
+            };
+
+            std::vector<double> vec_knot_times;
+            std::vector<double> vec_collocation_times;
+            std::vector<double> vec_segment_times;
+
+            initializeVectors(dX_poly_, dXtimes_, vec_knot_times, vec_collocation_times, vec_segment_times);
+
+            dXtimes_.segment_times += start_time;
+            dXtimes_.collocation_times += start_time;
+            dXtimes_.knot_times += start_time;
+
+            vec_knot_times.clear();
+            vec_collocation_times.clear();
+            vec_segment_times.clear();
+
+            initializeVectors(U_poly_, Utimes_, vec_knot_times, vec_collocation_times, vec_segment_times);
+
+            Utimes_.segment_times += start_time;
+            Utimes_.collocation_times += start_time;
+            Utimes_.knot_times += start_time;
+        }
+
+        void PseudospectralSegment::UpdateBounds()
         {
             int Ndxknot = st_m_->ndx * (knot_num_ + 1);
             int Ndx = st_m_->ndx * (dX_poly_.d + 1) * knot_num_ + st_m_->ndx;
@@ -378,7 +369,7 @@ namespace galileo
             }
         }
 
-        void PseudospectralSegment::EvaluateExpressionGraph()
+        void PseudospectralSegment::UpdateExpressionGraph(const double h)
         {
             casadi::MXVector result;
 
@@ -391,7 +382,7 @@ namespace galileo
             casadi::MX dxs_offset = ProcessOffsetVector(ps_vars_.dX0_vec);
             casadi::MX us_offset = ProcessOffsetVector(ps_vars_.U0_vec);
 
-            casadi::MXVector fun_input = casadi::MXVector{xs, dxcs, dxs, us, ucs, h_};
+            casadi::MXVector fun_input = casadi::MXVector{xs, dxcs, dxs, us, ucs, ps_vars_.dt};
 
             casadi::MXVector solmap_result = sol_map_func_(fun_input);
             casadi::MX all_xs = solmap_result.at(0);
@@ -416,7 +407,7 @@ namespace galileo
                 result.push_back(reshape(g_con_mat, g_con_mat.size1() * g_con_mat.size2(), 1));
             }
 
-            nlp_data_.J = ps_funcs_.q_cost_fold(casadi::MXVector{0., xs, dxcs, dxs, us, ucs, h_}).at(0);
+            nlp_data_.J = ps_funcs_.q_cost_fold(casadi::MXVector{0., xs, dxcs, dxs, us, ucs, ps_vars_.dt}).at(0);
 
             nlp_data_.g.insert(nlp_data_.g.end(), result.begin(), result.end());
 
@@ -425,14 +416,26 @@ namespace galileo
             nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.U0_vec.begin(), ps_vars_.U0_vec.end());
             nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.Uc_vec.begin(), ps_vars_.Uc_vec.end());
 
+            if (optimize_dt_)
+            {
+                std::cerr << "Not implemented yet" << std::endl;
+                // nlp_data_.w.push_back(ps_vars_.dt);
+                // nlp_data_.w0.push_back(casadi::DM(h));
+            }
+            else
+            {
+                nlp_data_.p.push_back(ps_vars_.dt);
+                nlp_data_.p0.push_back(casadi::DM(h));
+            }
+
             get_sol_func_ = casadi::Function("func",
-                                             casadi::MXVector({vertcat(nlp_data_.w)}),
+                                             casadi::MXVector({vertcat(nlp_data_.w), vertcat(nlp_data_.p)}),
                                              casadi::MXVector({all_xs, all_us}));
         }
 
-        casadi::MXVector PseudospectralSegment::ExtractSolution(casadi::MX &w) const
+        casadi::DMVector PseudospectralSegment::ExtractSolution(casadi::DM &w, casadi::DM &p0) const
         {
-            return get_sol_func_(casadi::MXVector{w});
+            return get_sol_func_(casadi::DMVector{w, p0});
         }
 
         void PseudospectralSegment::FillNLPData(NLPData &nlp_data)
@@ -455,6 +458,8 @@ namespace galileo
             nlp_data.g.insert(nlp_data.g.end(), make_move_iterator(nlp_data_.g.begin()), make_move_iterator(nlp_data_.g.end()));
             nlp_data.lbg.insert(nlp_data.lbg.end(), make_move_iterator(nlp_data_.lbg.begin()), make_move_iterator(nlp_data_.lbg.end()));
             nlp_data.ubg.insert(nlp_data.ubg.end(), make_move_iterator(nlp_data_.ubg.begin()), make_move_iterator(nlp_data_.ubg.end()));
+            nlp_data.p.insert(nlp_data.p.end(), make_move_iterator(nlp_data_.p.begin()), make_move_iterator(nlp_data_.p.end()));
+            nlp_data.p0.insert(nlp_data.p0.end(), make_move_iterator(nlp_data_.p0.begin()), make_move_iterator(nlp_data_.p0.end()));
             nlp_data.J += nlp_data_.J;
         }
 

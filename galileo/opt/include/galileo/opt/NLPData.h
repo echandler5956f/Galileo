@@ -54,6 +54,18 @@ namespace galileo
             casadi::DMVector ubg;
 
             /**
+             * @brief Vector of constant parameters.
+             * 
+             */
+            casadi::MXVector p;
+
+            /**
+             * @brief Vector of initial guess for the parameters.
+             * 
+             */
+            casadi::DMVector p0;
+
+            /**
              * @brief Expression for objective cost.
              *
              */

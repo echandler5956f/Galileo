@@ -31,32 +31,9 @@ namespace galileo
              * @param d Polynomial degree
              * @param optimize_dt Flag to optimize the time step
              * @param knot_num Number of knots in the segment
-             * @param h Period of each knot segment
              *
              */
-            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m, int d, bool optimize_dt, int knot_num, double h);
-
-            /**
-             * @brief Initialize the relevant expressions.
-             *
-             * @param d Polynomial degree
-             */
-            void InitializeExpressionVariables(int d);
-
-            /**
-             * @brief Initialize the vector of segment times which constraints are evaluated at.
-             *
-             * @param trajectory_times Vector of global times
-             */
-            void InitializeTimeVectors(casadi::DM &trajectory_times);
-
-            /**
-             * @brief Create all the knot segments.
-             *
-             * @param x0_global Global starting state to integrate from (used for initial guess)
-             *
-             */
-            void InitializeKnotSegments(casadi::DM x0_global);
+            PseudospectralSegment(std::shared_ptr<GeneralProblemData> problem, casadi::Function F, casadi::Function L, std::shared_ptr<States> st_m, int d, bool optimize_dt, int knot_num);
 
             /**
              * @brief Build the function graph.
@@ -68,36 +45,38 @@ namespace galileo
 
             /**
              * @brief Update a pseudospectral segment.
-             * 
+             *
+             * @param start_time The starting time of the segment
+             * @param h The time step
              * @param w0 Raw values for the decision variables. Should be sized appropriately.
              */
-            void Update(casadi::DM w0);
+            void Update(const double start_time, const double h, casadi::DM w0);
 
             /**
              * @brief Update a pseudospectral segment, using the old initial guess generator.
-             * 
+             *
+             * @param start_time The starting time of the segment
+             * @param h The time step
              */
-            void Update();
+            void Update(const double start_time, const double h);
 
             /**
-             * @brief Evaluate the bounds with the current time segment.
-             * 
-             */
-            void EvaluateBounds();
-
-            /**
-             * @brief Evaluate the expressions with the actual decision variables.
+             * @brief Create all the knot segments.
+             *
+             * @param x0_global Global starting state to integrate from (used for initial guess)
              *
              */
-            void EvaluateExpressionGraph();
+            void InitializeKnotSegments(casadi::DM x0_global);
 
             /**
              * @brief Extract the solution from the decision variable vector.
              *
              * @param w Decision variable vector
-             * @return casadi::MX Solution values
+             * @param p0 Initial guess for the parameters
+             *
+             * @return casadi::DMVector Solution values
              */
-            casadi::MXVector ExtractSolution(casadi::MX &w) const;
+            casadi::DMVector ExtractSolution(casadi::DM &w, casadi::DM &p0) const;
 
             /**
              * @brief Fills the NLP data with the decision variables, constraints, costs, and bounds.
@@ -270,6 +249,34 @@ namespace galileo
 
         private:
             /**
+             * @brief Initialize the relevant expressions.
+             *
+             * @param d Polynomial degree
+             */
+            void InitializeExpressionVariables(int d);
+
+            /**
+             * @brief Initialize the vector of segment times which constraints are evaluated at.
+             *
+             * @param start_time The starting time of the segment
+             * @param h The time step
+             */
+            void UpdateTimeVectors(const double start_time, const double h);
+
+            /**
+             * @brief Update the bounds with the current time segment.
+             *
+             */
+            void UpdateBounds();
+
+            /**
+             * @brief Update the expressions with the actual decision variables.
+             *
+             * @param h The time step
+             */
+            void UpdateExpressionGraph(const double h);
+
+            /**
              * @brief Helper function to process a vector of type MX.
              *
              * This function takes a vector of type casadi::MX and performs some processing on it.
@@ -341,7 +348,7 @@ namespace galileo
 
                 /**
                  * @brief Time step used to evaluate the expression graphs.
-                 * 
+                 *
                  */
                 casadi::MX dt;
             };
@@ -392,7 +399,7 @@ namespace galileo
 
                 /**
                  * @brief Time step used to build the expression graphs.
-                 * 
+                 *
                  */
                 casadi::SX dt;
             };
@@ -488,7 +495,6 @@ namespace galileo
                 casadi::Function ubw_func;
 
                 std::vector<tuple_size_t> ranges_G;
-
             };
 
             PseudospectralFunctions ps_funcs_;
@@ -540,12 +546,6 @@ namespace galileo
              *
              */
             double h_;
-
-            /**
-             * @brief Total period (helper variable calculated from h and knot_num).
-             *
-             */
-            double T_;
 
             /**
              * @brief Starting and ending index of the time vector corresponding to this segment.
