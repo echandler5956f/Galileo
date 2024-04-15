@@ -48,25 +48,34 @@ namespace galileo
              *
              * @param start_time The starting time of the segment
              * @param h The time step
+             * @param X0_param The state to deviate from
              * @param w0 Raw values for the decision variables. Should be sized appropriately.
              */
-            void Update(const double start_time, const double h, casadi::DM w0);
+            void Update(const double start_time, const double h, casadi::DM X0_param, casadi::DM w0);
 
             /**
              * @brief Update a pseudospectral segment, using the old initial guess generator.
              *
              * @param start_time The starting time of the segment
              * @param h The time step
+             * @param X0_param The state to deviate from
              */
-            void Update(const double start_time, const double h);
+            void Update(const double start_time, const double h, casadi::DM X0_param);
 
             /**
              * @brief Create all the knot segments.
              *
-             * @param x0_global Global starting state to integrate from (used for initial guess)
+             * @param X0_sym Global starting state to integrate from
+             * @param Xf_sym Global final state
              *
              */
-            void InitializeKnotSegments(casadi::DM x0_global);
+            void InitializeKnotSegments(casadi::MX X0_sym, casadi::MX Xf_sym);
+
+            /**
+             * @brief Evaliate the expressions with the actual decision variables.
+             *
+             */
+            void EvaluateExpressionGraph();
 
             /**
              * @brief Extract the solution from the decision variable vector.
@@ -79,11 +88,20 @@ namespace galileo
             casadi::DMVector ExtractSolution(casadi::DM &w, casadi::DM &p0) const;
 
             /**
+             * @brief Updates the NLP data with the bouns, initial guesses, and parameters values.
+             *
+             * This function takes in an NLPData object, and fills its members with the members of this->nlp_data_.
+             *
+             * @param nlp_data The data to be filled
+             */
+            void UpdateNLPData(NLPData &nlp_data);
+
+            /**
              * @brief Fills the NLP data with the decision variables, constraints, costs, and bounds.
              *
              * This function takes in an NLPData object, and fills its members with the members of this->nlp_data_.
              *
-             * @param lbw The vector to be filled with lower bound values on decision variables.
+             * @param nlp_data The data to be filled
              */
             void FillNLPData(NLPData &nlp_data);
 
@@ -247,6 +265,16 @@ namespace galileo
                 return w_range_;
             }
 
+            /**
+             * @brief Get the starting and ending index of the parameters in p corresponding to this segment.
+             *
+             * @return tuple_size_t Range of the parameters in p
+             */
+            tuple_size_t getRangeParameters() const
+            {
+                return p_range_;
+            }
+
         private:
             /**
              * @brief Initialize the relevant expressions.
@@ -270,11 +298,10 @@ namespace galileo
             void UpdateBounds();
 
             /**
-             * @brief Update the expressions with the actual decision variables.
+             * @brief Reset w0, p0, lbw, ubw, lbg, and ubg.
              *
-             * @param h The time step
              */
-            void UpdateExpressionGraph(const double h);
+            void ResetNLPData();
 
             /**
              * @brief Helper function to process a vector of type MX.
@@ -351,6 +378,18 @@ namespace galileo
                  *
                  */
                 casadi::MX dt;
+
+                /**
+                 * @brief Symbolic global initial state.
+                 *
+                 */
+                casadi::MX X0_sym_;
+
+                /**
+                 * @brief 
+                 * 
+                 */
+                casadi::MX Xf_sym_;
             };
 
             PseudospectralVariables ps_vars_;
@@ -402,6 +441,12 @@ namespace galileo
                  *
                  */
                 casadi::SX dt;
+
+                /**
+                 * @brief
+                 *
+                 */
+                casadi::SX Xf_global;
             };
 
             ExpressionVariables expr_v_;
@@ -536,12 +581,6 @@ namespace galileo
             int knot_num_;
 
             /**
-             * @brief Global initial state.
-             *
-             */
-            casadi::DM x0_global_;
-
-            /**
              * @brief Period of EACH KNOT SEGMENT within this pseudospectral segment.
              *
              */
@@ -558,6 +597,12 @@ namespace galileo
              *
              */
             tuple_size_t w_range_;
+
+            /**
+             * @brief Starting and ending index of the parameters in p corresponding to this segment.
+             *
+             */
+            tuple_size_t p_range_;
         };
     }
 }

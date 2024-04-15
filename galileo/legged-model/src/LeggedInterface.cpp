@@ -202,9 +202,11 @@ namespace galileo
             pinocchio::casadi::copy(Q_mat, Q);
             pinocchio::casadi::copy(R_mat, R);
 
+            casadi::SX Xf_sym = casadi::SX::sym("Xf_sym", states_->nx, 1);
+
             /*Both f_state_error and fdiff work for the quaternion error, but fdiff uses the quaternion logarithm, so it is more accurate albeit slightly more expensive*/
-            casadi::SX X_error = robot_->f_state_error(casadi::SXVector{robot_->cx, target_state}).at(0);
-            // casadi::SX X_error = robot_->fdiff(casadi::SXVector{rrobot_->cx, target_state, 1.}).at(0);
+            casadi::SX X_error = robot_->f_state_error(casadi::SXVector{robot_->cx, Xf_sym}).at(0);
+            // casadi::SX X_error = robot_->fdiff(casadi::SXVector{rrobot_->cx, Xf_sym, 1.}).at(0);
 
             pinocchio::computeTotalMass(robot_->cmodel, robot_->cdata);
 
@@ -213,7 +215,7 @@ namespace galileo
                 casadi::SX U_ref = robot_->weightCompensatingInputsForPhase(i);
                 casadi::SX u_error = robot_->cu - U_ref;
                 casadi::Function L = casadi::Function("L_" + std::to_string(i),
-                                                      {robot_->cx, robot_->cu},
+                                                      {robot_->cx, robot_->cu, Xf_sym},
                                                       {0.5 * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error)) +
                                                        0.5 * casadi::SX::dot(u_error, casadi::SX::mtimes(R, u_error))});
                 robot_->contact_sequence->FillPhaseCost(i, L);
@@ -221,7 +223,7 @@ namespace galileo
 
             // TODO: Add the terminal cost weight to a parameter file
             Phi = casadi::Function("Phi",
-                                   {robot_->cx},
+                                   {robot_->cx, Xf_sym},
                                    {cost_params_.terminal_weight * casadi::SX::dot(X_error, casadi::SX::mtimes(Q, X_error))});
         }
 
@@ -277,15 +279,17 @@ namespace galileo
             std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
 
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, solver_type_);
+
+            trajectory_opt_->InitFiniteElements(1);
         }
 
         void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
-            UpdateProblemBoundaries(initial_state, target_state);
-
             // Solve the problem
             std::lock_guard<std::mutex> lock_traj(trajectory_opt_mutex_);
-            trajectory_opt_->Optimize();
+            trajectory_opt_->AdvanceFiniteElements(initial_state, target_state);
+            //  trajectory_opt_->InitFiniteElements(1, initial_state);
+            // trajectory_opt_->Optimize();    
 
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             //@todo Akshay5312, reevaluate thread safety
@@ -294,10 +298,49 @@ namespace galileo
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
         }
 
+        // void LeggedInterface::UpdateProblemBoundaries(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
+        // {
+        //     problem_data_->legged_decision_problem_data.X0 = (initial_state);
+
+        //     // Create a new cost
+        //     casadi::Function Phi;
+        //     CreateCost(initial_state, target_state, Phi);
+
+        //     problem_data_->gp_data->Phi = Phi;
+        // }
+
         bool LeggedInterface::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             return solution_interface_->GetSolution(query_times, state_result, input_result);
+        }
+
+        void LeggedInterface::PlotTrajectories(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &state_result, const Eigen::MatrixXd &input_result)
+        {
+            opt::solution::solution_t solution(query_times, state_result.transpose(), input_result.transpose());
+
+            // Collect the data specific to each end effector
+            std::vector<std::tuple<size_t, size_t>> wrench_indices;
+            std::vector<std::vector<std::string>> wrench_legend_names;
+            std::vector<std::string> ee_plot_names;
+            for (auto ee : robot_->getEndEffectors())
+            {
+                wrench_indices.push_back(states_->frame_id_to_index_range[ee.second->frame_id]);
+                if (ee.second->is_6d)
+                    wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
+                else
+                {
+                    wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
+                }
+                ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
+            }
+
+            plotting_interface->PlotSolution(solution, {std::make_tuple(states_->q_index, states_->q_index + 3), std::make_tuple(states_->q_index + 3, states_->q_index + states_->nqb)},
+                                             {wrench_indices},
+                                             {"Positions", "Orientations"},
+                                             {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                                             {ee_plot_names},
+                                             {wrench_legend_names});
         }
 
         void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
@@ -339,20 +382,5 @@ namespace galileo
 
             plotting_interface->PlotConstraints(constraints);
         }
-
-        void LeggedInterface::UpdateProblemBoundaries(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
-        {
-            problem_data_->legged_decision_problem_data.X0 = (initial_state);
-
-            // Create a new cost
-            casadi::Function Phi;
-            CreateCost(initial_state, target_state, Phi);
-
-            problem_data_->gp_data->Phi = Phi;
-
-            std::lock_guard<std::mutex> lock(trajectory_opt_mutex_);
-            trajectory_opt_->InitFiniteElements(1, initial_state);
-        }
-
     }
 }

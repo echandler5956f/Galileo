@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     msg.request.times = {0};
 
     double horizon = 0.6;
-    double dt = 0.0023;
+    double dt = 0.01;
 
     while (ros::ok())
     {

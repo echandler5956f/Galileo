@@ -5,6 +5,7 @@
 #include "galileo/tools/MeshcatInterface.h"
 #include "galileo/tools/GNUPlotInterface.h"
 #include "galileo/math/Quat2Euler.h"
+#include <chrono>
 
 #include "galileo/legged-model/LeggedModelHelpers.h"
 

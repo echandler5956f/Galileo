@@ -2,7 +2,7 @@ Variable Name|Value|Type
 
 cost.Q_diag|(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5)|vector
 cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 75, 75, 5, 75, 75, 5, 75, 75, 5, 75, 75, 5)|vector
-cost.terminal_weight|1e3|double
+cost.terminal_weight|1e5|double
 
 constraints.mu|0.7|double
 constraints.normal_force_max|80|double
@@ -17,14 +17,15 @@ solver|ipopt|string
 
 nlp.ipopt.linear_solver|ma97|string
 nlp.ipopt.ma97_order|metis|string
-nlp.ipopt.max_iter|50|int
+nlp.ipopt.max_iter|2|int
 nlp.ipopt.fixed_variable_treatment|make_constraint|string
-nlp.ipopt.hessian_approximation|exact|string
+nlp.ipopt.hessian_approximation|limited-memory|string
+nlp.ipopt.print_level|0|int
 
 nlp.ipopt.limited_memory_aug_solver,sherman-morrison|string
-nlp.ipopt.limited_memory_max_history,5|int
+nlp.ipopt.limited_memory_max_history,2|int
 nlp.ipopt.limited_memory_update_type,bfgs|string
-nlp.ipopt.limited_memory_initialization,scalar1|string
+nlp.ipopt.limited_memory_initialization,scalar2|string
 nlp.ipopt.limited_memory_init_val,1|double
 nlp.ipopt.limited_memory_init_val_max,1e8|double
 nlp.ipopt.limited_memory_init_val_min,1e-8|double

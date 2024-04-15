@@ -94,6 +94,9 @@ namespace galileo
              */
             bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result);
 
+
+            void PlotTrajectories(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &state_result, const Eigen::MatrixXd &input_result);
+
             /**
              * @brief Get the solution and plot the constraints
              */
