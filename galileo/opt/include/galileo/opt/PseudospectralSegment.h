@@ -4,7 +4,7 @@
 #include "galileo/opt/States.h"
 #include "galileo/opt/ProblemData.h"
 #include "galileo/opt/LagrangePolynomial.h"
-#include "galileo/tools/CasadiConversions.h"
+#include "galileo/tools/CasadiTools.h"
 #include <cassert>
 #include <chrono>
 
@@ -41,26 +41,7 @@ namespace galileo
              * @param G Vector of constraint data
              * @param Wdata Decision bound and initial guess data for the state and input
              */
-            void InitializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata);
-
-            /**
-             * @brief Update a pseudospectral segment.
-             *
-             * @param start_time The starting time of the segment
-             * @param h The time step
-             * @param X0_param The state to deviate from
-             * @param w0 Raw values for the decision variables. Should be sized appropriately.
-             */
-            void Update(const double start_time, const double h, casadi::DM X0_param, casadi::DM w0);
-
-            /**
-             * @brief Update a pseudospectral segment, using the old initial guess generator.
-             *
-             * @param start_time The starting time of the segment
-             * @param h The time step
-             * @param X0_param The state to deviate from
-             */
-            void Update(const double start_time, const double h, casadi::DM X0_param);
+            void InitializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata, casadi::Dict casadi_opts);
 
             /**
              * @brief Create all the knot segments.
@@ -70,6 +51,16 @@ namespace galileo
              *
              */
             void InitializeKnotSegments(casadi::MX X0_sym, casadi::MX Xf_sym);
+
+            /**
+             * @brief Update a pseudospectral segment.
+             *
+             * @param start_time The starting time of the segment
+             * @param h The time step
+             * @param X0_param The state to deviate from
+             * @param Xf_param The final state
+             */
+            void Update(const double start_time, const double h, casadi::DM X0_param, casadi::DM Xf_param);
 
             /**
              * @brief Evaliate the expressions with the actual decision variables.

@@ -2,7 +2,7 @@
 
 #include "galileo/opt/LagrangePolynomial.h"
 #include "galileo/opt/ProblemData.h"
-#include "galileo/tools/CasadiConversions.h"
+#include "galileo/tools/CasadiTools.h"
 #include <Eigen/Dense>
 #include <string>
 

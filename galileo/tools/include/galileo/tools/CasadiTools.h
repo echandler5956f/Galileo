@@ -48,5 +48,15 @@ namespace galileo
         template <typename Scalar>
         void casadiToVector(const Scalar& casadi_matrix, std::vector<double>& vec);
 
+        /**
+         * @brief Compiles the c-code for a Casadi function, with derivative information.
+         * 
+         * @param f The Casadi function to compile
+         * @param name The name of the function
+         * @param compiler_options The compiler options to use
+         * @return casadi::Function The compiled function
+         */
+        casadi::Function casadiCodegen(const casadi::Function& f, const std::string& name, const std::string& compiler_options = "gcc -fPIC -shared -O3");
+
     }
 }

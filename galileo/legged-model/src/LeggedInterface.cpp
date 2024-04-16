@@ -49,17 +49,10 @@ namespace galileo
             {
                 end_effector_names_array[i] = end_effector_names[i];
             }
-            // TODO: Add these options to a parameter file
-            casadi::Dict legged_opts;
-            // // legged_opts["cse"] = true;
-            // legged_opts["jit"] = true;
-            // legged_opts["jit_options.flags"] = "-Ofast -march=native -ffast-math";
-            // legged_opts["jit_options.compiler"] = "gcc";
-            // // legged_opts["jit_options.temp_suffix"] = false;
-            // legged_opts["compiler"] = "shell";
-            // // legged_opts["jit_cleanup"] = false;
+            // std::vector<casadi::Dict> legged_options = {legged_opts_, legged_opts_, legged_opts_, legged_opts_};
+            std::vector<casadi::Dict> legged_options = {casadi::Dict(), casadi::Dict(), casadi::Dict(), casadi::Dict()};
 
-            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array, legged_opts);
+            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array, legged_options);
             states_ = robot_->si;
             model_file_location_ = model_file_location;
         }
@@ -285,17 +278,25 @@ namespace galileo
 
         void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
+            auto start = std::chrono::high_resolution_clock::now();
             // Solve the problem
             std::lock_guard<std::mutex> lock_traj(trajectory_opt_mutex_);
             trajectory_opt_->AdvanceFiniteElements(initial_state, target_state);
             //  trajectory_opt_->InitFiniteElements(1, initial_state);
-            // trajectory_opt_->Optimize();    
+            // trajectory_opt_->Optimize();
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            // std::cout << "Time to advance finite elements: " << elapsed.count() * 1000. << " ms\n";
 
+            start = std::chrono::high_resolution_clock::now();
             std::lock_guard<std::mutex> lock_sol(solution_mutex_);
             //@todo Akshay5312, reevaluate thread safety
             solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
 
             solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            std::cout << "Time to update solution: " << elapsed.count() * 1000. << " ms" << std::endl;
         }
 
         // void LeggedInterface::UpdateProblemBoundaries(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)

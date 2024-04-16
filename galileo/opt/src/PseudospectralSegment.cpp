@@ -72,7 +72,7 @@ namespace galileo
             expr_v_.Xf_global = casadi::SX::sym("Xf_global", st_m_->nx, 1);
         }
 
-        void PseudospectralSegment::InitializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata)
+        void PseudospectralSegment::InitializeExpressionGraph(std::vector<ConstraintData> G, std::shared_ptr<DecisionData> Wdata, casadi::Dict casadi_opts)
         {
             /*Collocation equations*/
             casadi::SXVector eq;
@@ -131,18 +131,26 @@ namespace galileo
 
             casadi::Function collocation_constraint = casadi::Function("feq",
                                                                        function_inputs,
-                                                                       casadi::SXVector{vertcat(eq)});
+                                                                       casadi::SXVector{vertcat(eq)}, casadi_opts);
 
             casadi::Function xf_constraint = casadi::Function("fxf",
                                                               function_inputs,
-                                                              casadi::SXVector{dXf});
+                                                              casadi::SXVector{dXf}, casadi_opts);
 
             casadi::Function uf_constraint = casadi::Function("fuf",
                                                               function_inputs,
-                                                              casadi::SXVector{uf});
+                                                              casadi::SXVector{uf}, casadi_opts);
 
             casadi::Function q_cost = casadi::Function("fxq", casadi::SXVector{expr_v_.Lc, expr_v_.X0, vcat_dXc, expr_v_.dX0, expr_v_.U0, vcat_Uc, expr_v_.dt, expr_v_.Xf_global},
-                                                       casadi::SXVector{expr_v_.Lc + Qf});
+                                                       casadi::SXVector{expr_v_.Lc + Qf}, casadi_opts);
+
+            // This works, but for some reason it is not as fast as JIT... I have no idea why, since I am using the same compiler options...
+            // std::string compiler_options = "gcc -fPIC -shared -Ofast -march=native -ffast-math";
+
+            // casadi::Function collocation_constraint_compiled = tools::casadiCodegen(collocation_constraint, "ps_feq", compiler_options);
+            // casadi::Function xf_constraint_compiled = tools::casadiCodegen(xf_constraint, "ps_fxf", compiler_options);
+            // casadi::Function uf_constraint_compiled = tools::casadiCodegen(uf_constraint, "ps_fuf", compiler_options);
+            // casadi::Function q_cost_compiled = tools::casadiCodegen(q_cost, "ps_fxq", compiler_options);
 
             /*Implicit discrete-time equations*/
             ps_funcs_.col_con_map = collocation_constraint.map(knot_num_, "openmp");
@@ -179,8 +187,8 @@ namespace galileo
                 g_data.lower_bound.assert_size_in(0, 1, 1);
                 casadi::Function tmap = casadi::Function(g_data.G.name() + "_map",
                                                          function_inputs,
-                                                         casadi::SXVector{vertcat(g_data.G.map(dX_poly_.d, "serial")((tmap_symbolic_input)))})
-                                            .map(knot_num_, "serial");
+                                                         casadi::SXVector{vertcat(g_data.G.map(dX_poly_.d, "serial")((tmap_symbolic_input)))}, casadi_opts)
+                                            .map(knot_num_, "openmp");
                 ps_funcs_.gcon_maps.push_back(tmap);
                 ps_funcs_.ranges_G.push_back(tuple_size_t(N, N + tmap.size1_out(0) * tmap.size2_out(0)));
                 N += tmap.size1_out(0) * tmap.size2_out(0);

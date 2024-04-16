@@ -1,4 +1,4 @@
-#include "galileo/tools/CasadiConversions.h"
+#include "galileo/tools/CasadiTools.h"
 
 namespace galileo
 {
@@ -57,5 +57,20 @@ namespace galileo
         template void casadiToVector<casadi::DM>(const casadi::DM &casadi_matrix, std::vector<double> &vec);
         // template void casadiToVector<casadi::SX>(const casadi::SX &casadi_matrix, std::vector<double> &vec);
         // template void casadiToVector<casadi::MX>(const casadi::MX &casadi_matrix, std::vector<double> &vec);
+
+        casadi::Function casadiCodegen(const casadi::Function &f, const std::string &name, const std::string &compiler_options)
+        {
+            casadi::CodeGenerator f_codegen = casadi::CodeGenerator(name + "_codegen");
+            f_codegen.add(f, true);
+            f_codegen.add(f.reverse(1), true);
+            f_codegen.add(f.forward(1), true);
+            f_codegen.generate();
+            std::string options = compiler_options + " " + name + "_codegen.c" + " -o " + name + "_codegen.so";
+            std::cout << "Compiling with: " << options << std::endl;
+            int flag = system(options.c_str());
+            casadi_assert(flag == 0, "Compilation failed");
+
+            return casadi::external(f.name(), name + "_codegen.so");
+        }
     }
 }

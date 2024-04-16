@@ -4,7 +4,7 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, casadi::Dict general_function_casadi_options)
+        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, std::vector<casadi::Dict> general_function_casadi_options)
         {
             model = Model();
 
@@ -98,7 +98,6 @@ namespace galileo
                 {
                     // std::cout << "Name: " << model.names[ee.second->joint_indices[i]] << " - Index: " << ee.second->joint_indices[i] - min_index << std::endl;
                     ee.second->joint_indices[i] -= min_index; // so that the indices start from 0. We do not account for the case where the joint indices are not contiguous, but so far it hasnt been an issue.
-
                 }
             }
         }
@@ -163,12 +162,12 @@ namespace galileo
             return R;
         }
 
-        void LeggedBody::createGeneralFunctions(casadi::Dict casadi_opts)
+        void LeggedBody::createGeneralFunctions(std::vector<casadi::Dict> casadi_opts)
         {
-            createGeneralDynamics(casadi_opts);
-            createFint(casadi_opts);
-            createFdiff(casadi_opts);
-            createErrorFunction(casadi_opts);
+            createGeneralDynamics(casadi_opts[0]);
+            createFint(casadi_opts[1]);
+            createFdiff(casadi_opts[2]);
+            createErrorFunction(casadi_opts[3]);
         }
 
         template <typename SCALAR_T>
@@ -209,7 +208,8 @@ namespace galileo
                                                 {cx, cu_general},
                                                 {vertcat((si->get_general_forces(cu_general) - mass * g) / mass,
                                                          si->get_general_torques(cu_general) / mass,
-                                                         cv)});
+                                                         cv)},
+                                                casadi_opts);
 
             TangentVectorAD vb_AD2 = Ab_inv * (mass * h_AD - Ag.rightCols(si->nvju) * vju_AD);
             TangentVectorAD tmp_v_AD2(si->nv, 1);
@@ -319,11 +319,18 @@ namespace galileo
                 }
 
                 casadi::SX u_general = vertcat(casadi::SXVector{total_f_input, total_tau_input, si->get_vju(cu)});
+                // int8_t contact_mask = 0;
+                // for (auto &ee : ees_)
+                // {
+                //     contact_mask <<= 1;
+                //     contact_mask |= mode.combination_definition[ee.first] ? 1 : 0;
+                // }
 
                 contact_sequence->FillPhaseDynamics(i, casadi::Function("F_mode",
                                                                         {cx, cu},
                                                                         {general_dynamics(casadi::SXVector{cx, u_general})
-                                                                             .at(0)}));
+                                                                             .at(0)},
+                                                                        casadi_opts));
             }
         }
 

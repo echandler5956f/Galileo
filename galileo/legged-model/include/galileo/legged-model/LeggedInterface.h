@@ -19,7 +19,9 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/tools/GNUPlotInterface.h"
 #include "galileo/tools/MeshcatInterface.h"
-#include "galileo/tools/CasadiConversions.h"
+#include "galileo/tools/CasadiTools.h"
+
+#include <chrono>
 
 namespace galileo
 {
@@ -55,8 +57,7 @@ namespace galileo
             {
                 assert(robot_ != nullptr);
                 robot_->contact_sequence = contact_sequence;
-                casadi::Dict empty_opts;
-                robot_->fillModeDynamics(empty_opts);
+                robot_->fillModeDynamics(casadi::Dict());
                 phases_set_ = true;
             }
 
@@ -190,6 +191,11 @@ namespace galileo
              * @brief Create the problem data from the loaded parameter values
              */
             void CreateProblemData(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
+
+            casadi::Dict legged_opts_ = {{"jit", true},
+                            {"jit_options.flags", "-Ofast -march=native -ffast-math"},
+                            {"jit_options.compiler", "gcc"},
+                            {"compiler", "shell"}};
 
             std::shared_ptr<LeggedRobotStates> states_; /**< Definition of the state. */
 

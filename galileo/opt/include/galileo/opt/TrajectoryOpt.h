@@ -87,9 +87,27 @@ namespace galileo
 
             /**
              * @brief The previous solution.
-             * 
+             *
              */
             casadi::DM prev_solution_;
+
+            /**
+             * @brief Initial guess for the lagrange multipliers for bounds on X.
+             *
+             */
+            casadi::DM lam_x0_;
+
+            /**
+             * @brief Initial guess for the lagrange multipliers for bounds on G.
+             *
+             */
+            casadi::DM lam_g0_;
+
+            /**
+             * @brief Whether the solver is warm started.
+             *
+             */
+            bool warm_ = false;
 
             /**
              * @brief Problem data containing constraints problem data.
@@ -164,6 +182,12 @@ namespace galileo
             std::vector<tuple_size_t> ranges_parameters_;
 
             /**
+             * @brief Casadi likes to accumulate the function times, so we need to keep track of the previous time.
+             * 
+             */
+            double prev_time_from_funcs_ = 0.0;
+
+            /**
              * @brief NLPData struct containing decision variables, constraints, and objective function.
              *
              */
@@ -186,7 +210,6 @@ namespace galileo
         template <class ProblemData, class MODE_T>
         void TrajectoryOpt<ProblemData, MODE_T>::InitFiniteElements(int d)
         {
-            assert(X0.size1() == state_indices_->nx && X0.size2() == 1 && "Initial state must be a column vector");
             trajectory_.clear();
             nlp_data_.w.clear();
             nlp_data_.g.clear();
@@ -213,6 +236,11 @@ namespace galileo
             std::cout << "Starting initialization" << std::endl;
             casadi::MX X0_sym = casadi::MX::sym("X0", state_indices_->nx, 1);
             casadi::MX Xf_sym = casadi::MX::sym("Xf", state_indices_->nx, 1);
+            casadi::Dict casadi_opts = casadi::Dict();
+                // {{"jit", true},
+                //  {"jit_options.flags", "-Ofast -march=native -ffast-math"},
+                //  {"jit_options.compiler", "gcc"},
+                //  {"compiler", "shell"}};
 
             for (size_t i = 0; i < num_phases; ++i)
             {
@@ -229,7 +257,7 @@ namespace galileo
                 auto phase = sequence_->getPhase(i);
 
                 std::shared_ptr<PseudospectralSegment> segment = std::make_shared<PseudospectralSegment>(gp_data_, phase.phase_dynamics, phase.phase_cost, state_indices_, d, false, phase.knot_points);
-                segment->InitializeExpressionGraph(G, Wdata);
+                segment->InitializeExpressionGraph(G, Wdata, casadi_opts);
                 segment->InitializeKnotSegments(X0_sym, Xf_sym);
                 segment->EvaluateExpressionGraph();
                 segment->FillNLPData(nlp_data_);
@@ -274,6 +302,7 @@ namespace galileo
         template <class ProblemData, class MODE_T>
         void TrajectoryOpt<ProblemData, MODE_T>::AdvanceFiniteElements(casadi::DM X0, casadi::DM Xf)
         {
+            auto start = std::chrono::high_resolution_clock::now();
             nlp_data_.w0.clear();
             nlp_data_.p0.clear();
             nlp_data_.lbw.clear();
@@ -305,14 +334,19 @@ namespace galileo
             nlp_data_.lbg.push_back(vertcat(lbg_tmp_vector));
             nlp_data_.ubg.push_back(vertcat(ubg_tmp_vector));
 
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            std::cout << "Time to update finite elements: " << elapsed.count() * 1000. << " ms" << std::endl;
+
             Optimize();
+
+            warm_ = true;
         }
 
         template <class ProblemData, class MODE_T>
         casadi::DMVector TrajectoryOpt<ProblemData, MODE_T>::Optimize()
         {
-            // double time_from_funcs = 0.0;
-            // double time_just_solver = 0.0;
+            auto start = std::chrono::high_resolution_clock::now();
             casadi::DMDict arg;
             arg["lbg"] = vertcat(nlp_data_.lbg).get_elements();
             arg["ubg"] = vertcat(nlp_data_.ubg).get_elements();
@@ -320,26 +354,45 @@ namespace galileo
             arg["ubx"] = vertcat(nlp_data_.ubw).get_elements();
             arg["x0"] = vertcat(nlp_data_.w0).get_elements();
             arg["p"] = vertcat(nlp_data_.p0).get_elements();
+            if (warm_)
+            {
+                arg["lam_x0"] = lam_x0_;
+                arg["lam_g0"] = lam_g0_;
+            }
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            std::cout << "Time to fill arguments: " << elapsed.count() * 1000. << " ms" << std::endl;
 
+            start = std::chrono::high_resolution_clock::now();
             casadi::DMDict result = solver_(arg);
-            // casadi::Dict stats = solver_.stats();
-            // if (nonlinear_solver_name_ == "ipopt")
-            // {
-            //     time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"];
-            //     if (stats.find("t_wall_nlp_hess_l") != stats.end())
-            //         time_from_funcs += (double)stats["t_wall_nlp_hess_l"];
-            //     time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
-            //     std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
-            //     std::cout << "Total seconds from Ipopt w/o function: " << time_just_solver << std::endl;
-            // }
-            // else if (nonlinear_solver_name_ == "snopt")
-            // {
-            //     time_from_funcs += (double)stats["t_wall_nlp_grad"] + (double)stats["t_wall_nlp_jac_f"] + (double)stats["t_wall_nlp_jac_g"];
-            //     time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
-            //     std::cout << "Total seconds from Casadi functions: " << time_from_funcs << std::endl;
-            //     std::cout << "Total seconds from SNOPT w/o function: " << time_just_solver << std::endl;
-            // }
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            std::cout << "Time to optimize: " << elapsed.count() * 1000. << " ms" << std::endl;
+
+            start = std::chrono::high_resolution_clock::now();
+            casadi::Dict stats = solver_.stats();
+            double time_from_funcs = 0.0;
+            double time_just_solver = 0.0;
+            if (nonlinear_solver_name_ == "ipopt")
+            {
+                time_from_funcs += (double)stats["t_wall_nlp_jac_g"] + (double)stats["t_wall_nlp_grad_f"] + (double)stats["t_wall_nlp_g"] + (double)stats["t_wall_nlp_f"] - prev_time_from_funcs_;
+                if (stats.find("t_wall_nlp_hess_l") != stats.end())
+                    time_from_funcs += (double)stats["t_wall_nlp_hess_l"];
+                time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
+                std::cout << "Total seconds from Casadi functions: " << time_from_funcs * 1000. << " ms" << std::endl;
+                std::cout << "Total seconds from Ipopt w/o function: " << time_just_solver * 1000. << " ms" << std::endl;
+            }
+            else if (nonlinear_solver_name_ == "snopt")
+            {
+                time_from_funcs += (double)stats["t_wall_nlp_grad"] + (double)stats["t_wall_nlp_jac_f"] + (double)stats["t_wall_nlp_jac_g"] - prev_time_from_funcs_;
+                time_just_solver += (double)stats["t_wall_total"] - time_from_funcs;
+                std::cout << "Total seconds from Casadi functions: " << time_from_funcs * 1000. << " ms" << std::endl;
+                std::cout << "Total seconds from SNOPT w/o function: " << time_just_solver * 1000. << " ms" << std::endl;
+            }
+            prev_time_from_funcs_ += time_from_funcs;
             prev_solution_ = result["x"];
+            lam_x0_ = result["lam_x"];
+            lam_g0_ = result["lam_g"];
             casadi::DM p_sol = arg["p"];
 
             for (size_t i = 0; i < trajectory_.size(); ++i)
@@ -355,6 +408,9 @@ namespace galileo
                     sol_[1] = horzcat(sol_[1], sol_i[1]);
                 }
             }
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            std::cout << "Time to extract solution: " << elapsed.count() * 1000. << " ms" << std::endl;
             return sol_;
         }
 
