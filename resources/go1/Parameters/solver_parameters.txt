@@ -5,7 +5,7 @@ cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1
 cost.terminal_weight|1e3|double
 
 constraints.mu|0.7|double
-constraints.normal_force_max|150|double
+constraints.normal_force_max|80|double
 constraints.ideal_offset_height|0.08|double
 constraints.footstep_height_scaling|0.15|double
 constraints.max_following_leeway_planar|50|double

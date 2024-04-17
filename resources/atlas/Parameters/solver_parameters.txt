@@ -17,6 +17,6 @@ solver|ipopt|string
 
 nlp.ipopt.linear_solver|ma97|string
 nlp.ipopt.ma97_order|metis|string
-nlp.ipopt.max_iter|50|int
+nlp.ipopt.max_iter|5|int
 nlp.ipopt.fixed_variable_treatment|make_constraint|string
 nlp.ipopt.hessian_approximation|exact|string

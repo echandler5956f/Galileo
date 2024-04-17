@@ -17,4 +17,4 @@ string[]    joint_names
 
 int32[] ee_dofs
 
-ContactSequence contact_sequences
+ContactPhase[] contact_phases
