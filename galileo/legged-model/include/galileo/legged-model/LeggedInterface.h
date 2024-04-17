@@ -84,7 +84,9 @@ namespace galileo
             /**
              * @brief Solve the problem
              */
-            void Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
+            void Update(double global_time, const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
+
+            void GetNextGuess(double global_time);
 
             /**
              * @brief Get the solution.
@@ -241,6 +243,12 @@ namespace galileo
             bool phases_set_ = false;
 
             bool fully_initialized_ = false;
+
+            double curr_time_ = 0.0;
+
+            Eigen::VectorXd curr_guess_;
+
+            bool first_update_ = true;
         };
 
     }

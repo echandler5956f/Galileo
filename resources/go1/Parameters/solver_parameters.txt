@@ -2,7 +2,7 @@ Variable Name|Value|Type
 
 cost.Q_diag|(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5)|vector
 cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 75, 75, 5, 75, 75, 5, 75, 75, 5, 75, 75, 5)|vector
-cost.terminal_weight|1|double
+cost.terminal_weight|1e5|double
 
 constraints.mu|0.7|double
 constraints.normal_force_max|80|double
@@ -13,22 +13,30 @@ constraints.min_following_leeway_planar|1e-8|double
 constraints.footstep_vel_start|0|double
 constraints.footstep_vel_end|0|double
 
-solver|snopt|string
+solver|ipopt|string
 
-nlp.snopt.Major iterations limit|2|int
-nlp.snopt.Minor iterations limit|2|int
-nlp.snopt.Summary file|0|int
-nlp.snopt.Major print level|0|int
-nlp.snopt.Minor print level|0|int
-nlp.snopt.Solution|no|string
-nlp.snopt.System information|no|string
-nlp.snopt.Suppress options listings|yes|string
-nlp.snopt.Timing level|3|int
-nlp.snopt.Cold Start/Warm Start|Warm|string
+nlp.ipopt.linear_solver|ma57|string
+nlp.ipopt.ma97_order|metis|string
+nlp.ipopt.max_iter|2|int
+nlp.ipopt.fixed_variable_treatment|make_constraint|string
+nlp.ipopt.hessian_approximation|limited-memory|string
+nlp.ipopt.print_level|0|int
 
-nlp.start|hot|string
-comment.nlp.expand|false|bool
-comment.nlp.jit|true|bool
-comment.nlp.jit_options.flags|-Ofast -march=native -ffast-math|string
-comment.nlp.jit_options.compiler|gcc|string
-comment.nlp.compiler|shell|string
+nlp.ipopt.limited_memory_aug_solver,sherman-morrison|string
+nlp.ipopt.limited_memory_max_history,5|int
+nlp.ipopt.limited_memory_update_type,bfgs|string
+nlp.ipopt.limited_memory_initialization,scalar2|string
+nlp.ipopt.limited_memory_init_val,1|double
+nlp.ipopt.limited_memory_init_val_max,1e8|double
+nlp.ipopt.limited_memory_init_val_min,1e-8|double
+nlp.ipopt.limited_memory_max_skipping,2|int
+nlp.ipopt.limited_memory_special_for_resto,no|string
+nlp.ipopt.hessian_approximation_space,nonlinear-variables|string
+
+nlp.ipopt.warm_start_init_point|yes|string
+nlp.ipopt.warm_start_bound_push|1e-8|double
+nlp.ipopt.warm_start_mult_bound_push|1e-8|double
+nlp.ipopt.mu_init|1e-5|double
+nlp.ipopt.bound_relax_factor|1e-9|double
+
+nlp.pass_nonlinear_variables|true|bool

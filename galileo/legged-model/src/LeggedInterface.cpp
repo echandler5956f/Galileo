@@ -140,7 +140,7 @@ namespace galileo
 
             cost_params_.Q_diag = Q_diag;
             cost_params_.R_diag = R_diag;
-            
+
             if (imported_vars.find("cost.terminal_weight") != imported_vars.end())
             {
                 cost_params_.terminal_weight = std::stod(std::get<0>(imported_vars["cost.terminal_weight"]));
@@ -273,30 +273,47 @@ namespace galileo
 
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, solver_type_);
 
-            trajectory_opt_->InitFiniteElements(1);
+            trajectory_opt_->InitFiniteElements(3);
         }
 
-        void LeggedInterface::Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
+        void LeggedInterface::Update(double global_time, const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
-            auto start = std::chrono::high_resolution_clock::now();
+            if (!first_update_)
+            {
+                std::lock_guard<std::mutex> lock_sol(solution_mutex_);
+                GetNextGuess(global_time);
+            }
+
             // Solve the problem
-            std::lock_guard<std::mutex> lock_traj(trajectory_opt_mutex_);
-            trajectory_opt_->AdvanceFiniteElements(initial_state, target_state);
-            //  trajectory_opt_->InitFiniteElements(1, initial_state);
-            // trajectory_opt_->Optimize();
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            // std::cout << "Time to advance finite elements: " << elapsed.count() * 1000. << " ms\n";
+            {
+                std::lock_guard<std::mutex> lock_traj(trajectory_opt_mutex_);
+                if (first_update_)
+                {
+                    trajectory_opt_->AdvanceFiniteElements(global_time, initial_state, target_state);
+                }
+                else
+                {
+                    casadi::DM w0;
+                    tools::eigenToCasadi(curr_guess_, w0);
+                    trajectory_opt_->AdvanceFiniteElements(global_time, initial_state, target_state, w0);
+                }
+            }
 
-            start = std::chrono::high_resolution_clock::now();
-            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
-            //@todo Akshay5312, reevaluate thread safety
-            solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
+            {
+                std::lock_guard<std::mutex> lock_sol(solution_mutex_);
+                //@todo Akshay5312, reevaluate thread safety
+                solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
+                solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
+            }
 
-            solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
-            end = std::chrono::high_resolution_clock::now();
-            elapsed = end - start;
-            std::cout << "Time to update solution: " << elapsed.count() * 1000. << " ms" << std::endl;
+            curr_time_ = global_time;
+        }
+
+        void LeggedInterface::GetNextGuess(double global_time)
+        {
+            double dt = global_time - curr_time_;
+            casadi::DMVector stacked_decision_variable_times = trajectory_opt_->getStackedDecisionVariableTimes();
+            solution_interface_->GetNextGuessFromPrevSolution(stacked_decision_variable_times, curr_guess_, dt);
         }
 
         // void LeggedInterface::UpdateProblemBoundaries(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)

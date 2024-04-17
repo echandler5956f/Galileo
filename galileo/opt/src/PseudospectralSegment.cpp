@@ -285,8 +285,8 @@ namespace galileo
             nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.U0_vec.begin(), ps_vars_.U0_vec.end());
             nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.Uc_vec.begin(), ps_vars_.Uc_vec.end());
 
-            nlp_data_.p.push_back(ps_vars_.X0_sym_);
-            nlp_data_.p.push_back(ps_vars_.Xf_sym_);
+            // nlp_data_.p.push_back(ps_vars_.X0_sym_);
+            // nlp_data_.p.push_back(ps_vars_.Xf_sym_);
 
             if (optimize_dt_)
             {
@@ -300,7 +300,7 @@ namespace galileo
             }
 
             get_sol_func_ = casadi::Function("func",
-                                             casadi::MXVector({vertcat(nlp_data_.w), vertcat(nlp_data_.p)}),
+                                             casadi::MXVector({vertcat(nlp_data_.w), vertcat(casadi::MXVector{ps_vars_.X0_sym_, ps_vars_.Xf_sym_, ps_vars_.dt})}),
                                              casadi::MXVector({all_xs, all_us}));
         }
 
@@ -320,14 +320,14 @@ namespace galileo
         //     nlp_data_.w0.push_back(w0);
         // }
 
-        void PseudospectralSegment::Update(const double start_time, const double h, casadi::DM X0_param, casadi::DM Xf_param)
+        void PseudospectralSegment::Update(const double segment_offset, const double h, casadi::DM X0_param, casadi::DM Xf_param)
         {
             ResetNLPData();
-            UpdateTimeVectors(start_time, h);
+            UpdateTimeVectors(segment_offset, h);
             UpdateBounds();
 
-            nlp_data_.p0.push_back(X0_param);
-            nlp_data_.p0.push_back(Xf_param);
+            // nlp_data_.p0.push_back(X0_param);
+            // nlp_data_.p0.push_back(Xf_param);
 
             if (optimize_dt_)
                 std::cerr << "Not implemented yet" << std::endl;
@@ -381,8 +381,16 @@ namespace galileo
             nlp_data_.ubg.erase(nlp_data_.ubg.begin() + 1, nlp_data_.ubg.end());
         }
 
-        void PseudospectralSegment::UpdateTimeVectors(const double start_time, const double h)
+        void PseudospectralSegment::UpdateTimeVectors(const double segment_offset, const double h)
         {
+            dXtimes_.segment_times = casadi::DM::zeros((dX_poly_.d + 1) * knot_num_, 1);
+            dXtimes_.collocation_times = casadi::DM::zeros(dX_poly_.d * knot_num_, 1);
+            dXtimes_.knot_times = casadi::DM::zeros(knot_num_ + 1, 1);
+
+            Utimes_.segment_times = casadi::DM::zeros((U_poly_.d + 1) * knot_num_, 1);
+            Utimes_.collocation_times = casadi::DM::zeros(U_poly_.d * knot_num_, 1);
+            Utimes_.knot_times = casadi::DM::zeros(knot_num_ + 1, 1);
+
             auto initializeVectors = [&](auto &poly, auto &times, auto &vec_knot_times, auto &vec_collocation_times, auto &vec_segment_times)
             {
                 double kh = 0;
@@ -413,9 +421,9 @@ namespace galileo
 
             initializeVectors(dX_poly_, dXtimes_, vec_knot_times, vec_collocation_times, vec_segment_times);
 
-            dXtimes_.segment_times += start_time;
-            dXtimes_.collocation_times += start_time;
-            dXtimes_.knot_times += start_time;
+            dXtimes_.segment_times += segment_offset;
+            dXtimes_.collocation_times += segment_offset;
+            dXtimes_.knot_times += segment_offset;
 
             vec_knot_times.clear();
             vec_collocation_times.clear();
@@ -423,9 +431,9 @@ namespace galileo
 
             initializeVectors(U_poly_, Utimes_, vec_knot_times, vec_collocation_times, vec_segment_times);
 
-            Utimes_.segment_times += start_time;
-            Utimes_.collocation_times += start_time;
-            Utimes_.knot_times += start_time;
+            Utimes_.segment_times += segment_offset;
+            Utimes_.collocation_times += segment_offset;
+            Utimes_.knot_times += segment_offset;
         }
 
         void PseudospectralSegment::UpdateBounds()
@@ -463,14 +471,18 @@ namespace galileo
             return get_sol_func_(casadi::DMVector{w, p0});
         }
 
-        void PseudospectralSegment::UpdateNLPData(NLPData &nlp_data)
+        void PseudospectralSegment::UpdateNLPData(NLPData &nlp_data, bool update_guess)
         {
             nlp_data.lbw.insert(nlp_data.lbw.end(), make_move_iterator(nlp_data_.lbw.begin()), make_move_iterator(nlp_data_.lbw.end()));
             nlp_data.ubw.insert(nlp_data.ubw.end(), make_move_iterator(nlp_data_.ubw.begin()), make_move_iterator(nlp_data_.ubw.end()));
-            nlp_data.w0.insert(nlp_data.w0.end(), make_move_iterator(nlp_data_.w0.begin()), make_move_iterator(nlp_data_.w0.end()));
             nlp_data.lbg.insert(nlp_data.lbg.end(), make_move_iterator(nlp_data_.lbg.begin()), make_move_iterator(nlp_data_.lbg.end()));
             nlp_data.ubg.insert(nlp_data.ubg.end(), make_move_iterator(nlp_data_.ubg.begin()), make_move_iterator(nlp_data_.ubg.end()));
             nlp_data.p0.insert(nlp_data.p0.end(), make_move_iterator(nlp_data_.p0.begin()), make_move_iterator(nlp_data_.p0.end()));
+
+            if (update_guess)
+            {
+                nlp_data.w0.insert(nlp_data.w0.end(), make_move_iterator(nlp_data_.w0.begin()), make_move_iterator(nlp_data_.w0.end()));
+            }
         }
 
         void PseudospectralSegment::FillNLPData(NLPData &nlp_data)
@@ -502,7 +514,7 @@ namespace galileo
                                      { return sum + item.size1() * item.size2(); }));
             nlp_data.J += nlp_data_.J;
 
-            UpdateNLPData(nlp_data);
+            UpdateNLPData(nlp_data, true);
         }
 
         casadi::MX PseudospectralSegment::ProcessVector(casadi::MXVector &vec) const

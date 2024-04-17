@@ -1,0 +1,39 @@
+Variable Name|Value|Type
+
+cost.Q_diag|(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5)|vector
+cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 75, 75, 5, 75, 75, 5, 75, 75, 5, 75, 75, 5)|vector
+cost.terminal_weight|1|double
+
+constraints.mu|0.7|double
+constraints.normal_force_max|80|double
+constraints.ideal_offset_height|0.08|double
+constraints.footstep_height_scaling|0.15|double
+constraints.max_following_leeway_planar|50|double
+constraints.min_following_leeway_planar|1e-8|double
+constraints.footstep_vel_start|0|double
+constraints.footstep_vel_end|0|double
+
+solver|blocksqp|string
+
+nlp.block_hess|1|int
+nlp.globalization|false|bool
+
+nlp.max_it_qp|2|int
+nlp.max_iter|2|int
+nlp.max_line_search|2|int
+nlp.max_soc_iter|2|int
+
+nlp.print_header|false|bool
+nlp.print_iteration|false|bool
+nlp.print_maxit_reached|false|bool
+nlp.qp_init|true|bool
+nlp.warmstart|true|bool
+
+nlp.expand|false|bool
+
+comment.nlp.jit|true|bool
+comment.nlp.jit_options.flags|-Ofast -march=native -ffast-math|string
+comment.nlp.jit_options.compiler|gcc|string
+comment.nlp.compiler|shell|string
+comment.nlp.jit_temp_suffix|false|bool
+comment.nlp.jit_cleanup|false|bool

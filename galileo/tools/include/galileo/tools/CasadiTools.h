@@ -27,6 +27,16 @@ namespace galileo
         void casadiToEigen(const Scalar &casadi_matrix, Eigen::MatrixXd &eigen_matrix);
 
         /**
+         * @brief Convert a Casadi matrix to an Eigen vector.
+         * 
+         * @tparam Scalar Casadi matrix type
+         * @param casadi_matrix The Casadi matrix to convert
+         * @param eigen_vector The Eigen vector to store the result
+         */
+        template <typename Scalar>
+        void casadiToEigen(const Scalar &casadi_matrix, Eigen::VectorXd &eigen_vector);
+
+        /**
          * @brief Convert a vector to a Casadi matrix.
          *
          * @tparam Scalar Casadi matrix type

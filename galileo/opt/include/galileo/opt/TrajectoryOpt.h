@@ -40,10 +40,12 @@ namespace galileo
             /**
              * @brief Advance the finite elements.
              *
+             * @param global_time The current global time
              * @param X0 The new initial state
              * @param Xf The new final state
+             * @param w0 The new initial guess
              */
-            void AdvanceFiniteElements(casadi::DM X0, casadi::DM Xf);
+            void AdvanceFiniteElements(double global_time, casadi::DM X0, casadi::DM Xf, casadi::DM w0 = casadi::DM::zeros(0,0));
 
             /**
              * @brief Optimize and return the solution.
@@ -65,6 +67,13 @@ namespace galileo
              * @return std::vector<std::vector<ConstraintData>> The constraint data segments
              */
             std::vector<std::vector<ConstraintData>> getConstraintDataSegments() const;
+
+            /**
+             * @brief Get the stacked decision variable times.
+             * 
+             * @return casadi::DMVector The stacked decision variable times
+             */
+            casadi::DMVector getStackedDecisionVariableTimes() const;
 
         private:
             /**
@@ -89,7 +98,7 @@ namespace galileo
              * @brief The previous solution.
              *
              */
-            casadi::DM prev_solution_;
+            casadi::DM curr_solution_;
 
             /**
              * @brief Initial guess for the lagrange multipliers for bounds on X.
@@ -179,7 +188,13 @@ namespace galileo
              * @brief Range of parameters per phase.
              *
              */
-            std::vector<tuple_size_t> ranges_parameters_;
+            std::vector<tuple_size_t> ranges_segment_parameters_;
+
+            /**
+             * @brief Range of the parameters shared between segments.
+             * 
+             */
+            tuple_size_t range_global_parameters_;
 
             /**
              * @brief Casadi likes to accumulate the function times, so we need to keep track of the previous time.
@@ -223,7 +238,7 @@ namespace galileo
             nlp_data_.lbg.clear();
             nlp_data_.ubg.clear();
             ranges_decision_variables_.clear();
-            ranges_parameters_.clear();
+            ranges_segment_parameters_.clear();
 
             casadi::MX prev_final_state_deviant;
 
@@ -234,8 +249,14 @@ namespace galileo
 
             size_t num_phases = sequence_->getNumPhases();
             std::cout << "Starting initialization" << std::endl;
+            auto start = std::chrono::high_resolution_clock::now();
             casadi::MX X0_sym = casadi::MX::sym("X0", state_indices_->nx, 1);
             casadi::MX Xf_sym = casadi::MX::sym("Xf", state_indices_->nx, 1);
+
+            nlp_data_.p.push_back(X0_sym);
+            nlp_data_.p.push_back(Xf_sym);
+            range_global_parameters_ = tuple_size_t(0, 2 * state_indices_->nx);
+
             casadi::Dict casadi_opts = casadi::Dict();
                 // {{"jit", true},
                 //  {"jit_options.flags", "-Ofast -march=native -ffast-math"},
@@ -263,7 +284,7 @@ namespace galileo
                 segment->FillNLPData(nlp_data_);
 
                 ranges_decision_variables_.push_back(segment->getRangeDecisionVariables());
-                ranges_parameters_.push_back(segment->getRangeParameters());
+                ranges_segment_parameters_.push_back(segment->getRangeParameters());
 
                 trajectory_.push_back(segment);
 
@@ -290,17 +311,20 @@ namespace galileo
             // Ensures that the initial state constraint and continuity constraints are at the end of the constraint vector for convenience
             nlp_data_.g.push_back(vertcat(g_tmp_vector));
 
-            casadi::MXDict nlp = {{"x", vertcat(nlp_data_.w)},
-                                  {"f", nlp_data_.J},
-                                  {"g", vertcat(nlp_data_.g)},
-                                  {"p", vertcat(nlp_data_.p)}};
+            casadi::MXDict nlp = {{"x", cse(vertcat(nlp_data_.w))},
+                                  {"f", cse(nlp_data_.J)},
+                                  {"g", cse(vertcat(nlp_data_.g))},
+                                  {"p", cse(vertcat(nlp_data_.p))}};
 
             solver_ = casadi::nlpsol("solver", nonlinear_solver_name_, nlp, opts_);
             std::cout << "Finished initialization" << std::endl;
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            std::cout << "Time to initialize: " << elapsed.count() * 1000. << " ms" << std::endl;
         }
 
         template <class ProblemData, class MODE_T>
-        void TrajectoryOpt<ProblemData, MODE_T>::AdvanceFiniteElements(casadi::DM X0, casadi::DM Xf)
+        void TrajectoryOpt<ProblemData, MODE_T>::AdvanceFiniteElements(double global_time, casadi::DM X0, casadi::DM Xf, casadi::DM w0)
         {
             auto start = std::chrono::high_resolution_clock::now();
             nlp_data_.w0.clear();
@@ -310,13 +334,39 @@ namespace galileo
             nlp_data_.lbg.clear();
             nlp_data_.ubg.clear();
 
+            nlp_data_.p0.push_back(X0);
+            nlp_data_.p0.push_back(Xf);
+
             casadi::DMVector lbg_tmp_vector, ubg_tmp_vector;
 
             for (size_t i = 0; i < trajectory_.size(); ++i)
             {
                 auto phase = sequence_->getPhase(i);
-                trajectory_[i]->Update(sequence_->getPhaseStartTimes()[i], phase.time_value / phase.knot_points, X0, Xf);
-                trajectory_[i]->UpdateNLPData(nlp_data_);
+                if (global_time > sequence_->getPhaseStartTimes()[i] + phase.time_value + 1e-6)
+                {
+                    // handle removing this phase
+                    std::cout << "Phase " << i << " has been removed" << std::endl;
+                    continue;
+                }
+
+                if (sequence_->getPhaseStartTimes()[i] <= global_time && global_time < sequence_->getPhaseStartTimes()[i] +  phase.time_value)
+                {
+                    trajectory_[i]->Update(global_time, (phase.time_value - (global_time - sequence_->getPhaseStartTimes()[i])) / phase.knot_points, X0, Xf);
+                }
+                else
+                {
+                    trajectory_[i]->Update(sequence_->getPhaseStartTimes()[i], phase.time_value / phase.knot_points, X0, Xf);
+                }
+
+                if (warm_ && w0.size1() > 0)
+                {
+                    trajectory_[i]->UpdateNLPData(nlp_data_, false);
+                    nlp_data_.w0.push_back(w0);
+                }
+                else
+                {
+                    trajectory_[i]->UpdateNLPData(nlp_data_, true);
+                }
 
                 /*Initial state constraint*/
                 if (i == 0)
@@ -339,8 +389,6 @@ namespace galileo
             std::cout << "Time to update finite elements: " << elapsed.count() * 1000. << " ms" << std::endl;
 
             Optimize();
-
-            warm_ = true;
         }
 
         template <class ProblemData, class MODE_T>
@@ -352,13 +400,19 @@ namespace galileo
             arg["ubg"] = vertcat(nlp_data_.ubg).get_elements();
             arg["lbx"] = vertcat(nlp_data_.lbw).get_elements();
             arg["ubx"] = vertcat(nlp_data_.ubw).get_elements();
-            arg["x0"] = vertcat(nlp_data_.w0).get_elements();
             arg["p"] = vertcat(nlp_data_.p0).get_elements();
+            arg["x0"] = vertcat(nlp_data_.w0).get_elements();
+
             if (warm_)
             {
                 arg["lam_x0"] = lam_x0_;
                 arg["lam_g0"] = lam_g0_;
             }
+            else
+            {
+                warm_ = true;
+            }
+
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
             std::cout << "Time to fill arguments: " << elapsed.count() * 1000. << " ms" << std::endl;
@@ -390,16 +444,18 @@ namespace galileo
                 std::cout << "Total seconds from SNOPT w/o function: " << time_just_solver * 1000. << " ms" << std::endl;
             }
             prev_time_from_funcs_ += time_from_funcs;
-            prev_solution_ = result["x"];
+            curr_solution_ = result["x"];
             lam_x0_ = result["lam_x"];
             lam_g0_ = result["lam_g"];
             casadi::DM p_sol = arg["p"];
+            casadi::DM global_p_sol = p_sol(casadi::Slice(casadi_int(std::get<0>(range_global_parameters_)), casadi_int(std::get<1>(range_global_parameters_))));
 
             for (size_t i = 0; i < trajectory_.size(); ++i)
             {
-                casadi::DM seg_sol = prev_solution_(casadi::Slice(casadi_int(std::get<0>(ranges_decision_variables_[i])), casadi_int(std::get<1>(ranges_decision_variables_[i]))));
-                casadi::DM seg_p_sol = p_sol(casadi::Slice(casadi_int(std::get<0>(ranges_parameters_[i])), casadi_int(std::get<1>(ranges_parameters_[i]))));
-                casadi::DMVector sol_i = trajectory_[i]->ExtractSolution(seg_sol, seg_p_sol);
+                casadi::DM seg_sol = curr_solution_(casadi::Slice(casadi_int(std::get<0>(ranges_decision_variables_[i])), casadi_int(std::get<1>(ranges_decision_variables_[i]))));
+                casadi::DM seg_p_sol = p_sol(casadi::Slice(casadi_int(std::get<0>(ranges_segment_parameters_[i])), casadi_int(std::get<1>(ranges_segment_parameters_[i]))));
+                casadi::DM full_seg_p_sol = vertcat(casadi::DMVector{global_p_sol, seg_p_sol});
+                casadi::DMVector sol_i = trajectory_[i]->ExtractSolution(seg_sol, full_seg_p_sol);
                 if (i == 0)
                     sol_ = sol_i;
                 else
@@ -412,6 +468,18 @@ namespace galileo
             elapsed = end - start;
             std::cout << "Time to extract solution: " << elapsed.count() * 1000. << " ms" << std::endl;
             return sol_;
+        }
+
+        template <class ProblemData, class MODE_T>
+        casadi::DMVector TrajectoryOpt<ProblemData, MODE_T>::getStackedDecisionVariableTimes() const
+        {
+            casadi::DMVector result;
+            for (size_t i = 0; i < trajectory_.size(); ++i)
+            {
+                casadi::DMVector stacked_segment_times = trajectory_[i]->getSegmentDecisionVariableTimes();
+                result.insert(result.end(), stacked_segment_times.begin(), stacked_segment_times.end());
+            }
+            return result;
         }
 
         template <class ProblemData, class MODE_T>
@@ -432,8 +500,8 @@ namespace galileo
             {
                 solution::solution_segment_data_t segment_data;
 
-                std::vector<double> state_times_vec = pseg->getSegmentTimes().get_elements();
-                std::vector<double> input_times_vec = pseg->getUSegmentTimes().get_elements();
+                std::vector<double> state_times_vec = pseg->getStateSegmentTimes().get_elements();
+                std::vector<double> input_times_vec = pseg->getInputSegmentTimes().get_elements();
                 segment_data.state_times = Eigen::Map<Eigen::VectorXd>(state_times_vec.data(), state_times_vec.size());
                 segment_data.input_times = Eigen::Map<Eigen::VectorXd>(input_times_vec.data(), input_times_vec.size());
                 segment_data.initial_time = state_times_vec[0];

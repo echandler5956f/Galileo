@@ -36,6 +36,27 @@ namespace galileo
         // template void casadiToEigen<casadi::MX>(const casadi::MX &casadi_matrix, Eigen::MatrixXd &eigen_matrix);
 
         template <typename Scalar>
+        void casadiToEigen(const Scalar &casadi_matrix, Eigen::VectorXd &eigen_vector)
+        {
+            size_t rows = casadi_matrix.size1();
+            size_t cols = casadi_matrix.size2();
+
+            if (rows == 1 || cols == 1)
+            {
+                eigen_vector.resize(rows * cols);
+                std::memcpy(eigen_vector.data(), casadi_matrix.ptr(), sizeof(double) * rows * cols);
+            }
+            else
+            {
+                throw std::runtime_error("casadiToEigen: Input matrix is not a vector.");
+            }
+        }
+
+        template void casadiToEigen<casadi::DM>(const casadi::DM &casadi_matrix, Eigen::VectorXd &eigen_vector);
+        // template void casadiToEigen<casadi::SX>(const casadi::SX &casadi_matrix, Eigen::VectorXd &eigen_vector);
+        // template void casadiToEigen<casadi::MX>(const casadi::MX &casadi_matrix, Eigen::VectorXd &eigen_vector);
+
+        template <typename Scalar>
         void vectorToCasadi(const std::vector<double> &vec, int rows, int cols, Scalar &casadi_matrix)
         {
             Eigen::MatrixXd intermediary_matrix = Eigen::Map<const Eigen::MatrixXd>(vec.data(), rows, cols);

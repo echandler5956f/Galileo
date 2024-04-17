@@ -1,4 +1,4 @@
-#include "atlas_test.h"
+#include "go1_test.h"
 
 int main(int argc, char **argv)
 {
@@ -45,13 +45,43 @@ int main(int argc, char **argv)
         contact_surfaces);
 
     solver_interface.Initialize(X0, Xf);
-    solver_interface.Update(0., X0, Xf);
 
-    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
+    int mpc_iterations = 50;
+    double dt = (solver_interface.getRobotModel()->contact_sequence->getPhaseSequence()[0].time_value - 0.05) / mpc_iterations;
+
+    Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(mpc_iterations, 0., dt * (mpc_iterations + 1));
     Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(solver_interface.states()->nx, new_times.size());
     Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(solver_interface.states()->nu, new_times.size());
-    // solver_interface.GetSolution(new_times, new_states, new_inputs);
-    solver_interface.VisualizeSolutionAndConstraints(new_times, new_states, new_inputs);
+
+    auto time_start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < mpc_iterations; i++)
+    {
+        // if (i > 250)
+        // {
+        //     Xf(q_idx) = 0.0;
+        // }
+        // std::cout << "X0 x = " << X0(solver_interface.states()->q_index) << std::endl;
+        solver_interface.Update(new_times[i], X0, Xf);
+        Eigen::VectorXd time = Eigen::VectorXd::Zero(1);
+        time(0) = new_times[i] + dt;
+        Eigen::MatrixXd state = Eigen::MatrixXd::Zero(solver_interface.states()->nx, 1);
+        Eigen::MatrixXd input = Eigen::MatrixXd::Zero(solver_interface.states()->nu, 1);
+        solver_interface.GetSolution(time, state, input);
+        new_states.col(i) = state;
+        new_inputs.col(i) = input;
+        tools::eigenToCasadi(state, X0);
+    }
+    auto time_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = time_end - time_start;
+    auto mpc_frequency = mpc_iterations / elapsed_seconds.count();
+    std::cout << "MPC frequency: " << mpc_frequency << " Hz" << std::endl;
+    solver_interface.PlotTrajectories(new_times, new_states, new_inputs);
+
+    // Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
+    // Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(solver_interface.states()->nx, new_times.size());
+    // Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(solver_interface.states()->nu, new_times.size());
+    // // solver_interface.GetSolution(new_times, new_states, new_inputs);
+    // solver_interface.VisualizeSolutionAndConstraints(new_times, new_states, new_inputs);
 
     return 0;
 }

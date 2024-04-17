@@ -21,6 +21,18 @@ namespace galileo
         class PseudospectralSegment
         {
         public:
+
+            /**
+             * @brief Helper object to store the pseudospectral times.
+             *
+             */
+            struct PseudospectralTimes
+            {
+                casadi::DM segment_times;
+                casadi::DM collocation_times;
+                casadi::DM knot_times;
+            };
+
             /**
              * @brief Construct a new Pseudospectral Segment object.
              *
@@ -55,12 +67,12 @@ namespace galileo
             /**
              * @brief Update a pseudospectral segment.
              *
-             * @param start_time The starting time of the segment
+             * @param segment_offset The starting time of the segment w.r.t the global time
              * @param h The time step
              * @param X0_param The state to deviate from
              * @param Xf_param The final state
              */
-            void Update(const double start_time, const double h, casadi::DM X0_param, casadi::DM Xf_param);
+            void Update(const double segment_offset, const double h, casadi::DM X0_param, casadi::DM Xf_param);
 
             /**
              * @brief Evaliate the expressions with the actual decision variables.
@@ -84,8 +96,10 @@ namespace galileo
              * This function takes in an NLPData object, and fills its members with the members of this->nlp_data_.
              *
              * @param nlp_data The data to be filled
+             * @param update_guess Flag to update the initial guess using the initial guess function. 
+             * If false, the initial guess must be filled elsewhere
              */
-            void UpdateNLPData(NLPData &nlp_data);
+            void UpdateNLPData(NLPData &nlp_data, bool update_guess = true);
 
             /**
              * @brief Fills the NLP data with the decision variables, constraints, costs, and bounds.
@@ -137,63 +151,53 @@ namespace galileo
             }
 
             /**
-             * @brief Get the segment times vector.
+             * @brief Get the state times vectors.
              *
-             * @return casadi::DM The segment times vector
+             * @return PseudospectralTimes The state time vectors
              */
-            casadi::DM getSegmentTimes() const
+            PseudospectralTimes getStateTimes() const
+            {
+                return dXtimes_;
+            }
+
+            /**
+             * @brief Get the input time vectors.
+             *
+             * @return PseudospectralTimes The input time vectors
+             */
+            PseudospectralTimes getInputTimes() const
+            {
+                return Utimes_;
+            }
+
+            /**
+             * @brief Get the state segment times vector.
+             *
+             * @return casadi::DM The state segment time vector
+             */
+            casadi::DM getStateSegmentTimes() const
             {
                 return dXtimes_.segment_times;
             }
 
             /**
-             * @brief Get the knot times vector.
+             * @brief Get the input segment time vector.
              *
-             * @return casadi::DM The knot times vector
+             * @return casadi::DM The input segment time vector
              */
-            casadi::DM getKnotTimes() const
-            {
-                return dXtimes_.knot_times;
-            }
-
-            /**
-             * @brief Get the collocation times vector.
-             *
-             * @return casadi::DM The collocation times vector
-             */
-            casadi::DM getCollocationTimes() const
-            {
-                return dXtimes_.collocation_times;
-            }
-
-            /**
-             * @brief Get the segment times vector of the input.
-             *
-             * @return casadi::DM The segment times vector
-             */
-            casadi::DM getUSegmentTimes() const
+            casadi::DM getInputSegmentTimes() const
             {
                 return Utimes_.segment_times;
             }
 
             /**
-             * @brief Get the knot times vector of the input.
-             *
-             * @return casadi::DM The knot times vector
+             * @brief Get the times in the order that the decision variables are arranged for this segment.
+             * 
+             * @return casadi::DM The stacked decision variable times
              */
-            casadi::DM getUKnotTimes() const
+            casadi::DMVector getSegmentDecisionVariableTimes() const
             {
-                return Utimes_.knot_times;
-            }
-
-            /**
-             * @brief Get the collocation times vector of the input.
-             *
-             * @return casadi::DM The collocation times vector
-             */
-            casadi::DM getUCollocationTimes() const
-            {
-                return Utimes_.collocation_times;
+                return casadi::DMVector{vertcat(casadi::DMVector{dXtimes_.knot_times, dXtimes_.collocation_times}), vertcat(casadi::DMVector{Utimes_.knot_times, Utimes_.collocation_times})};
             }
 
             /**
@@ -277,10 +281,10 @@ namespace galileo
             /**
              * @brief Initialize the vector of segment times which constraints are evaluated at.
              *
-             * @param start_time The starting time of the segment
+             * @param segment_offset The starting time of the segment w.r.t the global time
              * @param h The time step
              */
-            void UpdateTimeVectors(const double start_time, const double h);
+            void UpdateTimeVectors(const double segment_offset, const double h);
 
             /**
              * @brief Update the bounds with the current time segment.
@@ -441,17 +445,6 @@ namespace galileo
             };
 
             ExpressionVariables expr_v_;
-
-            /**
-             * @brief Helper object to store the pseudospectral times.
-             *
-             */
-            struct PseudospectralTimes
-            {
-                casadi::DM segment_times;
-                casadi::DM collocation_times;
-                casadi::DM knot_times;
-            };
 
             /**
              * @brief Pseudospectral times for the state and state deviants.
