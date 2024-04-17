@@ -103,6 +103,26 @@ namespace galileo
             }
         }
 
+        std::vector<std::string> LeggedBody::getEndEffectorNames()
+        {
+            std::vector<std::string> ee_names;
+            for (auto &ee_pair : ees_)
+            {
+                ee_names.push_back(ee_pair.second->frame_name);
+            }
+            return ee_names;
+        }
+
+        std::vector<std::string> LeggedBody::getEndEffectorNames()
+        {
+            std::vector<std::string> ee_names;
+            for (auto &ee_pair : ees_)
+            {
+                ee_names.push_back(ee_pair.second->frame_name);
+            }
+            return ee_names;
+        }
+
         void LeggedBody::generateContactCombination()
         {
             std::vector<contact::ContactCombination> contact_combinations;

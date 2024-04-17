@@ -83,7 +83,7 @@ namespace galileo
                 knot_nums.push_back(phase.knot_num);
                 knot_times.push_back(phase.knot_time);
 
-                contact_surface_ids.push_back(phase.contact_surface_ids);
+                contact_surface_ids.push_back(phase.mode.contact_surface_ids);
             }
 
             mask_vec = helper::getMaskVectorFromContactSurfaces(contact_surface_ids);
@@ -200,9 +200,7 @@ namespace galileo
 
             res.ee_dofs = ee_dofs;
 
-            // TODO: Add the contact modes to the service response so the WBC knows which end effectors are in contact
-
-            auto contact_sequence = robot_->getContactSequence();
+            auto contact_sequence = getRobotModel()->getContactSequence();
 
             galileo_ros::ContactSequence contact_sequence_msg;
             for (auto &phase : contact_sequence->getPhases())
@@ -211,10 +209,8 @@ namespace galileo
                 phase_msg.knot_num = phase.knot_points;
                 phase_msg.knot_time = phase.time_value;
 
-                for (auto &contact_surface_id : phase.mode.contact_surfaces)
-                {
-                    phase_msg.contact_surface_ids.push_back(contact_surface_id);
-                }
+                phase_msg.mode.contact_surface_ids = phase.mode.contact_surfaces;
+                phase_msg.mode.ee_names = getRobotModel()->getEndEffectorNames();
 
                 contact_sequence_msg.phases.push_back(phase_msg);
             }
