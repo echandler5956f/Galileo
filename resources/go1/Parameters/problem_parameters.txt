@@ -1,5 +1,5 @@
 end_effector_names, (LF_FOOT,LH_FOOT,RF_FOOT,RH_FOOT)
-knot_num, (5)
+knot_num, (2)
 knot_time, (0.25)
 contact_combinations, ((0, 0, 0, 0))
 

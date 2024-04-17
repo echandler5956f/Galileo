@@ -7,17 +7,42 @@ namespace galileo
     namespace opt
     {
         /**
-         * @brief Struct to hold data for a Nonlinear Programming (NLP) problem.
+         * @brief Struct to hold data needed to describe a Nonlinear Programming (NLP) problem.
          * 
          */
-        struct NLPData
+        struct NLPProblemData
         {
             /**
              * @brief Vector of decision variables.
              *
              */
             casadi::MXVector w;
+            
+            /**
+             * @brief Vector of constraint expressions.
+             *
+             */
+            casadi::MXVector g;
 
+            /**
+             * @brief Vector of constant parameters.
+             * 
+             */
+            casadi::MXVector p;
+
+            /**
+             * @brief Expression for objective cost.
+             *
+             */
+            casadi::MX J;
+        };
+
+        /**
+         * @brief Struct to hold data used as input to the NLP solver.
+         * 
+         */
+        struct NLPInputData
+        {
             /**
              * @brief Lower bounds associated with the decision variables.
              *
@@ -36,12 +61,6 @@ namespace galileo
             casadi::DMVector w0;
             
             /**
-             * @brief Vector of constraint expressions.
-             *
-             */
-            casadi::MXVector g;
-
-            /**
              * @brief Vector of general constraint lower bounds.
              *
              */
@@ -54,22 +73,10 @@ namespace galileo
             casadi::DMVector ubg;
 
             /**
-             * @brief Vector of constant parameters.
-             * 
-             */
-            casadi::MXVector p;
-
-            /**
              * @brief Vector of initial guess for the parameters.
              * 
              */
             casadi::DMVector p0;
-
-            /**
-             * @brief Expression for objective cost.
-             *
-             */
-            casadi::MX J;
         };
     }
 }

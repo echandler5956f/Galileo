@@ -3,6 +3,7 @@
 #include "galileo/opt/Solution.h"
 #include "galileo/opt/PhaseSequence.h"
 #include "galileo/opt/PseudospectralSegment.h"
+#include <map>
 #include <chrono>
 
 namespace galileo
@@ -34,8 +35,11 @@ namespace galileo
              * @brief Initialize the finite elements.
              *
              * @param d The degree of the finite element polynomials
+             * @param horizon The time horizon for evaluating the finite elements. 
+             * If horizon < 0, the horizon is set to the total phase time. 
+             * This parameter determines which combinations of segments are converted into an nlp.
              */
-            void InitFiniteElements(int d);
+            void InitFiniteElements(int d, double horizon = -1);
 
             /**
              * @brief Advance the finite elements.
@@ -45,7 +49,7 @@ namespace galileo
              * @param Xf The new final state
              * @param w0 The new initial guess
              */
-            void AdvanceFiniteElements(double global_time, casadi::DM X0, casadi::DM Xf, casadi::DM w0 = casadi::DM::zeros(0,0));
+            void AdvanceFiniteElements(double global_time, casadi::DM X0, casadi::DM Xf, casadi::DM w0 = casadi::DM::zeros(0, 0));
 
             /**
              * @brief Optimize and return the solution.
@@ -70,12 +74,18 @@ namespace galileo
 
             /**
              * @brief Get the stacked decision variable times.
-             * 
+             *
              * @return casadi::DMVector The stacked decision variable times
              */
             casadi::DMVector getStackedDecisionVariableTimes() const;
 
         private:
+            /**
+             * @brief Reset the bounds and initial guess data.
+             * 
+             */
+            void ResetNLPInputData();
+
             /**
              * @brief A Trajectory is made up of segments of finite elements.
              *
@@ -192,23 +202,41 @@ namespace galileo
 
             /**
              * @brief Range of the parameters shared between segments.
-             * 
+             *
              */
             tuple_size_t range_global_parameters_;
 
             /**
              * @brief Casadi likes to accumulate the function times, so we need to keep track of the previous time.
-             * 
+             *
              */
             double prev_time_from_funcs_ = 0.0;
 
             /**
-             * @brief NLPData struct containing decision variables, constraints, and objective function.
+             * @brief NLPProblemData struct containing decision variables, constraints, and objective function.
              *
              */
-            NLPData nlp_data_;
+            NLPProblemData nlp_prob_data_;
+
+            /**
+             * @brief NLPInputData struct containing bounds and initial guess data.
+             * 
+             */
+            NLPInputData nlp_in_data_;
+
+            /**
+             * @brief The time horizon for evaluating the finite elements. 
+             * If horizon < 0, the horizon is set to the total phase time. 
+             * This parameter determines which combinations of segments are converted into an nlp.
+             * Set from InitFiniteElements
+             * 
+             */
+            double horizon_ = -1;
         };
 
+        // IMPORTANT: TrajectoryOpt assumes a fixed phase sequence.
+        // This means we can handle periodic phase sequences, but not dynamic aperiodic phase sequences.
+        // If you want dynamic aperiodic phase sequences, you need to create a new TrajectoryOpt object.
         template <class ProblemData, class MODE_T>
         TrajectoryOpt<ProblemData, MODE_T>::TrajectoryOpt(std::shared_ptr<ProblemData> problem, std::shared_ptr<PhaseSequence<MODE_T>> phase_sequence, std::vector<std::shared_ptr<ConstraintBuilder<ProblemData>>> builders, std::shared_ptr<DecisionDataBuilder<ProblemData>> decision_builder, casadi::Dict opts, std::string nonlinear_solver_name)
         {
@@ -223,25 +251,21 @@ namespace galileo
         }
 
         template <class ProblemData, class MODE_T>
-        void TrajectoryOpt<ProblemData, MODE_T>::InitFiniteElements(int d)
+        void TrajectoryOpt<ProblemData, MODE_T>::InitFiniteElements(int d, double horizon)
         {
             trajectory_.clear();
-            nlp_data_.w.clear();
-            nlp_data_.g.clear();
-            nlp_data_.p.clear();
-            nlp_data_.J = 0;
+            nlp_prob_data_.w.clear();
+            nlp_prob_data_.g.clear();
+            nlp_prob_data_.p.clear();
+            nlp_prob_data_.J = 0;
 
-            nlp_data_.w0.clear();
-            nlp_data_.p0.clear();
-            nlp_data_.lbw.clear();
-            nlp_data_.ubw.clear();
-            nlp_data_.lbg.clear();
-            nlp_data_.ubg.clear();
+            ResetNLPInputData();
             ranges_decision_variables_.clear();
             ranges_segment_parameters_.clear();
 
-            casadi::MX prev_final_state_deviant;
+            horizon_ = horizon;
 
+            casadi::MX prev_final_state_deviant;
             casadi::MXVector g_tmp_vector;
 
             std::vector<ConstraintData> G;
@@ -253,15 +277,15 @@ namespace galileo
             casadi::MX X0_sym = casadi::MX::sym("X0", state_indices_->nx, 1);
             casadi::MX Xf_sym = casadi::MX::sym("Xf", state_indices_->nx, 1);
 
-            nlp_data_.p.push_back(X0_sym);
-            nlp_data_.p.push_back(Xf_sym);
+            nlp_prob_data_.p.push_back(X0_sym);
+            nlp_prob_data_.p.push_back(Xf_sym);
             range_global_parameters_ = tuple_size_t(0, 2 * state_indices_->nx);
 
             casadi::Dict casadi_opts = casadi::Dict();
-                // {{"jit", true},
-                //  {"jit_options.flags", "-Ofast -march=native -ffast-math"},
-                //  {"jit_options.compiler", "gcc"},
-                //  {"compiler", "shell"}};
+            // {{"jit", true},
+            //  {"jit_options.flags", "-Ofast -march=native -ffast-math"},
+            //  {"jit_options.compiler", "gcc"},
+            //  {"compiler", "shell"}};
 
             for (size_t i = 0; i < num_phases; ++i)
             {
@@ -281,7 +305,7 @@ namespace galileo
                 segment->InitializeExpressionGraph(G, Wdata, casadi_opts);
                 segment->InitializeKnotSegments(X0_sym, Xf_sym);
                 segment->EvaluateExpressionGraph();
-                segment->FillNLPData(nlp_data_);
+                segment->FillNLPProblemData(nlp_prob_data_);
 
                 ranges_decision_variables_.push_back(segment->getRangeDecisionVariables());
                 ranges_segment_parameters_.push_back(segment->getRangeParameters());
@@ -305,37 +329,36 @@ namespace galileo
                 /*Terminal cost*/
                 if (i == num_phases - 1)
                 {
-                    nlp_data_.J += gp_data_->Phi(casadi::MXVector{segment->getFinalState(), Xf_sym}).at(0);
+                    nlp_prob_data_.J += gp_data_->Phi(casadi::MXVector{segment->getFinalState(), Xf_sym}).at(0);
                 }
             }
             // Ensures that the initial state constraint and continuity constraints are at the end of the constraint vector for convenience
-            nlp_data_.g.push_back(vertcat(g_tmp_vector));
+            nlp_prob_data_.g.push_back(vertcat(g_tmp_vector));
 
-            casadi::MXDict nlp = {{"x", cse(vertcat(nlp_data_.w))},
-                                  {"f", cse(nlp_data_.J)},
-                                  {"g", cse(vertcat(nlp_data_.g))},
-                                  {"p", cse(vertcat(nlp_data_.p))}};
-
-            solver_ = casadi::nlpsol("solver", nonlinear_solver_name_, nlp, opts_);
+            casadi::MXDict nlp = {{"x", vertcat(nlp_prob_data_.w)},
+                                  {"f", nlp_prob_data_.J},
+                                  {"g", vertcat(nlp_prob_data_.g)},
+                                  {"p", vertcat(nlp_prob_data_.p)}};
             std::cout << "Finished initialization" << std::endl;
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
             std::cout << "Time to initialize: " << elapsed.count() * 1000. << " ms" << std::endl;
+
+            start = std::chrono::high_resolution_clock::now();
+            solver_ = casadi::nlpsol("solver", nonlinear_solver_name_, nlp, opts_);
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            std::cout << "Time to create solver: " << elapsed.count() * 1000. << " ms" << std::endl;
         }
 
         template <class ProblemData, class MODE_T>
         void TrajectoryOpt<ProblemData, MODE_T>::AdvanceFiniteElements(double global_time, casadi::DM X0, casadi::DM Xf, casadi::DM w0)
         {
             auto start = std::chrono::high_resolution_clock::now();
-            nlp_data_.w0.clear();
-            nlp_data_.p0.clear();
-            nlp_data_.lbw.clear();
-            nlp_data_.ubw.clear();
-            nlp_data_.lbg.clear();
-            nlp_data_.ubg.clear();
+            ResetNLPInputData();
 
-            nlp_data_.p0.push_back(X0);
-            nlp_data_.p0.push_back(Xf);
+            nlp_in_data_.p0.push_back(X0);
+            nlp_in_data_.p0.push_back(Xf);
 
             casadi::DMVector lbg_tmp_vector, ubg_tmp_vector;
 
@@ -349,23 +372,32 @@ namespace galileo
                     continue;
                 }
 
-                if (sequence_->getPhaseStartTimes()[i] <= global_time && global_time < sequence_->getPhaseStartTimes()[i] +  phase.time_value)
-                {
-                    trajectory_[i]->Update(global_time, (phase.time_value - (global_time - sequence_->getPhaseStartTimes()[i])) / phase.knot_points, X0, Xf);
-                }
-                else
-                {
-                    trajectory_[i]->Update(sequence_->getPhaseStartTimes()[i], phase.time_value / phase.knot_points, X0, Xf);
-                }
+                // Calculate the start time of the current phase
+                double phase_start_time = sequence_->getPhaseStartTimes()[i];
 
+                // Check if the global time is within the current phase
+                bool is_within_current_phase = (phase_start_time <= global_time) && (global_time < phase_start_time + phase.time_value);
+
+                // Update time is either the global time (if within current phase) or the start time of the phase
+                double update_time = is_within_current_phase ? global_time : phase_start_time;
+
+                // Calculate the remaining time in the phase
+                double remaining_time_in_phase = phase.time_value - (global_time - phase_start_time);
+
+                // Time value depends on whether the update time is the global time
+                double time_value = (update_time == global_time) ? remaining_time_in_phase : phase.time_value;
+
+                // Determine if we need to update NLP data
+                bool update_nlp_data = !(warm_ && w0.size1() > 0);
+
+                // Update the trajectory and NLP data
+                trajectory_[i]->Update(update_time, time_value / phase.knot_points, X0, Xf, update_nlp_data);
+                trajectory_[i]->UpdateNLPInputData(nlp_in_data_, update_nlp_data);
+
+                // If warm start is enabled and w0 has elements, add w0 to the NLP data
                 if (warm_ && w0.size1() > 0)
                 {
-                    trajectory_[i]->UpdateNLPData(nlp_data_, false);
-                    nlp_data_.w0.push_back(w0);
-                }
-                else
-                {
-                    trajectory_[i]->UpdateNLPData(nlp_data_, true);
+                    nlp_in_data_.w0.push_back(w0);
                 }
 
                 /*Initial state constraint*/
@@ -381,8 +413,8 @@ namespace galileo
                     ubg_tmp_vector.push_back(casadi::DM::zeros(state_indices_->ndx, 1));
                 }
             }
-            nlp_data_.lbg.push_back(vertcat(lbg_tmp_vector));
-            nlp_data_.ubg.push_back(vertcat(ubg_tmp_vector));
+            nlp_in_data_.lbg.push_back(vertcat(lbg_tmp_vector));
+            nlp_in_data_.ubg.push_back(vertcat(ubg_tmp_vector));
 
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
@@ -396,12 +428,12 @@ namespace galileo
         {
             auto start = std::chrono::high_resolution_clock::now();
             casadi::DMDict arg;
-            arg["lbg"] = vertcat(nlp_data_.lbg).get_elements();
-            arg["ubg"] = vertcat(nlp_data_.ubg).get_elements();
-            arg["lbx"] = vertcat(nlp_data_.lbw).get_elements();
-            arg["ubx"] = vertcat(nlp_data_.ubw).get_elements();
-            arg["p"] = vertcat(nlp_data_.p0).get_elements();
-            arg["x0"] = vertcat(nlp_data_.w0).get_elements();
+            arg["lbg"] = vertcat(nlp_in_data_.lbg).get_elements();
+            arg["ubg"] = vertcat(nlp_in_data_.ubg).get_elements();
+            arg["lbx"] = vertcat(nlp_in_data_.lbw).get_elements();
+            arg["ubx"] = vertcat(nlp_in_data_.ubw).get_elements();
+            arg["p"] = vertcat(nlp_in_data_.p0).get_elements();
+            arg["x0"] = vertcat(nlp_in_data_.w0).get_elements();
 
             if (warm_)
             {
@@ -468,6 +500,17 @@ namespace galileo
             elapsed = end - start;
             std::cout << "Time to extract solution: " << elapsed.count() * 1000. << " ms" << std::endl;
             return sol_;
+        }
+
+        template <class ProblemData, class MODE_T>
+        void TrajectoryOpt<ProblemData, MODE_T>::ResetNLPInputData()
+        {
+            nlp_in_data_.w0.clear();
+            nlp_in_data_.p0.clear();
+            nlp_in_data_.lbw.clear();
+            nlp_in_data_.ubw.clear();
+            nlp_in_data_.lbg.clear();
+            nlp_in_data_.ubg.clear();
         }
 
         template <class ProblemData, class MODE_T>

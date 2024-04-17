@@ -16,9 +16,10 @@ constraints.footstep_vel_end|0|double
 solver|ipopt|string
 
 nlp.ipopt.linear_solver|ma57|string
-nlp.ipopt.ma97_order|metis|string
-nlp.ipopt.max_iter|2|int
-nlp.ipopt.fixed_variable_treatment|make_constraint|string
+nlp.ipopt.ma57_small_pivot_flag|1|int
+
+nlp.ipopt.max_iter|1|int
+nlp.ipopt.fixed_variable_treatment|relax_bounds|string
 nlp.ipopt.hessian_approximation|limited-memory|string
 nlp.ipopt.print_level|0|int
 
@@ -40,3 +41,4 @@ nlp.ipopt.mu_init|1e-5|double
 nlp.ipopt.bound_relax_factor|1e-9|double
 
 nlp.pass_nonlinear_variables|true|bool
+nlp.detect_simple_bounds|true|bool

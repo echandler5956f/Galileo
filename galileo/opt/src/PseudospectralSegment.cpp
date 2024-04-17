@@ -170,8 +170,8 @@ namespace galileo
             casadi_int tmp = N;
 
             // Collocation constraints
-            nlp_data_.lbg.push_back(casadi::DM::zeros(tmp, 1));
-            nlp_data_.ubg.push_back(casadi::DM::zeros(tmp, 1));
+            nlp_in_data_.lbg.push_back(casadi::DM::zeros(tmp, 1));
+            nlp_in_data_.ubg.push_back(casadi::DM::zeros(tmp, 1));
 
             casadi::SXVector tmap_symbolic_input = casadi::SXVector{horzcat(x_at_c), horzcat(u_at_c)};
             /*Map the constraint to each collocation point, and then map the mapped constraint to each knot segment*/
@@ -276,63 +276,47 @@ namespace galileo
                 result.push_back(reshape(g_con_mat, g_con_mat.size1() * g_con_mat.size2(), 1));
             }
 
-            nlp_data_.J = ps_funcs_.q_cost_fold(casadi::MXVector{0., xs, dxcs, dxs, us, ucs, ps_vars_.dt, ps_vars_.Xf_sym_}).at(0);
+            nlp_prob_data_.J = ps_funcs_.q_cost_fold(casadi::MXVector{0., xs, dxcs, dxs, us, ucs, ps_vars_.dt, ps_vars_.Xf_sym_}).at(0);
 
-            nlp_data_.g.insert(nlp_data_.g.end(), result.begin(), result.end());
+            nlp_prob_data_.g.insert(nlp_prob_data_.g.end(), result.begin(), result.end());
 
-            nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.dX0_vec.begin(), ps_vars_.dX0_vec.end());
-            nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.dXc_vec.begin(), ps_vars_.dXc_vec.end());
-            nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.U0_vec.begin(), ps_vars_.U0_vec.end());
-            nlp_data_.w.insert(nlp_data_.w.end(), ps_vars_.Uc_vec.begin(), ps_vars_.Uc_vec.end());
+            nlp_prob_data_.w.insert(nlp_prob_data_.w.end(), ps_vars_.dX0_vec.begin(), ps_vars_.dX0_vec.end());
+            nlp_prob_data_.w.insert(nlp_prob_data_.w.end(), ps_vars_.dXc_vec.begin(), ps_vars_.dXc_vec.end());
+            nlp_prob_data_.w.insert(nlp_prob_data_.w.end(), ps_vars_.U0_vec.begin(), ps_vars_.U0_vec.end());
+            nlp_prob_data_.w.insert(nlp_prob_data_.w.end(), ps_vars_.Uc_vec.begin(), ps_vars_.Uc_vec.end());
 
-            // nlp_data_.p.push_back(ps_vars_.X0_sym_);
-            // nlp_data_.p.push_back(ps_vars_.Xf_sym_);
+            // nlp_prob_data_.p.push_back(ps_vars_.X0_sym_);
+            // nlp_prob_data_.p.push_back(ps_vars_.Xf_sym_);
 
             if (optimize_dt_)
             {
                 std::cerr << "Not implemented yet" << std::endl;
-                // nlp_data_.w.push_back(ps_vars_.dt);
-                // nlp_data_.w0.push_back(casadi::DM(h));
+                // nlp_prob_data_.w.push_back(ps_vars_.dt);
+                // nlp_in_data_.w0.push_back(casadi::DM(h));
             }
             else
             {
-                nlp_data_.p.push_back(ps_vars_.dt);
+                nlp_prob_data_.p.push_back(ps_vars_.dt);
             }
 
             get_sol_func_ = casadi::Function("func",
-                                             casadi::MXVector({vertcat(nlp_data_.w), vertcat(casadi::MXVector{ps_vars_.X0_sym_, ps_vars_.Xf_sym_, ps_vars_.dt})}),
+                                             casadi::MXVector({vertcat(nlp_prob_data_.w), vertcat(casadi::MXVector{ps_vars_.X0_sym_, ps_vars_.Xf_sym_, ps_vars_.dt})}),
                                              casadi::MXVector({all_xs, all_us}));
         }
 
-        // void PseudospectralSegment::Update(const double start_time, const double h, casadi::DM X0_param, casadi::DM w0)
-        // {
-        //     ResetNLPData();
-        //     UpdateTimeVectors(start_time, h);
-        //     UpdateBounds();
-
-        //     nlp_data_.p0.push_back(X0_param);
-
-        //     if (optimize_dt_)
-        //         std::cerr << "Not implemented yet" << std::endl;
-        //     else
-        //         nlp_data_.p0.push_back(casadi::DM(h));
-
-        //     nlp_data_.w0.push_back(w0);
-        // }
-
-        void PseudospectralSegment::Update(const double segment_offset, const double h, casadi::DM X0_param, casadi::DM Xf_param)
+        void PseudospectralSegment::Update(const double segment_offset, const double h, casadi::DM X0_param, casadi::DM Xf_param, bool generate_guess)
         {
-            ResetNLPData();
+            ResetNLPInputData();
             UpdateTimeVectors(segment_offset, h);
             UpdateBounds();
 
-            // nlp_data_.p0.push_back(X0_param);
-            // nlp_data_.p0.push_back(Xf_param);
+            // nlp_in_data_.p0.push_back(X0_param);
+            // nlp_in_data_.p0.push_back(Xf_param);
 
             if (optimize_dt_)
                 std::cerr << "Not implemented yet" << std::endl;
             else
-                nlp_data_.p0.push_back(casadi::DM(h));
+                nlp_in_data_.p0.push_back(casadi::DM(h));
 
             int Ndxknot = st_m_->ndx * (knot_num_ + 1);
             int Ndx = st_m_->ndx * (dX_poly_.d + 1) * knot_num_ + st_m_->ndx;
@@ -345,12 +329,12 @@ namespace galileo
             /*Transform initial guess for x to an initial guess for dx, using f_diff, the inverse of f_int*/
             casadi::MX xkg_sym = casadi::MX::sym("xkg", st_m_->nx, 1);
             casadi::MX xckg_sym = casadi::MX::sym("Xckg", st_m_->nx * dX_poly_.d, 1);
-            if (!ps_funcs_.w0_func.is_null())
+            if (!ps_funcs_.w0_func.is_null() && generate_guess)
             {
                 casadi::DM xg = ps_funcs_.w0_func.map(knot_num_ + 1, "serial")(dXtimes_.knot_times).at(0);
                 casadi::Function dxg_func = casadi::Function("xg_fun", casadi::MXVector{xkg_sym}, casadi::MXVector{Fdiff_(casadi::MXVector{X0_param, xkg_sym, 1.0}).at(0)})
                                                 .map(knot_num_ + 1, "serial");
-                nlp_data_.w0.push_back(casadi::DM::reshape(dxg_func(casadi::DMVector{xg}).at(0), Ndxknot, 1));
+                nlp_in_data_.w0.push_back(casadi::DM::reshape(dxg_func(casadi::DMVector{xg}).at(0), Ndxknot, 1));
                 /*The transformation of xc to dxc is a slightly less trivial. While x_k = fint(x0_init, dx_k), for xc_k, we have xc_k = fint(x_k, dxc_k) which is equivalent to xc_k = fint(fint(x0_init, dx_k), dxc_k).
                 Thus, dxc_k = fdiff(fint(x0_init, dx_k), xc_k)). This could be done with maps like above, but it is not necessary.*/
                 casadi::DM xc_g = ps_funcs_.w0_func.map((dX_poly_.d) * knot_num_, "serial")(dXtimes_.collocation_times).at(0);
@@ -361,24 +345,24 @@ namespace galileo
                     for (casadi_int j = 0; j < dX_poly_.d; ++j)
                     {
                         double dt_j = (dX_poly_.tau_root[j + 1] - dX_poly_.tau_root[j]) * h;
-                        nlp_data_.w0.push_back(reshape(Fdiff_(casadi::DMVector{xk, xck(casadi::Slice(j * st_m_->nx, (j + 1) * st_m_->nx)), dt_j}).at(0), st_m_->ndx, 1));
+                        nlp_in_data_.w0.push_back(reshape(Fdiff_(casadi::DMVector{xk, xck(casadi::Slice(j * st_m_->nx, (j + 1) * st_m_->nx)), dt_j}).at(0), st_m_->ndx, 1));
                     }
                 }
 
-                nlp_data_.w0.push_back(casadi::DM::reshape(ps_funcs_.w0_func.map(knot_num_ + 1, "serial")(Utimes_.knot_times).at(1), Nuknot, 1));
-                nlp_data_.w0.push_back(casadi::DM::reshape(ps_funcs_.w0_func.map((U_poly_.d) * knot_num_, "serial")(Utimes_.collocation_times).at(1), Nucol, 1));
+                nlp_in_data_.w0.push_back(casadi::DM::reshape(ps_funcs_.w0_func.map(knot_num_ + 1, "serial")(Utimes_.knot_times).at(1), Nuknot, 1));
+                nlp_in_data_.w0.push_back(casadi::DM::reshape(ps_funcs_.w0_func.map((U_poly_.d) * knot_num_, "serial")(Utimes_.collocation_times).at(1), Nucol, 1));
             }
         }
 
-        void PseudospectralSegment::ResetNLPData()
+        void PseudospectralSegment::ResetNLPInputData()
         {
-            nlp_data_.w0.clear();
-            nlp_data_.p0.clear();
-            nlp_data_.lbw.clear();
-            nlp_data_.ubw.clear();
+            nlp_in_data_.w0.clear();
+            nlp_in_data_.p0.clear();
+            nlp_in_data_.lbw.clear();
+            nlp_in_data_.ubw.clear();
             // Clear all but the collocation constraints
-            nlp_data_.lbg.erase(nlp_data_.lbg.begin() + 1, nlp_data_.lbg.end());
-            nlp_data_.ubg.erase(nlp_data_.ubg.begin() + 1, nlp_data_.ubg.end());
+            nlp_in_data_.lbg.erase(nlp_in_data_.lbg.begin() + 1, nlp_in_data_.lbg.end());
+            nlp_in_data_.ubg.erase(nlp_in_data_.ubg.begin() + 1, nlp_in_data_.ubg.end());
         }
 
         void PseudospectralSegment::UpdateTimeVectors(const double segment_offset, const double h)
@@ -448,21 +432,21 @@ namespace galileo
 
             for (size_t i = 0; i < ps_funcs_.lbg_maps.size(); ++i)
             {
-                nlp_data_.lbg.push_back(casadi::DM::reshape(vertcat(ps_funcs_.lbg_maps[i](dXtimes_.collocation_times)), std::get<1>(ps_funcs_.ranges_G[i]) - std::get<0>(ps_funcs_.ranges_G[i]), 1));
-                nlp_data_.ubg.push_back(casadi::DM::reshape(vertcat(ps_funcs_.ubg_maps[i](dXtimes_.collocation_times)), std::get<1>(ps_funcs_.ranges_G[i]) - std::get<0>(ps_funcs_.ranges_G[i]), 1));
+                nlp_in_data_.lbg.push_back(casadi::DM::reshape(vertcat(ps_funcs_.lbg_maps[i](dXtimes_.collocation_times)), std::get<1>(ps_funcs_.ranges_G[i]) - std::get<0>(ps_funcs_.ranges_G[i]), 1));
+                nlp_in_data_.ubg.push_back(casadi::DM::reshape(vertcat(ps_funcs_.ubg_maps[i](dXtimes_.collocation_times)), std::get<1>(ps_funcs_.ranges_G[i]) - std::get<0>(ps_funcs_.ranges_G[i]), 1));
             }
 
             if (!ps_funcs_.lbw_func.is_null() && !ps_funcs_.ubw_func.is_null())
             {
-                nlp_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map(knot_num_ + 1, "serial")(dXtimes_.knot_times).at(0), Ndxknot, 1));
-                nlp_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map(knot_num_ + 1, "serial")(dXtimes_.knot_times).at(0), Ndxknot, 1));
-                nlp_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map((dX_poly_.d) * knot_num_, "serial")(dXtimes_.collocation_times).at(0), Ndxcol, 1));
-                nlp_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map((dX_poly_.d) * knot_num_, "serial")(dXtimes_.collocation_times).at(0), Ndxcol, 1));
+                nlp_in_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map(knot_num_ + 1, "serial")(dXtimes_.knot_times).at(0), Ndxknot, 1));
+                nlp_in_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map(knot_num_ + 1, "serial")(dXtimes_.knot_times).at(0), Ndxknot, 1));
+                nlp_in_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map((dX_poly_.d) * knot_num_, "serial")(dXtimes_.collocation_times).at(0), Ndxcol, 1));
+                nlp_in_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map((dX_poly_.d) * knot_num_, "serial")(dXtimes_.collocation_times).at(0), Ndxcol, 1));
 
-                nlp_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map(knot_num_ + 1, "serial")(Utimes_.knot_times).at(1), Nuknot, 1));
-                nlp_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map(knot_num_ + 1, "serial")(Utimes_.knot_times).at(1), Nuknot, 1));
-                nlp_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map((U_poly_.d) * knot_num_, "serial")(Utimes_.collocation_times).at(1), Nucol, 1));
-                nlp_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map((U_poly_.d) * knot_num_, "serial")(Utimes_.collocation_times).at(1), Nucol, 1));
+                nlp_in_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map(knot_num_ + 1, "serial")(Utimes_.knot_times).at(1), Nuknot, 1));
+                nlp_in_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map(knot_num_ + 1, "serial")(Utimes_.knot_times).at(1), Nuknot, 1));
+                nlp_in_data_.lbw.push_back(casadi::DM::reshape(ps_funcs_.lbw_func.map((U_poly_.d) * knot_num_, "serial")(Utimes_.collocation_times).at(1), Nucol, 1));
+                nlp_in_data_.ubw.push_back(casadi::DM::reshape(ps_funcs_.ubw_func.map((U_poly_.d) * knot_num_, "serial")(Utimes_.collocation_times).at(1), Nucol, 1));
             }
         }
 
@@ -471,50 +455,48 @@ namespace galileo
             return get_sol_func_(casadi::DMVector{w, p0});
         }
 
-        void PseudospectralSegment::UpdateNLPData(NLPData &nlp_data, bool update_guess)
+        void PseudospectralSegment::UpdateNLPInputData(NLPInputData &nlp_in_data, bool update_guess)
         {
-            nlp_data.lbw.insert(nlp_data.lbw.end(), make_move_iterator(nlp_data_.lbw.begin()), make_move_iterator(nlp_data_.lbw.end()));
-            nlp_data.ubw.insert(nlp_data.ubw.end(), make_move_iterator(nlp_data_.ubw.begin()), make_move_iterator(nlp_data_.ubw.end()));
-            nlp_data.lbg.insert(nlp_data.lbg.end(), make_move_iterator(nlp_data_.lbg.begin()), make_move_iterator(nlp_data_.lbg.end()));
-            nlp_data.ubg.insert(nlp_data.ubg.end(), make_move_iterator(nlp_data_.ubg.begin()), make_move_iterator(nlp_data_.ubg.end()));
-            nlp_data.p0.insert(nlp_data.p0.end(), make_move_iterator(nlp_data_.p0.begin()), make_move_iterator(nlp_data_.p0.end()));
+            nlp_in_data.lbw.insert(nlp_in_data.lbw.end(), nlp_in_data_.lbw.begin(), nlp_in_data_.lbw.end());
+            nlp_in_data.ubw.insert(nlp_in_data.ubw.end(), nlp_in_data_.ubw.begin(), nlp_in_data_.ubw.end());
+            nlp_in_data.lbg.insert(nlp_in_data.lbg.end(), nlp_in_data_.lbg.begin(), nlp_in_data_.lbg.end());
+            nlp_in_data.ubg.insert(nlp_in_data.ubg.end(), nlp_in_data_.ubg.begin(), nlp_in_data_.ubg.end());
+            nlp_in_data.p0.insert(nlp_in_data.p0.end(), nlp_in_data_.p0.begin(), nlp_in_data_.p0.end());
 
             if (update_guess)
             {
-                nlp_data.w0.insert(nlp_data.w0.end(), make_move_iterator(nlp_data_.w0.begin()), make_move_iterator(nlp_data_.w0.end()));
+                nlp_in_data.w0.insert(nlp_in_data.w0.end(), nlp_in_data_.w0.begin(), nlp_in_data_.w0.end());
             }
         }
 
-        void PseudospectralSegment::FillNLPData(NLPData &nlp_data)
+        void PseudospectralSegment::FillNLPProblemData(NLPProblemData &nlp_prob_data)
         {
             /*Where w of this segment starts*/
-            size_t w_it_size = nlp_data.w.size();
+            size_t w_it_size = nlp_prob_data.w.size();
             size_t w_size = 0;
             /*Accumulate the size of each symbolic element in w*/
             if (w_it_size != 0)
-                w_size = size_t(accumulate(nlp_data.w.begin(), nlp_data.w.end(), 0.0, [](int sum, const casadi::MX &item)
+                w_size = size_t(accumulate(nlp_prob_data.w.begin(), nlp_prob_data.w.end(), 0.0, [](int sum, const casadi::MX &item)
                                            { return sum + item.size1() * item.size2(); }));
 
-            nlp_data.w.insert(nlp_data.w.end(), nlp_data_.w.begin(), nlp_data_.w.end());
-            w_range_ = tuple_size_t(w_size, accumulate(nlp_data.w.begin(), nlp_data.w.end(), 0.0, [](int sum, const casadi::MX &item)
+            nlp_prob_data.w.insert(nlp_prob_data.w.end(), nlp_prob_data_.w.begin(), nlp_prob_data_.w.end());
+            w_range_ = tuple_size_t(w_size, accumulate(nlp_prob_data.w.begin(), nlp_prob_data.w.end(), 0.0, [](int sum, const casadi::MX &item)
                                                        { return sum + item.size1() * item.size2(); }));
 
-            nlp_data.g.insert(nlp_data.g.end(), nlp_data_.g.begin(), nlp_data_.g.end());
+            nlp_prob_data.g.insert(nlp_prob_data.g.end(), nlp_prob_data_.g.begin(), nlp_prob_data_.g.end());
 
             /*Where p of this segment starts*/
-            size_t p_it_size = nlp_data.p.size();
+            size_t p_it_size = nlp_prob_data.p.size();
             size_t p_size = 0;
             /*Accumulate the size of each symbolic element in p*/
             if (p_it_size != 0)
-                p_size = size_t(accumulate(nlp_data.p.begin(), nlp_data.p.end(), 0.0, [](int sum, const casadi::MX &item)
+                p_size = size_t(accumulate(nlp_prob_data.p.begin(), nlp_prob_data.p.end(), 0.0, [](int sum, const casadi::MX &item)
                                            { return sum + item.size1() * item.size2(); }));
 
-            nlp_data.p.insert(nlp_data.p.end(), nlp_data_.p.begin(), nlp_data_.p.end());
-            p_range_ = tuple_size_t(p_size, accumulate(nlp_data.p.begin(), nlp_data.p.end(), 0.0, [](int sum, const casadi::MX &item)
+            nlp_prob_data.p.insert(nlp_prob_data.p.end(), nlp_prob_data_.p.begin(), nlp_prob_data_.p.end());
+            p_range_ = tuple_size_t(p_size, accumulate(nlp_prob_data.p.begin(), nlp_prob_data.p.end(), 0.0, [](int sum, const casadi::MX &item)
                                      { return sum + item.size1() * item.size2(); }));
-            nlp_data.J += nlp_data_.J;
-
-            UpdateNLPData(nlp_data, true);
+            nlp_prob_data.J += nlp_prob_data_.J;
         }
 
         casadi::MX PseudospectralSegment::ProcessVector(casadi::MXVector &vec) const

@@ -108,17 +108,19 @@ namespace galileo
                 if (segment_decision_times.size() == 0)
                 {
                     sol_error = AccessSolutionError::NO_QUERY_TIMES_PROVIDED;
+                    std::cout << "No segment decision times provided" << std::endl;
                     return false;
                 }
                 if (solution_segments_.size() == 0)
                 {
                     sol_error = AccessSolutionError::SOLUTION_DNE;
+                    std::cout << "No solution segments provided" << std::endl;
                     return false;
                 }
 
                 // Calculate the required size for w
                 size_t w_size = 0;
-                for (size_t i = 0; i < segment_decision_times.size(); ++i)
+                for (size_t i = 0; i < size_t(segment_decision_times.size() / 2); ++i)
                 {
                     w_size += solution_segments_[i].solx_segment.rows() * segment_decision_times[2 * i].size1();
                     w_size += solution_segments_[i].solu_segment.rows() * segment_decision_times[2 * i + 1].size1();
@@ -129,7 +131,7 @@ namespace galileo
 
                 size_t index = 0;
                 #pragma omp parallel for
-                for (size_t i = 0; i < segment_decision_times.size(); ++i)
+                for (size_t i = 0; i < size_t(segment_decision_times.size() / 2); ++i)
                 {
                     casadi::DM x_phase_i_times = segment_decision_times[2 * i] + dt;
                     casadi::DM u_phase_i_times = segment_decision_times[2 * i + 1] + dt;

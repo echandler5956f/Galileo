@@ -7,6 +7,8 @@ namespace galileo
 {
     namespace opt
     {
+        // TODO: Add an "is_periodic_" flag to the PhaseSequence class.
+        
         /**
          * @brief Class for holding simple Phase sequence metadata.
          *

@@ -273,7 +273,7 @@ namespace galileo
 
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, solver_type_);
 
-            trajectory_opt_->InitFiniteElements(3);
+            trajectory_opt_->InitFiniteElements(1);
         }
 
         void LeggedInterface::Update(double global_time, const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
@@ -305,7 +305,6 @@ namespace galileo
                 solution_interface_->UpdateSolution(trajectory_opt_->getSolutionSegments());
                 solution_interface_->UpdateConstraints(trajectory_opt_->getConstraintDataSegments());
             }
-
             curr_time_ = global_time;
         }
 

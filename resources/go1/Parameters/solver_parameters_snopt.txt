@@ -15,7 +15,7 @@ constraints.footstep_vel_end|0|double
 
 solver|snopt|string
 
-nlp.snopt.Major iterations limit|10|int
+nlp.snopt.Major iterations limit|2|int
 nlp.snopt.Minor iterations limit|2000|int
 nlp.snopt.Summary file|0|int
 nlp.snopt.Major print level|0|int

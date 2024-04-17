@@ -71,8 +71,9 @@ namespace galileo
              * @param h The time step
              * @param X0_param The state to deviate from
              * @param Xf_param The final state
+             * @param generate_guess Flag to generate an initial guess
              */
-            void Update(const double segment_offset, const double h, casadi::DM X0_param, casadi::DM Xf_param);
+            void Update(const double segment_offset, const double h, casadi::DM X0_param, casadi::DM Xf_param, bool generate_guess = true);
 
             /**
              * @brief Evaliate the expressions with the actual decision variables.
@@ -91,24 +92,24 @@ namespace galileo
             casadi::DMVector ExtractSolution(casadi::DM &w, casadi::DM &p0) const;
 
             /**
-             * @brief Updates the NLP data with the bouns, initial guesses, and parameters values.
+             * @brief Updates the NLP data with the bounds, initial guesses, and parameters values.
              *
-             * This function takes in an NLPData object, and fills its members with the members of this->nlp_data_.
+             * This function takes in an NLPInputData object, and fills its members with the members of this->nlp_in_data_.
              *
-             * @param nlp_data The data to be filled
+             * @param nlp_in_data The data to be filled
              * @param update_guess Flag to update the initial guess using the initial guess function. 
              * If false, the initial guess must be filled elsewhere
              */
-            void UpdateNLPData(NLPData &nlp_data, bool update_guess = true);
+            void UpdateNLPInputData(NLPInputData &nlp_in_data, bool update_guess = true);
 
             /**
-             * @brief Fills the NLP data with the decision variables, constraints, costs, and bounds.
+             * @brief Fills the NLP data with the decision variables, constraints, and costs.
              *
-             * This function takes in an NLPData object, and fills its members with the members of this->nlp_data_.
+             * This function takes in an NLPProblemData object, and fills its members with the members of this->nlp_prob_data_.
              *
-             * @param nlp_data The data to be filled
+             * @param nlp_prob_data The data to be filled
              */
-            void FillNLPData(NLPData &nlp_data);
+            void FillNLPProblemData(NLPProblemData &nlp_prob_data);
 
             /**
              * @brief Get the initial state.
@@ -296,7 +297,7 @@ namespace galileo
              * @brief Reset w0, p0, lbw, ubw, lbg, and ubg.
              *
              */
-            void ResetNLPData();
+            void ResetNLPInputData();
 
             /**
              * @brief Helper function to process a vector of type MX.
@@ -459,10 +460,16 @@ namespace galileo
             PseudospectralTimes Utimes_;
 
             /**
-             * @brief Stores the raw decision variables, constraints, costs, and bounds for this segment for the NLP problem.
+             * @brief Stores the symbolic decision variables, constraints, and costs for this segment for the NLP problem.
              *
              */
-            NLPData nlp_data_;
+            NLPProblemData nlp_prob_data_;
+
+            /**
+             * @brief Stores the numeric initial guesses, bounds, and parameters for this segment for the NLP problem.
+             *
+             */
+            NLPInputData nlp_in_data_;
 
             /**
              * @brief casadi::Function map for extracting the solution from the ocp solution vector.
