@@ -123,6 +123,11 @@ namespace galileo
                 double min_following_leeway_planar = 1e-8;
                 double footstep_vel_start = 0;
                 double footstep_vel_end = 0;
+
+                std::optional<std::map<std::string, double>> footstep_liftoffs_before_horizon = std::nullopt;
+                std::optional<std::map<std::string, double>> footstep_touchdowns_after_horizon = std::nullopt;
+
+                std::optional<double> ideal_footstep_duration = std::nullopt;
             };
 
             /**
@@ -161,6 +166,9 @@ namespace galileo
 
                 casadi::SX t = problem_data.velocity_constraint_problem_data.t;
                 contact::ContactMode mode = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(phase_index).mode;
+
+                auto liftoffs_before_horizon = problem_data.velocity_constraint_problem_data.footstep_liftoffs_before_horizon;
+                auto touchdowns_after_horizon = problem_data.velocity_constraint_problem_data.footstep_touchdowns_after_horizon;
                 for (auto ee : problem_data.velocity_constraint_problem_data.robot_end_effectors)
                 {
                     if (!mode[(*ee.second)])
@@ -177,6 +185,7 @@ namespace galileo
                         galileo::legged::environment::SurfaceID touchdown_surface_ID = 0;
 
                         contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
+
                         // When did the EE break contact?
                         for (int i = phase_index; i >= 0; i--)
                         {
@@ -188,10 +197,10 @@ namespace galileo
                                 problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
                                 liftoff_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
                                 break;
-                                // if liftoff is not found, we will assume that the ee is in contact with SURFACE 0 at the start of the horizon.
-                                // This is an odd and limiting assumption. Better behavior should be created.
                             }
                         }
+
+
                         // When does it make contact again?
                         for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->getNumPhases(); i++)
                         {
@@ -203,10 +212,57 @@ namespace galileo
                                 problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
                                 touchdown_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
                                 break;
-                                // if liftoff is not found, we will assume that the ee is in contact with SURFACE 0 at the start of the horizon.
-                                // This is an odd and limiting assumption. Better behavior should be created.
                             }
                         }
+
+                        if(liftoff_time == 0){
+                            // The EE is not in contact at the start of the horizon
+                            if(liftoffs_before_horizon.has_value() && liftoffs_before_horizon.value().count(ee.second->frame_name) > 0){
+                                liftoff_time =  liftoffs_before_horizon.value()[ee.second->frame_name];
+                            } else {
+                                if(touchdown_time < problem_data.velocity_constraint_problem_data.contact_sequence->getDT()){
+                                    if(problem_data.velocity_constraint_problem_data.ideal_footstep_duration.has_value()){
+                                        liftoff_time = touchdown_time - problem_data.velocity_constraint_problem_data.ideal_footstep_duration.value();
+                                    } else {
+                                        throw std::runtime_error("The ideal footstep liftoff time for " + ee.second->frame_name + " is not defined!");
+                                    }
+                                } else{
+                                    // The end effector is in flight for the entire horizon! The velocity constraint cannot be applied
+                                    
+                                }
+                            }
+                        
+                            if(liftoff_time > 0){
+                                // The liftoff is within the horizon, but the mode at t=0 is not in contact
+                                // this is an error
+                                throw std::runtime_error("The ideal footstep liftoff time for " + ee.second->frame_name + " is defined, but it is within the planning horizon and the EE is not in contact at that time!");
+                            }
+                        }
+
+                        if(touchdown_time == problem_data.velocity_constraint_problem_data.contact_sequence->getDT()){
+                            // The EE is not in contact at the end of the horizon
+                            if(touchdowns_after_horizon.has_value() && touchdowns_after_horizon.value().count(ee.second->frame_name) > 0){
+                                touchdown_time =  touchdowns_after_horizon.value()[ee.second->frame_name];
+                            } else {
+                                if(liftoff_time > 0){
+                                    if(problem_data.velocity_constraint_problem_data.ideal_footstep_duration.has_value()){
+                                        touchdown_time = liftoff_time + problem_data.velocity_constraint_problem_data.ideal_footstep_duration.value();
+                                    } else {
+                                        throw std::runtime_error("The ideal footstep touchdown time for " + ee.second->frame_name + " is not defined!");
+                                    }
+                                } else{
+                                    // The end effector is in flight for the entire horizon! The velocity constraint cannot be applied
+                                    
+                                }
+                            }
+                        
+                            if(touchdown_time < problem_data.velocity_constraint_problem_data.contact_sequence->getDT()){
+                                // The touchdown is within the horizon, but the mode at t=DT is not in contact
+                                // this is an error
+                                throw std::runtime_error("The ideal footstep touchdown time for " + ee.second->frame_name + " is defined, but it is within the planning horizon and the EE is not in contact at that time!");
+                            }
+                        }
+
                         footstep_definition.h_start = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(liftoff_surface_ID).surface_transform.translation()[2];
                         footstep_definition.h_end = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(touchdown_surface_ID).surface_transform.translation()[2];
                         footstep_definition.h_max = std::max(footstep_definition.h_start, footstep_definition.h_end) + problem_data.velocity_constraint_problem_data.ideal_offset_height;

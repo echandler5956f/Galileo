@@ -81,6 +81,30 @@ namespace galileo
                     if (opts.find("footstep_vel_end") != opts.end())
                         this->velocity_constraint_problem_data.footstep_vel_end = opts["footstep_vel_end"];
 
+                    if (opts.find("ideal_footstep_duration") != opts.end())
+                        this->velocity_constraint_problem_data.ideal_footstep_duration = opts["ideal_footstep_duration"];
+                    
+                    for(auto &ee : robot_end_effectors){
+                        assert(ee.second != nullptr);
+                        std::string liftoff_name = ee.second->frame_name + "_footstep_liftoff_before_horizon";
+                        std::string touchdown_name = ee.second->frame_name + "_footstep_touchdown_after_horizon";
+                        if (opts.find(liftoff_name) != opts.end()){
+                            if(!this->velocity_constraint_problem_data.footstep_liftoffs_before_horizon.has_value()){
+                                this->velocity_constraint_problem_data.footstep_liftoffs_before_horizon = std::map<std::string, double>();
+                            }
+                            this->velocity_constraint_problem_data.footstep_liftoffs_before_horizon.value()[ee.second->frame_name] = 
+                                opts[liftoff_name];
+                        }
+                        if (opts.find(touchdown_name) != opts.end()){
+                            if(!this->velocity_constraint_problem_data.footstep_touchdowns_after_horizon.has_value()){
+                                this->velocity_constraint_problem_data.footstep_touchdowns_after_horizon = std::map<std::string, double>();
+                            }
+                            this->velocity_constraint_problem_data.footstep_touchdowns_after_horizon.value()[ee.second->frame_name] = 
+                                opts[touchdown_name];
+                        }
+                    }
+
+
                     this->legged_decision_problem_data.environment_surfaces = environment_surfaces;
                     this->legged_decision_problem_data.contact_sequence = contact_sequence;
                     this->legged_decision_problem_data.states = states;
