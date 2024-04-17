@@ -19,7 +19,9 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/tools/GNUPlotInterface.h"
 #include "galileo/tools/MeshcatInterface.h"
-#include "galileo/tools/CasadiConversions.h"
+#include "galileo/tools/CasadiTools.h"
+
+#include <chrono>
 
 namespace galileo
 {
@@ -55,8 +57,7 @@ namespace galileo
             {
                 assert(robot_ != nullptr);
                 robot_->contact_sequence = contact_sequence;
-                casadi::Dict empty_opts;
-                robot_->fillModeDynamics(empty_opts);
+                robot_->fillModeDynamics(casadi::Dict());
                 phases_set_ = true;
             }
 
@@ -83,7 +84,9 @@ namespace galileo
             /**
              * @brief Solve the problem
              */
-            void Update(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
+            void Update(double global_time, const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
+
+            void GetNextGuess(double global_time);
 
             /**
              * @brief Get the solution.
@@ -93,6 +96,9 @@ namespace galileo
              * @param input_result The input at the query times (num_inputs x num_times)
              */
             bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result);
+
+
+            void PlotTrajectories(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &state_result, const Eigen::MatrixXd &input_result);
 
             /**
              * @brief Get the solution and plot the constraints
@@ -188,6 +194,11 @@ namespace galileo
              */
             void CreateProblemData(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
 
+            casadi::Dict legged_opts_ = {{"jit", true},
+                            {"jit_options.flags", "-Ofast -march=native -ffast-math"},
+                            {"jit_options.compiler", "gcc"},
+                            {"compiler", "shell"}};
+
             std::shared_ptr<LeggedRobotStates> states_; /**< Definition of the state. */
 
             std::shared_ptr<LeggedRobotProblemData> problem_data_; /**< The problem data. */
@@ -232,6 +243,12 @@ namespace galileo
             bool phases_set_ = false;
 
             bool fully_initialized_ = false;
+
+            double curr_time_ = 0.0;
+
+            Eigen::VectorXd curr_guess_;
+
+            bool first_update_ = true;
         };
 
     }

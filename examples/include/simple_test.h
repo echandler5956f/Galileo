@@ -1,7 +1,7 @@
-#include "galileo/opt/Constraint.h"
+#include "galileo/opt/ProblemData.h"
 #include "galileo/opt/TrajectoryOpt.h"
-#include "galileo/opt/BasicStates.h"
-#include "galileo/opt/BasicSequence.h"
+#include "galileo/opt/States.h"
+#include "galileo/opt/PhaseSequence.h"
 #include "galileo/tools/MeshcatInterface.h"
 #include "galileo/tools/GNUPlotInterface.h"
 

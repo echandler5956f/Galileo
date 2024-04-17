@@ -6,6 +6,7 @@
 
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 #include "galileo/tools/ReadFromFile.h"
+
 namespace galileo
 {
     namespace legged

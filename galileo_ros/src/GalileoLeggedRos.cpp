@@ -116,7 +116,7 @@ namespace galileo
             assert(X0.size1() == states()->nx);
             assert(Xf.size1() == states()->nx);
 
-            Update(X0, Xf);
+            Update(0., X0, Xf);
         }
 
         bool GalileoLeggedRos::InitStateServiceCallback(galileo_ros::InitState::Request &req, galileo_ros::InitState::Response &res)

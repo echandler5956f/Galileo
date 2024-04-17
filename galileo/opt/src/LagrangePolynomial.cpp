@@ -63,7 +63,7 @@ namespace galileo
         }
 
         template <typename Scalar>
-        Scalar LagrangePolynomial::barycentricInterpolation(double t, const std::vector<Scalar> terms) const
+        Scalar LagrangePolynomial::BarycentricInterpolation(double t, const std::vector<Scalar> terms) const
         {
             assert(terms.size() == tau_root.size());
             assert(t >= -1e-8 && t <= 1. + 1e-8);
@@ -90,11 +90,11 @@ namespace galileo
             return numerator / denominator;
         }
 
-        template casadi::DM LagrangePolynomial::barycentricInterpolation<casadi::DM>(double t, const std::vector<casadi::DM> terms) const;
-        template casadi::SX LagrangePolynomial::barycentricInterpolation<casadi::SX>(double t, const std::vector<casadi::SX> terms) const;
-        template casadi::MX LagrangePolynomial::barycentricInterpolation<casadi::MX>(double t, const std::vector<casadi::MX> terms) const;
+        template casadi::DM LagrangePolynomial::BarycentricInterpolation<casadi::DM>(double t, const std::vector<casadi::DM> terms) const;
+        template casadi::SX LagrangePolynomial::BarycentricInterpolation<casadi::SX>(double t, const std::vector<casadi::SX> terms) const;
+        template casadi::MX LagrangePolynomial::BarycentricInterpolation<casadi::MX>(double t, const std::vector<casadi::MX> terms) const;
 
-        Eigen::VectorXd LagrangePolynomial::barycentricInterpolation(double t, const Eigen::MatrixXd &terms) const
+        Eigen::VectorXd LagrangePolynomial::BarycentricInterpolation(double t, const Eigen::MatrixXd &terms) const
         {
             assert(terms.cols() == tau_root.size());
             assert(t >= -1e-8 && t <= 1. + 1e-8);
@@ -120,7 +120,7 @@ namespace galileo
 
             if ((denominator.array() == 0).any())
             {
-                throw std::runtime_error("Error: Division by zero in barycentricInterpolation");
+                throw std::runtime_error("Error: Division by zero in BarycentricInterpolation");
             }
             return numerator.array() / denominator.array();
         }

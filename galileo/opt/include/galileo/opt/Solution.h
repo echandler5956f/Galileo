@@ -1,10 +1,12 @@
 #pragma once
 
 #include "galileo/opt/LagrangePolynomial.h"
-#include "galileo/opt/Constraint.h"
-#include "galileo/tools/CasadiConversions.h"
+#include "galileo/opt/ProblemData.h"
+#include "galileo/tools/CasadiTools.h"
 #include <Eigen/Dense>
 #include <string>
+
+#include <omp.h>
 
 #include <chrono>
 
@@ -171,12 +173,46 @@ namespace galileo
                  */
                 void UpdateSolution(std::vector<solution_segment_data_t> solution_segments);
 
+                /**
+                 * @brief Get the solution at a set of query times.
+                 *
+                 * @param query_times The times at which to query the solution.
+                 * @param segment The segment to query.
+                 * @param times The times at which the solution is evaluated.
+                 * @param degree The degree of the polynomial.
+                 * @param poly The polynomial to use.
+                 * @return Eigen::MatrixXd The solution at the query times.
+                 */
+                Eigen::MatrixXd GetSolutionSegment(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &segment, const Eigen::VectorXd &times, const int degree, const LagrangePolynomial &poly) const;
+
                 enum AccessSolutionError
                 {
                     OK,
                     NO_QUERY_TIMES_PROVIDED,
                     SOLUTION_DNE
                 };
+
+                /**
+                 * @brief Get the state solution at a set of query times.
+                 *
+                 * @param query_times The times at which to query the solution.
+                 * @param state_result The state result at each query time.
+                 * @param sol_error An error code that is set if this fails to get a solution.
+                 * @return true Success
+                 * @return false Failure
+                 */
+                bool GetStateSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, AccessSolutionError &sol_error) const;
+
+                /**
+                 * @brief Get the input solution at a set of query times.
+                 *
+                 * @param query_times The times at which to query the solution.
+                 * @param input_result The input result at each query time.
+                 * @param sol_error An error code that is set if this fails to get a solution.
+                 * @return true Success
+                 * @return false Failure
+                 */
+                bool GetInputSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const;
 
                 /**
                  * @brief Get the solution at a set of query times.
@@ -204,6 +240,33 @@ namespace galileo
                  * @return bool True if the solution exists at the query times.
                  */
                 bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const;
+
+                /**
+                 * @brief Get the next guess from the previous solution.
+                 *
+                 * @param segment_decision_times The decision times of the segments.
+                 * @param w The next guess.
+                 * @param dt The time step.
+                 * @return true Success
+                 * @return false Failure
+                 */
+                bool GetNextGuessFromPrevSolution(const casadi::DMVector &segment_decision_times, Eigen::VectorXd &w, double dt) const
+                {
+                    AccessSolutionError sol_error;
+                    return GetNextGuessFromPrevSolution(segment_decision_times, w, dt, sol_error);
+                }
+
+                /**
+                 * @brief Get the next guess from the previous solution.
+                 *
+                 * @param segment_decision_times The decision times of the segments.
+                 * @param w The next guess.
+                 * @param dt The time step.
+                 * @param sol_error An error code that is set if this fails to get a solution.
+                 * @return true Success
+                 * @return false Failure
+                 */
+                bool GetNextGuessFromPrevSolution(const casadi::DMVector &segment_decision_times, Eigen::VectorXd &w, double dt, AccessSolutionError &sol_error) const;
 
                 /**
                  * @brief Update the constraints with new constraint data segments.

@@ -45,7 +45,7 @@ int main(int argc, char **argv)
         contact_surfaces);
 
     solver_interface.Initialize(X0, Xf);
-    solver_interface.Update(X0, Xf);
+    solver_interface.Update(0., X0, Xf);
 
     Eigen::VectorXd new_times = Eigen::VectorXd::LinSpaced(250, 0., solver_interface.getRobotModel()->contact_sequence->getDT());
     Eigen::MatrixXd new_states = Eigen::MatrixXd::Zero(solver_interface.states()->nx, new_times.size());

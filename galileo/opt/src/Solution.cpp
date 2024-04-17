@@ -11,6 +11,67 @@ namespace galileo
                 solution_segments_ = solution_segments;
             }
 
+            Eigen::MatrixXd Solution::GetSolutionSegment(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &segment, const Eigen::VectorXd &times, const int degree, const LagrangePolynomial &poly) const
+            {
+                Eigen::MatrixXd result(segment.rows(), query_times.size());
+
+                for (size_t i = 0; i < query_times.size(); i++)
+                {
+                    for (size_t j = 0; j < solution_segments_.size(); j++)
+                    {
+                        if (query_times(i) >= solution_segments_[j].initial_time && query_times(i) <= solution_segments_[j].end_time)
+                        {
+                            int deg = degree + 1;
+                            size_t index = ((query_times(i) >= times.array()).count() - 1) / deg;
+                            Eigen::MatrixXd terms = segment.block(0, index * deg, segment.rows(), deg);
+                            double knot_start_time = times[index * deg];
+                            double knot_end_time = times[(index * deg) + deg - 1];
+                            double scaled_time = (query_times(i) - knot_start_time) / (knot_end_time - knot_start_time);
+                            result.col(i) = poly.BarycentricInterpolation(scaled_time, terms);
+                            break;
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            bool Solution::GetStateSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, AccessSolutionError &sol_error) const
+            {
+                if (query_times.size() == 0)
+                {
+                    sol_error = AccessSolutionError::NO_QUERY_TIMES_PROVIDED;
+                    return false;
+                }
+                if (solution_segments_.size() == 0)
+                {
+                    sol_error = AccessSolutionError::SOLUTION_DNE;
+                    return false;
+                }
+
+                state_result = GetSolutionSegment(query_times, solution_segments_[0].solx_segment, solution_segments_[0].state_times, solution_segments_[0].state_degree, solution_segments_[0].state_poly);
+
+                return true;
+            }
+
+            bool Solution::GetInputSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const
+            {
+                if (query_times.size() == 0)
+                {
+                    sol_error = AccessSolutionError::NO_QUERY_TIMES_PROVIDED;
+                    return false;
+                }
+                if (solution_segments_.size() == 0)
+                {
+                    sol_error = AccessSolutionError::SOLUTION_DNE;
+                    return false;
+                }
+
+                input_result = GetSolutionSegment(query_times, solution_segments_[0].solu_segment, solution_segments_[0].input_times, solution_segments_[0].input_degree, solution_segments_[0].input_poly);
+
+                return true;
+            }
+
             // state_result and input_result should be initialized to the correct size before calling GetSolution!
             bool Solution::GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const
             {
@@ -21,41 +82,77 @@ namespace galileo
                 }
                 if (solution_segments_.size() == 0)
                 {
-
                     sol_error = AccessSolutionError::SOLUTION_DNE;
                     return false;
                 }
 
-                auto clock_start_time = std::chrono::high_resolution_clock::now();
+                state_result = GetSolutionSegment(query_times, solution_segments_[0].solx_segment, solution_segments_[0].state_times, solution_segments_[0].state_degree, solution_segments_[0].state_poly);
+                input_result = GetSolutionSegment(query_times, solution_segments_[0].solu_segment, solution_segments_[0].input_times, solution_segments_[0].input_degree, solution_segments_[0].input_poly);
 
-                for (size_t i = 0; i < query_times.size(); i++)
+                return true;
+            }
+
+            /**
+             * w is ordered as follows:
+             *      [x_knots_phase0,
+             *       x_collocation_points_phase0,
+             *       u_knots_phase0,
+             *       u_collocation_points_phase0,
+             *       x_knots_phase1,
+             *       ...,
+             *       u_collocation_points_phaseN]
+             *
+             */
+            bool Solution::GetNextGuessFromPrevSolution(const casadi::DMVector &segment_decision_times, Eigen::VectorXd &w, double dt, AccessSolutionError &sol_error) const
+            {
+                if (segment_decision_times.size() == 0)
                 {
-                    for (size_t j = 0; j < solution_segments_.size(); j++)
-                    {
-                        if (query_times(i) >= solution_segments_[j].initial_time && query_times(i) <= solution_segments_[j].end_time)
-                        {
-                            int state_deg = solution_segments_[j].state_degree + 1;
-                            size_t state_index = ((query_times(i) >= solution_segments_[j].state_times.array()).count() - 1) / state_deg;
-                            Eigen::MatrixXd state_terms = solution_segments_[j].solx_segment.block(0, state_index * state_deg, solution_segments_[j].solx_segment.rows(), state_deg);
-                            double state_knot_start_time = solution_segments_[j].state_times[state_index * state_deg];
-                            double state_knot_end_time = solution_segments_[j].state_times[(state_index * state_deg) + state_deg - 1];
-                            double state_scaled_time = (query_times(i) - state_knot_start_time) / (state_knot_end_time - state_knot_start_time);
-                            state_result.col(i) = solution_segments_[j].state_poly.barycentricInterpolation(state_scaled_time, state_terms);
-
-                            int input_deg = solution_segments_[j].input_degree + 1;
-                            size_t input_index = ((query_times(i) >= solution_segments_[j].input_times.array()).count() - 1) / input_deg;
-                            Eigen::MatrixXd input_terms = solution_segments_[j].solu_segment.block(0, input_index * state_deg, solution_segments_[j].solu_segment.rows(), input_deg);
-                            double input_knot_start_time = solution_segments_[j].input_times[input_index * input_deg];
-                            double input_knot_end_time = solution_segments_[j].input_times[(input_index * input_deg) + input_deg - 1];
-                            double input_scaled_time = (query_times(i) - input_knot_start_time) / (input_knot_end_time - input_knot_start_time);
-                            input_result.col(i) = solution_segments_[j].input_poly.barycentricInterpolation(input_scaled_time, input_terms);
-                            break;
-                        }
-                    }
+                    sol_error = AccessSolutionError::NO_QUERY_TIMES_PROVIDED;
+                    return false;
+                }
+                if (solution_segments_.size() == 0)
+                {
+                    sol_error = AccessSolutionError::SOLUTION_DNE;
+                    return false;
                 }
 
-                auto clock_end_time = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed_time = clock_end_time - clock_start_time;
+                // Calculate the required size for w
+                size_t w_size = 0;
+                for (size_t i = 0; i < segment_decision_times.size(); ++i)
+                {
+                    w_size += solution_segments_[i].solx_segment.rows() * segment_decision_times[2 * i].size1();
+                    w_size += solution_segments_[i].solu_segment.rows() * segment_decision_times[2 * i + 1].size1();
+                }
+
+                // Resize w
+                w.resize(w_size);
+
+                size_t index = 0;
+                #pragma omp parallel for
+                for (size_t i = 0; i < segment_decision_times.size(); ++i)
+                {
+                    casadi::DM x_phase_i_times = segment_decision_times[2 * i] + dt;
+                    casadi::DM u_phase_i_times = segment_decision_times[2 * i + 1] + dt;
+
+                    Eigen::VectorXd x_phase_i_times_eigen;
+                    Eigen::VectorXd u_phase_i_times_eigen;
+
+                    tools::casadiToEigen(x_phase_i_times, x_phase_i_times_eigen);
+                    tools::casadiToEigen(u_phase_i_times, u_phase_i_times_eigen);
+
+                    Eigen::MatrixXd segx_result(solution_segments_[i].solx_segment.rows(), x_phase_i_times_eigen.size());
+                    GetStateSolution(x_phase_i_times_eigen, segx_result, sol_error);
+
+                    Eigen::MatrixXd segu_result(solution_segments_[i].solu_segment.rows(), u_phase_i_times_eigen.size());
+                    GetInputSolution(u_phase_i_times_eigen, segu_result, sol_error);
+                    
+                    segx_result.resize(segx_result.size(), 1);
+                    w.block(index, 0, segx_result.size(), 1) = segx_result;
+                    index += segx_result.size();
+                    segu_result.resize(segu_result.size(), 1);
+                    w.block(index, 0, segu_result.size(), 1) = segu_result;
+                    index += segu_result.size();
+                }
                 return true;
             }
 

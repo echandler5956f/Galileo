@@ -1,6 +1,6 @@
 #pragma once
 
-#include "galileo/opt/Constraint.h"
+#include "galileo/opt/ProblemData.h"
 #include "galileo/legged-model/ContactSequence.h"
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
