@@ -203,7 +203,6 @@ namespace galileo
             res.fully_initted = isFullyInitialized();
 
             res.solution_set = isSolutionSet();
-
             return true;
         }
 

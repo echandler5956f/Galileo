@@ -67,6 +67,14 @@ namespace galileo
              */
             SurfaceData createInfiniteGround();
 
+
+            /**
+             * @brief Creates a surface from a polygon.
+             * 
+             * This function creates a surface from a polygon defined by the ordered vertices.
+            */
+            void CreateSurfaceFromPolygon(const std::vector<Eigen::Vector3d> &ordered_vertices, SurfaceData &surface);
+
             /**
              * \brief Calculates the violation of inequality constraints at a given point within a surface region.
              *

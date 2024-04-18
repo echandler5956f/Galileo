@@ -16,6 +16,11 @@ std::map<std::string, double> ConvertSolutionToJointMap(const galileo_ros::Solut
 
     std::vector<std::string> joint_names = msg.response.joint_names;
 
+    for(auto const &name : joint_names)
+    {
+        std::cout << name << std::endl;
+    }
+
     std::vector<double> qj_t(Xt.begin() + msg.response.qj_index, Xt.begin() + msg.response.qj_index + joint_names.size());
 
     // map the joint names to the joint values
@@ -43,6 +48,10 @@ sensor_msgs::JointState getJointStateMessage(std::map<std::string, double> joint
 
 void setTransformationOn(const galileo_ros::SolutionRequest &msg, geometry_msgs::TransformStamped &body_transform)
 {
+    std::cout << "Setting transformation" << std::endl;
+    std::cout << "qj_index: " << msg.response.qj_index << std::endl;
+    std::cout << "X_t_wrapped size: " << msg.response.X_t_wrapped.size() << std::endl;
+
     std::vector<double> transformation(msg.response.X_t_wrapped.begin() + msg.response.qj_index - 7, msg.response.X_t_wrapped.begin() + msg.response.qj_index);
 
     body_transform.header.stamp = ros::Time::now();

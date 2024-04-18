@@ -19,6 +19,64 @@ namespace galileo
                 return infinite_ground;
             }
 
+
+            void CreateSurfaceFromPolygon(const std::vector<Eigen::Vector3d> &ordered_vertices, SurfaceData &surface){
+                // Create a surface from a polygon defined by the ordered vertices
+
+                // Find the "best fit plane" to the polygon. The vertices should be co-planar. 
+                Eigen::MatrixXd vertices_mat(3, ordered_vertices.size());
+                for (size_t i = 0; i < ordered_vertices.size(); ++i)
+                {
+                    vertices_mat.col(i) = ordered_vertices[i];
+                }
+
+                // Find the plane that best fits the vertices.
+                int data_points = ordered_vertices.size();
+
+                // Performing SVD on the data to find the best fit plane
+
+                Eigen::VectorXd centroid = vertices_mat.rowwise().mean();
+                Eigen::MatrixXd centered = vertices_mat.colwise() - centroid;
+
+                Eigen::JacobiSVD<Eigen::MatrixXd> svd(centered.transpose(), Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+                Eigen::VectorXd normal = svd.matrixV().col(2).normalized();
+
+                Eigen::Quaterniond q;
+                q.setFromTwoVectors(Eigen::Vector3d::UnitZ(), normal);
+                Eigen::Matrix3d R = q.toRotationMatrix();
+                
+                Eigen::MatrixXd data_points_in_T = R.transpose() * centered;
+                Eigen::MatrixXd data_points_on_plane = data_points_in_T.topRows(2);
+
+                // We will assume the vertices are ordered, so we can generate constraining inequalities by analyzzing sequential pairs of vertices
+
+                Eigen::MatrixXd A = Eigen::MatrixXd::Zero(data_points, 2);
+                Eigen::VectorXd b = Eigen::VectorXd::Zero(data_points);
+
+                for (int i = 0; i < data_points; ++i)
+                {
+                    Eigen::Vector2d v1 = data_points_on_plane.col(i);
+                    Eigen::Vector2d v2 = data_points_on_plane.col((i + 1) % data_points);
+
+                    Eigen::Vector2d edge = v2 - v1;
+                    Eigen::Vector2d normal = Eigen::Vector2d(-edge(1), edge(0)).normalized();
+
+                    A.row(i) = normal.transpose();
+                    b(i) = normal.dot(v1);
+                }
+
+
+                Eigen::Translation3d translation(centroid);
+                Eigen::Transform<double, 3, Eigen::Affine> transform = translation * q;
+
+                surface.surface_transform = transform;
+                surface.A = A;
+                surface.b = b;
+            }
+
+
+
             template <class T>
             void pointViolation(const SurfaceData &region, const Eigen::Matrix<T, 2, 1> &point, Eigen::Matrix<T, Eigen::Dynamic, 1> &ineq_violation)
             {

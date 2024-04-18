@@ -67,6 +67,8 @@ int main(int argc, char **argv)
         }
     }
 
+    std::sort(files.begin(), files.end());
+
 
 
     for (auto file : files)

@@ -1,7 +1,7 @@
 Variable Name|Value|Type
 
-cost.Q_diag|(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5, 5, 5, 2.5, 1e-3, 1e-3, 1e-3, 1e-3)|vector
-cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 75, 75, 5, 75, 75, 5, 75, 75, 5, 75, 75, 5)|vector
+cost.Q_diag|(15, 15, 100, 10, 30, 50, 300, 300, 300, 100, 50, 100, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3,1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3)|vector
+cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 75, 75, 5, 75, 75, 5, 75, 75, 0, 0, 0, 0)|vector
 cost.terminal_weight|1e3|double
 
 constraints.mu|0.7|double
@@ -15,9 +15,7 @@ constraints.footstep_vel_end|0|double
 
 solver|ipopt|string
 
-nlp.ipopt.linear_solver|ma97|string
-nlp.ipopt.ma97_order|metis|string
-nlp.ipopt.max_iter|250|int
+nlp.ipopt.max_iter|100|int
 nlp.ipopt.fixed_variable_treatment|make_constraint|string
 nlp.ipopt.hessian_approximation|exact|string
 
