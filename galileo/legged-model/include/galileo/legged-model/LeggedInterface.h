@@ -79,7 +79,7 @@ namespace galileo
             /**
              * @brief Initialize the problem
              */
-            void Initialize(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state);
+            void Initialize(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, int degree = 1, double horizon = -1);
 
             /**
              * @brief Solve the problem
@@ -97,8 +97,9 @@ namespace galileo
              */
             bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result);
 
-
             void PlotTrajectories(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &state_result, const Eigen::MatrixXd &input_result);
+
+            void PlotConstraints(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &state_result, const Eigen::MatrixXd &input_result);
 
             /**
              * @brief Get the solution and plot the constraints
@@ -154,9 +155,8 @@ namespace galileo
             std::vector<std::string> getJointNames() const { return robot_->model.names; }
 
             /**
-             * @brief Get the horizon. This is not technically correct, it is actually the problem data dt.
-             * The problem data can change after a solution is found, but it serves
-             * as a best approximate for now.
+             * @brief Get the total time of the phases.
+             * 
              */
             double getSolutionDT()
             {
@@ -177,7 +177,7 @@ namespace galileo
             /**
              * @brief Create the trajectory optimizer.
              */
-            void CreateTrajOpt();
+            void CreateTrajOpt(int degree, double);
 
             /**
              * @brief Create the running and terminal costs.

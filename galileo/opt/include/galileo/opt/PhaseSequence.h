@@ -8,7 +8,7 @@ namespace galileo
     namespace opt
     {
         // TODO: Add an "is_periodic_" flag to the PhaseSequence class.
-        
+
         /**
          * @brief Class for holding simple Phase sequence metadata.
          *
@@ -97,6 +97,20 @@ namespace galileo
              * @return The phase index at the specified time.
              */
             int getPhaseIndexAtTime(double t, PHASE_SEQUENCE_ERROR &error_status) const;
+
+            /**
+             * @brief Get the phase index at a given time.
+             *
+             * This function returns the phase index at a given time in the sequence.
+             *
+             * @param t The time for which to retrieve the phase index.
+             * @return The phase index at the specified time.
+             */
+            int getPhaseIndexAtTime(double t) const
+            {
+                PHASE_SEQUENCE_ERROR error_status;
+                return getPhaseIndexAtTime(t, error_status);
+            }
 
             /**
              * @brief Get the phase index at the specified knot index.
@@ -190,6 +204,21 @@ namespace galileo
              *
              */
             const std::vector<Phase> &getPhases() const { return phase_sequence_; }
+
+            /**
+             * @brief Simple function to get the minimum period in the phase sequence.
+             *
+             * @return double The minimum period in the phase sequence
+             */
+            double getMinPeriod() const
+            {
+                double min_period = std::numeric_limits<double>::infinity();
+                for (int i = 0; i < getNumPhases(); i++)
+                {
+                    min_period = std::min(min_period, phase_sequence_[i].time_value);
+                }
+                return min_period;
+            }
 
             /**
              * @brief Adds dynamics to the specified phase.

@@ -251,7 +251,7 @@ namespace galileo
             setContactSequence(contact_sequence);
         }
 
-        void LeggedInterface::Initialize(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
+        void LeggedInterface::Initialize(const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state, int degree, double horizon)
         {
             assert(CanInitialize());
 
@@ -259,12 +259,12 @@ namespace galileo
             CreateProblemData(initial_state, target_state);
 
             // Create the trajectory optimizer.
-            CreateTrajOpt();
+            CreateTrajOpt(degree, horizon);
 
             fully_initialized_ = true;
         }
 
-        void LeggedInterface::CreateTrajOpt()
+        void LeggedInterface::CreateTrajOpt(int degree, double horizon)
         {
             auto constraint_builders = getLeggedConstraintBuilders();
             decision_builder_ = std::make_shared<galileo::legged::constraints::LeggedDecisionDataBuilder<LeggedRobotProblemData>>();
@@ -273,13 +273,20 @@ namespace galileo
 
             trajectory_opt_ = std::make_shared<LeggedTrajOpt>(problem_data_, robot_->contact_sequence, constraint_builders, decision_builder_, opts_, solver_type_);
 
-            trajectory_opt_->InitFiniteElements(1);
+            casadi::Dict casadi_opts = casadi::Dict();
+            // {{"jit", true},
+            //  {"jit_options.flags", "-Ofast -march=native -ffast-math"},
+            //  {"jit_options.compiler", "gcc"},
+            //  {"compiler", "shell"}};
+
+            trajectory_opt_->InitFiniteElements(degree, horizon, casadi_opts);
         }
 
         void LeggedInterface::Update(double global_time, const T_ROBOT_STATE &initial_state, const T_ROBOT_STATE &target_state)
         {
             if (!first_update_)
             {
+                std::cout << "Getting next guess" << std::endl;
                 std::lock_guard<std::mutex> lock_sol(solution_mutex_);
                 GetNextGuess(global_time);
             }
@@ -290,6 +297,7 @@ namespace galileo
                 if (first_update_)
                 {
                     trajectory_opt_->AdvanceFiniteElements(global_time, initial_state, target_state);
+                    // first_update_ = false;
                 }
                 else
                 {
@@ -360,10 +368,18 @@ namespace galileo
                                              {wrench_legend_names});
         }
 
+        void LeggedInterface::PlotConstraints(const Eigen::VectorXd &query_times, const Eigen::MatrixXd &state_result, const Eigen::MatrixXd &input_result)
+        {
+            std::unique_lock<std::mutex> lock_sol(solution_mutex_);
+            std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result, std::shared_ptr<opt::PhaseSequence<contact::ContactMode>>(robot_->getContactSequence()));
+            plotting_interface->PlotConstraints(constraints);
+        }
+
         void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
             std::unique_lock<std::mutex> lock_sol(solution_mutex_);
-            std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result);
+            solution_interface_->GetSolution(query_times, state_result, input_result);
+            std::vector<std::vector<galileo::opt::constraint_evaluations_t>> constraints = solution_interface_->GetConstraints(query_times, state_result, input_result, std::shared_ptr<opt::PhaseSequence<contact::ContactMode>>(robot_->getContactSequence()));
             lock_sol.unlock();
 
             Eigen::MatrixXd subMatrix = state_result.block(states_->q_index, 0, states_->nq, state_result.cols());

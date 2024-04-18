@@ -476,11 +476,11 @@ namespace galileo
             size_t w_size = 0;
             /*Accumulate the size of each symbolic element in w*/
             if (w_it_size != 0)
-                w_size = size_t(accumulate(nlp_prob_data.w.begin(), nlp_prob_data.w.end(), 0.0, [](int sum, const casadi::MX &item)
+                w_size = size_t(accumulate(nlp_prob_data.w.begin(), nlp_prob_data.w.end(), 0.0, [](size_t sum, const casadi::MX &item)
                                            { return sum + item.size1() * item.size2(); }));
 
             nlp_prob_data.w.insert(nlp_prob_data.w.end(), nlp_prob_data_.w.begin(), nlp_prob_data_.w.end());
-            w_range_ = tuple_size_t(w_size, accumulate(nlp_prob_data.w.begin(), nlp_prob_data.w.end(), 0.0, [](int sum, const casadi::MX &item)
+            w_range_ = tuple_size_t(w_size, accumulate(nlp_prob_data.w.begin(), nlp_prob_data.w.end(), 0.0, [](size_t sum, const casadi::MX &item)
                                                        { return sum + item.size1() * item.size2(); }));
 
             nlp_prob_data.g.insert(nlp_prob_data.g.end(), nlp_prob_data_.g.begin(), nlp_prob_data_.g.end());
@@ -490,12 +490,12 @@ namespace galileo
             size_t p_size = 0;
             /*Accumulate the size of each symbolic element in p*/
             if (p_it_size != 0)
-                p_size = size_t(accumulate(nlp_prob_data.p.begin(), nlp_prob_data.p.end(), 0.0, [](int sum, const casadi::MX &item)
+                p_size = size_t(accumulate(nlp_prob_data.p.begin(), nlp_prob_data.p.end(), 0.0, [](size_t sum, const casadi::MX &item)
                                            { return sum + item.size1() * item.size2(); }));
 
             nlp_prob_data.p.insert(nlp_prob_data.p.end(), nlp_prob_data_.p.begin(), nlp_prob_data_.p.end());
-            p_range_ = tuple_size_t(p_size, accumulate(nlp_prob_data.p.begin(), nlp_prob_data.p.end(), 0.0, [](int sum, const casadi::MX &item)
-                                     { return sum + item.size1() * item.size2(); }));
+            p_range_ = tuple_size_t(p_size, accumulate(nlp_prob_data.p.begin(), nlp_prob_data.p.end(), 0.0, [](size_t sum, const casadi::MX &item)
+                                                       { return sum + item.size1() * item.size2(); }));
             nlp_prob_data.J += nlp_prob_data_.J;
         }
 

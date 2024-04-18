@@ -21,7 +21,6 @@ namespace galileo
         class PseudospectralSegment
         {
         public:
-
             /**
              * @brief Helper object to store the pseudospectral times.
              *
@@ -97,7 +96,7 @@ namespace galileo
              * This function takes in an NLPInputData object, and fills its members with the members of this->nlp_in_data_.
              *
              * @param nlp_in_data The data to be filled
-             * @param update_guess Flag to update the initial guess using the initial guess function. 
+             * @param update_guess Flag to update the initial guess using the initial guess function.
              * If false, the initial guess must be filled elsewhere
              */
             void UpdateNLPInputData(NLPInputData &nlp_in_data, bool update_guess = true);
@@ -193,7 +192,7 @@ namespace galileo
 
             /**
              * @brief Get the times in the order that the decision variables are arranged for this segment.
-             * 
+             *
              * @return casadi::DM The stacked decision variable times
              */
             casadi::DMVector getSegmentDecisionVariableTimes() const
@@ -319,6 +318,10 @@ namespace galileo
              */
             casadi::MX ProcessOffsetVector(casadi::MXVector &vec) const;
 
+            /**
+             * @brief Flag to optimize the time step. Not implemented yet.
+             * 
+             */
             bool optimize_dt_ = false;
 
             /**
@@ -382,8 +385,8 @@ namespace galileo
                 casadi::MX X0_sym_;
 
                 /**
-                 * @brief 
-                 * 
+                 * @brief
+                 *
                  */
                 casadi::MX Xf_sym_;
             };
@@ -570,18 +573,6 @@ namespace galileo
              *
              */
             int knot_num_;
-
-            /**
-             * @brief Period of EACH KNOT SEGMENT within this pseudospectral segment.
-             *
-             */
-            double h_;
-
-            /**
-             * @brief Starting and ending index of the time vector corresponding to this segment.
-             *
-             */
-            tuple_size_t t_range_;
 
             /**
              * @brief Starting and ending index of the decision variables in w corresponding to this segment.
