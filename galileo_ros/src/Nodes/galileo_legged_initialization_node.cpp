@@ -9,6 +9,8 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
                             galileo_ros::ContactSequence &contact_sequence_cmd, galileo_ros::GalileoCommand &galileo_cmd_msg)
 {
 
+    ros::Duration(5).sleep();
+
     std::vector<std::string> end_effectors;
     std::vector<int> knot_num;
     std::vector<double> knot_time;
@@ -124,7 +126,8 @@ int main(int argc, char **argv)
         }
         else if (!init_state.response.environment_surface_set)
         {
-            surface_pub.publish(surface_msg);
+            ros::Duration(10).sleep();
+            // surface_pub.publish(surface_msg);
         }
         else if (!init_state.response.contact_sequence_set)
         {

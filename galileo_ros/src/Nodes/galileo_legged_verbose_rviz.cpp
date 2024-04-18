@@ -1,13 +1,59 @@
 #include <pinocchio/fwd.hpp>
+
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <filesystem>
+
 #include <ros/ros.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
+#include <geometry_msgs/Polygon.h>
+#include <geometry_msgs/PolygonStamped.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Float64.h>
 
 #include <galileo/legged-model/LeggedBody.h>
 #include <galileo/tools/ReadFromFile.h>
 
+
 #include "galileo_ros/SolutionRequest.h"
+
+std::vector<geometry_msgs::Point32> loadSurfacePoints(std::string file_path)
+{
+    std::vector<geometry_msgs::Point32> points;
+    std::ifstream file;
+
+    file.open(file_path);
+    if (!file.is_open())
+    {
+        ROS_ERROR("Failed to open file %s", file_path.c_str());
+        return points;
+    }
+
+    std::string line;
+    std::cout << "Reading file " << file_path << std::endl;
+    while (std::getline(file, line))
+    {
+        std::istringstream iss(line);
+        double x, y, z;
+        if (!(iss >> x >> y >> z))
+        {
+            ROS_ERROR("Failed to read line %s", line.c_str());
+            continue;
+        }
+        std::cout << "Read point " << x << " " << y << " " << z << std::endl;
+        geometry_msgs::Point32 point;
+        point.x = x;
+        point.y = y;
+        point.z = z;
+        points.push_back( point );
+    }
+
+    file.close();
+
+    return points;
+}
+
 
 std::vector<double> getSolutionAtTimeIdx(const galileo_ros::SolutionRequest &msg, int t_idx = 0)
 {
@@ -44,6 +90,45 @@ int main(int argc, char **argv)
         ROS_ERROR("Failed to get parameters");
         return 1;
     }
+    
+    
+    std::string environment_surfaces_folder;
+    std::vector<geometry_msgs::PolygonStamped> polygons;
+    if(nh->getParam("galileo_ros/environment_surfaces_location", environment_surfaces_folder) ){
+        std::filesystem::recursive_directory_iterator it(environment_surfaces_folder);
+        std::vector<std::string> files;
+        for (auto &entry : it)
+        {
+            if (entry.is_regular_file())
+            {
+                files.push_back(entry.path().filename());
+                ROS_INFO("Found file %s", entry.path().filename().c_str());
+            }
+        }
+
+        for (auto file : files)
+        {
+            std::string file_path = environment_surfaces_folder + file;
+            std::vector<geometry_msgs::Point32> points = loadSurfacePoints(file_path);
+            std::vector<geometry_msgs::Point32> points_stacked;
+
+            // for(auto point : points){
+            //     geometry_msgs::Point32 p;
+            //     p.x = point.x;
+            //     p.y = point.y;
+            //     p.z = point.z - 0.1;
+            //     points_stacked.push_back(point);
+            //     points_stacked.push_back(p);
+            // }
+
+            geometry_msgs::PolygonStamped polygon;
+            polygon.polygon.points = points;
+            polygons.push_back(polygon);
+        }
+    }
+
+
+
 
     std::map<std::string, std::string> problem_parameters = galileo::tools::readFromFile(problem_parameter_file_name);
 
@@ -70,6 +155,17 @@ int main(int argc, char **argv)
         end_effector_force_publisher[end_effector.first] = nh->advertise<visualization_msgs::Marker>(channel_name, 1);
     }
 
+    std::vector<ros::Publisher> surface_pubs;
+    int polytope_num = 0;
+    for(auto &polytope : polygons){
+        ros::Publisher surface_pub = nh->advertise<geometry_msgs::PolygonStamped>("/environment_surfaces_" + std::to_string(polytope_num), 1);
+        polytope_num++;
+        surface_pubs.push_back(surface_pub);
+    }
+
+
+    auto polygon_publisher = nh->advertise<geometry_msgs::PolygonStamped>("/environment_surfaces", 1);
+
     galileo_ros::SolutionRequest msg;
     msg.request.times = {0};
 
@@ -82,6 +178,18 @@ int main(int argc, char **argv)
         {
 
             ros::spinOnce();
+            for(int i = 0; i < polygons.size(); i++){
+                auto polygon = polygons[i];
+                geometry_msgs::PolygonStamped polygon_stamped;
+                polygon_stamped.polygon = polygon.polygon;
+                polygon_stamped.header.frame_id = "world";
+                std::cout << "Publishing polygon\n";
+                for(int i = 0; i < polygon.polygon.points.size(); i++){
+                    std::cout << "x: " << polygon_stamped.polygon.points[i].x << " y: " << polygon_stamped.polygon.points[i].y << " z: " << polygon_stamped.polygon.points[i].z << "\n";
+                }
+                surface_pubs[i].publish(polygon_stamped);
+            }
+
             if (!msg.response.solution_exists)
             {
                 continue;

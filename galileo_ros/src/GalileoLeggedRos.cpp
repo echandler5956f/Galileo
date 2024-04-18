@@ -93,8 +93,78 @@ namespace galileo
 
         void GalileoLeggedRos::SurfaceCallback(const galileo_ros::EnvironmentSurface::ConstPtr &msg)
         {
-            // UNIMPLEMENTED
-            addSurface(environment::createInfiniteGround());
+            std::cout << "Received surface message" << std::endl;
+         
+            std::cout << "msg->vertices.size(): " << msg->vertices.size() << std::endl;
+            std::vector<geometry_msgs::Point> vertices = msg->vertices;
+            Eigen::MatrixXd vertices_mat(3, vertices.size());
+            for (size_t i = 0; i < vertices.size(); ++i)
+            {
+                vertices_mat(0, i) = vertices[i].x;
+                vertices_mat(1, i) = vertices[i].y;
+                vertices_mat(2, i) = vertices[i].z;
+
+                std::cout << "Vertex " << i << ": " << vertices_mat.col(i).transpose() << std::endl;
+            }
+
+            // Find the plane that best fits the vertices.
+            int data_points = vertices.size();
+
+            // Performing SVD on the data to find the best fit plane
+
+            Eigen::VectorXd centroid = vertices_mat.rowwise().mean();
+            Eigen::MatrixXd centered = vertices_mat.colwise() - centroid;
+
+            Eigen::JacobiSVD<Eigen::MatrixXd> svd(centered.transpose(), Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+            Eigen::VectorXd normal = svd.matrixV().col(2).normalized();
+
+            Eigen::Quaterniond q;
+            q.setFromTwoVectors(Eigen::Vector3d::UnitZ(), normal);
+            Eigen::Matrix3d R = q.toRotationMatrix();
+            
+            Eigen::MatrixXd data_points_in_T = R.transpose() * centered;
+            Eigen::MatrixXd data_points_on_plane = data_points_in_T.topRows(2);
+
+            // We will assume the vertices are ordered, so we can generate constraining inequalities by analyzzing sequential pairs of vertices
+
+            Eigen::MatrixXd A = Eigen::MatrixXd::Zero(data_points, 2);
+            Eigen::VectorXd b = Eigen::VectorXd::Zero(data_points);
+
+            for (int i = 0; i < data_points; ++i)
+            {
+                Eigen::Vector2d v1 = data_points_on_plane.col(i);
+                Eigen::Vector2d v2 = data_points_on_plane.col((i + 1) % data_points);
+
+                Eigen::Vector2d edge = v2 - v1;
+                Eigen::Vector2d normal = Eigen::Vector2d(-edge(1), edge(0)).normalized();
+
+                A.row(i) = normal.transpose();
+                b(i) = normal.dot(v1);
+            }
+
+            std::cout << "A: \n" << A << std::endl;
+            std::cout << "b: \n" << b.transpose() << std::endl;
+
+
+            std::cout << "R: \n" << R << std::endl;
+            std::cout << "centroid: \n" << centroid.transpose() << std::endl;
+
+
+
+            Eigen::Translation3d translation(centroid);
+            Eigen::Transform<double, 3, Eigen::Affine> transform = translation * q;
+
+
+            std::cout << "T: \n" << transform.matrix() << std::endl;
+
+            galileo::legged::environment::SurfaceData surface_data;
+
+            surface_data.surface_transform = transform;
+            surface_data.A = A;
+            surface_data.b = b;
+
+            addSurface(surface_data);
         }
 
         void GalileoLeggedRos::InitializationCallback(const galileo_ros::GalileoCommand::ConstPtr &msg)

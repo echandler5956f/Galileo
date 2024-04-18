@@ -95,6 +95,17 @@ target_link_libraries(${PROJECT_NAME}_legged_initialization_node
    ${catkin_LIBRARIES}
 )
 
+
+add_executable(${PROJECT_NAME}_surfaces_node
+  src/Nodes/galileo_surfaces_node.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_surfaces_node ${PROJECT_NAME} casadi Eigen3::Eigen  galileo)
+
+target_link_libraries(${PROJECT_NAME}_surfaces_node
+   ${catkin_LIBRARIES}
+)
+
 add_executable(${PROJECT_NAME}_legged_solver_node
   src/Nodes/galileo_legged_solver_node.cpp
 )
@@ -104,6 +115,9 @@ target_link_libraries(${PROJECT_NAME}_legged_solver_node ${PROJECT_NAME} casadi 
 target_link_libraries(${PROJECT_NAME}_legged_solver_node
    ${catkin_LIBRARIES}
 )
+
+
+
 
 add_executable(${PROJECT_NAME}_legged_rviz_node
   src/Nodes/galileo_legged_rviz_node.cpp

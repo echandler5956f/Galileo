@@ -11,6 +11,8 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <std_srvs/Trigger.h>
 
+#include <geometry_msgs/Point.h>
+
 #include "galileo_ros/RobotModel.h"
 #include "galileo_ros/ParameterFileLocation.h"
 #include "galileo_ros/ContactSequence.h"

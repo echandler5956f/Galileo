@@ -237,7 +237,7 @@ namespace galileo
             LeggedConstraintBuilderType contact_constraint_builder =
                 std::make_shared<constraints::ContactConstraintBuilder<LeggedRobotProblemData>>();
 
-            return {velocity_constraint_builder, friction_cone_constraint_builder};
+            return {velocity_constraint_builder, friction_cone_constraint_builder, contact_constraint_builder};
         }
 
         void LeggedInterface::setContactSequence(std::vector<int> knot_num, std::vector<double> knot_time, std::vector<uint> mask_vec, std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces)
