@@ -80,7 +80,7 @@ namespace galileo
              * @param q0 The initial configuration.
              * @return Eigen::MatrixXd The updated cost weight matrix.
              */
-            Eigen::MatrixXd initializeInputCostWeight(Eigen::MatrixXd R_taskspace, ConfigVector q0);
+            Eigen::MatrixXd initializeInputCostWeight(Eigen::MatrixXd R_taskspace, ConfigVector q0, double default_weight = 1e-1);
 
             /**
              * @brief Generate combinations of contacts.

@@ -10,6 +10,7 @@
 #include <pinocchio/algorithm/rnea.hpp>
 #include <pinocchio/algorithm/aba.hpp>
 #include <pinocchio/algorithm/centroidal.hpp>
+#include <optional>
 
 namespace galileo
 {
@@ -297,6 +298,12 @@ namespace galileo
                         G_vec.push_back(cfoot_vel(2, 0));
                         lower_bound_vec.push_back(desired_velocity);
                         upper_bound_vec.push_back(desired_velocity);
+                        if (ee.second->is_6d)
+                        {
+                            G_vec.push_back(cfoot_vel(casadi::Slice(3, 6), 0));
+                            lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                            upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                        }
                     }
                     else
                     {

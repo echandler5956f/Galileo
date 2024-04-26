@@ -1286,7 +1286,7 @@
 <parent link="link3" />
 <child link="gripper" />
 <axis xyz="0 0 1"/>
-<limit effort="1" velocity="20" />
+<limit effort="1" lower="-3.1415" upper="3.1415" velocity="20"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1295,7 +1295,7 @@
 <parent link="link2" />
 <child link="link3" />
 <axis xyz="0 0 1"/>
-<limit effort="1" velocity="20" />
+<limit effort="1" lower="-3.1415" upper="3.1415" velocity="20"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1304,7 +1304,7 @@
 <parent link="link1" />
 <child link="link2" />
 <axis xyz="0 0 1"/>
-<limit effort="1" velocity="20" />
+<limit effort="1" lower="-3.1415" upper="3.1415" velocity="20"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1313,7 +1313,7 @@
 <parent link="arm" />
 <child link="link1" />
 <axis xyz="0 0 1"/>
-<limit effort="1" velocity="20" />
+<limit effort="1" lower="-3.1415" upper="3.1415" velocity="20"/>
 <joint_properties friction="0.0"/>
 </joint>
 

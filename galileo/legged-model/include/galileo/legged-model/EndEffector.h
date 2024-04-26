@@ -47,6 +47,12 @@ namespace galileo
                  * 
                  */
                 std::vector<pinocchio::JointIndex> joint_indices;
+
+                /**
+                 * @brief Offset index for the end effector's joints in the contact force vector.
+                 * 
+                 */
+                pinocchio::JointIndex offset_index;
             };
 
             /**

@@ -57,7 +57,7 @@ namespace galileo
         void LeggedBody::setEndEffectors(const std::vector<std::string> &ee_names)
         {
             std::vector<pinocchio::FrameIndex> ee_ids;
-            unsigned long min_index = model.nframes;
+            size_t dof_accum = 0;
             for (std::size_t i = 0; i < ee_names.size(); ++i)
             {
                 auto ee_name = ee_names[i];
@@ -77,29 +77,32 @@ namespace galileo
                 for (const auto &joint_index : joint_indices)
                 {
                     dof += model.joints[joint_index].nq();
-                    ee_obj_ptr->joint_indices.push_back(joint_index);
-                    if (joint_index < min_index)
-                    {
-                        min_index = joint_index;
-                    }
+                    ee_obj_ptr->joint_indices.push_back(joint_index); // world and root joints are included
                 }
                 ee_obj_ptr->is_6d = dof == 6;
-                ee_obj_ptr->local_ee_idx = i;
-
+                ee_obj_ptr->offset_index = dof_accum;
+                dof_accum += dof;
                 ees_.insert({frame_id, ee_obj_ptr});
                 ee_ids.push_back(frame_id);
             }
+
             num_end_effectors_ = ee_names.size();
             ee_ids_ = ee_ids;
-            for (auto ee : ees_)
-            {
-                // std::cout << "End effector " << ee.second->frame_name << " is associated with the following joints:" << std::endl; // Useful for debugging
-                for (size_t i = 0; i < ee.second->joint_indices.size(); i++)
-                {
-                    // std::cout << "Name: " << model.names[ee.second->joint_indices[i]] << " - Index: " << ee.second->joint_indices[i] - min_index << std::endl;
-                    ee.second->joint_indices[i] -= min_index; // so that the indices start from 0. We do not account for the case where the joint indices are not contiguous, but so far it hasnt been an issue.
 
+            // print all model joint names
+            for (size_t i = 0; i < model.names.size(); i++)
+            {
+                std::cout << "Name: " << model.names[i] << " - Index: " << i << std::endl;
+            }
+
+            for (size_t i = 0; i < ees_.size(); ++i)
+            {
+                std::cout << "End effector " << ees_[ee_ids[i]]->frame_name << " is associated with the following joints:" << std::endl; // Useful for debugging
+                for (size_t j = 0; j < ees_[ee_ids[i]]->joint_indices.size(); j++)
+                {
+                    std::cout << "Name: " << model.names[ees_[ee_ids[i]]->joint_indices[j]] << " - Index: " << ees_[ee_ids[i]]->joint_indices[j] << std::endl;
                 }
+                std::cout << "Offset Index: " << ees_[ee_ids[i]]->offset_index << std::endl;
             }
         }
 
@@ -146,7 +149,7 @@ namespace galileo
             contact_combinations_ = contact_combinations;
         }
 
-        Eigen::MatrixXd LeggedBody::initializeInputCostWeight(Eigen::MatrixXd R_taskspace, ConfigVector q0)
+        Eigen::MatrixXd LeggedBody::initializeInputCostWeight(Eigen::MatrixXd R_taskspace, ConfigVector q0, double default_weight)
         {
             pinocchio::computeJointJacobians(model, data, q0);
             pinocchio::updateFramePlacements(model, data);
@@ -156,12 +159,17 @@ namespace galileo
             // Contact Forces
             R.topLeftCorner(totalContactDim, totalContactDim) = R_taskspace.topLeftCorner(totalContactDim, totalContactDim);
 
+            std::set<int> ee_joints;
             Eigen::MatrixXd baseToFeetJacobians(totalContactDim, si->nvju);
             for (auto ee : ees_)
             {
                 auto frame_id = ee.first;
-                size_t start_index = ee.second->joint_indices[0];
+                size_t start_index = ee.second->offset_index;
                 size_t size = ee.second->is_6d ? 6 : 3;
+                for (size_t i = 0; i < ee.second->joint_indices.size(); i++)
+                {
+                    ee_joints.insert(ee.second->joint_indices[i] - 2); // world and root joints are not included
+                }
                 Eigen::MatrixXd jacobianWorldToContactPointInWorldFrame = Eigen::MatrixXd::Zero(6, si->nv);
                 pinocchio::getFrameJacobian(model, data, frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobianWorldToContactPointInWorldFrame);
                 baseToFeetJacobians.block(start_index, 0, size, si->nvju) =
@@ -170,6 +178,15 @@ namespace galileo
 
             // Joint velocities
             R.block(totalContactDim, totalContactDim, si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.block(totalContactDim, totalContactDim, totalContactDim, totalContactDim) * baseToFeetJacobians;
+
+            // Set default values for the actuated joints not associated with ees
+            for (size_t i = 0; i < si->nvju; i++)
+            {
+                if (ee_joints.find(i) == ee_joints.end())
+                {
+                    R(totalContactDim + i, totalContactDim + i) = default_weight;
+                }
+            }
             return R;
         }
 

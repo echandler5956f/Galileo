@@ -219,6 +219,7 @@ namespace galileo
                 Eigen::VectorXd Q_diag;
                 Eigen::VectorXd R_diag;
                 double terminal_weight = 1.0;
+                double default_weight = 1.0;
             };
             CostParameters cost_params_;
 

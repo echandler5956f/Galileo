@@ -154,6 +154,12 @@ namespace galileo
                 std::cout << "Terminal weight: " << cost_params_.terminal_weight << std::endl;
             }
 
+            if (imported_vars.find("cost.default_weight") != imported_vars.end())
+            {
+                cost_params_.default_weight = std::stod(std::get<0>(imported_vars["cost.default_weight"]));
+                std::cout << "Default weight: " << cost_params_.default_weight << std::endl;
+            }
+
             if (imported_vars.find("solver") != imported_vars.end())
                 solver_type_ = std::get<0>(imported_vars["solver"]);
 
@@ -194,7 +200,21 @@ namespace galileo
             casadi::DM q0_dm = states_->get_q(X0);
             Eigen::VectorXd q0 = Eigen::Map<Eigen::VectorXd>(q0_dm.get_elements().data(), q0_dm.size1() * q0_dm.size2());
 
-            Eigen::MatrixXd R_mat = robot_->initializeInputCostWeight(R_taskspace, q0);
+            Eigen::MatrixXd R_mat = robot_->initializeInputCostWeight(R_taskspace, q0, cost_params_.default_weight);
+            std::cout << "R_mat: \n" << R_mat << std::endl;
+
+            std::cout << "------------------------------------------\n";
+
+            Eigen::VectorXd diag = R_mat.diagonal();
+
+            // Print out the diagonal
+            std::cout << "Diagonal: ";
+            for (int i = 0; i < diag.size(); ++i) {
+                std::cout << diag[i] << " ";
+            }
+            std::cout << std::endl;
+
+            std::cout << "------------------------------------------\n";
 
             casadi::SX Q = casadi::SX::zeros(states_->ndx, states_->ndx);
             casadi::SX R = casadi::SX::zeros(states_->nu, states_->nu);
