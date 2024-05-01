@@ -1,6 +1,8 @@
 # Galileo
 *A light-weight and extensible C++ library for Pseudospectral Collocation of Switched Systems using CasADi and Pinocchio.*
 
+https://github.com/echandler5956f/Galileo/assets/93096172/49862201-a646-40b6-a981-e85d98b7d64e
+
 https://github.com/echandler5956f/Galileo/assets/93096172/33dc9110-773e-4203-9bde-9af5f97494c9
 
 <!-- [![Galileo Results](https://i.imgur.com/AEUtxNC.png)](https://www.youtube.com/watch?v=79bR9I0Jyfk-Y "Galileo Results") -->
