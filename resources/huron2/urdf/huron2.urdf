@@ -1,0 +1,806 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="huron2">
+  <material name="green">
+    <color rgba="0.0 0.8 0.0 1.0"/>
+  </material>
+  <link name="world"/>
+  <joint name="world_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="world"/>
+    <child link="base"/>
+  </joint>
+  <link name="base"/>
+  <joint name="base_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="base"/>
+    <child link="base_link"/>
+  </joint>
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="5.43380156831485E-07 -4.73188932107016E-09 0.0129746723866839"
+        rpy="0 0 0" />
+      <mass
+        value="3.40723570208261" />
+      <inertia
+        ixx="0.0105312204112697"
+        ixy="-7.14899628925761E-11"
+        ixz="6.92595211700043E-09"
+        iyy="0.00319004496846458"
+        iyz="-6.03129070139189E-11"
+        izz="0.0123154567422159" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Link1_Right">
+    <inertial>
+      <origin
+        xyz="-0.000899540597992285 0.000676357482989096 -0.0131613360081879"
+        rpy="0 0 0" />
+      <mass
+        value="1.59058103956796" />
+      <inertia
+        ixx="0.00264092531435837"
+        ixy="5.71382060502923E-10"
+        ixz="-5.67271205646927E-09"
+        iyy="0.002221832244741"
+        iyz="6.53262343301575E-06"
+        izz="0.00118698357098402" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link1_Right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link1_Right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint0_Right"
+    type="revolute">
+    <origin
+      xyz="0 -0.0775000000000027 -0.0781242"
+      rpy="0 0 -0.0111241206079639" />
+    <parent
+      link="base_link" />
+    <child
+      link="Link1_Right" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000000" lower="-3.1416" upper="3.1416" velocity="3000"/>
+  </joint>
+  <link
+    name="Link2_Right">
+    <inertial>
+      <origin
+        xyz="-0.0630649229297984 -0.0060410226271736 0.000443819443114691"
+        rpy="0 0 0" />
+      <mass
+        value="1.27989831438858" />
+      <inertia
+        ixx="0.00102963438386832"
+        ixy="-1.20522440874406E-07"
+        ixz="-1.05347346696221E-08"
+        iyy="0.00101761353939916"
+        iyz="9.74090794994237E-08"
+        izz="0.000959117296238153" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link2_Right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link2_Right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint1_Right"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.081"
+      rpy="-1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="Link1_Right" />
+    <child
+      link="Link2_Right" />
+    <axis
+      xyz="0 0 1" />
+    <limit effort="1000000" lower="-0.5236" upper="0.01" velocity="3000"/>
+  </joint>
+  <link
+    name="Link3_Right">
+    <inertial>
+      <origin
+        xyz="9.60111001097573E-09 0.24936869527645 0.0498982443983954"
+        rpy="0 0 0" />
+      <mass
+        value="4.3059290483472" />
+      <inertia
+        ixx="0.0100456210007295"
+        ixy="-1.84213048207792E-07"
+        ixz="-1.541704820827E-09"
+        iyy="0.00346065179355537"
+        iyz="-0.00197967781957701"
+        izz="0.0101093038628309" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link3_Right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link3_Right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint2_Right"
+    type="revolute">
+    <origin
+      xyz="-0.104 0.0165 5.00000000002006E-05"
+      rpy="0 1.57079630572147 0" />
+    <parent
+      link="Link2_Right" />
+    <child
+      link="Link3_Right" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000000" lower="-1.2217" upper="1.2217" velocity="3000"/>
+  </joint>
+  <link
+    name="Link4_Right">
+    <inertial>
+      <origin
+        xyz="0.00582956225997174 -0.200427244172219 -0.000333608662882331"
+        rpy="0 0 0" />
+      <mass
+        value="3.71049766435994" />
+      <inertia
+        ixx="0.010052270220494"
+        ixy="-3.9208325465446E-05"
+        ixz="3.97734283515464E-09"
+        iyy="0.00219468242904824"
+        iyz="1.7621430903039E-08"
+        izz="0.0105484167838018" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link4_Right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link4_Right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint3_Right"
+    type="revolute">
+    <origin
+      xyz="0 0.496278478308819 0.103983335267998"
+      rpy="-3.14159265358979 0 0" />
+    <parent
+      link="Link3_Right" />
+    <child
+      link="Link4_Right" />
+    <axis
+      xyz="0 0 1" />
+    <limit effort="1000000" lower="-1.570796327" upper="1.570796327" velocity="3000"/>
+  </joint>
+  <link
+    name="Link5_Right">
+    <inertial>
+      <origin
+        xyz="-0.0282961896934639 -0.00510969080743995 5.94281568400135E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.229372946231875" />
+      <inertia
+        ixx="0.000174182402377073"
+        ixy="3.94168159482491E-06"
+        ixz="-2.44221540846862E-11"
+        iyy="0.000225080125212958"
+        iyz="1.71326863793904E-11"
+        izz="9.85298524041159E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link5_Right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link5_Right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint4_Right"
+    type="revolute">
+    <origin
+      xyz="0.0344999999999978 -0.425 0"
+      rpy="0.000445485780827131 0 0" />
+    <parent
+      link="Link4_Right" />
+    <child
+      link="Link5_Right" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000000" lower="-0.5236" upper="0.5236" velocity="3000"/>
+  </joint>
+  <link
+    name="Link6_RightFoot">
+    <inertial>
+      <origin
+        xyz="-0.0032219156482176 -8.46597557166429E-06 -0.00803501216295643"
+        rpy="0 0 0" />
+      <mass
+        value="1.11991664709487" />
+      <inertia
+        ixx="0.000457929043567241"
+        ixy="-2.24329679192459E-07"
+        ixz="6.11789879141581E-07"
+        iyy="0.00271115389785146"
+        iyz="1.76830365051675E-07"
+        izz="0.00312456560470824" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link6_RightFoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link6_RightFoot.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint5_RightFoot"
+    type="revolute">
+    <origin
+      xyz="0.00169224793594845 -0.0399999999999998 0"
+      rpy="-1.5707963267949 0 0" />
+    <parent
+      link="Link5_Right" />
+    <child
+      link="Link6_RightFoot" />
+    <axis
+      xyz="0 0 1" />
+    <limit effort="1000000" lower="-0.7" upper="0.7" velocity="3000"/>
+  </joint>
+  <link
+    name="Link1_Left">
+    <inertial>
+      <origin
+        xyz="-0.00091496828938023 -0.000676422069730342 -0.0131613454098549"
+        rpy="0 0 0" />
+      <mass
+        value="1.59058103986592" />
+      <inertia
+        ixx="0.00264092531433779"
+        ixy="2.43328155993038E-10"
+        ixz="-5.13480332461464E-09"
+        iyy="0.00222183224018982"
+        iyz="-6.53262136112385E-06"
+        izz="0.00118698357515343" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link1_Left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link1_Left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint0_Left"
+    type="revolute">
+    <origin
+      xyz="0 0.0775000000000011 -0.0781242"
+      rpy="0 0 -0.00629193464360024" />
+    <parent
+      link="base_link" />
+    <child
+      link="Link1_Left" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000000" lower="-3.1416" upper="3.1416" velocity="3000"/>
+  </joint>
+  <link
+    name="Link2_Left">
+    <inertial>
+      <origin
+        xyz="0.0630527377149159 0.00602890287688748 -0.000439862021816799"
+        rpy="0 0 0" />
+      <mass
+        value="1.27989819265333" />
+      <inertia
+        ixx="0.00102698684696744"
+        ixy="-1.20522712729535E-07"
+        ixz="6.53114993880778E-09"
+        iyy="0.00102026107745704"
+        iyz="-9.72794652811982E-08"
+        izz="0.000959117289686082" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link2_Left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link2_Left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint1_Left"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.0809999999999999"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="Link1_Left" />
+    <child
+      link="Link2_Left" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000000" lower="-0.5236" upper="0.01" velocity="3000"/>
+  </joint>
+  <link
+    name="Link3_Left">
+    <inertial>
+      <origin
+        xyz="3.79351532478532E-06 0.250061370070851 -0.0501241965205295"
+        rpy="0 0 0" />
+      <mass
+        value="4.29424394966782" />
+      <inertia
+        ixx="0.0100398866525474"
+        ixy="1.24536390717782E-07"
+        ixz="-1.39626532441616E-09"
+        iyy="0.00346021745257934"
+        iyz="0.00197967840754442"
+        izz="0.0101031679149071" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link3_Left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link3_Left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint2_Left"
+    type="revolute">
+    <origin
+      xyz="0.104 -0.0150000000000001 -4.99999999986903E-05"
+      rpy="1.59168740471144 -1.57079630572147 1.5707963267949" />
+    <parent
+      link="Link2_Left" />
+    <child
+      link="Link3_Left" />
+    <axis
+      xyz="-0.00483216715911158 0 -0.999988325012121" />
+    <limit effort="1000000" lower="-1.2217" upper="1.2217" velocity="3000"/>
+  </joint>
+  <link
+    name="Link4_Left">
+    <inertial>
+      <origin
+        xyz="0.00582956217903265 0.200427244271767 -0.00037514576981966"
+        rpy="0 0 0" />
+      <mass
+        value="3.71049765748894" />
+      <inertia
+        ixx="0.010052270104399"
+        ixy="3.92083220998296E-05"
+        ixz="-3.97800568868186E-09"
+        iyy="0.00219468242869185"
+        iyz="1.79696108144874E-08"
+        izz="0.0105484166700194" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link4_Left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link4_Left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint3_Left"
+    type="revolute">
+    <origin
+      xyz="0 0.496278478308819 -0.103983335267998"
+      rpy="0 0 0" />
+    <parent
+      link="Link3_Left" />
+    <child
+      link="Link4_Left" />
+    <axis
+      xyz="-0.00483216715911094 0 -0.999988325012121" />
+    <limit effort="1000000" lower="-1.570796327" upper="1.570796327" velocity="3000"/>
+  </joint>
+  <link
+    name="Link5_Left">
+    <inertial>
+      <origin
+        xyz="-0.0282961896934575 0.00510969080743906 -5.94283069976775E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.229372946231854" />
+      <inertia
+        ixx="0.000174182402377113"
+        ixy="-3.94168159484389E-06"
+        ixz="2.44222656037735E-11"
+        iyy="0.000225080125212908"
+        iyz="1.71327397656164E-11"
+        izz="9.85298524040224E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link5_Left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link5_Left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint4_Left"
+    type="revolute">
+    <origin
+      xyz="0.0345000000000007 0.425 0"
+      rpy="0.000445485780827219 0 0" />
+    <parent
+      link="Link4_Left" />
+    <child
+      link="Link5_Left" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000000" lower="-0.5236" upper="0.5236" velocity="3000"/>
+  </joint>
+  <link
+    name="Link6_LeftFoot">
+    <inertial>
+      <origin
+        xyz="-0.00322191564598028 -8.46597378431624E-06 -0.00803501215623847"
+        rpy="0 0 0" />
+      <mass
+        value="1.11991664739158" />
+      <inertia
+        ixx="0.00045792904371567"
+        ixy="-2.24329815085779E-07"
+        ixz="6.11789798840643E-07"
+        iyy="0.00271115389791713"
+        iyz="1.76830341511821E-07"
+        izz="0.00312456560486082" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link6_LeftFoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://galileo_huron2_description/meshes/Link6_LeftFoot.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint5_LeftFoot"
+    type="revolute">
+    <origin
+      xyz="0.00169224793594868 0.0399999999999998 0"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="Link5_Left" />
+    <child
+      link="Link6_LeftFoot" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000000" lower="-0.7" upper="0.7" velocity="3000"/>
+  </joint>
+    <!-- left ft fixed joint 1 -->
+  <joint name="l1_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0.10757 -0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_LeftFoot"/>
+    <child link="l1_foot_ft_link"/>
+  </joint>
+  <!-- left foot ft link 1 -->
+  <link name="l1_foot_ft_link">
+  </link>
+    <!-- left ft fixed joint 2 -->
+  <joint name="l2_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0.10757 0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_LeftFoot"/>
+    <child link="l2_foot_ft_link"/>
+  </joint>
+  <!-- left foot ft link 2 -->
+  <link name="l2_foot_ft_link">
+  </link>
+  <!-- left ft fixed joint 3 -->
+  <joint name="l3_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.10757 -0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_LeftFoot"/>
+    <child link="l3_foot_ft_link"/>
+  </joint>
+  <!-- left foot ft link 3 -->
+  <link name="l3_foot_ft_link">
+  </link>
+  <!-- left ft fixed joint 4 -->
+  <joint name="l4_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.10757 0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_LeftFoot"/>
+    <child link="l4_foot_ft_link"/>
+  </joint>
+  <!-- left foot ft link 4 -->
+  <link name="l4_foot_ft_link">
+  </link>
+  <!-- left ft fixed joint -->
+  <joint name="lv_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 -0.0432"/>
+    <parent link="Link6_LeftFoot"/>
+    <child link="l_foot_v_ft_link"/>
+  </joint>
+  <!-- left foot ft link -->
+  <link name="l_foot_v_ft_link"/>
+  <!-- right ft fixed joint 1 -->
+  <joint name="r1_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0.10757 -0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_RightFoot"/>
+    <child link="r1_foot_ft_link"/>
+  </joint>
+  <!-- right foot ft link 1 -->
+  <link name="r1_foot_ft_link">
+  </link>
+    <!-- right ft fixed joint 2 -->
+  <joint name="r2_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0.10757 0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_RightFoot"/>
+    <child link="r2_foot_ft_link"/>
+  </joint>
+  <!-- right foot ft link 2 -->
+  <link name="r2_foot_ft_link">
+  </link>
+  <!-- right ft fixed joint 3 -->
+  <joint name="r3_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.10757 -0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_RightFoot"/>
+    <child link="r3_foot_ft_link"/>
+  </joint>
+  <!-- right foot ft link 3 -->
+  <link name="r3_foot_ft_link">
+  </link>
+  <!-- right ft fixed joint 4 -->
+  <joint name="r4_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.10757 0.024 -0.0432"/>
+    <axis xyz="0 0 1"/>
+    <parent link="Link6_RightFoot"/>
+    <child link="r4_foot_ft_link"/>
+  </joint>
+  <!-- right foot ft link 4 -->
+  <link name="r4_foot_ft_link">
+  </link>
+  <!-- right ft fixed joint -->
+  <joint name="rv_ft_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 -0.0432"/>
+    <parent link="Link6_RightFoot"/>
+    <child link="r_foot_v_ft_link"/>
+  </joint>
+  <!-- right foot ft link -->
+  <link name="r_foot_v_ft_link"/>
+</robot>

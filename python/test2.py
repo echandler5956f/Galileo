@@ -56,7 +56,7 @@ L = x1**2 + x2**2 + u**2
 f = ca.Function('f', [x, u], [xdot, L], ['x', 'p'], ['ode', 'quad'])
 
 # Control discretization
-N = 20 # number of control intervals
+N = 1000 # number of control intervals
 h = T/N
 
 # Variables for a single collocation interval
