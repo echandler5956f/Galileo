@@ -9,7 +9,8 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
                             galileo_ros::ContactSequence &contact_sequence_cmd, galileo_ros::GalileoCommand &galileo_cmd_msg)
 {
 
-    std::vector<std::string> end_effectors;
+    std::vector<std::string> end_effector_names;
+    std::vector<galileo::legged::contact::EE_Types> end_effector_types;
     std::vector<int> knot_num;
     std::vector<double> knot_time;
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
@@ -18,7 +19,8 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
 
     galileo::legged::helper::ReadProblemFromParameterFile(
         problem_parameter_file_name,
-        end_effectors,
+        end_effector_names,
+        end_effector_types,
         knot_num,
         knot_time,
         contact_surfaces,
@@ -30,7 +32,9 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
 
     robot_model_cmd.model_file_location = model_location;
 
-    robot_model_cmd.end_effector_names = end_effectors;
+    robot_model_cmd.end_effector_names = end_effector_names;
+    std::transform(end_effector_types.begin(), end_effector_types.end(), std::back_inserter(robot_model_cmd.end_effector_types), [](const galileo::legged::contact::EE_Types &type)
+                   { return static_cast<int>(type); });
 
     solver_parameter_location.parameter_file_location = solver_parameter_location_filename;
 
@@ -43,7 +47,7 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
         contact_sequence_cmd.phases.push_back(phase);
     }
 
-    galileo::legged::LeggedBody robot(model_location, end_effectors);
+    galileo::legged::LeggedBody robot(model_location, end_effector_names, end_effector_types);
 
     std::vector<double> X0 = galileo::legged::helper::getXfromq(robot.si->nx, robot.si->q_index, q0);
     std::vector<double> Xf = galileo::legged::helper::getXfromq(robot.si->nx, robot.si->q_index, qf);

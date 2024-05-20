@@ -346,7 +346,7 @@ Visualization Manager:
       Marker Topic: /108_forces
       Name: Marker
       Namespaces:
-        ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -354,7 +354,7 @@ Visualization Manager:
       Marker Topic: /108_positions
       Name: Marker
       Namespaces:
-        eserialize(const ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -362,7 +362,7 @@ Visualization Manager:
       Marker Topic: /120_forces
       Name: Marker
       Namespaces:
-        ptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -370,7 +370,7 @@ Visualization Manager:
       Marker Topic: /120_positions
       Name: Marker
       Namespaces:
-        onst ros::SubscriptionCallbackHelperDeserializeParams&) [with P = const boost::shared_ptr<const std_msgs::Float64_<std::allocator<void> > >&; Enabled = void; ros::VoidConstPtr = boost::shared_ptr<const void>]: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -437,5 +437,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1908
-  X: 0
-  Y: 0
+  X: -32
+  Y: -32

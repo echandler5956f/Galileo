@@ -25,7 +25,6 @@ namespace galileo
 {
     namespace legged
     {
-
         class LeggedInterface
         {
         public:
@@ -41,7 +40,7 @@ namespace galileo
             /**
              * @brief Load the model from a file.
              */
-            void LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names);
+            void LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names, std::vector<contact::EE_Types> end_effector_types);
 
             /**
              * @brief Load the parameters from a file.

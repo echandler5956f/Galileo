@@ -187,7 +187,7 @@ namespace galileo
                     h2_dot_desired = casadi::Function("h2_dot_desired", {t}, {(FS_def.h_offset_P2 / (FS_def.h2_window_duration * actual_duration)) * mapped_bell_curve(casadi::SXVector{(1 - t) / FS_def.h2_window_duration}).at(0)});
                 }
 
-                casadi::SX getFootstepVelocityInWorldFrame(const ProblemData &problem_data, pinocchio::FrameIndex frame_id) const
+                casadi::SX getFootstepVelocity(const ProblemData &problem_data, pinocchio::FrameIndex frame_id) const
                 {
                     Eigen::Matrix<legged::ADScalar, 6, 1, 0> foot_vel = pinocchio::getFrameVelocity(*(problem_data.velocity_constraint_problem_data.ad_model),
                                                                                                     *(problem_data.velocity_constraint_problem_data.ad_data),
@@ -286,115 +286,122 @@ namespace galileo
                 {
                     if (!mode[(*ee.second)])
                     {
-                        FootstepDefinition footstep_definition = buildFootstepDefinition(problem_data, phase_index, ee.second);
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF)
+                        {
+                            FootstepDefinition footstep_definition = buildFootstepDefinition(problem_data, phase_index, ee.second);
 
-                        /**
-                         *
-                         * the velocity _in the frame of the liftoff and touchdown surfaces_ is constrained instead.
-                         * The normal velocity from the liftoff surface is constrained such that it approximately follows a bell curve.
-                         * As time goes on, however, the constraint is relaxed, and the velocity normal is allowed to be greater.
-                         * Similarly, the normal velocity from the touchdown surface is constrained such that it approximately follows a bell curve.
-                         * At t = 0, however, the constraint is less restrictive.
-                         *
-                         * In essence, the velocity at t = 0 approximately is normal to the liftoff surface and at t = 1, approximately normal to the touchdown surface.
-                         * In the middle, it loosely follows an "ideal" trajectory.
-                         */
-                        casadi::SX cfoot_vel = getFootstepVelocityInWorldFrame(problem_data, ee.first)(casadi::Slice(0, 3), 0);
-                        casadi::SX cfoot_vel_in_liftoff_surface = getFootstepVelocityInSurfaceFrame(cfoot_vel, footstep_definition.R_P1);
-                        casadi::SX cfoot_vel_in_touchdown_surface = getFootstepVelocityInSurfaceFrame(cfoot_vel, -footstep_definition.R_P2);
+                            /**
+                             *
+                             * the velocity _in the frame of the liftoff and touchdown surfaces_ is constrained instead.
+                             * The normal velocity from the liftoff surface is constrained such that it approximately follows a bell curve.
+                             * As time goes on, however, the constraint is relaxed, and the velocity normal is allowed to be greater.
+                             * Similarly, the normal velocity from the touchdown surface is constrained such that it approximately follows a bell curve.
+                             * At t = 0, however, the constraint is less restrictive.
+                             *
+                             * In essence, the velocity at t = 0 approximately is normal to the liftoff surface and at t = 1, approximately normal to the touchdown surface.
+                             * In the middle, it loosely follows an "ideal" trajectory.
+                             */
+                            casadi::SX cfoot_vel = getFootstepVelocity(problem_data, ee.first)(casadi::Slice(0, 3), 0);
+                            casadi::SX cfoot_vel_in_liftoff_surface = getFootstepVelocityInSurfaceFrame(cfoot_vel, footstep_definition.R_P1);
+                            casadi::SX cfoot_vel_in_touchdown_surface = getFootstepVelocityInSurfaceFrame(cfoot_vel, -footstep_definition.R_P2);
 
-                        // The velocity of the footstep in the direction of each of the surface normals
-                        // At time 0, the velocity should be approximately normal to the liftoff surface
-                        // At time 1, the velocity should be approximately normal to the touchdown surface
+                            // The velocity of the footstep in the direction of each of the surface normals
+                            // At time 0, the velocity should be approximately normal to the liftoff surface
+                            // At time 1, the velocity should be approximately normal to the touchdown surface
 
-                        casadi::Function G_foot_vel = casadi::Function("G_foot_vel", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u},
-                                                                       casadi::SXVector{vertcat(casadi::SXVector{
-                                                                           cfoot_vel_in_liftoff_surface(0), cfoot_vel_in_touchdown_surface(0),
-                                                                           cfoot_vel_in_liftoff_surface(1), cfoot_vel_in_touchdown_surface(1),
-                                                                           cfoot_vel_in_liftoff_surface(2), cfoot_vel_in_touchdown_surface(2)})});
+                            casadi::Function G_foot_vel = casadi::Function("G_foot_vel", casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u},
+                                                                           casadi::SXVector{vertcat(casadi::SXVector{
+                                                                               cfoot_vel_in_liftoff_surface(0), cfoot_vel_in_touchdown_surface(0),
+                                                                               cfoot_vel_in_liftoff_surface(1), cfoot_vel_in_touchdown_surface(1),
+                                                                               cfoot_vel_in_liftoff_surface(2), cfoot_vel_in_touchdown_surface(2)})});
 
-                        G_vec.push_back(G_foot_vel(casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}).at(0));
+                            G_vec.push_back(G_foot_vel(casadi::SXVector{problem_data.velocity_constraint_problem_data.x, problem_data.velocity_constraint_problem_data.u}).at(0));
 
-                        // Building the bounds. We want to approximately follow (\dot h1_desired) for a fraction of the trajectory, then (\dot h2_desired).
+                            // Building the bounds. We want to approximately follow (\dot h1_desired) for a fraction of the trajectory, then (\dot h2_desired).
 
-                        // Map t to between 0 and 1. 0 is the time of liftoff, 1 is the time of touchdown.
-                        casadi::SX mapped_t = (t - footstep_definition.liftoff_time) / (footstep_definition.touchdown_time - footstep_definition.liftoff_time);
+                            // Map t to between 0 and 1. 0 is the time of liftoff, 1 is the time of touchdown.
+                            casadi::SX mapped_t = (t - footstep_definition.liftoff_time) / (footstep_definition.touchdown_time - footstep_definition.liftoff_time);
 
-                        // Desired velocity normal to the liftoff surface as a function of time
-                        casadi::Function desired_h1_dot;
-                        casadi::Function desired_h2_dot;
+                            // Desired velocity normal to the liftoff surface as a function of time
+                            casadi::Function desired_h1_dot;
+                            casadi::Function desired_h2_dot;
 
-                        footstepVelocityFunction(t, footstep_definition, desired_h1_dot, desired_h2_dot, (footstep_definition.touchdown_time - footstep_definition.liftoff_time));
+                            footstepVelocityFunction(t, footstep_definition, desired_h1_dot, desired_h2_dot, (footstep_definition.touchdown_time - footstep_definition.liftoff_time));
 
-                        casadi::SX ell_max_planar = problem_data.velocity_constraint_problem_data.max_following_leeway_planar;
-                        casadi::SX ell_min_planar = problem_data.velocity_constraint_problem_data.min_following_leeway_planar;
-                        casadi::SX ell_slope_planar = (ell_max_planar - ell_min_planar);
+                            casadi::SX ell_max_planar = problem_data.velocity_constraint_problem_data.max_following_leeway_planar;
+                            casadi::SX ell_min_planar = problem_data.velocity_constraint_problem_data.min_following_leeway_planar;
+                            casadi::SX ell_slope_planar = (ell_max_planar - ell_min_planar);
 
-                        casadi::SX ell_max_normal = problem_data.velocity_constraint_problem_data.max_following_leeway_normal;
-                        casadi::SX ell_min_normal = problem_data.velocity_constraint_problem_data.min_following_leeway_normal;
-                        casadi::SX ell_slope_normal = (ell_max_normal - ell_min_normal);
+                            casadi::SX ell_max_normal = problem_data.velocity_constraint_problem_data.max_following_leeway_normal;
+                            casadi::SX ell_min_normal = problem_data.velocity_constraint_problem_data.min_following_leeway_normal;
+                            casadi::SX ell_slope_normal = (ell_max_normal - ell_min_normal);
 
-                        // Linear interpolation between admissible error of velocity at t = [0, 1]
-                        casadi::Function linear_error_interpolation_planar = casadi::Function("linear_error_interpolation_planar", {t}, {casadi::SX(ell_slope_planar * t + ell_min_planar)});
-                        casadi::Function linear_error_interpolation_normal = casadi::Function("linear_error_interpolation_normal", {t}, {casadi::SX(ell_slope_normal * t + ell_min_normal)});
+                            // Linear interpolation between admissible error of velocity at t = [0, 1]
+                            casadi::Function linear_error_interpolation_planar = casadi::Function("linear_error_interpolation_planar", {t}, {casadi::SX(ell_slope_planar * t + ell_min_planar)});
+                            casadi::Function linear_error_interpolation_normal = casadi::Function("linear_error_interpolation_normal", {t}, {casadi::SX(ell_slope_normal * t + ell_min_normal)});
 
-                        // The admissible error of velocity parallel to the liftoff surface. As t approaches 0, this should approach ell_min
-                        casadi::SX admissible_error_h1_parallel = linear_error_interpolation_planar(t).at(0);
-                        // The admissible error of velocity parallel to the touchdown surface. As t approaches 1, this should approach ell_min
-                        casadi::SX admissible_error_h2_parallel = linear_error_interpolation_planar(1 - t).at(0);
+                            // The admissible error of velocity parallel to the liftoff surface. As t approaches 0, this should approach ell_min
+                            casadi::SX admissible_error_h1_parallel = linear_error_interpolation_planar(t).at(0);
+                            // The admissible error of velocity parallel to the touchdown surface. As t approaches 1, this should approach ell_min
+                            casadi::SX admissible_error_h2_parallel = linear_error_interpolation_planar(1 - t).at(0);
 
-                        // The admissible error of velocity normal to the liftoff surface. As t approaches 0, this should approach ell_min
-                        casadi::SX upper_admissible_error_h1_normal = linear_error_interpolation_normal(t).at(0);
-                        // The admissible error of velocity normal to the touchdown surface. As t approaches 1, this should approach ell_min
-                        casadi::SX upper_admissible_error_h2_normal = linear_error_interpolation_normal(1 - t).at(0);
+                            // The admissible error of velocity normal to the liftoff surface. As t approaches 0, this should approach ell_min
+                            casadi::SX upper_admissible_error_h1_normal = linear_error_interpolation_normal(t).at(0);
+                            // The admissible error of velocity normal to the touchdown surface. As t approaches 1, this should approach ell_min
+                            casadi::SX upper_admissible_error_h2_normal = linear_error_interpolation_normal(1 - t).at(0);
 
-                        // The lower bound of the velocity normal to the surfaces. We want this to evolve slower, so that the velocity is "encouraged" to be positive
-                        // This is the "magnitude" of the offset from h_dot_desired. The actual bound is h_dot_desired - lower_admissible_error_h_normal
-                        casadi::Function quadratic_error_interpolation = casadi::Function("quadratic_error_interpolation", {t}, {casadi::SX(ell_slope_normal * pow(2 * t, 2) + ell_min_normal)});
+                            // The lower bound of the velocity normal to the surfaces. We want this to evolve slower, so that the velocity is "encouraged" to be positive
+                            // This is the "magnitude" of the offset from h_dot_desired. The actual bound is h_dot_desired - lower_admissible_error_h_normal
+                            casadi::Function quadratic_error_interpolation = casadi::Function("quadratic_error_interpolation", {t}, {casadi::SX(ell_slope_normal * pow(2 * t, 2) + ell_min_normal)});
 
-                        casadi::Function sigmoid = getSigmoid(t, footstep_definition.sigmoid_scaling);
-                        casadi::SX max_error_offset = desired_h1_dot(casadi::SXVector{footstep_definition.h1_window_duration / 2}).at(0);
-                        casadi::SX lower_admissible_error_h1_normal = max_error_offset * sigmoid(t).at(0) + ell_min_normal;
-                        casadi::SX lower_admissible_error_h2_normal = max_error_offset * sigmoid(1 - t).at(0) + ell_min_normal;
-                        // casadi::SX lower_admissible_error_h1_normal = upper_admissible_error_h1_normal;
-                        // casadi::SX lower_admissible_error_h2_normal = upper_admissible_error_h2_normal;
+                            casadi::Function sigmoid = getSigmoid(t, footstep_definition.sigmoid_scaling);
+                            casadi::SX max_error_offset = desired_h1_dot(casadi::SXVector{footstep_definition.h1_window_duration / 2}).at(0);
+                            casadi::SX lower_admissible_error_h1_normal = max_error_offset * sigmoid(t).at(0) + ell_min_normal;
+                            casadi::SX lower_admissible_error_h2_normal = max_error_offset * sigmoid(1 - t).at(0) + ell_min_normal;
+                            // casadi::SX lower_admissible_error_h1_normal = upper_admissible_error_h1_normal;
+                            // casadi::SX lower_admissible_error_h2_normal = upper_admissible_error_h2_normal;
 
-                        // Constraints are ordered like this to make plotting easier :)
-                        casadi::Function lower_bound = casadi::Function("lower_bound", casadi::SXVector{t},
-                                                                        casadi::SXVector{vertcat(casadi::SXVector{
-                                                                            -admissible_error_h1_parallel,
-                                                                            -admissible_error_h2_parallel,
-                                                                            -admissible_error_h1_parallel,
-                                                                            -admissible_error_h2_parallel,
-                                                                            (desired_h1_dot(t).at(0)) - lower_admissible_error_h1_normal,
-                                                                            (desired_h2_dot(t).at(0)) - lower_admissible_error_h2_normal})});
+                            // Constraints are ordered like this to make plotting easier :)
+                            casadi::Function lower_bound = casadi::Function("lower_bound", casadi::SXVector{t},
+                                                                            casadi::SXVector{vertcat(casadi::SXVector{
+                                                                                -admissible_error_h1_parallel,
+                                                                                -admissible_error_h2_parallel,
+                                                                                -admissible_error_h1_parallel,
+                                                                                -admissible_error_h2_parallel,
+                                                                                (desired_h1_dot(t).at(0)) - lower_admissible_error_h1_normal,
+                                                                                (desired_h2_dot(t).at(0)) - lower_admissible_error_h2_normal})});
 
-                        casadi::Function upper_bound = casadi::Function("upper_bound", casadi::SXVector{t},
-                                                                        casadi::SXVector{vertcat(casadi::SXVector{
-                                                                            admissible_error_h1_parallel,
-                                                                            admissible_error_h2_parallel,
-                                                                            admissible_error_h1_parallel,
-                                                                            admissible_error_h2_parallel,
-                                                                            (desired_h1_dot(t).at(0)) + upper_admissible_error_h1_normal,
-                                                                            (desired_h2_dot(t).at(0)) + upper_admissible_error_h2_normal})});
+                            casadi::Function upper_bound = casadi::Function("upper_bound", casadi::SXVector{t},
+                                                                            casadi::SXVector{vertcat(casadi::SXVector{
+                                                                                admissible_error_h1_parallel,
+                                                                                admissible_error_h2_parallel,
+                                                                                admissible_error_h1_parallel,
+                                                                                admissible_error_h2_parallel,
+                                                                                (desired_h1_dot(t).at(0)) + upper_admissible_error_h1_normal,
+                                                                                (desired_h2_dot(t).at(0)) + upper_admissible_error_h2_normal})});
 
-                        lower_bound_vec.push_back(lower_bound(mapped_t).at(0));
-                        upper_bound_vec.push_back(upper_bound(mapped_t).at(0));
+                            lower_bound_vec.push_back(lower_bound(mapped_t).at(0));
+                            upper_bound_vec.push_back(upper_bound(mapped_t).at(0));
+                        }
                     }
                     else
                     {
-                        casadi::SX cfoot_vel = getFootstepVelocityInWorldFrame(problem_data, ee.first);
-                        if (ee.second->is_6d)
+                        casadi::SX cfoot_vel = getFootstepVelocity(problem_data, ee.first);
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                         {
                             G_vec.push_back(cfoot_vel);
                             lower_bound_vec.push_back(casadi::SX::zeros(6, 1));
                             upper_bound_vec.push_back(casadi::SX::zeros(6, 1));
                         }
-                        else
+                        else if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                         {
                             G_vec.push_back(cfoot_vel(casadi::Slice(0, 3), 0));
                             lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
                             upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                        }
+                        else
+                        {
+                            throw std::runtime_error("End effector type not recognized.");
                         }
                     }
                 }
@@ -408,34 +415,43 @@ namespace galileo
                 {
                     if (mode[(*ee.second)])
                     {
-                        constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
-                        if (ee.second->is_6d)
+                        // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                         {
+                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint for " + ee.second->frame_name);
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
                             constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz", "wx", "wy", "wz"});
                             i += 6;
                         }
-                        else
+                        else if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                         {
+                            constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint for " + ee.second->frame_name);
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
                             constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
                             i += 3;
                         }
+                        else
+                        {
+                            throw std::runtime_error("End effector type not recognized.");
+                        }
                     }
                     else
                     {
-                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vx for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 2));
-                        constraint_data.metadata.plot_names.push_back({"lo-Vx", "td-Vx"});
-                        i += 2;
-                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vy for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 2));
-                        constraint_data.metadata.plot_names.push_back({"lo-Vy", "td-Vy"});
-                        i += 2;
-                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vz for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 2));
-                        constraint_data.metadata.plot_names.push_back({"lo-Vz", "td-Vz"});
-                        i += 2;
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF)
+                        {
+                            constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vx for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 2));
+                            constraint_data.metadata.plot_names.push_back({"lo-Vx", "td-Vx"});
+                            i += 2;
+                            constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vy for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 2));
+                            constraint_data.metadata.plot_names.push_back({"lo-Vy", "td-Vy"});
+                            i += 2;
+                            constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vz for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 2));
+                            constraint_data.metadata.plot_names.push_back({"lo-Vz", "td-Vz"});
+                            i += 2;
+                        }
                     }
                 }
             }

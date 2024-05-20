@@ -172,7 +172,7 @@ namespace galileo
                         constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
                         constraint_data.metadata.plot_names.push_back({"Fx", "Fy", "Fz"});
                         i += 3;
-                        if (ee.second->is_6d)
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                         {
                             constraint_data.metadata.plot_titles.push_back("Swing Torque Constraint " + ee.second->frame_name);
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
@@ -193,22 +193,25 @@ namespace galileo
                 casadi::SXVector lower_bound_vec;
                 casadi::SXVector upper_bound_vec;
 
-                for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
+                for (auto &ee : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
-                    auto it = mode.combination_definition.find(end_effector.first);
-                    bool dof6 = end_effector.second->is_6d;
+                    auto it = mode.combination_definition.find(ee.first);
                     /* If the end effector is not in contact*/
                     if (it != mode.combination_definition.end() && !it->second)
                     {
-                        if (dof6)
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                         {
                             lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6, 1)}));
                             upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(6, 1)}));
                         }
-                        else
+                        else if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                         {
                             lower_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3, 1)}));
                             upper_bound_vec.push_back(vertcat(casadi::SXVector{casadi::SX::zeros(3, 1)}));
+                        }
+                        else
+                        {
+                            throw std::runtime_error("End effector type not recognized.");
                         }
                     }
                     /* If the end effector is in contact*/
@@ -239,10 +242,10 @@ namespace galileo
                 // In doing so, we create a a function that evaluates each end effector at each collocation point in the knot segment.
                 casadi::SXVector G_vec;
                 casadi::SX u_in = casadi::SX::sym("u", problem_data.friction_cone_problem_data.states->nu);
-                for (auto &end_effector : problem_data.friction_cone_problem_data.robot_end_effectors)
+                for (auto &ee : problem_data.friction_cone_problem_data.robot_end_effectors)
                 {
                     casadi::SX G_out;
-                    createSingleEndEffectorFunction(end_effector.first, problem_data, phase_index, u_in, G_out);
+                    createSingleEndEffectorFunction(ee.first, problem_data, phase_index, u_in, G_out);
                     G_vec.push_back(G_out);
                 }
                 G = casadi::Function("G_FrictionCone", casadi::SXVector{problem_data.friction_cone_problem_data.x, u_in}, casadi::SXVector{casadi::SX::vertcat(G_vec)});

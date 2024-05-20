@@ -41,13 +41,17 @@ namespace galileo
             plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>(plot_dir);
         }
 
-        void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names)
+        void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names, std::vector<contact::EE_Types> end_effector_types)
         {
             std::string *end_effector_names_array = new std::string[end_effector_names.size()];
+            contact::EE_Types *end_effector_types_array = new contact::EE_Types[end_effector_types.size()];
+
+            assert(end_effector_names.size() == end_effector_types.size());
 
             for (size_t i = 0; i < end_effector_names.size(); ++i)
             {
                 end_effector_names_array[i] = end_effector_names[i];
+                end_effector_types_array[i] = end_effector_types[i];
             }
             // TODO: Add these options to a parameter file
             casadi::Dict legged_opts;
@@ -59,7 +63,7 @@ namespace galileo
             // legged_opts["compiler"] = "shell";
             // // legged_opts["jit_cleanup"] = false;
 
-            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array, legged_opts);
+            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array, end_effector_types_array, legged_opts);
             states_ = robot_->si;
             model_file_location_ = model_file_location;
         }
@@ -147,7 +151,7 @@ namespace galileo
 
             cost_params_.Q_diag = Q_diag;
             cost_params_.R_diag = R_diag;
-            
+
             if (imported_vars.find("cost.terminal_weight") != imported_vars.end())
             {
                 cost_params_.terminal_weight = std::stod(std::get<0>(imported_vars["cost.terminal_weight"]));
@@ -201,20 +205,8 @@ namespace galileo
             Eigen::VectorXd q0 = Eigen::Map<Eigen::VectorXd>(q0_dm.get_elements().data(), q0_dm.size1() * q0_dm.size2());
 
             Eigen::MatrixXd R_mat = robot_->initializeInputCostWeight(R_taskspace, q0, cost_params_.default_weight);
-            std::cout << "R_mat: \n" << R_mat << std::endl;
-
-            std::cout << "------------------------------------------\n";
 
             Eigen::VectorXd diag = R_mat.diagonal();
-
-            // Print out the diagonal
-            std::cout << "Diagonal: ";
-            for (int i = 0; i < diag.size(); ++i) {
-                std::cout << diag[i] << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "------------------------------------------\n";
 
             casadi::SX Q = casadi::SX::zeros(states_->ndx, states_->ndx);
             casadi::SX R = casadi::SX::zeros(states_->nu, states_->nu);
@@ -341,9 +333,9 @@ namespace galileo
             for (auto ee : robot_->getEndEffectors())
             {
                 wrench_indices.push_back(states_->frame_id_to_index_range[ee.second->frame_id]);
-                if (ee.second->is_6d)
+                if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                     wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}", "\\tau_{x}", "\\tau_{y}", "\\tau_{z}"});
-                else
+                else if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                 {
                     wrench_legend_names.push_back({"F_{x}", "F_{y}", "F_{z}"});
                 }

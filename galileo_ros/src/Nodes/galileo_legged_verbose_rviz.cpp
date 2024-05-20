@@ -47,10 +47,15 @@ int main(int argc, char **argv)
 
     std::map<std::string, std::string> problem_parameters = galileo::tools::readFromFile(problem_parameter_file_name);
 
-    std::vector<std::string> end_effectors = galileo::tools::readAsVector(problem_parameters["end_effector_names"]);
+    std::vector<std::string> end_effectors_names = galileo::tools::readAsVector(problem_parameters["end_effector_names"]);
+    std::vector<std::string> end_effector_types_str = galileo::tools::readAsVector(problem_parameters["end_effector_types"]);
+
+    std::vector<galileo::legged::contact::EE_Types> end_effector_types;
+    std::transform(end_effector_types_str.begin(), end_effector_types_str.end(), std::back_inserter(end_effector_types), [](const std::string &str)
+                    { return static_cast<galileo::legged::contact::EE_Types>(std::stoi(str)); });
 
     // Load the URDF model to a leggedmodel
-    galileo::legged::LeggedBody robot(urdf_file_name, end_effectors);
+    galileo::legged::LeggedBody robot(urdf_file_name, end_effectors_names, end_effector_types);
 
     ros::ServiceClient solution_client = nh->serviceClient<galileo_ros::SolutionRequest>(solver_id + "_get_solution");
     ros::Subscriber vis_time_sub = nh->subscribe("/visualization_time", 1, &visualizationTimeCallback);
@@ -263,7 +268,20 @@ int main(int argc, char **argv)
 
                 double force_scaling = 0.0007;
 
-                int ee_dof = end_effector.second->is_6d ? 6 : 3;
+                int ee_dof;
+
+                if (end_effector.second->ee_type == galileo::legged::contact::EE_Types::NON_PREHENSILE_6DOF || end_effector.second->ee_type == galileo::legged::contact::EE_Types::PREHENSILE_6DOF)
+                {
+                    ee_dof = 6;
+                }
+                else if (end_effector.second->ee_type == galileo::legged::contact::EE_Types::NON_PREHENSILE_3DOF || end_effector.second->ee_type == galileo::legged::contact::EE_Types::PREHENSILE_3DOF)
+                {
+                    ee_dof = 3;
+                }
+                else
+                {
+                    throw std::runtime_error("End effector type not recognized.");
+                }
 
                 Eigen::Vector3d force = Eigen::Map<Eigen::VectorXd>(u_t.data() + ee_local_start_index, ee_dof).head(3);
 

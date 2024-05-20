@@ -1,9 +1,10 @@
 Variable Name|Value|Type
 
-cost.Q_diag|(15, 15, 100, 10, 10, 30, 1000, 1000, 100, 5000, 100, 100, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5)|vector
-cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10)|vector
+cost.Q_diag|(15, 15, 100, 100, 250, 300, 1000, 1000, 500, 100, 300, 300, 1e1, 1e1, 1e1, 1e2, 1e2, 1e2, 1e2, 1e2, 1e2, 1e2, 1e3, 1e2, 1e2, 1e2, 1e2, 1e2, 1e2, 1e2, 30, 15, 7.5, 5, 2.5, 1, 30, 15, 7.5, 5, 2.5, 1)|vector
+cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 75, 250, 1, 10, 10, 10, 75, 250, 1, 10, 10, 10, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250)|vector
+
 cost.terminal_weight|1e3|double
-cost.default_weight|1e4|double
+cost.default_weight|1|double
 
 constraints.mu|0.7|double
 constraints.normal_force_max|2500|double
@@ -14,31 +15,29 @@ constraints.min_following_leeway_planar|1e-8|double
 constraints.footstep_vel_start|0|double
 constraints.footstep_vel_end|0|double
 
-solver|snopt|string
+solver|ipopt|string
 
-nlp.snopt.Time limit|60|double
+nlp.ipopt.linear_solver|ma57|string
+nlp.ipopt.ma97_order|metis|string
+nlp.ipopt.ma57_small_pivot_flag|0|int
+nlp.ipopt.max_iter|120|int
+nlp.ipopt.max_wall_time|300|double
+nlp.ipopt.fixed_variable_treatment|make_parameter_nodual|string
+nlp.ipopt.hessian_approximation|exact|string
+nlp.ipopt.limited_memory_aug_solver,sherman-morrison|string
+nlp.ipopt.limited_memory_max_history,5|int
+nlp.ipopt.limited_memory_update_type,bfgs|string
+nlp.ipopt.limited_memory_initialization,scalar2|string
+nlp.ipopt.limited_memory_init_val,1|double
+nlp.ipopt.limited_memory_init_val_max,1e8|double
+nlp.ipopt.limited_memory_init_val_min,1e-8|double
+nlp.ipopt.limited_memory_max_skipping,2|int
+nlp.ipopt.limited_memory_special_for_resto,no|string
+nlp.ipopt.hessian_approximation_space,nonlinear-variables|string
+nlp.pass_nonlinear_variables|true|bool
 
+nlp.detect_simple_bounds|true|bool
+
+comment.nlp.snopt.Time limit|60|double
 comment.nlp.snopt.Major iterations limit|1|int
 comment.nlp.snopt.Minor iterations limit|1|int
-
-comment.nlp.ipopt.linear_solver|ma57|string
-comment.nlp.ipopt.ma97_order|metis|string
-comment.nlp.ipopt.ma57_small_pivot_flag|0|int
-
-comment.nlp.ipopt.max_iter|2|int
-comment.nlp.ipopt.fixed_variable_treatment|make_constraint|string
-comment.nlp.ipopt.hessian_approximation|limited-memory|string
-
-comment.nlp.ipopt.limited_memory_aug_solver,sherman-morrison|string
-comment.nlp.ipopt.limited_memory_max_history,5|int
-comment.nlp.ipopt.limited_memory_update_type,bfgs|string
-comment.nlp.ipopt.limited_memory_initialization,scalar2|string
-comment.nlp.ipopt.limited_memory_init_val,1|double
-comment.nlp.ipopt.limited_memory_init_val_max,1e8|double
-comment.nlp.ipopt.limited_memory_init_val_min,1e-8|double
-comment.nlp.ipopt.limited_memory_max_skipping,2|int
-comment.nlp.ipopt.limited_memory_special_for_resto,no|string
-comment.nlp.ipopt.hessian_approximation_space,nonlinear-variables|string
-
-comment.nlp.pass_nonlinear_variables|true|bool
-nlp.detect_simple_bounds|true|bool

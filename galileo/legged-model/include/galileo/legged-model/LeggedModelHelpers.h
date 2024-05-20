@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "galileo/legged-model/EndEffector.h"
 #include "galileo/legged-model/EnvironmentSurfaces.h"
 #include "galileo/tools/ReadFromFile.h"
 namespace galileo
@@ -19,7 +20,8 @@ namespace galileo
              * @brief Reads the problem parameters from a file.
              *
              * @param problem_parameter_file_name Name of the file containing the problem parameters.
-             * @param end_effector_names Vector of strings containing the names of the end effectors.
+             * @param end_effector_names Vectors of strings containing the names of the end effectors.
+             * @param end_effector_types Vector of integers containing the type of each end effector correspoding to the ee_names vector.
              * @param knot_num Vector of integers containing the number of knots for each phase.
              * @param knot_time Vector of doubles containing the time for each phase.
              * @param contact_surfaces Vector of phases, each phase is a vector of SurfaceID's, one for each end effector.
@@ -29,6 +31,7 @@ namespace galileo
              */
             void ReadProblemFromParameterFile(std::string problem_parameter_file_name,
                                               std::vector<std::string> &end_effector_names,
+                                              std::vector<contact::EE_Types> &end_effector_types,
                                               std::vector<int> &knot_num,
                                               std::vector<double> &knot_time,
                                               std::vector<std::vector<galileo::legged::environment::SurfaceID>> &contact_surfaces,
@@ -41,5 +44,5 @@ namespace galileo
             std::vector<uint> getMaskVectorFromContactSurfaces(std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces);
 
         } // namespace helper
-    }     // namespace legged
+    } // namespace legged
 } // namespace galileo

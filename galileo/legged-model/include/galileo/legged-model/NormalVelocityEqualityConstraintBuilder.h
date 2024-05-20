@@ -174,151 +174,179 @@ namespace galileo
                 {
                     if (!mode[(*ee.second)])
                     {
-                        double liftoff_time = 0;
-                        double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->getDT();
-                        FootstepDefinition footstep_definition;
-                        footstep_definition.h_start = 0;
-                        footstep_definition.h_end = 0;
-                        footstep_definition.footstep_vel_start = problem_data.velocity_constraint_problem_data.footstep_vel_start;
-                        footstep_definition.footstep_vel_end = problem_data.velocity_constraint_problem_data.footstep_vel_end;
-
-                        galileo::legged::environment::SurfaceID liftoff_surface_ID = 0;
-                        galileo::legged::environment::SurfaceID touchdown_surface_ID = 0;
-
-                        contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
-
-                        // When did the EE break contact?
-                        for (int i = phase_index; i >= 0; i--)
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF)
                         {
-                            contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
-                            // If the ee is in contact, we have found the phase where liftoff occurred.
-                            if (mode_i.at(*ee.second))
+                            double liftoff_time = 0;
+                            double touchdown_time = problem_data.velocity_constraint_problem_data.contact_sequence->getDT();
+                            FootstepDefinition footstep_definition;
+                            footstep_definition.h_start = 0;
+                            footstep_definition.h_end = 0;
+                            footstep_definition.footstep_vel_start = problem_data.velocity_constraint_problem_data.footstep_vel_start;
+                            footstep_definition.footstep_vel_end = problem_data.velocity_constraint_problem_data.footstep_vel_end;
+
+                            galileo::legged::environment::SurfaceID liftoff_surface_ID = 0;
+                            galileo::legged::environment::SurfaceID touchdown_surface_ID = 0;
+
+                            contact::ContactSequence::CONTACT_SEQUENCE_ERROR error;
+
+                            // When did the EE break contact?
+                            for (int i = phase_index; i >= 0; i--)
                             {
-                                int liftoff_index = i + 1;
-                                problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
-                                liftoff_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
-                                break;
-                            }
-                        }
-
-
-                        // When does it make contact again?
-                        for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->getNumPhases(); i++)
-                        {
-                            contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
-                            // If the ee is in contact, we have found the phase where touchdown occurred.
-                            if (mode_i.at(*ee.second))
-                            {
-                                int touchdown_index = i;
-                                problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
-                                touchdown_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
-                                break;
-                            }
-                        }
-
-                        if(liftoff_time == 0){
-                            // The EE is not in contact at the start of the horizon
-                            if(liftoffs_before_horizon.has_value() && liftoffs_before_horizon.value().count(ee.second->frame_name) > 0){
-                                liftoff_time =  liftoffs_before_horizon.value()[ee.second->frame_name];
-                            } else {
-                                if(touchdown_time < problem_data.velocity_constraint_problem_data.contact_sequence->getDT()){
-                                    if(problem_data.velocity_constraint_problem_data.ideal_footstep_duration.has_value()){
-                                        liftoff_time = touchdown_time - problem_data.velocity_constraint_problem_data.ideal_footstep_duration.value();
-                                    } else {
-                                        throw std::runtime_error("The ideal footstep liftoff time for " + ee.second->frame_name + " is not defined!");
-                                    }
-                                } else{
-                                    // The end effector is in flight for the entire horizon! The velocity constraint cannot be applied
-                                    
+                                contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
+                                // If the ee is in contact, we have found the phase where liftoff occurred.
+                                if (mode_i.at(*ee.second))
+                                {
+                                    int liftoff_index = i + 1;
+                                    problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(liftoff_index, liftoff_time, error);
+                                    liftoff_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
+                                    break;
                                 }
                             }
-                        
-                            if(liftoff_time > 0){
-                                // The liftoff is within the horizon, but the mode at t=0 is not in contact
-                                // this is an error
-                                throw std::runtime_error("The ideal footstep liftoff time for " + ee.second->frame_name + " is defined, but it is within the planning horizon and the EE is not in contact at that time!");
-                            }
-                        }
 
-                        if(touchdown_time == problem_data.velocity_constraint_problem_data.contact_sequence->getDT()){
-                            // The EE is not in contact at the end of the horizon
-                            if(touchdowns_after_horizon.has_value() && touchdowns_after_horizon.value().count(ee.second->frame_name) > 0){
-                                touchdown_time =  touchdowns_after_horizon.value()[ee.second->frame_name];
-                            } else {
-                                if(liftoff_time > 0){
-                                    if(problem_data.velocity_constraint_problem_data.ideal_footstep_duration.has_value()){
-                                        touchdown_time = liftoff_time + problem_data.velocity_constraint_problem_data.ideal_footstep_duration.value();
-                                    } else {
-                                        throw std::runtime_error("The ideal footstep touchdown time for " + ee.second->frame_name + " is not defined!");
-                                    }
-                                } else{
-                                    // The end effector is in flight for the entire horizon! The velocity constraint cannot be applied
-                                    
+                            // When does it make contact again?
+                            for (int i = phase_index; i < problem_data.velocity_constraint_problem_data.contact_sequence->getNumPhases(); i++)
+                            {
+                                contact::ContactMode mode_i = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode;
+                                // If the ee is in contact, we have found the phase where touchdown occurred.
+                                if (mode_i.at(*ee.second))
+                                {
+                                    int touchdown_index = i;
+                                    problem_data.velocity_constraint_problem_data.contact_sequence->getTimeAtPhase(touchdown_index, touchdown_time, error);
+                                    touchdown_surface_ID = problem_data.velocity_constraint_problem_data.contact_sequence->getPhase(i).mode.getSurfaceID(*ee.second);
+                                    break;
                                 }
                             }
-                        
-                            if(touchdown_time < problem_data.velocity_constraint_problem_data.contact_sequence->getDT()){
-                                // The touchdown is within the horizon, but the mode at t=DT is not in contact
-                                // this is an error
-                                throw std::runtime_error("The ideal footstep touchdown time for " + ee.second->frame_name + " is defined, but it is within the planning horizon and the EE is not in contact at that time!");
+
+                            if (liftoff_time == 0)
+                            {
+                                // The EE is not in contact at the start of the horizon
+                                if (liftoffs_before_horizon.has_value() && liftoffs_before_horizon.value().count(ee.second->frame_name) > 0)
+                                {
+                                    liftoff_time = liftoffs_before_horizon.value()[ee.second->frame_name];
+                                }
+                                else
+                                {
+                                    if (touchdown_time < problem_data.velocity_constraint_problem_data.contact_sequence->getDT())
+                                    {
+                                        if (problem_data.velocity_constraint_problem_data.ideal_footstep_duration.has_value())
+                                        {
+                                            liftoff_time = touchdown_time - problem_data.velocity_constraint_problem_data.ideal_footstep_duration.value();
+                                        }
+                                        else
+                                        {
+                                            throw std::runtime_error("The ideal footstep liftoff time for " + ee.second->frame_name + " is not defined!");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // The end effector is in flight for the entire horizon! The velocity constraint cannot be applied
+                                    }
+                                }
+
+                                if (liftoff_time > 0)
+                                {
+                                    // The liftoff is within the horizon, but the mode at t=0 is not in contact
+                                    // this is an error
+                                    throw std::runtime_error("The ideal footstep liftoff time for " + ee.second->frame_name + " is defined, but it is within the planning horizon and the EE is not in contact at that time!");
+                                }
                             }
-                        }
 
-                        footstep_definition.h_start = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(liftoff_surface_ID).surface_transform.translation()[2];
-                        footstep_definition.h_end = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(touchdown_surface_ID).surface_transform.translation()[2];
-                        footstep_definition.h_max = std::max(footstep_definition.h_start, footstep_definition.h_end) + problem_data.velocity_constraint_problem_data.ideal_offset_height;
-                        footstep_definition.liftoff_time = liftoff_time;
-                        footstep_definition.touchdown_time = touchdown_time;
-                        double scaled = std::min(1.0, (touchdown_time - liftoff_time) / problem_data.velocity_constraint_problem_data.footstep_height_scaling);
+                            if (touchdown_time == problem_data.velocity_constraint_problem_data.contact_sequence->getDT())
+                            {
+                                // The EE is not in contact at the end of the horizon
+                                if (touchdowns_after_horizon.has_value() && touchdowns_after_horizon.value().count(ee.second->frame_name) > 0)
+                                {
+                                    touchdown_time = touchdowns_after_horizon.value()[ee.second->frame_name];
+                                }
+                                else
+                                {
+                                    if (liftoff_time > 0)
+                                    {
+                                        if (problem_data.velocity_constraint_problem_data.ideal_footstep_duration.has_value())
+                                        {
+                                            touchdown_time = liftoff_time + problem_data.velocity_constraint_problem_data.ideal_footstep_duration.value();
+                                        }
+                                        else
+                                        {
+                                            throw std::runtime_error("The ideal footstep touchdown time for " + ee.second->frame_name + " is not defined!");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // The end effector is in flight for the entire horizon! The velocity constraint cannot be applied
+                                    }
+                                }
 
-                        casadi::SX mapped_t = (t - liftoff_time) / (touchdown_time - liftoff_time);
-                        casadi::SX cfoot_vel = getFootstepVelocity(problem_data, ee.first);
+                                if (touchdown_time < problem_data.velocity_constraint_problem_data.contact_sequence->getDT())
+                                {
+                                    // The touchdown is within the horizon, but the mode at t=DT is not in contact
+                                    // this is an error
+                                    throw std::runtime_error("The ideal footstep touchdown time for " + ee.second->frame_name + " is defined, but it is within the planning horizon and the EE is not in contact at that time!");
+                                }
+                            }
 
-                        casadi::SX ell_max_planar = problem_data.velocity_constraint_problem_data.max_following_leeway_planar;
-                        casadi::SX ell_min_planar = problem_data.velocity_constraint_problem_data.min_following_leeway_planar;
-                        casadi::SX ell_slope_planar = (ell_max_planar - ell_min_planar);
-                        casadi::SX admissible_error_planar = ell_slope_planar * t + ell_min_planar;
+                            footstep_definition.h_start = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(liftoff_surface_ID).surface_transform.translation()[2];
+                            footstep_definition.h_end = problem_data.velocity_constraint_problem_data.environment_surfaces->getSurfaceFromID(touchdown_surface_ID).surface_transform.translation()[2];
+                            footstep_definition.h_max = std::max(footstep_definition.h_start, footstep_definition.h_end) + problem_data.velocity_constraint_problem_data.ideal_offset_height;
 
-                        casadi::Function lower_bound = casadi::Function("lower_bound", casadi::SXVector{t},
-                                                                        casadi::SXVector{vertcat(casadi::SXVector{
-                                                                            -admissible_error_planar,
-                                                                            -admissible_error_planar})});
-                        casadi::Function upper_bound = casadi::Function("upper_bound", casadi::SXVector{t},
-                                                                        casadi::SXVector{vertcat(casadi::SXVector{
-                                                                            admissible_error_planar,
-                                                                            admissible_error_planar})});
+                            footstep_definition.liftoff_time = liftoff_time;
+                            footstep_definition.touchdown_time = touchdown_time;
+                            double scaled = std::min(1.0, (touchdown_time - liftoff_time) / problem_data.velocity_constraint_problem_data.footstep_height_scaling);
 
-                        G_vec.push_back(cfoot_vel(casadi::Slice(0, 2), 0));
-                        lower_bound_vec.push_back(lower_bound(mapped_t).at(0));
-                        upper_bound_vec.push_back(upper_bound(mapped_t).at(0));
+                            casadi::SX mapped_t = (t - liftoff_time) / (touchdown_time - liftoff_time);
+                            casadi::SX cfoot_vel = getFootstepVelocity(problem_data, ee.first);
 
-                        casadi::Function footstep_function = casadi::Function("footstep_velocity", casadi::SXVector{t}, casadi::SXVector{createFootstepHeightFunction(t, footstep_definition, scaled)});
-                        casadi::SX desired_velocity = footstep_function(casadi::SXVector{mapped_t}).at(0);
+                            casadi::SX ell_max_planar = problem_data.velocity_constraint_problem_data.max_following_leeway_planar;
+                            casadi::SX ell_min_planar = problem_data.velocity_constraint_problem_data.min_following_leeway_planar;
+                            casadi::SX ell_slope_planar = (ell_max_planar - ell_min_planar);
+                            casadi::SX admissible_error_planar = ell_slope_planar * t + ell_min_planar;
 
-                        G_vec.push_back(cfoot_vel(2, 0));
-                        lower_bound_vec.push_back(desired_velocity);
-                        upper_bound_vec.push_back(desired_velocity);
-                        if (ee.second->is_6d)
-                        {
-                            G_vec.push_back(cfoot_vel(casadi::Slice(3, 6), 0));
-                            lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
-                            upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                            casadi::Function lower_bound = casadi::Function("lower_bound", casadi::SXVector{t},
+                                                                            casadi::SXVector{vertcat(casadi::SXVector{
+                                                                                -admissible_error_planar,
+                                                                                -admissible_error_planar})});
+                            casadi::Function upper_bound = casadi::Function("upper_bound", casadi::SXVector{t},
+                                                                            casadi::SXVector{vertcat(casadi::SXVector{
+                                                                                admissible_error_planar,
+                                                                                admissible_error_planar})});
+
+                            G_vec.push_back(cfoot_vel(casadi::Slice(0, 2), 0));
+                            lower_bound_vec.push_back(lower_bound(mapped_t).at(0));
+                            upper_bound_vec.push_back(upper_bound(mapped_t).at(0));
+
+                            casadi::Function footstep_function = casadi::Function("footstep_velocity", casadi::SXVector{t}, casadi::SXVector{createFootstepHeightFunction(t, footstep_definition, scaled)});
+                            casadi::SX desired_velocity = footstep_function(casadi::SXVector{mapped_t}).at(0);
+
+                            G_vec.push_back(cfoot_vel(2, 0));
+                            lower_bound_vec.push_back(desired_velocity);
+                            upper_bound_vec.push_back(desired_velocity);
+
+                            if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF)
+                            {
+                                G_vec.push_back(cfoot_vel(casadi::Slice(3, 6), 0));
+                                lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                                upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                            }
                         }
                     }
                     else
                     {
                         casadi::SX cfoot_vel = getFootstepVelocity(problem_data, ee.first);
-                        if (ee.second->is_6d)
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                         {
                             G_vec.push_back(cfoot_vel);
                             lower_bound_vec.push_back(casadi::SX::zeros(6, 1));
                             upper_bound_vec.push_back(casadi::SX::zeros(6, 1));
                         }
-                        else
+                        else if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                         {
                             G_vec.push_back(cfoot_vel(casadi::Slice(0, 3), 0));
                             lower_bound_vec.push_back(casadi::SX::zeros(3, 1));
                             upper_bound_vec.push_back(casadi::SX::zeros(3, 1));
+                        }
+                        else
+                        {
+                            throw std::runtime_error("End effector type not recognized.");
                         }
                     }
                 }
@@ -334,35 +362,42 @@ namespace galileo
                     if (mode[(*ee.second)])
                     {
                         // constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint " + ee.second->frame_name);
-                        if (ee.second->is_6d)
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                         {
                             constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint for " + ee.second->frame_name);
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 6));
                             constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz", "wx", "wy", "wz"});
                             i += 6;
                         }
-                        else
+                        else if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                         {
                             constraint_data.metadata.plot_titles.push_back("Stance Velocity Constraint for " + ee.second->frame_name);
                             constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 3));
                             constraint_data.metadata.plot_names.push_back({"Vx", "Vy", "Vz"});
                             i += 3;
                         }
+                        else
+                        {
+                            throw std::runtime_error("End effector type not recognized.");
+                        }
                     }
                     else
                     {
-                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vx for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                        constraint_data.metadata.plot_names.push_back({"Vx"});
-                        i += 1;
-                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vy for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                        constraint_data.metadata.plot_names.push_back({"Vy"});
-                        i += 1;
-                        constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vz for " + ee.second->frame_name);
-                        constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
-                        constraint_data.metadata.plot_names.push_back({"Vz"});
-                        i += 1;
+                        if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF)
+                        {
+                            constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vx for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Vx"});
+                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vy for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Vy"});
+                            i += 1;
+                            constraint_data.metadata.plot_titles.push_back("Swing Velocity Constraint Vz for " + ee.second->frame_name);
+                            constraint_data.metadata.plot_groupings.push_back(std::make_tuple(i, i + 1));
+                            constraint_data.metadata.plot_names.push_back({"Vz"});
+                            i += 1;
+                        }
                     }
                 }
             }

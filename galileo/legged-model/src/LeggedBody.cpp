@@ -4,7 +4,7 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, casadi::Dict general_function_casadi_options)
+        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, const std::vector<contact::EE_Types> end_effector_types, casadi::Dict general_function_casadi_options)
         {
             model = Model();
 
@@ -12,7 +12,7 @@ namespace galileo
             data = Data(model);
             cmodel = model.cast<ADScalar>();
             cdata = ADData(cmodel);
-            setEndEffectors(end_effector_names);
+            setEndEffectors(end_effector_names, end_effector_types);
             generateContactCombination();
             si = std::make_shared<legged::LeggedRobotStates>(model.nq, model.nv, ees_);
             contact_sequence = std::make_shared<contact::ContactSequence>(end_effector_names.size());
@@ -54,64 +54,83 @@ namespace galileo
             return joint_indices;
         }
 
-        void LeggedBody::setEndEffectors(const std::vector<std::string> &ee_names)
+        void LeggedBody::setEndEffectors(const std::vector<std::string> &ee_names, const std::vector<contact::EE_Types> &ee_types)
         {
-            std::vector<pinocchio::FrameIndex> ee_ids;
-            size_t dof_accum = 0;
+            assert(ee_names.size() == ee_types.size());
+            num_end_effectors_ = ee_names.size();
+
+            // Joint indices that are only associated with a single end effector
+            std::set<int> single_occurence_joint_indices;
+
             for (std::size_t i = 0; i < ee_names.size(); ++i)
             {
                 auto ee_name = ee_names[i];
+                auto ee_type = ee_types[i];
                 // Check if the frame exists in the model.
                 assert(model.existFrame(ee_name, pinocchio::BODY));
                 // Throw an error otherwise.
                 std::shared_ptr<contact::EndEffector> ee_obj_ptr = std::make_shared<contact::EndEffector>();
                 ee_obj_ptr->frame_name = ee_name;
+                ee_obj_ptr->ee_type = ee_type;
                 pinocchio::FrameIndex frame_id = model.getFrameId(ee_name);
                 ee_obj_ptr->frame_id = frame_id;
+                ees_.insert({frame_id, ee_obj_ptr});
+                ee_ids_.push_back(frame_id);
 
                 // Get the joint indices from the root to the end effector
                 std::vector<pinocchio::JointIndex> joint_indices = getJointIndicesFromRootToFrame(model, frame_id);
-
-                // Compute the total number of degrees of freedom
-                int dof = 0;
                 for (const auto &joint_index : joint_indices)
                 {
-                    dof += model.joints[joint_index].nq();
-                    ee_obj_ptr->joint_indices.push_back(joint_index); // world and root joints are included
+                    if (single_occurence_joint_indices.find(joint_index) != single_occurence_joint_indices.end())
+                    {
+                        single_occurence_joint_indices.erase(joint_index);
+                    }
+                    else
+                    {
+                        single_occurence_joint_indices.insert(joint_index);
+                    }
                 }
-                ee_obj_ptr->is_6d = dof == 6;
-                ee_obj_ptr->offset_index = dof_accum;
-                dof_accum += dof;
-                ees_.insert({frame_id, ee_obj_ptr});
-                ee_ids.push_back(frame_id);
             }
 
-            num_end_effectors_ = ee_names.size();
-            ee_ids_ = ee_ids;
-
-            // print all model joint names
-            for (size_t i = 0; i < model.names.size(); i++)
+            size_t dof_accum = 0;
+            for (std::size_t i = 0; i < ee_ids_.size(); ++i)
             {
-                std::cout << "Name: " << model.names[i] << " - Index: " << i << std::endl;
-            }
+                auto ee_pair = *ees_.find(ee_ids_[i]);
+                auto frame_id = ee_pair.first;
+                auto ee_obj_ptr = ee_pair.second;
+                std::vector<pinocchio::JointIndex> joint_indices = getJointIndicesFromRootToFrame(model, frame_id);
 
-            for (size_t i = 0; i < ees_.size(); ++i)
-            {
-                std::cout << "End effector " << ees_[ee_ids[i]]->frame_name << " is associated with the following joints:" << std::endl; // Useful for debugging
-                for (size_t j = 0; j < ees_[ee_ids[i]]->joint_indices.size(); j++)
+                for (const auto &joint_index : joint_indices)
                 {
-                    std::cout << "Name: " << model.names[ees_[ee_ids[i]]->joint_indices[j]] << " - Index: " << ees_[ee_ids[i]]->joint_indices[j] << std::endl;
+                    // Only include joints that are associated with a single end effector
+                    if (single_occurence_joint_indices.find(joint_index) != single_occurence_joint_indices.end())
+                    {
+                        ee_obj_ptr->joint_indices.push_back(joint_index);
+                    }
                 }
-                std::cout << "Offset Index: " << ees_[ee_ids[i]]->offset_index << std::endl;
+                ee_obj_ptr->offset_index = dof_accum;
+
+                if ((ee_obj_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF) || (ee_obj_ptr->ee_type == contact::EE_Types::PREHENSILE_6DOF))
+                {
+                    dof_accum += 6;
+                }
+                else if ((ee_obj_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF) || (ee_obj_ptr->ee_type == contact::EE_Types::PREHENSILE_3DOF))
+                {
+                    dof_accum += 3;
+                }
+                else
+                {
+                    throw std::runtime_error("End effector type not recognized.");
+                }
             }
         }
 
         std::vector<std::string> LeggedBody::getEndEffectorNames()
         {
             std::vector<std::string> ee_names;
-            for (auto &ee_pair : ees_)
+            for (auto &ee_id : ee_ids_)
             {
-                ee_names.push_back(ee_pair.second->frame_name);
+                ee_names.push_back(model.frames[ee_id].name);
             }
             return ee_names;
         }
@@ -139,10 +158,14 @@ namespace galileo
 
                 for (int i = 0; i < num_end_effectors_; i++)
                 {
+                    // check if the bit is set
                     bool ee_i_is_in_contact = (bit_mask & binary_value_combination_bits).any();
-                    // bit shift
-                    bit_mask <<= 1;
+
+                    // set whether the end effector is in contact in this combination
                     new_contact_combination[ee_ids_[i]] = ee_i_is_in_contact;
+
+                    // set the mask to the next bit for the next end effector
+                    bit_mask <<= 1;
                 }
                 contact_combinations[binary_value_combination] = new_contact_combination;
             }
@@ -154,39 +177,50 @@ namespace galileo
             pinocchio::computeJointJacobians(model, data, q0);
             pinocchio::updateFramePlacements(model, data);
 
+            // R is size (nu, nu)
+            // nu = totalContactDim + nvju
+
+            // R_taskspace is size (totalContactDim + totalTaskspaceDim, totalContactDim + totalTaskspaceDim)
+
             size_t totalContactDim = si->nF;
+            size_t totalTaskspaceDim = si->nF;
             Eigen::MatrixXd R = Eigen::MatrixXd::Zero(si->nu, si->nu);
             // Contact Forces
             R.topLeftCorner(totalContactDim, totalContactDim) = R_taskspace.topLeftCorner(totalContactDim, totalContactDim);
 
-            std::set<int> ee_joints;
-            Eigen::MatrixXd baseToFeetJacobians(totalContactDim, si->nvju);
+            // Set default values for the actuated joints not associated with ees
+            R.bottomRightCorner(si->nvju, si->nvju) = Eigen::MatrixXd::Identity(si->nvju, si->nvju) * default_weight;
+
+            // The goal is to penalize the joint velocities associated with the end effectors at the initial configuration
+            // For joints which are associated with multiple end effectors, we set the weight to be the average of the weights from each associated end effector
+            // For joint velocities not associated with the end effectors, we set a default weight
+            Eigen::MatrixXd baseToEEJacobians = Eigen::MatrixXd::Zero(totalTaskspaceDim, si->nvju);
             for (auto ee : ees_)
             {
                 auto frame_id = ee.first;
-                size_t start_index = ee.second->offset_index;
-                size_t size = ee.second->is_6d ? 6 : 3;
-                for (size_t i = 0; i < ee.second->joint_indices.size(); i++)
+                size_t size = 0;
+                if ((ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF) || (ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF))
                 {
-                    ee_joints.insert(ee.second->joint_indices[i] - 2); // world and root joints are not included
+                    size = 6;
                 }
+                else if ((ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF) || (ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF))
+                {
+                    size = 3;
+                }
+                else
+                {
+                    throw std::runtime_error("End effector type not recognized.");
+                }
+
                 Eigen::MatrixXd jacobianWorldToContactPointInWorldFrame = Eigen::MatrixXd::Zero(6, si->nv);
                 pinocchio::getFrameJacobian(model, data, frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobianWorldToContactPointInWorldFrame);
-                baseToFeetJacobians.block(start_index, 0, size, si->nvju) =
+                baseToEEJacobians.block(ee.second->offset_index, 0, size, si->nvju) =
                     jacobianWorldToContactPointInWorldFrame.block(0, 6, size, si->nvju); // velocity in base frame x velocity in joint space
             }
 
             // Joint velocities
-            R.block(totalContactDim, totalContactDim, si->nvju, si->nvju) = baseToFeetJacobians.transpose() * R_taskspace.block(totalContactDim, totalContactDim, totalContactDim, totalContactDim) * baseToFeetJacobians;
+            R.block(totalContactDim, totalContactDim, si->nvju, si->nvju) = baseToEEJacobians.transpose() * R_taskspace.bottomRightCorner(totalTaskspaceDim, totalTaskspaceDim) * baseToEEJacobians;
 
-            // Set default values for the actuated joints not associated with ees
-            for (size_t i = 0; i < si->nvju; i++)
-            {
-                if (ee_joints.find(i) == ee_joints.end())
-                {
-                    R(totalContactDim + i, totalContactDim + i) = default_weight;
-                }
-            }
             return R;
         }
 
@@ -322,13 +356,17 @@ namespace galileo
                         casadi::SX cforce = si->get_f(cu, ee.first);
 
                         casadi::SX ctau_ee;
-                        if (end_effector_ptr->is_6d)
+                        if (end_effector_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || end_effector_ptr->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                         {
                             ctau_ee = si->get_tau(cu, ee.first);
                         }
-                        else
+                        else if (end_effector_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || end_effector_ptr->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                         {
                             ctau_ee = casadi::SX::zeros(3, 1);
+                        }
+                        else
+                        {
+                            throw std::runtime_error("End effector type not recognized.");
                         }
 
                         foot_forces.push_back(cforce);

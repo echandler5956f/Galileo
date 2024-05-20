@@ -54,6 +54,7 @@ namespace galileo
 
             void ReadProblemFromParameterFile(std::string problem_parameter_file_name,
                                               std::vector<std::string> &end_effector_names,
+                                              std::vector<contact::EE_Types> &end_effector_types,
                                               std::vector<int> &knot_num,
                                               std::vector<double> &knot_time,
                                               std::vector<std::vector<galileo::legged::environment::SurfaceID>> &contact_surfaces,
@@ -65,6 +66,11 @@ namespace galileo
 
                 end_effector_names = galileo::tools::readAsVector(data_map["end_effector_names"]);
                 assert(end_effector_names.size() > 0);
+                
+                std::vector<std::string> end_effector_types_str = galileo::tools::readAsVector(data_map["end_effector_types"]);
+                std::transform(end_effector_types_str.begin(), end_effector_types_str.end(), std::back_inserter(end_effector_types), [](const std::string &str)
+                               { return static_cast<contact::EE_Types>(std::stoi(str)); });
+                assert(end_effector_types.size() == end_effector_names.size());
 
                 std::vector<std::string> knot_num_str = galileo::tools::readAsVector(data_map["knot_num"]);
                 std::transform(knot_num_str.begin(), knot_num_str.end(), std::back_inserter(knot_num), [](const std::string &str)

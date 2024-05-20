@@ -15,6 +15,6 @@ int32       qj_index
 string[]    joint_names
 
 
-int32[] ee_dofs
+int32[] end_effector_types
 
 ContactPhase[] contact_phases

@@ -1,12 +1,12 @@
 Variable Name|Value|Type
 
-cost.Q_diag|(15, 15, 100, 10, 30, 30, 1000, 1000, 1500, 100, 300, 300, 5, 5, 2.5, 2.5, 2.5, 5, 5, 5, 2.5, 2.5, 2.5, 5)|vector
-cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 5e5, 5e5, 5e5, 5e5, 5e5, 5e5, 5e5, 5e5, 5e5, 5e5, 5e5, 5e5)|vector
+cost.Q_diag|(15, 15, 100, 100, 250, 300, 1000, 1000, 500, 100, 300, 300, 30, 15, 7.5, 5, 2.5, 1, 30, 15, 7.5, 5, 2.5, 1)|vector
+cost.R_diag|(1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 250, 250, 1, 10, 10, 10, 250, 250, 1, 10, 10, 10)|vector
 cost.terminal_weight|1e3|double
 cost.default_weight|1|double
 
 constraints.mu|0.7|double
-constraints.normal_force_max|1000|double
+constraints.normal_force_max|1500|double
 constraints.ideal_offset_height|0.1|double
 constraints.footstep_height_scaling|0.15|double
 constraints.max_following_leeway_planar|50|double
@@ -19,11 +19,10 @@ solver|ipopt|string
 nlp.ipopt.linear_solver|ma57|string
 nlp.ipopt.ma97_order|metis|string
 nlp.ipopt.ma57_small_pivot_flag|0|int
-
-nlp.ipopt.max_iter|20|int
-nlp.ipopt.fixed_variable_treatment|make_constraint|string
+nlp.ipopt.max_iter|120|int
+nlp.ipopt.max_wall_time|150|double
+nlp.ipopt.fixed_variable_treatment|make_parameter_nodual|string
 nlp.ipopt.hessian_approximation|exact|string
-
 nlp.ipopt.limited_memory_aug_solver,sherman-morrison|string
 nlp.ipopt.limited_memory_max_history,5|int
 nlp.ipopt.limited_memory_update_type,bfgs|string
@@ -34,6 +33,10 @@ nlp.ipopt.limited_memory_init_val_min,1e-8|double
 nlp.ipopt.limited_memory_max_skipping,2|int
 nlp.ipopt.limited_memory_special_for_resto,no|string
 nlp.ipopt.hessian_approximation_space,nonlinear-variables|string
-
 nlp.pass_nonlinear_variables|true|bool
+
 nlp.detect_simple_bounds|true|bool
+
+comment.nlp.snopt.Time limit|60|double
+comment.nlp.snopt.Major iterations limit|1|int
+comment.nlp.snopt.Minor iterations limit|1|int

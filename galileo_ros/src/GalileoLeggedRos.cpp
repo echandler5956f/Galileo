@@ -57,12 +57,14 @@ namespace galileo
         {
             std::string model_location = msg->model_file_location;
             std::vector<std::string> end_effector_names;
+            std::vector<contact::EE_Types> end_effector_types;
             for (size_t i = 0; i < msg->end_effector_names.size(); ++i)
             {
                 end_effector_names.push_back(msg->end_effector_names[i]);
+                end_effector_types.push_back(static_cast<contact::EE_Types>(msg->end_effector_types[i]));
             }
 
-            LoadModel(model_location, end_effector_names);
+            LoadModel(model_location, end_effector_names, end_effector_types);
         }
 
         void GalileoLeggedRos::ParameterLocationCallback(const galileo_ros::ParameterFileLocation::ConstPtr &msg)
@@ -191,14 +193,10 @@ namespace galileo
 
             res.solution_horizon = getSolutionDT();
 
-            std::vector<int> ee_dofs;
-
             for (auto &ee : getEndEffectors())
             {
-                ee_dofs.push_back(ee.second->is_6d ? 6 : 3);
+                res.end_effector_types.push_back(static_cast<int>(ee.second->ee_type));
             }
-
-            res.ee_dofs = ee_dofs;
 
             auto contact_sequence = getRobotModel()->getContactSequence();
 

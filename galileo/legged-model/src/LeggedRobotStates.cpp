@@ -14,15 +14,19 @@ namespace galileo
             this->nu = this->nvju;
             for (auto ee : ees)
             {
-                if (ee.second->is_6d)
+                if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF)
                 {
                     this->frame_id_to_index_range[ee.second->frame_id] = std::make_tuple(this->nF, this->nF + 6);
                     this->nF += 6;
                 }
-                else
+                else if (ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF)
                 {
                     this->frame_id_to_index_range[ee.second->frame_id] = std::make_tuple(this->nF, this->nF + 3);
                     this->nF += 3;
+                }
+                else
+                {
+                    throw std::runtime_error("End effector type not recognized.");
                 }
             }
             this->nu += this->nF;
@@ -111,7 +115,7 @@ namespace galileo
             Sym tmp = u(casadi::Slice(std::get<0>(this->frame_id_to_index_range[ee_id]), std::get<1>(this->frame_id_to_index_range[ee_id])));
             if (tmp.size1() < 6)
             {
-                std::cout << "tau does not exist for ee " << ee_id << "\n";
+                std::cout << "tau does not exist for ee " << ee_id << std::endl;
                 return tmp;
             }
             else

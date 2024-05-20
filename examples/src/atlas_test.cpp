@@ -3,6 +3,7 @@
 int main(int argc, char **argv)
 {
     std::vector<std::string> end_effector_names;
+    std::vector<contact::EE_Types> end_effector_types;
     std::vector<int> knot_num;
     std::vector<double> knot_time;
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
@@ -12,6 +13,7 @@ int main(int argc, char **argv)
 
     galileo::legged::helper::ReadProblemFromParameterFile(problem_parameter_location,
                                                           end_effector_names,
+                                                          end_effector_types,
                                                           knot_num,
                                                           knot_time,
                                                           contact_surfaces,
@@ -20,7 +22,7 @@ int main(int argc, char **argv)
 
     galileo::legged::LeggedInterface solver_interface;
 
-    solver_interface.LoadModel(robot_location, end_effector_names);
+    solver_interface.LoadModel(robot_location, end_effector_names, end_effector_types);
     solver_interface.LoadParameters(solver_parameter_location);
 
     int nx = solver_interface.states()->nx;

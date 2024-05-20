@@ -43,10 +43,17 @@ namespace galileo
                     this->friction_cone_problem_data.x = x;
                     this->friction_cone_problem_data.u = u;
                     this->friction_cone_problem_data.t = t;
+
                     if (opts.find("mu") != opts.end())
                         this->friction_cone_problem_data.mu = opts["mu"];
+                    else 
+                        std::cout << "Parameter 'mu' not found, using default value." << std::endl;
+
                     if (opts.find("normal_force_max") != opts.end())
                         this->friction_cone_problem_data.normal_force_max = opts["normal_force_max"];
+                    else
+                        std::cout << "Parameter 'normal_force_max' not found, using default value." << std::endl;
+
                     this->friction_cone_problem_data.approximation_order = FrictionConeProblemData::ApproximationOrder::FIRST_ORDER;
 
                     this->contact_constraint_problem_data.environment_surfaces = environment_surfaces;
@@ -68,21 +75,41 @@ namespace galileo
                     this->velocity_constraint_problem_data.x = x;
                     this->velocity_constraint_problem_data.u = u;
                     this->velocity_constraint_problem_data.t = t;
+
                     if (opts.find("ideal_offset_height") != opts.end())
                         this->velocity_constraint_problem_data.ideal_offset_height = opts["ideal_offset_height"];
+                    else
+                        std::cout << "Parameter 'ideal_offset_height' not found, using default value." << std::endl;
+
                     if (opts.find("footstep_height_scaling") != opts.end())
                         this->velocity_constraint_problem_data.footstep_height_scaling = opts["footstep_height_scaling"];
+                    else
+                        std::cout << "Parameter 'footstep_height_scaling' not found, using default value." << std::endl;
+
                     if (opts.find("max_following_leeway_planar") != opts.end())
                         this->velocity_constraint_problem_data.max_following_leeway_planar = opts["max_following_leeway_planar"];
+                    else
+                        std::cout << "Parameter 'max_following_leeway_planar' not found, using default value." << std::endl;
+
                     if (opts.find("min_following_leeway_planar") != opts.end())
                         this->velocity_constraint_problem_data.min_following_leeway_planar = opts["min_following_leeway_planar"];
+                    else
+                        std::cout << "Parameter 'min_following_leeway_planar' not found, using default value." << std::endl;
+
                     if (opts.find("footstep_vel_start") != opts.end())
                         this->velocity_constraint_problem_data.footstep_vel_start = opts["footstep_vel_start"];
+                    else 
+                        std::cout << "Parameter 'footstep_vel_start' not found, using default value." << std::endl;
+
                     if (opts.find("footstep_vel_end") != opts.end())
                         this->velocity_constraint_problem_data.footstep_vel_end = opts["footstep_vel_end"];
+                    else 
+                        std::cout << "Parameter 'footstep_vel_end' not found, using default value." << std::endl;
 
                     if (opts.find("ideal_footstep_duration") != opts.end())
                         this->velocity_constraint_problem_data.ideal_footstep_duration = opts["ideal_footstep_duration"];
+                    // else 
+                    //     std::cout << "Parameter 'ideal_footstep_duration' not found, using default value." << std::endl;
                     
                     for(auto &ee : robot_end_effectors){
                         assert(ee.second != nullptr);
@@ -103,7 +130,6 @@ namespace galileo
                                 opts[touchdown_name];
                         }
                     }
-
 
                     this->legged_decision_problem_data.environment_surfaces = environment_surfaces;
                     this->legged_decision_problem_data.contact_sequence = contact_sequence;
