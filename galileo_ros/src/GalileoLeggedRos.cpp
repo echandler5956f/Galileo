@@ -23,26 +23,16 @@ namespace galileo
             // Subscribe to the initialization command
             command_subscriber_ = nh_->subscribe(solver_id_ + "_command", 1, &GalileoLeggedRos::GeneralCommandCallback, this);
 
-            if (!nh_->getParam("galileo_ros/orientation_definition", orientation_definition_))
+            std::string pub_orientation_rep_str;
+            if (!nh_->getParam("/galileo_ros/published_orientation_representation", pub_orientation_rep_str))
             {
-                /*  This parameter ensures that the orientation from the solution is converted to the desired format. By default (-1), the orientation is described as a quaternion [x, y, z, w]
-
-                    The following are the possible orientation definitions:
-                        zyx = 0
-                        zyz = 1
-                        zxy = 2
-                        zxz = 3
-                        yxz = 4
-                        yxy = 5
-                        yzx = 6
-                        yzy = 7
-                        xyz = 8
-                        xyx = 9
-                        xzy = 10
-                        xzx = 11
-                    From galileo/math/Quat2Euler.h
-                */
-                ROS_INFO("No orientation definition provided, assuming quaternion [x, y, z, w]");
+                /*See 'OrientationDefinition.h' for possible options*/
+                ROS_INFO("No orientation representation provided, assuming quaternion [x, y, z, w]");
+                published_orientation_representation_ = math::OrientationDefinition::Quaternion;
+            }
+            else
+            {
+                published_orientation_representation_ = static_cast<math::OrientationDefinition>(std::stoi(pub_orientation_rep_str));
             }
         }
 
@@ -64,7 +54,9 @@ namespace galileo
                 end_effector_types.push_back(static_cast<contact::EE_Types>(msg->end_effector_types[i]));
             }
 
-            LoadModel(model_location, end_effector_names, end_effector_types);
+           internal_orientation_representation_ = static_cast<math::OrientationDefinition>(msg->orientation_definition);
+
+            LoadModel(model_location, end_effector_names, end_effector_types, internal_orientation_representation_);
         }
 
         void GalileoLeggedRos::ParameterLocationCallback(const galileo_ros::ParameterFileLocation::ConstPtr &msg)
@@ -163,28 +155,30 @@ namespace galileo
                 res.solution_exists = false;
                 return false;
             }
-            std::vector<double> state_vec;
-            if (orientation_definition_ != -1)
-            {
-                Eigen::MatrixXd new_state(state_solution.rows() - 1, state_solution.cols());
-                Eigen::MatrixXd euler_angles = galileo::math::quaternion2Euler(state_solution.block(states()->q_index + 3, 0, 4, state_solution.cols()), orientation_definition_);
-                new_state << state_solution.topRows(states()->q_index + 3), euler_angles, state_solution.bottomRows(states()->nq - states()->nqb);
 
-                res.nx = state_solution.rows() - 1;
-                state_vec = std::vector<double>(new_state.data(), new_state.data() + new_state.size());
+            Eigen::Index new_rows;
+            if (published_orientation_representation_ == math::OrientationDefinition::Quaternion)
+            {
+                new_rows = states()->nh + states()->nqbp + 4 + states()->nvju;
+                res.qj_index = states()->nh + states()->nqbp + 4;
             }
             else
             {
-                res.nx = state_solution.rows();
-                state_vec = std::vector<double>(state_solution.data(), state_solution.data() + state_solution.size());
+                new_rows = states()->nh + states()->nqbp + 3 + states()->nvju;
+                res.qj_index = states()->nh + states()->nqbp + 3;
             }
+
+            Eigen::MatrixXd new_state(new_rows, state_solution.cols());
+            Eigen::MatrixXd new_orientation = galileo::math::OrientationConversion(state_solution.block(states()->qbo_index, 0, states()->nqbo, state_solution.cols()), internal_orientation_representation_, published_orientation_representation_);
+            new_state << state_solution.topRows(states()->qbo_index), new_orientation, state_solution.bottomRows(states()->nvju);
+
+            res.nx = new_rows;
+            std::vector<double> state_vec = std::vector<double>(new_state.data(), new_state.data() + new_state.size());
 
             std::vector<double> input_vec(input_solution.data(), input_solution.data() + input_solution.size());
 
             res.joint_names = getJointNames();
             res.joint_names.erase(res.joint_names.begin(), res.joint_names.begin() + 2); // delete the universe and root_joint
-
-            res.qj_index = states()->qj_index;
 
             res.X_t_wrapped = state_vec;
             res.U_t_wrapped = input_vec;

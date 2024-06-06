@@ -6,6 +6,7 @@
 
 #include <galileo/legged-model/LeggedBody.h>
 #include <galileo/tools/ReadFromFile.h>
+#include <galileo/math/OrientationDefinition.h>
 
 #include "galileo_ros/SolutionRequest.h"
 
@@ -45,17 +46,30 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    galileo::math::OrientationDefinition orientation_def;
+    std::string pub_orientation_rep_str;
+    if (!nh->getParam("/galileo_ros/published_orientation_representation", pub_orientation_rep_str))
+    {
+        /*See 'OrientationDefinition.h' for possible options*/
+        ROS_INFO("No orientation representation provided, assuming quaternion [x, y, z, w]");
+        orientation_def = galileo::math::OrientationDefinition::Quaternion;
+    }
+    else
+    {
+        orientation_def = static_cast<galileo::math::OrientationDefinition>(std::stoi(pub_orientation_rep_str));
+    }
+
     std::map<std::string, std::string> problem_parameters = galileo::tools::readFromFile(problem_parameter_file_name);
 
     std::vector<std::string> end_effectors_names = galileo::tools::readAsVector(problem_parameters["end_effector_names"]);
     std::vector<std::string> end_effector_types_str = galileo::tools::readAsVector(problem_parameters["end_effector_types"]);
-
+    
     std::vector<galileo::legged::contact::EE_Types> end_effector_types;
     std::transform(end_effector_types_str.begin(), end_effector_types_str.end(), std::back_inserter(end_effector_types), [](const std::string &str)
                     { return static_cast<galileo::legged::contact::EE_Types>(std::stoi(str)); });
 
     // Load the URDF model to a leggedmodel
-    galileo::legged::LeggedBody robot(urdf_file_name, end_effectors_names, end_effector_types);
+    galileo::legged::LeggedBody robot(urdf_file_name, end_effectors_names, end_effector_types, orientation_def);
 
     ros::ServiceClient solution_client = nh->serviceClient<galileo_ros::SolutionRequest>(solver_id + "_get_solution");
     ros::Subscriber vis_time_sub = nh->subscribe("/visualization_time", 1, &visualizationTimeCallback);

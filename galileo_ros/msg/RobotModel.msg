@@ -1,3 +1,4 @@
 string model_file_location
 string[] end_effector_names
 int32[] end_effector_types
+int32 orientation_definition

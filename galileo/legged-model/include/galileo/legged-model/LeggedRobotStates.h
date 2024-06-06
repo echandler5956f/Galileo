@@ -1,6 +1,7 @@
 #pragma once
 
 #include "galileo/opt/States.h"
+#include "galileo/math/OrientationDefinition.h"
 #include "galileo/legged-model/EndEffector.h"
 #include <pinocchio/autodiff/casadi.hpp>
 #include "pinocchio/multibody/model.hpp"
@@ -22,8 +23,9 @@ namespace galileo
              * @param nq_ The number of position variables.
              * @param nv_ The number of velocity variables.
              * @param ees The end effectors.
+             * @param orientation_def The internal representation of the orientation.
              */
-            LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees);
+            LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees, math::OrientationDefinition orientation_def);
 
             /**
              * @brief Get momenta: nh x 1.
@@ -66,7 +68,37 @@ namespace galileo
             const Sym get_q_d(const Sym &cdx);
 
             /**
-             * @brief Get qj: (nq - 7) x 1.
+             * @brief Get qb: nqb x 1.
+             *
+             * @tparam Sym The type of the input
+             * @param cx The input
+             * @return const Sym The base coordinates
+             */
+            template <class Sym>
+            const Sym get_qb(const Sym &cx);
+
+            /**
+             * @brief Get qbp: nqbp x 1.
+             *
+             * @tparam Sym The type of the input
+             * @param cx The input
+             * @return const Sym The base position
+             */
+            template <class Sym>
+            const Sym get_qbp(const Sym &cx);
+
+            /**
+             * @brief Get qbo: nqbo x 1.
+             *
+             * @tparam Sym The type of the input
+             * @param cx The input
+             * @return const Sym The base orientation
+             */
+            template <class Sym>
+            const Sym get_qbo(const Sym &cx);
+
+            /**
+             * @brief Get qj: (nq - nqb) x 1.
              *
              * @tparam Sym The type of the input
              * @param cx The input
@@ -158,8 +190,17 @@ namespace galileo
             template <class Sym>
             const Sym get_general_joint_velocities(const Sym &u_general);
 
-            // map between frame id and its index in the input vector
+            /**
+             * @brief Map between frame id and its index in the input vector.
+             * 
+             */
             std::map<pinocchio::FrameIndex, std::tuple<int, int>> frame_id_to_index_range;
+
+            /**
+             * @brief The internal representation of the orientation.
+             * 
+             */
+            math::OrientationDefinition orientation_definition;
 
             /*-----------------------------
             Sizes of certain state elements
@@ -178,10 +219,22 @@ namespace galileo
             static const int ndh = 6;
 
             /**
-             * @brief Number of position coordinates for the base.
+             * @brief Number of coordinates for the base (number of position variables + orientation variables).
              *
              */
-            static const int nqb = 7;
+            int nqb = 0;
+
+            /**
+             * @brief Number of position variables for the base.
+             *
+             */
+            static const int nqbp = 3;
+
+            /**
+             * @brief Number of orientation variables for the base.
+             *
+             */
+            int nqbo = 0;
 
             /**
              * @brief Number of velocity coordinates for the base.
@@ -234,6 +287,12 @@ namespace galileo
              * 
              */
             int q_index = 0;
+
+            /**
+             * @brief Starting index of the variables describing the orientation.
+             * 
+             */
+            int qbo_index = 0;
 
             /**
              * @brief Starting index of the joint position variables.

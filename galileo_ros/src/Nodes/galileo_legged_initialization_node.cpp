@@ -2,6 +2,7 @@
 
 #include <galileo/tools/ReadFromFile.h>
 #include <galileo/legged-model/LeggedModelHelpers.h>
+#include <galileo/math/OrientationDefinition.h>
 
 void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_file_name, std::string problem_parameter_file_name,
                             galileo_ros::RobotModel &robot_model_cmd,
@@ -16,6 +17,7 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
     std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces;
     std::vector<double> q0;
     std::vector<double> qf;
+    galileo::math::OrientationDefinition orientation_def;
 
     galileo::legged::helper::ReadProblemFromParameterFile(
         problem_parameter_file_name,
@@ -25,7 +27,8 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
         knot_time,
         contact_surfaces,
         q0,
-        qf);
+        qf,
+        orientation_def);
 
     std::string model_location = urdf_name;
     std::string solver_parameter_location_filename = solver_parameter_file_name;
@@ -35,6 +38,8 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
     robot_model_cmd.end_effector_names = end_effector_names;
     std::transform(end_effector_types.begin(), end_effector_types.end(), std::back_inserter(robot_model_cmd.end_effector_types), [](const galileo::legged::contact::EE_Types &type)
                    { return static_cast<int>(type); });
+
+    robot_model_cmd.orientation_definition = static_cast<int>(orientation_def);
 
     solver_parameter_location.parameter_file_location = solver_parameter_location_filename;
 
@@ -47,7 +52,7 @@ void getProblemDataMessages(std::string urdf_name, std::string solver_parameter_
         contact_sequence_cmd.phases.push_back(phase);
     }
 
-    galileo::legged::LeggedBody robot(model_location, end_effector_names, end_effector_types);
+    galileo::legged::LeggedBody robot(model_location, end_effector_names, end_effector_types, orientation_def);
 
     std::vector<double> X0 = galileo::legged::helper::getXfromq(robot.si->nx, robot.si->q_index, q0);
     std::vector<double> Xf = galileo::legged::helper::getXfromq(robot.si->nx, robot.si->q_index, qf);

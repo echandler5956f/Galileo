@@ -1,6 +1,7 @@
 #pragma once
 
 #include "galileo/opt/Constraint.h"
+#include "galileo/math/OrientationDefinition.h"
 #include "galileo/math/LieAlgebra.h"
 #include "galileo/legged-model/ContactSequence.h"
 #include <pinocchio/algorithm/center-of-mass.hpp>
@@ -84,15 +85,19 @@ namespace galileo
                     initial_guess_x(casadi::Slice(states->h_index, states->h_index + 3)) = avg_lin_velocity - avg_lin_velocity * casadi::SX::cos(2 * M_PI * t / t_f);
                     initial_guess_x(casadi::Slice(states->q_index, states->q_index + 3)) = q0(casadi::Slice(0, 3)) + avg_lin_velocity * t - avg_lin_velocity * (t_f / (2 * M_PI)) * casadi::SX::sin(2 * M_PI * t / t_f);
 
-                    casadi::SX quat1 = X0(casadi::Slice(states->q_index + 3, states->q_index + states->nqb));
-                    casadi::SX quat2 = Xf(casadi::Slice(states->q_index + 3, states->q_index + states->nqb));
-                    initial_guess_x(casadi::Slice(states->q_index + 3, states->q_index + states->nqb)) = math::quat_slerp(quat1, quat2, t / t_f);
+                    // override the orientation with a slerp if the orientation is quaternion
+                    if (states->orientation_definition == math::OrientationDefinition::Quaternion)
+                    {
+                        casadi::SX quat1 = X0(casadi::Slice(states->q_index + 3, states->q_index + states->nqb));
+                        casadi::SX quat2 = Xf(casadi::Slice(states->q_index + 3, states->q_index + states->nqb));
+                        initial_guess_x(casadi::Slice(states->q_index + 3, states->q_index + states->nqb)) = math::quat_slerp(quat1, quat2, t / t_f);
+                    }
 
                     casadi::SX lbx = -casadi::inf * casadi::SX::ones(states->ndx, 1);
                     casadi::SX ubx = casadi::inf * casadi::SX::ones(states->ndx, 1);
 
-                    lbx(casadi::Slice(states->qj_index - 1, states->qj_index - 1 + states->nvju)) = casadi::SX(problem_data.legged_decision_problem_data.joint_limits.lower) - states->get_qj(X0);
-                    ubx(casadi::Slice(states->qj_index - 1, states->qj_index - 1 + states->nvju)) = casadi::SX(problem_data.legged_decision_problem_data.joint_limits.upper) - states->get_qj(X0);
+                    lbx(casadi::Slice(states->q_index + states->nvb, states->q_index + states->nvb + states->nvju)) = casadi::SX(problem_data.legged_decision_problem_data.joint_limits.lower) - states->get_qj(X0);
+                    ubx(casadi::Slice(states->q_index + states->nvb, states->q_index + states->nvb + states->nvju)) = casadi::SX(problem_data.legged_decision_problem_data.joint_limits.upper) - states->get_qj(X0);
 
                     decision_data.initial_guess = casadi::Function("DecisionInitialGuess", casadi::SXVector{t}, casadi::SXVector{initial_guess_x, initial_guess_u});
                     decision_data.lower_bound = casadi::Function("DecisionLowerBounds", casadi::SXVector{t}, casadi::SXVector{lbx, -casadi::inf * casadi::SX::ones(states->nu, 1)});

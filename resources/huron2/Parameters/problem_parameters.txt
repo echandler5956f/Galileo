@@ -6,5 +6,16 @@ knot_time, (0.25, 0.4, 0.4, 0.4, 0.4, 0.25)
 
 contact_combinations, ((0, 0),(-1, 0),(0, -1),(-1, 0),(0, -1),(0, 0))
 
+Comment: Options are [Quaternion, EulerZYX, EulerZYZ, EulerZXY, EulerZXZ, EulerYXZ, EulerYXY, EulerYZX, EulerYZY, EulerXYZ, EulerXYX, EulerXZY, EulerXZX]
+Comment: Note that the orientation type specified here corresponds to the INTERNAL representation of the orientation. For the Galileo ROS interface, the internal representation does NOT influence the orientation representation that gets published. 
+Comment: The published orientation representation is specified using the 'galileo_ros/published_orientation_representation' param in the launch file. The possible options for the output orientation representations are specified in 'OrientationDefinition.h'.
+
+orientation_definition, 0
+
+Comment: q0 and qf are initial and final robot configuration.
+Comment: The first 3 elements of q0 and qf are the position XYZ coordinates of the base frame (default name is 'base'; can be specified in LeggedInterface.h, or in the launch files) w.r.t world.
+Comment: The next n_jbo elements of q0 and qf are the orientation coordinates of the base frame w.r.t world, where n_jbo is the number of variables corresponding to the 'orientation_definition'.
+Comment: The remaining elements are the joint configurations, with joints ordered according to the pinocchio model (USUALLY NOT THE SAME AS URDF).
+
 q0, (0, 0, 1.1298345, 0, 0, 0, 1, 0., 0., 0.3207, -0.7572, 0.4365, 0.0000, 0.0000, 0.0000, 0.3207, -0.7572, -0.4365, 0.0000)
 qf, (0.25, 0, 1.1298345, 0, 0, 0, 1, 0., 0., 0.3207, -0.7572, 0.4365, 0.0000, 0.0000, 0.0000, 0.3207, -0.7572, -0.4365, 0.0000)

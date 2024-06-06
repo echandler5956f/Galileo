@@ -2,7 +2,7 @@
 
 #include <galileo/legged-model/LeggedInterface.h>
 #include <galileo/legged-model/LeggedModelHelpers.h>
-#include <galileo/math/Quat2Euler.h>
+#include <galileo/math/OrientationConversions.h>
 
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -74,7 +74,8 @@ namespace galileo
 
             std::shared_ptr<ros::NodeHandle> nh_;
             std::string solver_id_;
-            int orientation_definition_ = -1;
+            math::OrientationDefinition internal_orientation_representation_ = math::OrientationDefinition::Quaternion;
+            math::OrientationDefinition published_orientation_representation_ = math::OrientationDefinition::Quaternion;
 
             ros::Subscriber model_location_subscriber_;     // Subscriber for model file location and end effector names
             ros::Subscriber parameter_location_subscriber_; // Subscriber for parameter value file location

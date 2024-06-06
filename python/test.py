@@ -307,6 +307,132 @@ def skew(x):
         )
     else:
         return np.array([[0, -x[2], x[1]], [x[2], 0, -x[0]], [-x[1], x[0], 0]])
+    
+
+def quat_to_ZYX_euler(quat: np.ndarray) -> np.ndarray:
+    qw = quat[3]
+    qx = quat[0]
+    qy = quat[1]
+    qz = quat[2]
+
+    euler = np.zeros((3, 1))
+    euler[0] = math.atan2(2 * (qw * qx + qy * qz), 1 - 2 * (qx ** 2 + qy ** 2))
+    euler[1] = math.asin(2 * (qw * qy - qz * qx))
+    euler[2] = math.atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy ** 2 + qz ** 2))
+
+    return euler
+
+
+def euler_ZYX_to_quat(eul: np.ndarray) -> np.ndarray:
+    cy = math.cos(eul[2] * 0.5)
+    sy = math.sin(eul[2] * 0.5)
+    cp = math.cos(eul[1] * 0.5)
+    sp = math.sin(eul[1] * 0.5)
+    cr = math.cos(eul[0] * 0.5)
+    sr = math.sin(eul[0] * 0.5)
+
+    qw = cr * cp * cy + sr * sp * sy
+    qx = sr * cp * cy - cr * sp * sy
+    qy = cr * sp * cy + sr * cp * sy
+    qz = cr * cp * sy - sr * sp * cy
+
+    return np.array([[qx], [qy], [qz], [qw]])
+    
+
+def eul_int(x: np.ndarray, dx: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:
+    pos = x[:3]
+    quat = x[3:]
+
+    eul = quat_to_ZYX_euler(quat)
+
+    vel = dx[:3] * dt
+    omega = dx[3:] * dt
+
+    eul_new = eul + angular_vel_to_ZYX_euler_derivative_taylor(omega, eul)
+    print(eul_new)
+
+    rodrigues_term = rodrigues_simplified(omega) @ vel
+    pos_new = pos + euler_ZYX_to_rot(eul_new) @ rodrigues_term
+    quat_new = euler_ZYX_to_quat(eul_new)
+
+    quat_new = quat_new / np.sqrt(
+        quat_new[0] ** 2 + quat_new[1] ** 2 + quat_new[2] ** 2 + quat_new[3] ** 2 + 1e-16
+    )
+
+    return np.concatenate((pos_new, quat_new), axis=0)
+    
+
+def angular_vel_to_ZYX_euler_derivative(omega: np.ndarray, eul: np.ndarray) -> np.ndarray:
+    B = np.zeros((3, 3))
+    B[0, 1] = np.sin(eul[0])/np.cos(eul[1])
+    B[0, 2] = np.cos(eul[0])/np.cos(eul[1])
+    B[1, 1] = np.cos(eul[0])
+    B[1, 2] = -np.sin(eul[0])
+    B[2, 0] = 1
+    B[2, 1] = np.sin(eul[0])*np.tan(eul[1])
+    B[2, 2] = np.cos(eul[0])*np.tan(eul[1])
+
+    return B @ omega
+
+
+def angular_vel_to_ZYX_euler_derivative_taylor(omega: np.ndarray, eul: np.ndarray) -> np.ndarray:
+    B = np.zeros((3, 3))
+    
+    # Assuming small angles, we can approximate sin(x) as x and cos(x) as 1
+    B[0, 1] = eul[0] / (1 + eul[1]**2 / 2)  # sin(eul[0])/cos(eul[1]) approximated
+    B[0, 2] = 1 / (1 + eul[1]**2 / 2)       # cos(eul[0])/cos(eul[1]) approximated
+    B[1, 1] = 1                             # cos(eul[0]) approximated
+    B[1, 2] = -eul[0]                       # -sin(eul[0]) approximated
+    B[2, 0] = 1
+    B[2, 1] = eul[0] * eul[1]               # sin(eul[0])*tan(eul[1]) approximated
+    B[2, 2] = 1 * eul[1]                    # cos(eul[0])*tan(eul[1]) approximated
+
+    return B @ omega
+
+
+def euler_ZYX_to_rot(eul: np.ndarray) -> np.ndarray:
+    rot = np.zeros((3, 3))
+    rot[0, 0] = np.cos(eul[1]) * np.cos(eul[2])
+    rot[1, 0] = np.cos(eul[1]) * np.sin(eul[2])
+    rot[2, 0] = -np.sin(eul[1])
+    rot[0, 1] = np.sin(eul[0]) * np.sin(eul[1]) * np.cos(eul[2]) - np.cos(eul[0]) * np.sin(eul[2])
+    rot[1, 1] = np.sin(eul[0]) * np.sin(eul[1]) * np.sin(eul[2]) + np.cos(eul[0]) * np.cos(eul[2])
+    rot[2, 1] = np.sin(eul[0]) * np.cos(eul[1])
+    rot[0, 2] = np.cos(eul[0]) * np.sin(eul[1]) * np.cos(eul[2]) + np.sin(eul[0]) * np.sin(eul[2])
+    rot[1, 2] = np.cos(eul[0]) * np.sin(eul[1]) * np.sin(eul[2]) - np.sin(eul[0]) * np.cos(eul[2])
+    rot[2, 2] = np.cos(eul[0]) * np.cos(eul[1])
+
+    return rot
+    
+
+def rot_to_quat(R: np.ndarray) -> np.ndarray:
+    q = np.zeros((4, 1))
+    tr = R[0, 0] + R[1, 1] + R[2, 2]
+    if tr > 0:
+        S = np.sqrt(tr + 1.0) * 2
+        q[3] = 0.25 * S
+        q[0] = (R[2, 1] - R[1, 2]) / S
+        q[1] = (R[0, 2] - R[2, 0]) / S
+        q[2] = (R[1, 0] - R[0, 1]) / S
+    elif R[0, 0] > R[1, 1] and R[0, 0] > R[2, 2]:
+        S = np.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2
+        q[3] = (R[2, 1] - R[1, 2]) / S
+        q[0] = 0.25 * S
+        q[1] = (R[0, 1] + R[1, 0]) / S
+        q[2] = (R[0, 2] + R[2, 0]) / S
+    elif R[1, 1] > R[2, 2]:
+        S = np.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2
+        q[3] = (R[0, 2] - R[2, 0]) / S
+        q[0] = (R[0, 1] + R[1, 0]) / S
+        q[1] = 0.25 * S
+        q[2] = (R[1, 2] + R[2, 1]) / S
+    else:
+        S = np.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2
+        q[3] = (R[1, 0] - R[0, 1]) / S
+        q[0] = (R[0, 2] + R[2, 0]) / S
+        q[1] = (R[1, 2] + R[2, 1]) / S
+        q[2] = 0.25 * S
+    return q
 
 
 def quat_to_rot(quat: np.ndarray) -> np.ndarray:
@@ -343,28 +469,79 @@ def quat_to_rot(quat: np.ndarray) -> np.ndarray:
     return R_quat
 
 
-def SE3_from_Rt(R: np.ndarray, t: np.ndarray) -> np.ndarray:
-    T = np.zeros((4, 4))
-    T[0:3, 0:3] = R
-    T[0:3, 3] = t
-    T[3, 3] = 1
-    return T
+def quat_to_rot_alt(quat: np.ndarray) -> np.ndarray:
+    R_quat = np.zeros((3, 3))
+
+    a = quat[0]
+    b = quat[1]
+    c = quat[2]
+    d = quat[3]
+
+    s = 2 / (a * a + b * b + c * c + d * d)
+    bs = b * s
+    cs = c * s
+    ds = d * s
+    ab = a * bs
+    ac = a * cs
+    ad = a * ds
+    bb = b * bs
+    bc = b * cs
+    bd = b * ds
+    cc = c * cs
+    cd = c * ds
+    dd = d * ds
+
+    R_quat[0, 0] = 1 - cc - dd
+    R_quat[0, 1] = bc - ad
+    R_quat[0, 2] = bd + ac
+    R_quat[1, 0] = bc + ad
+    R_quat[1, 1] = 1 - bb - dd
+    R_quat[1, 2] = cd - ab
+    R_quat[2, 0] = bd - ac
+    R_quat[2, 1] = cd + ab
+    R_quat[2, 2] = 1 - bb - cc
+    return R_quat
 
 
-def apply_quat(quat: np.ndarray, vec3: np.ndarray) -> np.ndarray:
+def quat_lie_group_int(qb: np.ndarray, vb: np.ndarray, dt: float) -> np.ndarray:
+    pos = np.reshape(qb[0:3], (3, 1))
+    quat = np.reshape(qb[3:7], (4, 1))
+
+    vel = np.reshape(vb[0:3] * dt, (3, 1))
+    omega = np.reshape(vb[3:6] * dt, (3, 1))
+    omega_quat = np.concatenate((omega / 2, np.zeros((1, 1))), axis=0)
+    exp_omega_quat = quat_exp(omega_quat)
+    quat_new = quat_mult(quat, exp_omega_quat)
+    quat_new = quat_new / np.sqrt(
+        quat_new[0] ** 2 + quat_new[1] ** 2 + quat_new[2] ** 2 + quat_new[3] ** 2 + 1e-16
+    )
+    pos_new = pos + quat_apply(quat, rodrigues(omega) @ vel)
+    return np.concatenate((pos_new, quat_new), axis=0)
+
+
+def quat_exp(quat: np.ndarray) -> np.ndarray:
+    v = quat[0:3]
+    v_norm = np.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2 + 1e-16)
+    a = quat[3]
+
+    exp_a = np.exp(a)
+    cos_norm_v = np.cos(v_norm)
+    sin_norm_v = np.sin(v_norm)
+
+    quat_new = np.concatenate(
+        (exp_a * v * sin_norm_v / v_norm, np.reshape(exp_a * cos_norm_v, (1, 1))),
+        axis=0,
+    )
+
+    return quat_new / np.sqrt(
+        quat_new[0] ** 2 + quat_new[1] ** 2 + quat_new[2] ** 2 + quat_new[3] ** 2 + 1e-16
+    )
+
+
+def quat_apply(quat: np.ndarray, vec3: np.ndarray) -> np.ndarray:
     imag = quat[0:3]
     real = quat[3]
-    return vec3 + 2 * np.cross(imag, np.cross(imag, vec3) + real * vec3)
-
-
-def omega_to_unit_quat(omega: np.ndarray) -> np.ndarray:
-    quat = np.zeros((4, 1))
-    t = np.sqrt(omega[0] ** 2 + omega[1] ** 2 + omega[2] ** 2 + 1e-8)
-    s = math.sin(t / 2) / t
-
-    quat[0:3] = omega * s
-    quat[3] = math.cos(t / 2)
-    return quat
+    return vec3 + 2 * np.cross(imag, np.cross(imag, vec3, axis=0) + real * vec3, axis=0)
 
 
 def quat_mult(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
@@ -376,7 +553,7 @@ def quat_mult(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
     imag_2 = q2[0:3].reshape(-1)
 
     real = real_1 * real_2 - np.dot(imag_1, imag_2)
-    imag = real_1 * imag_2 + real_2 * imag_1 + np.cross(imag_1, imag_2)
+    imag = real_1 * imag_2 + real_2 * imag_1 + np.cross(imag_1, imag_2, axis=0)
 
     result[0:3] = imag.reshape((3, 1))
     result[3] = real
@@ -384,34 +561,67 @@ def quat_mult(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
     return result
 
 
-# Define a function that takes a quaternion as an input and returns its exponential as an output
-def quat_exp(q: np.ndarray) -> np.ndarray:
-    # Extract the scalar and vector parts of the quaternion
-    a = q[3]  # scalar part
-    v = q[:3]  # vector part
+def quat_inv(q: np.ndarray) -> np.ndarray:
+    q_norm = np.sqrt(q[0] ** 2 + q[1] ** 2 + q[2] ** 2 + q[3] ** 2 + 1e-16)
+    return np.concatenate((-q[0:3] / q_norm, q[3] / q_norm), axis=0)
 
-    # Compute the norm of the vector part
-    norm_v = np.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2 + 1e-8)
 
-    # Compute the exponential of the scalar part
-    exp_a = math.exp(a)
+def quat_distance(quat1: np.ndarray, quat2: np.ndarray) -> float:
+    real_1 = quat1[3]
+    imag_1 = quat1[0:3]
 
-    # Compute the cosine and sine of the norm of the vector part
-    cos_norm_v = math.cos(norm_v)
-    sin_norm_v = math.sin(norm_v)
+    real_2 = quat2[3]
+    imag_2 = quat2[0:3]
 
-    # Compute the exponential of the quaternion using the formula
-    exp_q = np.zeros((4, 1))  # initialize an array of zeros
-    exp_q[3] = exp_a * cos_norm_v  # scalar part
-    exp_q[:3] = exp_a * (v / norm_v) * sin_norm_v  # vector part
+    return real_1 * imag_2 - real_2 * imag_1 + np.cross(imag_1, imag_2, axis=0)
 
-    # Normalize the exponential of the quaternion
-    exp_q = exp_q / np.sqrt(
-        exp_q[0] ** 2 + exp_q[1] ** 2 + exp_q[2] ** 2 + exp_q[3] ** 2 + 1e-8
+
+def quat_distance_alt(quat1: np.ndarray, quat2: np.ndarray) -> float:
+    real_1 = quat1[0]
+    imag_1 = quat1[1:]
+
+    real_2 = quat2[0]
+    imag_2 = quat2[1:]
+
+    return real_1 * imag_2 - real_2 * imag_1 + np.cross(imag_1, imag_2, axis=0)
+
+
+def rodrigues(omega: np.ndarray) -> np.ndarray:
+    theta = np.sqrt(omega[0] ** 2 + omega[1] ** 2 + omega[2] ** 2 + 1e-16)
+    return (
+        np.eye(3)
+        + ((1 - np.cos(theta)) / (theta * theta)) * skew(omega)
+        + ((theta - np.sin(theta)) / (theta * theta * theta))
+        * (skew(omega) @ skew(omega))
     )
 
-    # Return the exponential of the quaternion
-    return exp_q
+# def taylor_approximation(omega):
+#     theta = np.sqrt(omega[0] ** 2 + omega[1] ** 2 + omega[2] ** 2 + 1e-16)
+    
+#     # Taylor series expansion for small theta
+#     cos_theta_approx = 1 - theta**2 / 2
+#     sin_theta_approx = theta - theta**3 / 6
+    
+#     return (
+#         np.eye(3)
+#         + ((1 - cos_theta_approx) / (theta * theta)) * skew(omega)
+#         + ((theta - sin_theta_approx) / (theta * theta * theta))
+#         * (skew(omega) @ skew(omega))
+#     )
+
+def rodrigues_simplified(omega: np.ndarray) -> np.ndarray:
+    theta = np.sqrt(omega[0] ** 2 + omega[1] ** 2 + omega[2] ** 2 + 1e-16)
+
+    # Taylor series expansion for small theta
+    cos_theta_approx = 1 - theta**2 / 2
+    sin_theta_approx = theta - theta**3 / 6
+
+    return (
+        np.eye(3)
+        + ((1 - cos_theta_approx) / (theta * theta)) * skew(omega)
+        + ((theta - sin_theta_approx) / (theta * theta * theta))
+        * (skew(omega) @ skew(omega))
+    )
 
 
 def rot_exp_taylor_series(rot: np.ndarray, degree: int) -> np.ndarray:
@@ -433,56 +643,215 @@ def rot_exp_taylor_series(rot: np.ndarray, degree: int) -> np.ndarray:
     return result
 
 
-def lie_group_int(x: np.ndarray, dx: np.ndarray, dt: float) -> np.ndarray:
-    pos = x[0:3]
-    quat = x[3:7]
-
-    vel = dx[0:3]
-    omega = dx[3:6]
-
-    q_omega = omega_to_unit_quat(omega)
-    exp_q = quat_exp(q_omega * dt)
-    q_new = quat_mult(exp_q, quat)
-
-    R = quat_to_rot(q_new)
-    t = pos + vel * dt
-    return np.concatenate((t, q_new), axis=0)
+def normalize_rotation_matrix(R: np.ndarray) -> np.ndarray:
+    # Gram-Schmidt process
+    U, _, Vt = np.linalg.svd(R)
+    return U @ Vt
 
 
 def alt_int(x: np.ndarray, dx: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:
     pos = x[0:3]
     quat = x[3:7]
 
-    vel = dx[0:3]
-    omega = dx[3:6]
+    vel = dx[0:3] * dt
+    omega = dx[3:6] * dt
 
     rot_quat = quat_to_rot(quat)
     exp_omega_rot = rot_exp_taylor_series(skew(omega), 8)
     rot_new = rot_quat @ exp_omega_rot
-    t = pos + vel * dt
-    return (t, rot_new)
+    rot_new = normalize_rotation_matrix(rot_new)  # normalize the rotation matrix
+    t = pos + rot_quat @ rodrigues(omega) @ vel
+    quat_new = rot_to_quat(rot_new)
+    return np.concatenate((t, quat_new), axis=0)
 
 
-def main():
-    # Define the initial state
-    x = np.reshape(np.array([0, 0, 0, 0, 0, 0, 1]), (7, 1))
-    dx = np.reshape(np.array([1, 0, 0, 0, 0, 0]), (6, 1))
+# def main():
+#     # Define the initial state
+#     x = np.reshape(np.array([0, 0, 0, 0, 0, 0, 1]), (7, 1))
+#     dx = np.reshape(np.array([0, 0, 0, 0, -2, 0.1]), (6, 1))
 
-    # Define the time step
-    dt = 1.0
+#     # Define the time step
+#     dt = 3
 
-    # Integrate the state using the Lie group integration
-    x_new = lie_group_int(x, dx, dt)
-    # Convert the quaternion to a rotation matrix
-    R = quat_to_rot(x_new[3:7])
-    print(x_new[0:3])
-    print(R)
+#     # Integrate the state using the Lie group integration
+#     x_new = quat_lie_group_int(x, dx, dt)
+#     # Convert the quaternion to a rotation matrix
+#     R = quat_to_rot(x_new[3:7])
+#     print(x_new[0:3])
+#     print(R)
 
-    # Integrate the state using the alternative integration
-    t, rot_new = alt_int(x, dx, dt)
-    print(t)
-    print(rot_new)
+#     # Integrate the state using the alternative integration
+#     t, rot_new = alt_int(x, dx, dt)
+#     print(t)
+#     print(rot_new)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from pytransform3d.rotations import (
+    quaternion_integrate,
+    matrix_from_quaternion,
+    plot_basis,
+)
+from pytransform3d.rotations import q_id
+from pytransform3d.batch_rotations import quaternion_slerp_batch
+from pytransform3d.trajectories import plot_trajectory
+
+N = 50
+dt = 0.025
+
+x0 = np.reshape(np.array([0, 0, 0, 0, 0, 0, 1]), (7, 1))
+# velocities = np.empty((N, 6))
+# velocities[:, :] = np.array([0, 0, 0, 0, 0, 0])
+
+np.random.seed(35)
+velocities = 5 * np.random.random((N, 6)) - 2.5
+# velocities[:, :] = np.array([0.1, 0.1, 0.1, 0, 0, (np.pi / 2) / (N * dt)])
+# randvelocity = 0.2 * np.random.random((1, 6)) - 0.1
+# velocities[:,:] = randvelocity
+# velocities[N-1, :] = np.array([0, 0, 0, 0, 0, 0])
+
+# for t in range(N-1):
+#     velocities[t+1, :] = velocities[t, :] + np.array([0, 0, 0, 0, 0, 0.1])
+
+# print(velocities)
+
+Q1s = quaternion_integrate(velocities[:, 3:], dt=dt)
+P1s = np.empty((N, 3))
+
+x = x0.copy()
+P1s[0, :] = x[:3].flatten()
+for t in range(N - 1):
+    vel = velocities[t, :3] * dt
+    omega = velocities[t, 3:] * dt
+    exp_rot = quat_to_rot_alt(Q1s[t])
+    Vt = rodrigues(omega) @ vel
+    M_exp = np.eye(4)
+    M_exp[:3, :3] = exp_rot
+    M_exp[:3, 3] = Vt.flatten()
+
+    M0 = np.eye(4)
+    M0[:3, :3] = exp_rot
+    M0[:3, 3] = P1s[t, :]
+
+    M1 = M0 @ M_exp
+    P1s[t + 1] = M1[:3, 3]
+
+
+x = x0.copy()
+Q2s = np.empty((N, 4))
+P2s = np.empty((N, 3))
+
+tmp_x = x0.copy()
+tmp_x[3] = x[6]
+tmp_x[4] = x[3]
+tmp_x[5] = x[4]
+tmp_x[6] = x[5]
+Q2s[0] = tmp_x[3:].flatten()
+P2s[0] = tmp_x[:3].flatten()
+for t in range(1, N):
+    dx = velocities[t-1].reshape((6, 1))
+    x = quat_lie_group_int(x, dx, dt)
+    tmp_x = x.copy()
+    tmp_x[3] = x[6]
+    tmp_x[4] = x[3]
+    tmp_x[5] = x[4]
+    tmp_x[6] = x[5]
+    Q2s[t] = tmp_x[3:].flatten()
+    P2s[t] = tmp_x[:3].flatten()
+
+
+x = x0.copy()
+Q3s = np.empty((N, 4))
+P3s = np.empty((N, 3))
+
+tmp_x = x0.copy()
+tmp_x[3] = x[6]
+tmp_x[4] = x[3]
+tmp_x[5] = x[4]
+tmp_x[6] = x[5]
+Q3s[0] = tmp_x[3:].flatten()
+P3s[0] = tmp_x[:3].flatten()
+for t in range(1, N):
+    dx = velocities[t-1].reshape((6, 1))
+    x = alt_int(x, dx, dt)
+    tmp_x = x.copy()
+    tmp_x[3] = x[6]
+    tmp_x[4] = x[3]
+    tmp_x[5] = x[4]
+    tmp_x[6] = x[5]
+    Q3s[t] = tmp_x[3:].flatten()
+    P3s[t] = tmp_x[:3].flatten()
+
+
+x = x0.copy()
+Q4s = np.empty((N, 4))
+P4s = np.empty((N, 3))
+
+tmp_x = x0.copy()
+tmp_x[3] = x[6]
+tmp_x[4] = x[3]
+tmp_x[5] = x[4]
+tmp_x[6] = x[5]
+Q4s[0] = tmp_x[3:].flatten()
+P4s[0] = tmp_x[:3].flatten()
+for t in range(1, N):
+    dx = velocities[t-1].reshape((6, 1))
+    x = eul_int(x, dx, dt)
+    tmp_x = x.copy()
+    tmp_x[3] = x[6]
+    tmp_x[4] = x[3]
+    tmp_x[5] = x[4]
+    tmp_x[6] = x[5]
+    Q4s[t] = tmp_x[3:].flatten()
+    P4s[t] = tmp_x[:3].flatten()
+
+print("--------------------------------------------------\n")
+# print(Q1s)
+# print(Q2s)
+# print(Q3s)
+
+print("--------------------------------------------------\n")
+
+# print(P1s)
+# print(P2s)
+# print(P3s)
+# print("--------------------------------------------------\n")
+
+# ax = None
+# for t in range(N):
+#     R = matrix_from_quaternion(Q1s[t])
+#     P = P1s[t]
+#     ax = plot_basis(ax=ax, s=0.15, R=R, p=P)
+# plt.show()
+
+# ax = None
+# for t in range(N):
+#     R = matrix_from_quaternion(Q2s[t])
+#     P = P2s[t]
+#     ax = plot_basis(ax=ax, s=0.15, R=R, p=P)
+# plt.show()
+
+error_p = 0
+error_q = 0
+for t in range(N):
+    error_p = (
+        error_p
+        + (P1s[t, 0] - P4s[t, 0]) ** 2 #+ (P2s[t, 0] - P3s[t, 0]) ** 2
+        + (P1s[t, 1] - P4s[t, 1]) ** 2 #+ (P2s[t, 1] - P3s[t, 1]) ** 2
+        + (P1s[t, 2] - P4s[t, 2]) ** 2 #+ (P2s[t, 2] - P3s[t, 2]) ** 2
+    )
+    quat_dist1 = quat_distance_alt(Q1s[t], Q4s[t])
+    quat_dist2 = quat_distance_alt(Q1s[t], Q4s[t])
+    error_q = error_q + quat_dist1[0] ** 2 + quat_dist1[1] ** 2 + quat_dist1[2] ** 2 
+    # error_q = error_q + quat_dist2[0] ** 2 + quat_dist2[1] ** 2 + quat_dist2[2] ** 2
+
+error_p = np.sqrt(error_p)
+error_q = np.sqrt(error_q)
+
+print(error_p)
+print(error_q)

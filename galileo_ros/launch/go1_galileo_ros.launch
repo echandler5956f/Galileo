@@ -12,7 +12,7 @@
   <param name="galileo_ros/solver_id" value="$(arg solver_id)"/>
   <param name="galileo_ros/sol_data_dir" value="$(arg sol_data_dir)"/>
   <param name="galileo_ros/plot_dir" value="$(arg plot_dir)"/>
-  <param name="galileo_ros/orientation_definition" value="-1"/>
+  <param name="galileo_ros/published_orientation_representation" value="0"/>
 
   <node name="galileo_ros_legged_solver_node" type="galileo_ros_legged_solver_node" pkg="galileo_ros" output="screen">
   </node>

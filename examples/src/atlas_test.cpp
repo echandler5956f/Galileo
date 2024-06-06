@@ -11,6 +11,8 @@ int main(int argc, char **argv)
     std::vector<double> q0_vec;
     std::vector<double> qf_vec;
 
+    math::OrientationDefinition orientation_def;
+
     galileo::legged::helper::ReadProblemFromParameterFile(problem_parameter_location,
                                                           end_effector_names,
                                                           end_effector_types,
@@ -18,11 +20,12 @@ int main(int argc, char **argv)
                                                           knot_time,
                                                           contact_surfaces,
                                                           q0_vec,
-                                                          qf_vec);
+                                                          qf_vec,
+                                                          orientation_def);
 
     galileo::legged::LeggedInterface solver_interface;
 
-    solver_interface.LoadModel(robot_location, end_effector_names, end_effector_types);
+    solver_interface.LoadModel(robot_location, end_effector_names, end_effector_types, orientation_def);
     solver_interface.LoadParameters(solver_parameter_location);
 
     int nx = solver_interface.states()->nx;

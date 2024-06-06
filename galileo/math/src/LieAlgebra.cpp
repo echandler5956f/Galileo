@@ -5,7 +5,7 @@ namespace galileo
     namespace math
     {
         template <typename Scalar>
-        Scalar lie_group_int(Scalar qb, Scalar vb, Scalar dt)
+        Scalar quat_lie_group_int(Scalar qb, Scalar vb, Scalar dt)
         {
             assert(qb.size1() == 7);
             assert(vb.size1() == 6);
@@ -21,13 +21,13 @@ namespace galileo
             Scalar exp_omega_quat = quat_exp(omega_quat);
             Scalar quat_new = quat_mult(quat, exp_omega_quat);
             quat_new = quat_new / sqrt(quat_new(0) * quat_new(0) + quat_new(1) * quat_new(1) + quat_new(2) * quat_new(2) + quat_new(3) * quat_new(3) + casadi::eps * casadi::eps);
-            Scalar pos_new = pos + apply_quat(quat, Scalar::mtimes(rodrigues(omega), vel));
+            Scalar pos_new = pos + quat_apply(quat, Scalar::mtimes(rodrigues(omega), vel));
             return vertcat(pos_new, quat_new);
         }
 
-        template casadi::DM lie_group_int<casadi::DM>(casadi::DM qb, casadi::DM vb, casadi::DM dt);
-        template casadi::SX lie_group_int<casadi::SX>(casadi::SX qb, casadi::SX vb, casadi::SX dt);
-        template casadi::MX lie_group_int<casadi::MX>(casadi::MX qb, casadi::MX vb, casadi::MX dt);
+        template casadi::DM quat_lie_group_int<casadi::DM>(casadi::DM qb, casadi::DM vb, casadi::DM dt);
+        template casadi::SX quat_lie_group_int<casadi::SX>(casadi::SX qb, casadi::SX vb, casadi::SX dt);
+        template casadi::MX quat_lie_group_int<casadi::MX>(casadi::MX qb, casadi::MX vb, casadi::MX dt);
 
         template <typename Scalar>
         Scalar quat_exp(Scalar quat)
@@ -53,7 +53,7 @@ namespace galileo
         template casadi::MX quat_exp<casadi::MX>(casadi::MX quat);
 
         template <typename Scalar>
-        Scalar lie_group_diff(Scalar qb1, Scalar qb2, Scalar dt)
+        Scalar quat_lie_group_diff(Scalar qb1, Scalar qb2, Scalar dt)
         {
             assert(qb1.size1() == 7);
             assert(qb2.size1() == 7);
@@ -70,14 +70,14 @@ namespace galileo
             Scalar omega = omega_quat(casadi::Slice(0, 3));
 
             Scalar pos_diff = pos2 - pos1;
-            Scalar vel = Scalar::mtimes(inv(rodrigues(omega)), apply_quat(quat_inv(quat1), pos_diff));
+            Scalar vel = Scalar::mtimes(inv(rodrigues(omega)), quat_apply(quat_inv(quat1), pos_diff));
 
             return Scalar::vertcat({vel / dt, omega / dt});
         }
 
-        template casadi::DM lie_group_diff<casadi::DM>(casadi::DM qb1, casadi::DM qb2, casadi::DM dt);
-        template casadi::SX lie_group_diff<casadi::SX>(casadi::SX qb1, casadi::SX qb2, casadi::SX dt);
-        template casadi::MX lie_group_diff<casadi::MX>(casadi::MX qb1, casadi::MX qb2, casadi::MX dt);
+        template casadi::DM quat_lie_group_diff<casadi::DM>(casadi::DM qb1, casadi::DM qb2, casadi::DM dt);
+        template casadi::SX quat_lie_group_diff<casadi::SX>(casadi::SX qb1, casadi::SX qb2, casadi::SX dt);
+        template casadi::MX quat_lie_group_diff<casadi::MX>(casadi::MX qb1, casadi::MX qb2, casadi::MX dt);
 
         template <typename Scalar>
         Scalar quat_log(Scalar quat)
@@ -99,7 +99,7 @@ namespace galileo
         template casadi::MX quat_log<casadi::MX>(casadi::MX quat);
 
         template <typename Scalar>
-        Scalar apply_quat(Scalar quat, Scalar vec3)
+        Scalar quat_apply(Scalar quat, Scalar vec3)
         {
             assert(quat.size1() == 4);
             assert(quat.size2() == 1);
@@ -111,9 +111,9 @@ namespace galileo
             return vec3 + 2 * cross(imag, cross(imag, vec3) + real * vec3);
         }
 
-        template casadi::DM apply_quat<casadi::DM>(casadi::DM quat, casadi::DM vec3);
-        template casadi::SX apply_quat<casadi::SX>(casadi::SX quat, casadi::SX vec3);
-        template casadi::MX apply_quat<casadi::MX>(casadi::MX quat, casadi::MX vec3);
+        template casadi::DM quat_apply<casadi::DM>(casadi::DM quat, casadi::DM vec3);
+        template casadi::SX quat_apply<casadi::SX>(casadi::SX quat, casadi::SX vec3);
+        template casadi::MX quat_apply<casadi::MX>(casadi::MX quat, casadi::MX vec3);
 
         template <typename Scalar>
         Scalar quat_mult(Scalar quat1, Scalar quat2)
@@ -151,20 +151,6 @@ namespace galileo
         template casadi::DM quat_inv<casadi::DM>(casadi::DM quat);
         template casadi::SX quat_inv<casadi::SX>(casadi::SX quat);
         template casadi::MX quat_inv<casadi::MX>(casadi::MX quat);
-
-        template <typename Scalar>
-        Scalar rodrigues(Scalar omega)
-        {
-            assert(omega.size1() == 3);
-            assert(omega.size2() == 1);
-
-            Scalar theta = sqrt(omega(0) * omega(0) + omega(1) * omega(1) + omega(2) * omega(2) + casadi::eps * casadi::eps);
-            return Scalar::eye(3) + ((1 - cos(theta)) / (theta * theta)) * skew(omega) + ((theta - sin(theta)) / (theta * theta * theta)) * mpower(skew(omega), 2);
-        }
-
-        template casadi::DM rodrigues<casadi::DM>(casadi::DM omega);
-        template casadi::SX rodrigues<casadi::SX>(casadi::SX omega);
-        template casadi::MX rodrigues<casadi::MX>(casadi::MX omega);
 
         template <typename Scalar>
         Scalar quat_distance(Scalar quat1, Scalar quat2)
@@ -216,5 +202,19 @@ namespace galileo
         template casadi::DM quat_slerp<casadi::DM>(casadi::DM quat1, casadi::DM quat2, casadi::DM t);
         template casadi::SX quat_slerp<casadi::SX>(casadi::SX quat1, casadi::SX quat2, casadi::SX t);
         template casadi::MX quat_slerp<casadi::MX>(casadi::MX quat1, casadi::MX quat2, casadi::MX t);
+
+        template <typename Scalar>
+        Scalar rodrigues(Scalar omega)
+        {
+            assert(omega.size1() == 3);
+            assert(omega.size2() == 1);
+
+            Scalar theta = sqrt(omega(0) * omega(0) + omega(1) * omega(1) + omega(2) * omega(2) + casadi::eps * casadi::eps);
+            return Scalar::eye(3) + ((1 - cos(theta)) / (theta * theta)) * skew(omega) + ((theta - sin(theta)) / (theta * theta * theta)) * mpower(skew(omega), 2);
+        }
+
+        template casadi::DM rodrigues<casadi::DM>(casadi::DM omega);
+        template casadi::SX rodrigues<casadi::SX>(casadi::SX omega);
+        template casadi::MX rodrigues<casadi::MX>(casadi::MX omega);
     }
 }

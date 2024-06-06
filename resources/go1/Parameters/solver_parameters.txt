@@ -18,9 +18,9 @@ solver|ipopt|string
 nlp.ipopt.linear_solver|ma57|string
 nlp.ipopt.ma97_order|metis|string
 nlp.ipopt.ma57_small_pivot_flag|0|int
-nlp.ipopt.max_iter|90|int
-nlp.ipopt.max_wall_time|130|double
-nlp.ipopt.fixed_variable_treatment|make_parameter_nodual|string
+nlp.ipopt.max_iter|30|int
+nlp.ipopt.max_wall_time|30|double
+nlp.ipopt.fixed_variable_treatment|make_constraint|string
 nlp.ipopt.hessian_approximation|exact|string
 nlp.ipopt.limited_memory_aug_solver,sherman-morrison|string
 nlp.ipopt.limited_memory_max_history,5|int
@@ -34,7 +34,7 @@ nlp.ipopt.limited_memory_special_for_resto,no|string
 nlp.ipopt.hessian_approximation_space,nonlinear-variables|string
 nlp.pass_nonlinear_variables|true|bool
 
-nlp.detect_simple_bounds|false|bool
+nlp.detect_simple_bounds|true|bool
 
 comment.nlp.snopt.Time limit|60|double
 comment.nlp.snopt.Major iterations limit|1|int

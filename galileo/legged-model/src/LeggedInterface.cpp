@@ -41,7 +41,7 @@ namespace galileo
             plotting_interface = std::make_shared<galileo::tools::GNUPlotInterface>(plot_dir);
         }
 
-        void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names, std::vector<contact::EE_Types> end_effector_types)
+        void LeggedInterface::LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names, std::vector<contact::EE_Types> end_effector_types, math::OrientationDefinition orientation_def)
         {
             std::string *end_effector_names_array = new std::string[end_effector_names.size()];
             contact::EE_Types *end_effector_types_array = new contact::EE_Types[end_effector_types.size()];
@@ -63,7 +63,7 @@ namespace galileo
             // legged_opts["compiler"] = "shell";
             // // legged_opts["jit_cleanup"] = false;
 
-            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array, end_effector_types_array, legged_opts);
+            robot_ = std::make_shared<LeggedBody>(model_file_location, end_effector_names.size(), end_effector_names_array, end_effector_types_array, orientation_def, legged_opts);
             states_ = robot_->si;
             model_file_location_ = model_file_location;
         }
@@ -342,10 +342,23 @@ namespace galileo
                 ee_plot_names.push_back("Contact Wrench of " + ee.second->frame_name);
             }
 
-            plotting_interface->PlotSolution(solution, {std::make_tuple(states_->q_index, states_->q_index + 3), std::make_tuple(states_->q_index + 3, states_->q_index + states_->nqb)},
+            std::vector<std::string> orientation_plot_names;
+            switch (states_->orientation_definition)
+            {
+                case math::Quaternion:
+                    orientation_plot_names = {"qx", "qy", "qz", "qw"};
+                    break;
+                case math::EulerZYX:
+                    orientation_plot_names = {"rx", "ry", "rz"};
+                    break;
+                default:
+                    throw std::runtime_error("Orientation definition not recognized.");
+            }
+
+            plotting_interface->PlotSolution(solution, {std::make_tuple(states_->q_index, states_->q_index + states_->nqbp), std::make_tuple(states_->qbo_index, states_->qbo_index + states_->nqbo)},
                                              {wrench_indices},
                                              {"Positions", "Orientations"},
-                                             {{"x", "y", "z"}, {"qx", "qy", "qz", "qw"}},
+                                             {{"x", "y", "z"}, orientation_plot_names},
                                              {ee_plot_names},
                                              {wrench_legend_names});
 

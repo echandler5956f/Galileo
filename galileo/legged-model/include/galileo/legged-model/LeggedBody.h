@@ -32,9 +32,10 @@ namespace galileo
              * @param location The location of the URDF file.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
              * @param end_effector_types The types of the end effectors.
+             * @param orientation_def The internal representation of the orientation.
              * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
              */
-            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, const std::vector<contact::EE_Types> end_effector_types, casadi::Dict general_function_casadi_options);
+            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, const std::vector<contact::EE_Types> end_effector_types, math::OrientationDefinition orientation_def, casadi::Dict general_function_casadi_options);
 
             /**
              * @brief Construct a new Legged Body object.
@@ -42,20 +43,10 @@ namespace galileo
              * @param location The location of the URDF file.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
              * @param end_effector_types The types of the end effectors.
+             * @param orientation_def The internal representation of the orientation.
              * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
              */
-            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, const std::vector<contact::EE_Types> end_effector_types) : LeggedBody(location, end_effector_names, end_effector_types, casadi::Dict()){};
-
-            /**
-             * @brief Construct a new Legged Body object.
-             *
-             * @param location The location of the URDF file.
-             * @param num_ees The number of end effectors.
-             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
-             * @param end_effector_types The types of the end effectors.
-             * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
-             */
-            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], const contact::EE_Types end_effector_types[], casadi::Dict general_function_casadi_options) : LeggedBody(location, std::vector<std::string>(end_effector_names, end_effector_names + num_ees), std::vector<contact::EE_Types>(end_effector_types, end_effector_types + num_ees), general_function_casadi_options){};
+            LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, const std::vector<contact::EE_Types> end_effector_types, math::OrientationDefinition orientation_def) : LeggedBody(location, end_effector_names, end_effector_types, orientation_def, casadi::Dict()){};
 
             /**
              * @brief Construct a new Legged Body object.
@@ -64,9 +55,22 @@ namespace galileo
              * @param num_ees The number of end effectors.
              * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
              * @param end_effector_types The types of the end effectors.
+             * @param orientation_def The internal representation of the orientation.
              * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
              */
-            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], const contact::EE_Types end_effector_types[]) : LeggedBody(location, num_ees, end_effector_names, end_effector_types, casadi::Dict()){};
+            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], const contact::EE_Types end_effector_types[], math::OrientationDefinition orientation_def, casadi::Dict general_function_casadi_options) : LeggedBody(location, std::vector<std::string>(end_effector_names, end_effector_names + num_ees), std::vector<contact::EE_Types>(end_effector_types, end_effector_types + num_ees), orientation_def, general_function_casadi_options){};
+
+            /**
+             * @brief Construct a new Legged Body object.
+             *
+             * @param location The location of the URDF file.
+             * @param num_ees The number of end effectors.
+             * @param end_effector_names The string IDs that correspond to the pinocchio end effector frames.
+             * @param end_effector_types The types of the end effectors.
+             * @param orientation_def The internal representation of the orientation.
+             * @param general_function_casadi_options options for evaluating the F_state_error, Fint, and Fdiff functions. Options may include JIT compilation.
+             */
+            LeggedBody(const std::string location, const int num_ees, const std::string end_effector_names[], const contact::EE_Types end_effector_types[], math::OrientationDefinition orientation_def) : LeggedBody(location, num_ees, end_effector_names, end_effector_types, orientation_def, casadi::Dict()){};
 
             /**
              * @brief Provide the string IDs that correspond to the pinocchio end effector frames.
@@ -235,6 +239,12 @@ namespace galileo
              *
              */
             casadi::Function f_state_error;
+
+            /**
+             * @brief The base transform function.
+             * 
+             */
+            casadi::Function base_transform;
 
             /**
              * @brief The symbolic state.

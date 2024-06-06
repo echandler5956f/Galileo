@@ -20,7 +20,7 @@ nlp.ipopt.ma97_order|metis|string
 nlp.ipopt.ma57_small_pivot_flag|0|int
 nlp.ipopt.max_iter|90|int
 nlp.ipopt.max_wall_time|130|double
-nlp.ipopt.fixed_variable_treatment|make_parameter_nodual|string
+nlp.ipopt.fixed_variable_treatment|make_constraint|string
 nlp.ipopt.hessian_approximation|exact|string
 nlp.ipopt.limited_memory_aug_solver,sherman-morrison|string
 nlp.ipopt.limited_memory_max_history,5|int

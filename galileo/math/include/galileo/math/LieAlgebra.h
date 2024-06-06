@@ -13,7 +13,7 @@ namespace galileo
         -----------------------------------------------------*/
 
         /**
-         * @brief  Performs the Lie group integration of a state.
+         * @brief  Performs the quaternion integration of a state.
          *
          * This function takes the current pose, represented by the position (pos),
          * quaternion (quat), as well as a twist, composed of velocity (vel), and angular velocity (omega), and integrates it over a
@@ -27,7 +27,7 @@ namespace galileo
          * @return Scalar new state
          */
         template <typename Scalar>
-        Scalar lie_group_int(Scalar qb, Scalar vb, Scalar dt);
+        Scalar quat_lie_group_int(Scalar qb, Scalar vb, Scalar dt);
 
         /**
          * @brief Numerically stable quaternion exponentiation.
@@ -45,7 +45,7 @@ namespace galileo
         Scalar quat_exp(Scalar quat);
 
         /**
-         * @brief Computes the Lie group difference between two configurations.
+         * @brief Computes the quaternion difference between two configurations.
          *
          * This function calculates the Lie group difference between two configurations
          * represented by `qb1` and `qb2`. It returns the velocity and angular velocity
@@ -58,7 +58,7 @@ namespace galileo
          * @return Scalar The difference between the two states
          */
         template <typename Scalar>
-        Scalar lie_group_diff(Scalar qb1, Scalar qb2, Scalar dt);
+        Scalar quat_lie_group_diff(Scalar qb1, Scalar qb2, Scalar dt);
 
         /**
          * @brief Numerically stable quaternion logarithm.
@@ -84,7 +84,7 @@ namespace galileo
          * @return Scalar Rotated 3D vector
          */
         template <typename Scalar>
-        Scalar apply_quat(Scalar quat, Scalar vec3);
+        Scalar quat_apply(Scalar quat, Scalar vec3);
 
         /**
          * @brief Composition of two quaternions.
@@ -106,16 +106,6 @@ namespace galileo
          */
         template <typename Scalar>
         Scalar quat_inv(Scalar quat);
-
-        /**
-         * @brief Computes the Rodrigues rotation matrix.
-         *
-         * @tparam Scalar Casadi type
-         * @param omega The rotation vector [wx, wy, wz]
-         * @return Scalar The Rodrigues rotation matrix
-         */
-        template <typename Scalar>
-        Scalar rodrigues(Scalar omega);
 
         /**
          * @brief Computes the distance between two quaternions.
@@ -145,5 +135,15 @@ namespace galileo
          */
         template <typename Scalar>
         Scalar quat_slerp(Scalar quat1, Scalar quat2, Scalar t);
+
+        /**
+         * @brief Computes the Rodrigues rotation matrix.
+         *
+         * @tparam Scalar Casadi type
+         * @param omega The rotation vector [wx, wy, wz]
+         * @return Scalar The Rodrigues rotation matrix
+         */
+        template <typename Scalar>
+        Scalar rodrigues(Scalar omega);
     }
 }

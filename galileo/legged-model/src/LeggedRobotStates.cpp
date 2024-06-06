@@ -4,8 +4,22 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedRobotStates::LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees)
+        LeggedRobotStates::LeggedRobotStates(int nq_, int nv_, legged::contact::RobotEndEffectors ees, math::OrientationDefinition orientation_def)
         {
+            this->orientation_definition = orientation_def;
+            switch (this->orientation_definition)
+            {
+            case math::OrientationDefinition::Quaternion:
+                this->nqbo = 4;
+                break;
+            case math::OrientationDefinition::EulerZYX:
+                this->nqbo = 3;
+                break;
+            default:
+                throw std::runtime_error("Orientation definition not recognized.");
+            }
+            this->nqb = this->nqbp + this->nqbo;
+
             this->nq = nq_;
             this->nv = nv_;
             this->nx = this->nh + this->nq;
@@ -34,6 +48,7 @@ namespace galileo
 
             this->h_index = 0;
             this->q_index = this->h_index + this->nh;
+            this->qbo_index = this->q_index + this->nqbp;
             this->qj_index = this->q_index + this->nqb;
 
             this->general_force_index = 0;
@@ -84,6 +99,39 @@ namespace galileo
         template const casadi::DM LeggedRobotStates::get_q_d<casadi::DM>(const casadi::DM &cdx);
         template const casadi::SX LeggedRobotStates::get_q_d<casadi::SX>(const casadi::SX &cdx);
         template const casadi::MX LeggedRobotStates::get_q_d<casadi::MX>(const casadi::MX &cdx);
+
+        template <typename Sym>
+        const Sym LeggedRobotStates::get_qb(const Sym &cx)
+        {
+            casadi_assert(cx.size1() == this->nx, "Invalid input size");
+            return cx(casadi::Slice(this->q_index, this->q_index + this->nqb));
+        }
+
+        template const casadi::DM LeggedRobotStates::get_qb<casadi::DM>(const casadi::DM &cx);
+        template const casadi::SX LeggedRobotStates::get_qb<casadi::SX>(const casadi::SX &cx);
+        template const casadi::MX LeggedRobotStates::get_qb<casadi::MX>(const casadi::MX &cx);
+
+        template <typename Sym>
+        const Sym LeggedRobotStates::get_qbp(const Sym &cx)
+        {
+            casadi_assert(cx.size1() == this->nx, "Invalid input size");
+            return cx(casadi::Slice(this->q_index, this->q_index + this->nqbp));
+        }
+
+        template const casadi::DM LeggedRobotStates::get_qbp<casadi::DM>(const casadi::DM &cx);
+        template const casadi::SX LeggedRobotStates::get_qbp<casadi::SX>(const casadi::SX &cx);
+        template const casadi::MX LeggedRobotStates::get_qbp<casadi::MX>(const casadi::MX &cx);
+
+        template <typename Sym>
+        const Sym LeggedRobotStates::get_qbo(const Sym &cx)
+        {
+            casadi_assert(cx.size1() == this->nx, "Invalid input size");
+            return cx(casadi::Slice(this->qbo_index, this->qbo_index + this->nqbo));
+        }
+
+        template const casadi::DM LeggedRobotStates::get_qbo<casadi::DM>(const casadi::DM &cx);
+        template const casadi::SX LeggedRobotStates::get_qbo<casadi::SX>(const casadi::SX &cx);
+        template const casadi::MX LeggedRobotStates::get_qbo<casadi::MX>(const casadi::MX &cx);
 
         template <typename Sym>
         const Sym LeggedRobotStates::get_qj(const Sym &cx)

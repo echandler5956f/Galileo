@@ -40,7 +40,7 @@ namespace galileo
             /**
              * @brief Load the model from a file.
              */
-            void LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names, std::vector<contact::EE_Types> end_effector_types);
+            void LoadModel(std::string model_file_location, std::vector<std::string> end_effector_names, std::vector<contact::EE_Types> end_effector_types, math::OrientationDefinition orientation_def);
 
             /**
              * @brief Load the parameters from a file.

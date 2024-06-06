@@ -4,17 +4,28 @@ namespace galileo
 {
     namespace legged
     {
-        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, const std::vector<contact::EE_Types> end_effector_types, casadi::Dict general_function_casadi_options)
+        LeggedBody::LeggedBody(const std::string location, const std::vector<std::string> end_effector_names, const std::vector<contact::EE_Types> end_effector_types, math::OrientationDefinition orientation_def, casadi::Dict general_function_casadi_options)
         {
             model = Model();
 
-            pinocchio::urdf::buildModel(location, pinocchio::JointModelFreeFlyer(), model);
+            if (orientation_def == math::OrientationDefinition::Quaternion)
+                pinocchio::urdf::buildModel(location, pinocchio::JointModelFreeFlyer(), model);
+            else if (orientation_def == math::OrientationDefinition::EulerZYX)
+            {
+                pinocchio::JointModelComposite jointComposite(2);
+                jointComposite.addJoint(pinocchio::JointModelTranslation());
+                jointComposite.addJoint(pinocchio::JointModelSphericalZYX());
+                pinocchio::urdf::buildModel(location, jointComposite, model);
+            }
+            else
+                throw std::runtime_error("Orientation definition not recognized.");
+
             data = Data(model);
             cmodel = model.cast<ADScalar>();
             cdata = ADData(cmodel);
             setEndEffectors(end_effector_names, end_effector_types);
             generateContactCombination();
-            si = std::make_shared<legged::LeggedRobotStates>(model.nq, model.nv, ees_);
+            si = std::make_shared<legged::LeggedRobotStates>(model.nq, model.nv, ees_, orientation_def);
             contact_sequence = std::make_shared<contact::ContactSequence>(end_effector_names.size());
 
             cx = casadi::SX::sym("x", si->nx);
@@ -27,6 +38,15 @@ namespace galileo
             pinocchio::forwardKinematics(cmodel, cdata, q_AD);
             pinocchio::framesForwardKinematics(cmodel, cdata, q_AD);
             pinocchio::updateFramePlacements(cmodel, cdata);
+
+
+            casadi::SX base_transform_casadi(4, 4);
+            auto base_transform_eigen = cdata.oMi[0].toHomogeneousMatrix();
+            pinocchio::casadi::copy(base_transform_eigen, base_transform_casadi);
+
+            base_transform = casadi::Function("F_base_transform",
+                                    {si->get_q(cx)},
+                                    {base_transform_casadi});
 
             createGeneralFunctions(general_function_casadi_options);
         }
@@ -80,16 +100,10 @@ namespace galileo
                 // Get the joint indices from the root to the end effector
                 std::vector<pinocchio::JointIndex> joint_indices = getJointIndicesFromRootToFrame(model, frame_id);
                 for (const auto &joint_index : joint_indices)
-                {
                     if (single_occurence_joint_indices.find(joint_index) != single_occurence_joint_indices.end())
-                    {
                         single_occurence_joint_indices.erase(joint_index);
-                    }
                     else
-                    {
                         single_occurence_joint_indices.insert(joint_index);
-                    }
-                }
             }
 
             size_t dof_accum = 0;
@@ -101,27 +115,17 @@ namespace galileo
                 std::vector<pinocchio::JointIndex> joint_indices = getJointIndicesFromRootToFrame(model, frame_id);
 
                 for (const auto &joint_index : joint_indices)
-                {
                     // Only include joints that are associated with a single end effector
                     if (single_occurence_joint_indices.find(joint_index) != single_occurence_joint_indices.end())
-                    {
                         ee_obj_ptr->joint_indices.push_back(joint_index);
-                    }
-                }
                 ee_obj_ptr->offset_index = dof_accum;
 
                 if ((ee_obj_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF) || (ee_obj_ptr->ee_type == contact::EE_Types::PREHENSILE_6DOF))
-                {
                     dof_accum += 6;
-                }
                 else if ((ee_obj_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF) || (ee_obj_ptr->ee_type == contact::EE_Types::PREHENSILE_3DOF))
-                {
                     dof_accum += 3;
-                }
                 else
-                {
                     throw std::runtime_error("End effector type not recognized.");
-                }
             }
         }
 
@@ -129,9 +133,7 @@ namespace galileo
         {
             std::vector<std::string> ee_names;
             for (auto &ee_id : ee_ids_)
-            {
                 ee_names.push_back(model.frames[ee_id].name);
-            }
             return ee_names;
         }
 
@@ -200,17 +202,11 @@ namespace galileo
                 auto frame_id = ee.first;
                 size_t size = 0;
                 if ((ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF) || (ee.second->ee_type == contact::EE_Types::PREHENSILE_6DOF))
-                {
                     size = 6;
-                }
                 else if ((ee.second->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF) || (ee.second->ee_type == contact::EE_Types::PREHENSILE_3DOF))
-                {
                     size = 3;
-                }
                 else
-                {
                     throw std::runtime_error("End effector type not recognized.");
-                }
 
                 Eigen::MatrixXd jacobianWorldToContactPointInWorldFrame = Eigen::MatrixXd::Zero(6, si->nv);
                 pinocchio::getFrameJacobian(model, data, frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobianWorldToContactPointInWorldFrame);
@@ -284,7 +280,46 @@ namespace galileo
         {
             casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
             casadi::SX vb = si->get_q_d(cdx)(casadi::Slice(0, si->nvb));
-            casadi::SX lie_group_int_result = math::lie_group_int(qb, vb, cdt);
+
+            casadi::SX lie_group_int_result = casadi::SX::zeros(si->nqb, 1);
+            if (si->orientation_definition == math::OrientationDefinition::Quaternion)
+                lie_group_int_result = math::quat_lie_group_int(qb, vb, cdt);
+            else if (si->orientation_definition == math::OrientationDefinition::EulerZYX)
+            {
+                casadi::SX pb = si->get_qbp(cx);
+                casadi::SX ob = si->get_qbo(cx);
+                casadi::SX vpb = vb(casadi::Slice(0, si->nqbp)) * cdt;
+                casadi::SX vob = vb(casadi::Slice(si->nqbp, si->nvb)) * cdt;
+
+                casadi::SX B = casadi::SX::eye(3);
+                B(0, 1) = sin(ob(0)) / cos(ob(1));
+                B(0, 2) = cos(ob(0)) / cos(ob(1));
+                B(1, 1) = cos(ob(0));
+                B(1, 2) = -sin(ob(0));
+                B(2, 0) = 1.;
+                B(2, 1) = sin(ob(0)) * tan(ob(1));
+                B(2, 2) = cos(ob(0)) * tan(ob(1));
+
+                casadi::SX ob_new = ob + casadi::SX::mtimes(B, vob);
+
+                casadi::SX R = casadi::SX::zeros(3, 3);
+                R(0, 0) = cos(ob(1)) * cos(ob(2));
+                R(1, 0) = cos(ob(1)) * sin(ob(2));
+                R(2, 0) = -sin(ob(1));
+                R(0, 1) = sin(ob(0)) * sin(ob(1)) * cos(ob(2)) - cos(ob(0)) * sin(ob(2));
+                R(1, 1) = sin(ob(0)) * sin(ob(1)) * sin(ob(2)) + cos(ob(0)) * cos(ob(2));
+                R(2, 1) = sin(ob(0)) * cos(ob(1));
+                R(0, 2) = cos(ob(0)) * sin(ob(1)) * cos(ob(2)) + sin(ob(0)) * sin(ob(2));
+                R(1, 2) = cos(ob(0)) * sin(ob(1)) * sin(ob(2)) - sin(ob(0)) * cos(ob(2));
+                R(2, 2) = cos(ob(0)) * cos(ob(1));
+
+                casadi::SX pos_new = pb + casadi::SX::mtimes(R, casadi::SX::mtimes(galileo::math::rodrigues(vob), vpb));
+
+                lie_group_int_result = vertcat(casadi::SXVector{pos_new, ob_new});
+            }
+            else
+                throw std::runtime_error("Orientation definition not recognized.");
+
             casadi::SX q_joints_int_result = si->get_q(cx)(casadi::Slice(si->nqb, si->nq)) + si->get_q_d(cdx)(casadi::Slice(si->nvb, si->nv)) * cdt;
 
             fint = casadi::Function("Fint",
@@ -297,10 +332,17 @@ namespace galileo
 
         void LeggedBody::createFdiff(casadi::Dict casadi_opts)
         {
-            casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
             casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
-            casadi::SX qb2 = si->get_q(cx2)(casadi::Slice(0, si->nqb));
-            casadi::SX lie_group_diff_result = math::lie_group_diff(qb, qb2, cdt);
+            casadi::SX qb1 = si->get_qb(cx);
+            casadi::SX qb2 = si->get_qb(cx2);
+
+            casadi::SX lie_group_diff_result = casadi::SX::zeros(si->nvb, 1);
+            if (si->orientation_definition == math::OrientationDefinition::Quaternion)
+                lie_group_diff_result = math::quat_lie_group_diff(qb1, qb2, cdt);
+            else if (si->orientation_definition == math::OrientationDefinition::EulerZYX)
+                lie_group_diff_result = (si->get_qb(cx2) - si->get_qb(cx)) / cdt;
+            else
+                throw std::runtime_error("Orientation definition not recognized.");
 
             fdiff = casadi::Function("Fdiff",
                                      {cx, cx2, cdt},
@@ -312,20 +354,23 @@ namespace galileo
 
         void LeggedBody::createErrorFunction(casadi::Dict casadi_opts)
         {
-            casadi::SX qb = si->get_q(cx)(casadi::Slice(0, si->nqb));
             casadi::SX cx2 = casadi::SX::sym("x2", si->nx);
-            casadi::SX qb2 = si->get_q(cx2)(casadi::Slice(0, si->nqb));
+            casadi::SX qbo1 = si->get_qbo(cx);
+            casadi::SX qbo2 = si->get_qbo(cx2);
 
-            casadi::SX quat1 = qb(casadi::Slice(3, si->nqb));
-            casadi::SX quat2 = qb2(casadi::Slice(3, si->nqb));
-
-            casadi::SX quat_distance_result = math::quat_distance(quat1, quat2);
+            casadi::SX orientation_distance_result = casadi::SX::zeros(si->nqbo, 1);
+            if (si->orientation_definition == math::OrientationDefinition::Quaternion)
+                orientation_distance_result = math::quat_distance(qbo1, qbo2);
+            else if (si->orientation_definition == math::OrientationDefinition::EulerZYX)
+                orientation_distance_result = qbo2 - qbo1;
+            else
+                throw std::runtime_error("Orientation definition not recognized.");
 
             f_state_error = casadi::Function("F_state_error",
                                              {cx, cx2},
                                              {vertcat(si->get_ch(cx2) - si->get_ch(cx),
-                                                      qb(casadi::Slice(0, 3)) - qb2(casadi::Slice(0, 3)),
-                                                      quat_distance_result,
+                                                      si->get_qbp(cx2) - si->get_qbp(cx),
+                                                      orientation_distance_result,
                                                       si->get_qj(cx2) - si->get_qj(cx))},
                                              casadi_opts);
         }
@@ -357,17 +402,11 @@ namespace galileo
 
                         casadi::SX ctau_ee;
                         if (end_effector_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_6DOF || end_effector_ptr->ee_type == contact::EE_Types::PREHENSILE_6DOF)
-                        {
                             ctau_ee = si->get_tau(cu, ee.first);
-                        }
                         else if (end_effector_ptr->ee_type == contact::EE_Types::NON_PREHENSILE_3DOF || end_effector_ptr->ee_type == contact::EE_Types::PREHENSILE_3DOF)
-                        {
                             ctau_ee = casadi::SX::zeros(3, 1);
-                        }
                         else
-                        {
                             throw std::runtime_error("End effector type not recognized.");
-                        }
 
                         foot_forces.push_back(cforce);
                         foot_poss.push_back(cfoot_pos);
@@ -397,12 +436,8 @@ namespace galileo
             casadi::SX weight_compensating_inputs = casadi::SX::zeros(si->nu, 1);
             contact::ContactMode mode = contact_sequence->getPhases()[phase_index].mode;
             for (auto ee : ees_)
-            {
                 if (mode[(*ee.second)])
-                {
                     weight_compensating_inputs(casadi::Slice(std::get<0>(si->frame_id_to_index_range[ee.second->frame_id]) + 2)) = 9.81 * cdata.mass[0] / contact_sequence->numEndEffectorsInContactAtPhase(phase_index);
-                }
-            }
             return weight_compensating_inputs;
         }
 

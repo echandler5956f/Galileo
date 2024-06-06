@@ -59,7 +59,8 @@ namespace galileo
                                               std::vector<double> &knot_time,
                                               std::vector<std::vector<galileo::legged::environment::SurfaceID>> &contact_surfaces,
                                               std::vector<double> &q0_vec,
-                                              std::vector<double> &qf_vec)
+                                              std::vector<double> &qf_vec,
+                                              math::OrientationDefinition &orientation_def)
             {
 
                 std::map<std::string, std::string> data_map = galileo::tools::readFromFile(problem_parameter_file_name);
@@ -96,6 +97,9 @@ namespace galileo
                                { return std::stod(str); });
                 std::transform(qf_str.begin(), qf_str.end(), std::back_inserter(qf_vec), [](const std::string &str)
                                { return std::stod(str); });
+
+                std::string orientation_def_str = data_map["orientation_definition"];
+                orientation_def = static_cast<math::OrientationDefinition>(std::stoi(orientation_def_str));
             }
 
             std::vector<uint> getMaskVectorFromContactSurfaces(std::vector<std::vector<galileo::legged::environment::SurfaceID>> contact_surfaces)

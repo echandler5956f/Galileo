@@ -4,7 +4,7 @@
 #include "galileo/opt/TrajectoryOpt.h"
 #include "galileo/tools/MeshcatInterface.h"
 #include "galileo/tools/GNUPlotInterface.h"
-#include "galileo/math/Quat2Euler.h"
+#include "galileo/math/OrientationDefinition.h"
 
 #include "galileo/legged-model/LeggedModelHelpers.h"
 
