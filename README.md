@@ -5,6 +5,8 @@ https://github.com/echandler5956f/Galileo/assets/93096172/49862201-a646-40b6-a98
 
 https://github.com/echandler5956f/Galileo/assets/93096172/33dc9110-773e-4203-9bde-9af5f97494c9
 
+See the [extended abstract](Galileo-Extended-Abstract.pdf) for details!
+
 <!-- [![Galileo Results](https://i.imgur.com/AEUtxNC.png)](https://www.youtube.com/watch?v=79bR9I0Jyfk-Y "Galileo Results") -->
 
 <!-- <img src="https://i.imgur.com/VQJ3ZNe.png"/> -->
@@ -12,7 +14,7 @@ https://github.com/echandler5956f/Galileo/assets/93096172/33dc9110-773e-4203-9bd
 [![Documentation](https://img.shields.io/badge/docs-generate-brightgreen.svg)](https://github.com/echandler5956f/Galileo/tree/main/docs)
 [![License BSD-3-Clause](https://img.shields.io/badge/license-MIT-blue.svg)](https://mit-license.org/)
 
-Named after the famous scientist who posed one variation of the Brachistochrone problem, *Galileo* is an efficient optimal control framework that uses Gauss-Legendre Pseudospectral Collocation to solve the switched systems problem for legged robots.
+Named after the famous scientist who posed one variation of the Brachistochrone problem, *Galileo* is an efficient optimal control framework that uses Gauss-Legendre Pseudospectral Collocation to solve the switched systems problem for legged robots. 
 
 Features:  
 
