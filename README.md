@@ -199,7 +199,10 @@ roslaunch galileo_ros go1_galileo_ros.launch
 
 and then launch the legged control nodes as instructed on the repo's readme. The control schematic for the combined Galileo + perceptive legged_control framework is as follows:
 
-![BiQu '24 URPS (4)](https://github.com/user-attachments/assets/092c273d-a983-4f6a-955d-c2c60c64223c)
+
+![BiQu '24 URPS](https://github.com/user-attachments/assets/ce8c6595-be3f-4127-a3c3-442f5d591bde)
+
+
 
 This approach has been used to deploy Galileo in Gazebo and on the real Unitree Go1 hardware.
 
