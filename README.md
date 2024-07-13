@@ -177,10 +177,31 @@ in the main repo directory.
 
 ## Visualize
 
-The solutions output by Galileo can be easily visualized using our Meshcat interface, modified from [JNRH]. Please follow the install instructions in the `python` folder to acquire the appropriate packages. Then, the solutions from the `examples` folder can be visualized via
+The solutions output by Galileo can be easily visualized using our ROS interface. 
+
+To run Galileo and visualize a solution using Rviz, run
+
 ```bash
-python3 examples/visualization/visualize_traj.py
+roslaunch galileo_ros go1_galileo_ros.launch
 ```
+
+and in another terminal
+
+```bash
+roslaunch galileo_ros go1_galileo_ros_rviz.launch
+```
+
+We also support connection with https://github.com/YifuYuan/legged_control. Follow the installation instructions listed, and launch a Galileo ROS legged robot example such as 
+
+```bash
+roslaunch galileo_ros go1_galileo_ros.launch
+```
+
+and then launch the legged control nodes as instructed on the repo's readme. The control schematic for the combined Galileo + perceptive legged_control framework is as follows:
+
+![BiQu '24 URPS (4)](https://github.com/user-attachments/assets/092c273d-a983-4f6a-955d-c2c60c64223c)
+
+This approach has been used to deploy Galileo in Gazebo and on the real Unitree Go1 hardware.
 
 ## Documentation
 
