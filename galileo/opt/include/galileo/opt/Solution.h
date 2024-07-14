@@ -154,9 +154,8 @@ namespace galileo
             class PseudospectralTrajectorySolution : public casadi::Callback
             {
             public:
-                PseudospectralTrajectorySolution(const std::vector<solution_segment_data_t> &segments_data)
+                PseudospectralTrajectorySolution()
                 {
-                    segments_data_ = segments_data;
                 }
 
                 ~PseudospectralTrajectorySolution()
@@ -167,32 +166,37 @@ namespace galileo
                 {
                 }
 
+                void UpdateSegmentsData(const std::vector<solution_segment_data_t> &segments_data)
+                {
+                    segments_data_ = segments_data;
+                }
+
                 casadi_int get_n_in() override { return 1; }
                 casadi_int get_n_out() override { return 2; }
 
                 std::vector<casadi::DM> eval(const std::vector<casadi::DM> &arg) const override
                 {
-                    double query_times = arg[0].get_elements()[0];
+                    double query_time = arg[0].get_elements()[0];
                     Eigen::MatrixXd state_result = Eigen::MatrixXd::Zero(segments_data_[0].solx_segment.rows(), 1);
                     Eigen::MatrixXd input_result = Eigen::MatrixXd::Zero(segments_data_[0].solu_segment.rows(), 1);
                     for (size_t j = 0; j < segments_data_.size(); j++)
                     {
-                        if (query_times >= segments_data_[j].initial_time && query_times <= segments_data_[j].end_time)
+                        if (query_time >= segments_data_[j].initial_time && query_time <= segments_data_[j].end_time)
                         {
                             int state_deg = segments_data_[j].state_degree + 1;
-                            size_t state_index = ((query_times >= segments_data_[j].state_times.array()).count() - 1) / state_deg;
+                            size_t state_index = ((query_time >= segments_data_[j].state_times.array()).count() - 1) / state_deg;
                             Eigen::MatrixXd state_terms = segments_data_[j].solx_segment.block(0, state_index * state_deg, segments_data_[j].solx_segment.rows(), state_deg);
                             double state_knot_start_time = segments_data_[j].state_times[state_index * state_deg];
                             double state_knot_end_time = segments_data_[j].state_times[(state_index * state_deg) + state_deg - 1];
-                            double state_scaled_time = (query_times - state_knot_start_time) / (state_knot_end_time - state_knot_start_time);
+                            double state_scaled_time = (query_time - state_knot_start_time) / (state_knot_end_time - state_knot_start_time);
                             state_result = segments_data_[j].state_poly.barycentricInterpolation(state_scaled_time, state_terms);
 
                             int input_deg = segments_data_[j].input_degree + 1;
-                            size_t input_index = ((query_times >= segments_data_[j].input_times.array()).count() - 1) / input_deg;
+                            size_t input_index = ((query_time >= segments_data_[j].input_times.array()).count() - 1) / input_deg;
                             Eigen::MatrixXd input_terms = segments_data_[j].solu_segment.block(0, input_index * state_deg, segments_data_[j].solu_segment.rows(), input_deg);
                             double input_knot_start_time = segments_data_[j].input_times[input_index * input_deg];
                             double input_knot_end_time = segments_data_[j].input_times[(input_index * input_deg) + input_deg - 1];
-                            double input_scaled_time = (query_times - input_knot_start_time) / (input_knot_end_time - input_knot_start_time);
+                            double input_scaled_time = (query_time - input_knot_start_time) / (input_knot_end_time - input_knot_start_time);
                             input_result = segments_data_[j].input_poly.barycentricInterpolation(input_scaled_time, input_terms);
                             break;
                         }
@@ -265,6 +269,15 @@ namespace galileo
                 bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result, AccessSolutionError &sol_error) const;
 
                 /**
+                 * @brief Get the trajectory solution object.
+                 * 
+                 */
+                PseudospectralTrajectorySolution GetTrajectory() const
+                {
+                    return trajectory_solution_;
+                }
+
+                /**
                  * @brief Update the constraints with new constraint data segments.
                  *
                  * @param constarint_data_segments A vector of constraint data segments.
@@ -314,6 +327,12 @@ namespace galileo
                  *
                  */
                 std::vector<std::vector<galileo::opt::ConstraintData>> constraint_data_segments_;
+
+                /**
+                 * @brief The PseudospectralTrajectorySolution object.
+                 *
+                 */
+                PseudospectralTrajectorySolution trajectory_solution_;
             };
         }
     }

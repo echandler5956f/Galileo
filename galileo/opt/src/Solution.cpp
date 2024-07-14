@@ -9,6 +9,7 @@ namespace galileo
             void Solution::UpdateSolution(std::vector<solution_segment_data_t> solution_segments)
             {
                 solution_segments_ = solution_segments;
+                trajectory_solution_.UpdateSegmentsData(solution_segments_);
             }
 
             // state_result and input_result should be initialized to the correct size before calling GetSolution!
