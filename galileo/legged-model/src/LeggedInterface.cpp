@@ -300,6 +300,12 @@ namespace galileo
             return solution_interface_->GetSolution(query_times, state_result, input_result);
         }
 
+        std::shared_ptr<opt::solution::PseudospectralTrajectorySolution> LeggedInterface::GetTrajectory()
+        {
+            std::lock_guard<std::mutex> lock_sol(solution_mutex_);
+            return solution_interface_->GetTrajectory();
+        }
+
         void LeggedInterface::VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result)
         {
             std::unique_lock<std::mutex> lock_sol(solution_mutex_);

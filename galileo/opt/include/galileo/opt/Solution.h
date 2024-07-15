@@ -156,6 +156,7 @@ namespace galileo
             public:
                 PseudospectralTrajectorySolution()
                 {
+                    construct("TrajectorySolution");
                 }
 
                 ~PseudospectralTrajectorySolution()
@@ -272,7 +273,7 @@ namespace galileo
                  * @brief Get the trajectory solution object.
                  * 
                  */
-                PseudospectralTrajectorySolution GetTrajectory() const
+                std::shared_ptr<PseudospectralTrajectorySolution> GetTrajectory() const
                 {
                     return trajectory_solution_;
                 }
@@ -332,7 +333,7 @@ namespace galileo
                  * @brief The PseudospectralTrajectorySolution object.
                  *
                  */
-                PseudospectralTrajectorySolution trajectory_solution_;
+                std::shared_ptr<PseudospectralTrajectorySolution> trajectory_solution_ = std::make_shared<PseudospectralTrajectorySolution>();
             };
         }
     }

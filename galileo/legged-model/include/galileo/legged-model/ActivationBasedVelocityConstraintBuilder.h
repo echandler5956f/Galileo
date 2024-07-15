@@ -166,6 +166,7 @@ namespace galileo
                  * @param FS_def The footstep definition.
                  * @param h1_dot_desired The desired velocity of the footstep in the direction of the first surface normal.
                  * @param h2_dot_desired The desired velocity of the footstep in the direction of the second surface normal.
+                 * @param actual_duration The actual duration of the footstep.
                  *
                  * @return The desired velocity of the footstep in the direction of the surface normals.
                  *

@@ -53,5 +53,9 @@ int main(int argc, char **argv)
     // solver_interface.GetSolution(new_times, new_states, new_inputs);
     solver_interface.VisualizeSolutionAndConstraints(new_times, new_states, new_inputs);
 
+    std::shared_ptr<opt::solution::PseudospectralTrajectorySolution> solution = solver_interface.GetTrajectory();
+    casadi::Function solution_func = *(std::shared_ptr<casadi::Function>(solution));
+    std::cout << solution_func << std::endl;
+
     return 0;
 }

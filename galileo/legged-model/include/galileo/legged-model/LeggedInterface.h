@@ -95,6 +95,13 @@ namespace galileo
             bool GetSolution(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result);
 
             /**
+             * @brief Returns the trajectory as a function of time in Casadi form.
+             * 
+             * @return std::shared_ptr<PseudospectralTrajectorySolution>n The solution trajectory function
+             */
+            std::shared_ptr<opt::solution::PseudospectralTrajectorySolution> GetTrajectory();
+
+            /**
              * @brief Get the solution and plot the constraints
              */
             void VisualizeSolutionAndConstraints(const Eigen::VectorXd &query_times, Eigen::MatrixXd &state_result, Eigen::MatrixXd &input_result);
