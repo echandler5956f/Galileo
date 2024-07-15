@@ -97,9 +97,9 @@ namespace galileo
             /**
              * @brief Returns the trajectory as a function of time in Casadi form.
              * 
-             * @return std::shared_ptr<PseudospectralTrajectorySolution>n The solution trajectory function
+             * @return casadi::Function The solution trajectory function
              */
-            std::shared_ptr<opt::solution::PseudospectralTrajectorySolution> GetTrajectory();
+            casadi::Function GetTrajectory();
 
             /**
              * @brief Get the solution and plot the constraints

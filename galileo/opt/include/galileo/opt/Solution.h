@@ -154,8 +154,9 @@ namespace galileo
             class PseudospectralTrajectorySolution : public casadi::Callback
             {
             public:
-                PseudospectralTrajectorySolution()
+                PseudospectralTrajectorySolution(std::vector<solution_segment_data_t> segments_data)
                 {
+                    segments_data_ = segments_data;
                     construct("TrajectorySolution");
                 }
 
@@ -167,13 +168,32 @@ namespace galileo
                 {
                 }
 
-                void UpdateSegmentsData(const std::vector<solution_segment_data_t> &segments_data)
-                {
-                    segments_data_ = segments_data;
-                }
-
                 casadi_int get_n_in() override { return 1; }
                 casadi_int get_n_out() override { return 2; }
+
+                casadi::Sparsity get_sparsity_in(casadi_int i) override
+                {
+                    switch (i)
+                    {
+                    case 0:
+                        return casadi::Sparsity::dense(1, 1);
+                    default:
+                        return casadi::Sparsity();
+                    }
+                }
+
+                casadi::Sparsity get_sparsity_out(casadi_int i) override
+                {
+                    switch (i)
+                    {
+                    case 0:
+                        return casadi::Sparsity::dense(segments_data_[0].solx_segment.rows(), 1);
+                    case 1:
+                        return casadi::Sparsity::dense(segments_data_[0].solu_segment.rows(), 1);
+                    default:
+                        return casadi::Sparsity();
+                    }
+                }
 
                 std::vector<casadi::DM> eval(const std::vector<casadi::DM> &arg) const override
                 {
@@ -272,10 +292,11 @@ namespace galileo
                 /**
                  * @brief Get the trajectory solution object.
                  * 
+                 * @return casadi::Function The trajectory solution object.
                  */
-                std::shared_ptr<PseudospectralTrajectorySolution> GetTrajectory() const
+                casadi::Function GetTrajectory() const
                 {
-                    return trajectory_solution_;
+                    return *(std::shared_ptr<casadi::Function>(trajectory_solution_));
                 }
 
                 /**
@@ -333,7 +354,7 @@ namespace galileo
                  * @brief The PseudospectralTrajectorySolution object.
                  *
                  */
-                std::shared_ptr<PseudospectralTrajectorySolution> trajectory_solution_ = std::make_shared<PseudospectralTrajectorySolution>();
+                std::shared_ptr<PseudospectralTrajectorySolution> trajectory_solution_;
             };
         }
     }
