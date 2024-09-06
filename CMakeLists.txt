@@ -43,8 +43,8 @@ add_subdirectory(galileo)
 target_link_libraries(galileo
     PUBLIC
     casadi
-    pinocchio
     Eigen3::Eigen
+    ${pinocchio_LIBRARIES}
     ${Boost_LIBRARIES}
 )
 

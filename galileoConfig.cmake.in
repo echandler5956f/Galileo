@@ -2,7 +2,7 @@
 
 include(CMakeFindDependencyMacro)
 
-set(huron_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include)
+set(galileo_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include)
 set(galileo_LIBRARIES galileo::galileo)
 
 # Create an imported target for "galileo"
