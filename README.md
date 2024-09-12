@@ -236,12 +236,13 @@ Coming soon (ICRA 2025?).
 ## Credits
 
 ### Written by 
-
 - Ethan Chandler
 - Akshay Jaitly
 
-### With contributions from
+### Advised by
+- Professor Mahdi Agheli
 
+### With contributions from
 - Yuen Lam Leung
 - Hushmand Esmaeili
 - Ibrahim Salman Al-Tameemi
@@ -254,6 +255,8 @@ Coming soon (ICRA 2025?).
 <!-- - Nikhil Gangaram -->
 <!-- - Dheeraj Bhogisetty -->
 <!-- - Nhi Nguyen -->
+
+
 
 [CasADi]: https://github.com/casadi/casadi
 [pinocchio]: https://github.com/stack-of-tasks/pinocchio
