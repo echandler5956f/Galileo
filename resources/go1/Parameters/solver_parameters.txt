@@ -16,6 +16,7 @@ constraints.ideal_footstep_duration|0.5|double
 
 solver|ipopt|string
 
+comment.nlp.ipopt.linear_solver|ma57|string
 nlp.ipopt.max_iter|50|int
 nlp.ipopt.fixed_variable_treatment|make_constraint|string
 nlp.ipopt.hessian_approximation|exact|string
