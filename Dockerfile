@@ -85,23 +85,33 @@ RUN cd repos && \
     cmake .. && \
     make install
 
-# octomap: hpp-fcl optional requirement
-RUN cd repos && \
-    git clone https://github.com/OctoMap/octomap.git && \
-    cd octomap && \ 
-    git checkout eff7d05 && \
-    rm -r .git && \
-    mkdir build && \ 
-    cd build && \
-    cmake .. && \
-    make install
+# # octomap: hpp-fcl optional requirement
+# RUN cd repos && \
+#     git clone https://github.com/OctoMap/octomap.git && \
+#     cd octomap && \ 
+#     git checkout eff7d05 && \
+#     rm -r .git && \
+#     mkdir build && \ 
+#     cd build && \
+#     cmake .. && \
+#     make install
 
 # eigenpi: hpp-fcl requirement
 # Might be able to install this with pip, idk
-RUN sh -c "echo 'deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg' >> /etc/apt/sources.list.d/robotpkg.list" && \
-    curl http://robotpkg.openrobots.org/packages/debian/robotpkg.key | sudo apt-key add - && \
-    apt-get update && \
-    apt install -y robotpkg-py38-eigenpy
+# RUN sh -c "echo 'deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg' >> /etc/apt/sources.list.d/robotpkg.list" && \
+#     curl http://robotpkg.openrobots.org/packages/debian/robotpkg.key | sudo apt-key add - && \
+#     apt-get update && \
+#     apt install -y robotpkg-py38-eigenpy
+# RUN apt-get install -y python3-scipy
+# RUN cd repos && \
+#     git clone https://github.com/stack-of-tasks/eigenpy.git && \
+#     cd eigenpy && \ 
+#     git checkout 3586fcb && \
+#     rm -r .git && \
+#     mkdir build && \ 
+#     cd build && \
+#     cmake .. && \
+#     make install
 
 # hpp-fcl: pinocchio requirement
 RUN cd repos && \
@@ -111,7 +121,8 @@ RUN cd repos && \
     rm -r .git && \
     mkdir build && \ 
     cd build && \
-    cmake .. && \
+    # cmake .. && \
+    cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=OFF && \
     make install
 
 # casadi: galileo, pinocchio requirement
@@ -139,12 +150,12 @@ RUN cd repos && \
     make -j4 && \
     make install
 
-# Galileo
-RUN cd repos && \
-    git clone git@github.com:KaiNakamura/Galileo.git --depth=1 && \
-    cd Galileo && \ 
-    mkdir build && \ 
-    cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_OPENMP=ON .. && \
-    make && \
-    make install
+# # Galileo
+# RUN cd repos && \
+#     git clone git@github.com:KaiNakamura/Galileo.git --depth=1 && \
+#     cd Galileo && \ 
+#     mkdir build && \ 
+#     cd build && \
+#     cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_OPENMP=ON .. && \
+#     make && \
+#     make install
