@@ -85,16 +85,16 @@ RUN cd repos && \
     cmake .. && \
     make install
 
-# # octomap: hpp-fcl optional requirement
-# RUN cd repos && \
-#     git clone https://github.com/OctoMap/octomap.git && \
-#     cd octomap && \ 
-#     git checkout eff7d05 && \
-#     rm -r .git && \
-#     mkdir build && \ 
-#     cd build && \
-#     cmake .. && \
-#     make install
+# octomap: hpp-fcl optional requirement
+RUN cd repos && \
+    git clone https://github.com/OctoMap/octomap.git && \
+    cd octomap && \ 
+    git checkout eff7d05 && \
+    rm -r .git && \
+    mkdir build && \ 
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+    make install
 
 # eigenpi: hpp-fcl requirement
 # Might be able to install this with pip, idk
@@ -122,7 +122,13 @@ RUN cd repos && \
     mkdir build && \ 
     cd build && \
     # cmake .. && \
-    cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=OFF && \
+    # cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=OFF && \
+    # cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON -DCMAKE_INSTALL_PREFIX=/usr/local && \ 
+    cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DOCTOMAP_INCLUDE_DIR=/usr/local/include \
+    -DOCTOMAP_LIBRARY=/usr/local/lib/liboctomap.so \
+    -DOCTOMATH_LIBRARY=/usr/local/lib/liboctomath.so \
+    -DOCTOMAP_VERSION=1.10.0 && \ 
     make install
 
 # casadi: galileo, pinocchio requirement
