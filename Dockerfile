@@ -85,16 +85,33 @@ RUN cd repos && \
     cmake .. && \
     make install
 
+# octomap dependencies
+# RUN apt-get install -y doxygen libqt4-dev libqt4-opengl-dev libqglviewer-dev-qt4
+
+# octomap through ros
+RUN apt-get install -y ros-noetic-octomap
+
 # octomap: hpp-fcl optional requirement
-RUN cd repos && \
-    git clone https://github.com/OctoMap/octomap.git && \
-    cd octomap && \ 
-    git checkout eff7d05 && \
-    rm -r .git && \
-    mkdir build && \ 
-    cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
-    make install
+# RUN cd repos && \
+#     git clone https://github.com/OctoMap/octomap.git && \
+#     cd octomap && \ 
+#     git checkout eff7d05 && \
+#     rm -r .git && \
+#     mkdir build && \ 
+#     cd build && \
+#     cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+#     make install
+
+# Set CMAKE_PREFIX_PATH to include OctoMap
+ENV CMAKE_PREFIX_PATH="/opt/ros/noetic:$CMAKE_PREFIX_PATH"
+
+# Set octomap_DIR to the directory containing octomapConfig.cmake
+ENV octomap_DIR="/opt/ros/noetic/share/octomap/cmake"
+
+# Run the necessary CMake commands to find and link OctoMap
+RUN echo "find_package(octomap REQUIRED)" >> /tmp/CMakeLists.txt && \
+    echo "include_directories(\${OCTOMAP_INCLUDE_DIRS})" >> /tmp/CMakeLists.txt && \
+    echo "target_link_libraries(\${OCTOMAP_LIBRARIES})" >> /tmp/CMakeLists.txt
 
 # eigenpi: hpp-fcl requirement
 # Might be able to install this with pip, idk
@@ -123,12 +140,13 @@ RUN cd repos && \
     cd build && \
     # cmake .. && \
     # cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=OFF && \
+    cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON && \
     # cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON -DCMAKE_INSTALL_PREFIX=/usr/local && \ 
-    cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DOCTOMAP_INCLUDE_DIR=/usr/local/include \
-    -DOCTOMAP_LIBRARY=/usr/local/lib/liboctomap.so \
-    -DOCTOMATH_LIBRARY=/usr/local/lib/liboctomath.so \
-    -DOCTOMAP_VERSION=1.10.0 && \ 
+    # cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON -DCMAKE_INSTALL_PREFIX=/usr/local \
+    # -DOCTOMAP_INCLUDE_DIR=/usr/local/octomap/octomap/include \
+    # -DOCTOMAP_LIBRARY=/usr/local/lib/liboctomap.so \
+    # -DOCTOMATH_LIBRARY=/usr/local/lib/liboctomath.so \
+    # -DOCTOMAP_VERSION=1.10.0 && \ 
     make install
 
 # casadi: galileo, pinocchio requirement
@@ -145,16 +163,16 @@ RUN cd repos && \
     make install
 
 # pinocchio: galileo requirement
-RUN cd repos && \
-    git clone --recursive https://github.com/stack-of-tasks/pinocchio && \
-    cd pinocchio && \ 
-    git checkout 0b594a0 && \
-    rm -r .git && \
-    mkdir build && \ 
-    cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_BENCHMARK=ON -DBUILD_UTILS=ON -DBUILD_PYTHON_INTERFACE=OFF -DGENERATE_PYTHON_STUBS=OFF -DBUILD_WITH_URDF_SUPPORT=ON -DBUILD_WITH_COLLISION_SUPPORT=ON -DBUILD_WITH_AUTODIFF_SUPPORT=ON  -DBUILD_WITH_1_SUPPORT=ON -DBUILD_WITH_CODEGEN_SUPPORT=ON -DBUILD_WITH_OPENMP_SUPPORT=ON .. && \
-    make -j4 && \
-    make install
+# RUN cd repos && \
+#     git clone --recursive https://github.com/stack-of-tasks/pinocchio && \
+#     cd pinocchio && \ 
+#     git checkout 0b594a0 && \
+#     rm -r .git && \
+#     mkdir build && \ 
+#     cd build && \
+#     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_BENCHMARK=ON -DBUILD_UTILS=ON -DBUILD_PYTHON_INTERFACE=OFF -DGENERATE_PYTHON_STUBS=OFF -DBUILD_WITH_URDF_SUPPORT=ON -DBUILD_WITH_COLLISION_SUPPORT=ON -DBUILD_WITH_AUTODIFF_SUPPORT=ON  -DBUILD_WITH_1_SUPPORT=ON -DBUILD_WITH_CODEGEN_SUPPORT=ON -DBUILD_WITH_OPENMP_SUPPORT=ON .. && \
+#     make VERBOSE=1 -j4 && \
+#     make install
 
 # # Galileo
 # RUN cd repos && \
