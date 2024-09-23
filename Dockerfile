@@ -31,8 +31,8 @@ RUN apt install -y \
     libmetis-dev \
     libconsole-bridge-dev \
     liburdfdom-headers-dev \
-    ros-noetic-octomap \
-    # liboctomap1.9 \
+    # ros-noetic-octomap \
+    liboctomap1.9 \
     --install-recommends
 
 # Set CMAKE_PREFIX_PATH to include OctoMap
