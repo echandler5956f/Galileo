@@ -9,6 +9,11 @@ ENV SHELL /bin/bash
 # Set the default command to bash
 CMD ["/bin/bash"]
 
+# Set environment variables
+ENV PATH="/usr/local/bin:$PATH"
+ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+ENV CMAKE_PREFIX_PATH="/usr/local:$CMAKE_PREFIX_PATH"
+
 # RUN apt-get update && apt-get upgrade -y
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
