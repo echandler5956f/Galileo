@@ -46,7 +46,7 @@ RUN cd repos && \
     tar -xzf eigen-3.4.0.tar.gz && rm eigen-3.4.0.tar.gz && \
     cd eigen-3.4.0 && \
     mkdir build && cd build && \
-    cmake .. && make -j$(nproc) && make install && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc) && make install && \
     cd /home && rm -rf repos/eigen-3.4.0
 
 # HSL: casadi requirement
@@ -66,7 +66,7 @@ RUN cd repos && \
     git clone https://github.com/ros/urdfdom.git && \
     cd urdfdom && git checkout 3f6bf9a && rm -r .git && \
     mkdir build && cd build && \
-    cmake ../ && make -j$(nproc) && make install && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc) && make install && \
     cd /home && rm -rf repos/urdfdom
 
 # CppAD: CppADCodegen requirement
@@ -74,7 +74,7 @@ RUN cd repos && \
     git clone https://github.com/coin-or/CppAD.git && \
     cd CppAD && git checkout 470c769 && rm -r .git && \
     mkdir build && cd build && \
-    cmake .. && make install && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && make install && \
     cd /home && rm -rf repos/CppAD
 
 # CppADCodegen: pinocchio requirement
@@ -82,7 +82,7 @@ RUN cd repos && \
     git clone https://github.com/joaoleal/CppADCodeGen.git && \
     cd CppADCodeGen && git checkout 656d23e && rm -r .git && \
     mkdir build && cd build && \
-    cmake .. && make install && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && make install && \
     cd /home && rm -rf repos/CppADCodeGen
 
 # hpp-fcl: pinocchio requirement
@@ -90,7 +90,7 @@ RUN cd repos && \
     git clone https://github.com/humanoid-path-planner/hpp-fcl.git && \
     cd hpp-fcl && git checkout 6b9f9c8 && rm -r .git && \
     mkdir build && cd build && \
-    cmake .. -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_PYTHON_INTERFACE=OFF -DHPP_FCL_HAS_OCTOMAP=ON && \
     make -j$(nproc) install && \
     cd /home && rm -rf repos/hpp-fcl
 
