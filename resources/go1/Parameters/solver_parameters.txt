@@ -12,11 +12,11 @@ constraints.max_following_leeway_planar|50|double
 constraints.min_following_leeway_planar|1e-8|double
 constraints.footstep_vel_start|0|double
 constraints.footstep_vel_end|0|double
-constraints.ideal_footstep_duration|0.05|double
+constraints.ideal_footstep_duration|0.5|double
 
 solver|ipopt|string
 
-nlp.ipopt.linear_solver|ma57|string
+comment.nlp.ipopt.linear_solver|ma57|string
 nlp.ipopt.max_iter|50|int
 nlp.ipopt.fixed_variable_treatment|make_constraint|string
 nlp.ipopt.hessian_approximation|exact|string
