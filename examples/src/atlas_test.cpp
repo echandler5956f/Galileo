@@ -1,4 +1,4 @@
-#include "atlas_test.h"
+#include "../../examples/include/atlas_test.h"
 
 int main(int argc, char **argv)
 {

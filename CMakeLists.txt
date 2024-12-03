@@ -27,11 +27,15 @@ option(ENABLE_VECTORIZATION_SUOPPORT
     "Enable vectorization and further processor-related optimizations" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" ON)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with CasADi for AD and code generation" ON)
-option(BUILD_WITH_CPPADCODEGEN_SUPPORT "Build the library with CppADCodeGen for AD and code generation" ON)
+option(BUILD_WITH_CPPADCODEGEN_SUPPORT "Build the library with CppADCodeGen for AD and code generation" OFF)
 option(BUILD_WITH_COLLISION_SUPPORT 
-    "Build the library with the collision support (required HPP-FCL)" ON)
+    "Build the library with the collision support (required HPP-FCL)" OFF)
 option(BUILD_WITH_PINOCCHIO_SUPPORT 
     "Build the library with Pinocchio for kinematics and dynamics" ON)
+
+find_package(Threads REQUIRED)
+find_package (Eigen3 REQUIRED NO_MODULE)
+find_package(Boost REQUIRED COMPONENTS iostreams)
 
 if(ENABLE_VECTORIZATION_SUOPPORT)
     add_definitions(-march=native)
@@ -54,9 +58,6 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
   find_package(pinocchio REQUIRED)
 endif()
 
-find_package (Eigen3 REQUIRED NO_MODULE)
-find_package(Boost REQUIRED COMPONENTS iostreams)
-
 add_library(galileo SHARED galileo.cc)
 set_target_properties(galileo PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -66,7 +67,9 @@ add_subdirectory(galileo)
 target_link_libraries(galileo
     PUBLIC
     Eigen3::Eigen
-    ${Boost_LIBRARIES})
+    ${Boost_LIBRARIES}
+    Threads::Threads
+    Boost::iostreams)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(galileo
@@ -123,7 +126,9 @@ configure_package_config_file(
 # Install the generated "galileoConfig.cmake" file
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/galileoConfig.cmake
     DESTINATION lib/cmake/galileo)
-install(FILES ${CMAKE_MODULE_PATH}/FindCASADI.cmake
+install(FILES ${PROJECT_SOURCE_DIR}/cmake/FindCASADI.cmake
+    DESTINATION lib/cmake/galileo/Modules)
+install(FILES ${PROJECT_SOURCE_DIR}/cmake/Findcppadcg.cmake
     DESTINATION lib/cmake/galileo/Modules)
 
 # Uninstall target

@@ -1,4 +1,4 @@
-#include "huron_test.h"
+#include "../../examples/include/huron_test.h"
 
 int main(int argc, char **argv)
 {

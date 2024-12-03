@@ -1,4 +1,4 @@
-#include "go1_test.h"
+#include "../../examples/include/go1_test.h"
 
 int main(int argc, char **argv)
 {
