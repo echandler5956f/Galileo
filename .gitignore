@@ -1,8 +1,2 @@
 .vscode*
-*.pyc
-.venv/
 *build/
-docs/html
-docs/latex
-*.csv
-*.png
