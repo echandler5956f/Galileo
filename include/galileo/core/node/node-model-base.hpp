@@ -17,7 +17,7 @@
         NDX = traits<Node>::NDX,                                      \
         NU = traits<Node>::NU,                                        \
         NH = traits<Node>::NH,                                        \
-        NG = traits<Node>::NG,                                        \
+        NG = traits<Node>::NG                                         \
     };                                                                \
     typedef TYPENAME traits<Node>::X_t X_t;                           \
     typedef TYPENAME traits<Node>::dX_t dX_t;                         \

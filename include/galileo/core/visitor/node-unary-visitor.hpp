@@ -1,10 +1,11 @@
-#pragma once
+#ifndef __galileo_core_visitor_node_unary_visitor_hpp__
+#define __galileo_core_visitor_node_unary_visitor_hpp__
 
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/get.hpp>
 
 #include "galileo/core/visitor/fusion.hpp"
-#include "pinocchio/multibody/joint/joint-base.hpp"
+#include "galileo/core/node/node-base.hpp"
 
 namespace galileo
 {
@@ -13,7 +14,6 @@ namespace galileo
         // Base structure for Unary visitation of a NodeModel.
         // This structure provides runners to call the right visitor according to the number of
         // arguments.
-        //
         template <typename NodeVisitorDerived, typename ReturnType = void>
         struct NodeUnaryVisitorBase
         {
@@ -238,4 +238,7 @@ namespace galileo
         }; // struct NodeUnaryVisitorBase
 
     } // namespace fusion
+
 } // namespace galileo
+
+#endif // __galileo_core_visitor_node_unary_visitor_hpp__

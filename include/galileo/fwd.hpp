@@ -1,9 +1,11 @@
-#ifndef __galileo_fwd_hpp_
-#define __galileo_fwd_hpp_
+#ifndef __galileo_fwd_hpp__
+#define __galileo_fwd_hpp__
 
 namespace galileo
 {
 } // namespace galileo
+
+#include <cassert>
 
 #include "galileo/utils/cast.hpp"
 #include <Eigen/Core>
@@ -73,4 +75,6 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_fwd_hpp_
+#include "galileo/context.hpp"
+
+#endif // __galileo_fwd_hpp__
