@@ -2,20 +2,20 @@
 
 #include "galileo/core/node-base.hpp"
 
-#define GALILEO_SEGMENT_TYPEDEF_GENERIC(Segment, TYPENAME)                     \
+#define GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, TYPENAME)               \
     typedef TYPENAME traits<Segment>::Scalar Scalar;                           \
     typedef TYPENAME traits<Segment>::SegmentModelDerived SegmentModelDerived; \
     typedef TYPENAME traits<Segment>::SegmentDataDerived SegmentDataDerived;   \
-    typedef TYPENAME traits<Segment>::NodeModelDerived NodeModelDerived;       \
-    typedef TYPENAME traits<Segment>::NodeDataDerived NodeDataDerived;         \
-    typedef TYPENAME traits<Segment>::StateModel StateModel;                   \
-    typedef TYPENAME traits<Segment>::ControlModel ControlModel;               \
-    typedef TYPENAME traits<Segment>::MathBase MathBase;                       \
-    typedef TYPENAME MathBase::VectorXs VectorXs;                              \
-    typedef TYPENAME MathBase::MatrixXs MatrixXs;
+    typedef TYPENAME traits<Segment>::NodeModel_t NodeModel_t;                 \
+    typedef TYPENAME traits<Segment>::NodeData_t NodeData_t;                   \
+    typedef TYPENAME traits<Segment>::StateModel_t StateModel_t;               \
+    typedef TYPENAME traits<Segment>::ControlModel_t ControlModel_t;           \
+    typedef TYPENAME traits<Segment>::VectorXs_t VectorXs_t;                   \
+    typedef TYPENAME traits<Segment>::MatrixXs_t MatrixXs_t;
 
+#define GALILEO_SEGMENT_TYPEDEF(Segment) GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, typename)
 #define GALILEO_SEGMENT_TYPEDEF_TEMPLATE(Segment) \
-    GALILEO_SEGMENT_TYPEDEF_GENERIC(Segment, typename)
+    GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, typename)
 
 #define GALILEO_SEGMENT_CAST_TYPE_SPECIALIZATION(SegmentModelTpl) \
     template <typename Scalar, typename NewScalar>                \
@@ -55,62 +55,62 @@ namespace galileo
         }
 
         void calc(const boost::shared_ptr<SegmentDataDerived> &data,
-                  const Eigen::Ref<const MatrixXs> &x,
-                  const Eigen::Ref<const MatrixXs> &u)
+                  const Eigen::Ref<const MatrixXs_t> &x,
+                  const Eigen::Ref<const MatrixXs_t> &u)
         {
             derived().calc(data, x, u);
         }
 
         void calc(const boost::shared_ptr<SegmentDataDerived> &data,
-                  const Eigen::Ref<const MatrixXs> &x)
+                  const Eigen::Ref<const MatrixXs_t> &x)
         {
             derived().calc(data, x);
         }
 
         void calcDiff(const boost::shared_ptr<SegmentDataDerived> &data,
-                      const Eigen::Ref<const MatrixXs> &x,
-                      const Eigen::Ref<const MatrixXs> &u)
+                      const Eigen::Ref<const MatrixXs_t> &x,
+                      const Eigen::Ref<const MatrixXs_t> &u)
         {
             derived().calcDiff(data, x, u);
         }
 
         void calcDiff(const boost::shared_ptr<SegmentDataDerived> &data,
-                      const Eigen::Ref<const MatrixXs> &x)
+                      const Eigen::Ref<const MatrixXs_t> &x)
         {
             derived().calcDiff(data, x);
         }
 
         void quasiStatic(const boost::shared_ptr<SegmentDataDerived> &data,
-                         Eigen::Ref<MatrixXs> u, const Eigen::Ref<const MatrixXs> &x,
+                         Eigen::Ref<MatrixXs_t> u, const Eigen::Ref<const MatrixXs_t> &x,
                          const std::size_t maxiter = 100, const Scalar tol = Scalar(1e-9))
         {
             derived().quasiStatic(data, u, x, maxiter, tol);
         }
 
-        std::vector<VectorXs> quasiStatic_xs(const boost::shared_ptr<SegmentDataDerived> &data,
-                                             const Eigen::Ref<const MatrixXs> &x,
-                                             const std::size_t maxiter = 100,
-                                             const Scalar tol = Scalar(1e-9))
+        std::vector<VectorXs_t> quasiStatic_xs(const boost::shared_ptr<SegmentDataDerived> &data,
+                                               const Eigen::Ref<const MatrixXs_t> &x,
+                                               const std::size_t maxiter = 100,
+                                               const Scalar tol = Scalar(1e-9))
         {
             return derived().quasiStatic_xs(data, x, maxiter, tol);
         }
 
-        void circularAppend(boost::shared_ptr<NodeModelDerived> model, boost::shared_ptr<NodeDataDerived> data)
+        void circularAppend(boost::shared_ptr<NodeModel_t> model, boost::shared_ptr<NodeData_t> data)
         {
             derived().circularAppend(model, data);
         }
 
-        void circularAppend(boost::shared_ptr<NodeModelDerived> model)
+        void circularAppend(boost::shared_ptr<NodeModel_t> model)
         {
             derived().circularAppend(model);
         }
 
-        void updateNode(const std::size_t &id, boost::shared_ptr<NodeModelDerived> model, boost::shared_ptr<NodeDataDerived> data)
+        void updateNode(const std::size_t &id, boost::shared_ptr<NodeModel_t> model, boost::shared_ptr<NodeData_t> data)
         {
             derived().updateNode(id, model, data);
         }
 
-        void updateNode(const std::size_t &id, boost::shared_ptr<NodeModelDerived> model)
+        void updateNode(const std::size_t &id, boost::shared_ptr<NodeModel_t> model)
         {
             derived().updateNode(id, model);
         }
@@ -120,22 +120,22 @@ namespace galileo
             return derived().getNumNodes();
         }
 
-        const std::vector<boost::shared_ptr<NodeModelDerived>> &getNodes() const
+        const std::vector<boost::shared_ptr<NodeModel_t>> &getNodes() const
         {
             return derived().getNodes();
         }
 
-        const std::vector<boost::shared_ptr<NodeDataDerived>> &getNodesData() const
+        const std::vector<boost::shared_ptr<NodeData_t>> &getNodesData() const
         {
             return derived().getNodesData();
         }
 
-        const ControlModel &getControl() const
+        const ControlModel_t &getControl() const
         {
             return derived().getControl();
         }
 
-        const VectorXs &getNodeTimes() const
+        const VectorXs_t &getNodeTimes() const
         {
             return derived().getNodeTimes();
         }
@@ -198,12 +198,12 @@ namespace galileo
             return *this;
         }
 
-        std::size_t Ns_;                                             //!< Number of nodes in this segment
-        std::vector<boost::shared_ptr<NodeModelDerived>> nodes_;     //!< List of nodes in this segment
-        std::vector<boost::shared_ptr<NodeDataDerived>> nodes_data_; //!< List of nodes data in this segment
-        ControlModel control_;                                       //!< Control parameterization model for this segment
-        VectorXs node_times_;                                        //!< Vector of node times, normalized to [0, 1]
-        Scalar h_;                                                   //!< Segment period
+        std::size_t Ns_;                                        //!< Number of nodes in this segment
+        std::vector<boost::shared_ptr<NodeModel_t>> nodes_;     //!< List of nodes in this segment
+        std::vector<boost::shared_ptr<NodeData_t>> nodes_data_; //!< List of nodes data in this segment
+        ControlModel_t control_;                                //!< Control parameterization model for this segment
+        VectorXs_t node_times_;                                 //!< Vector of node times, normalized to [0, 1]
+        Scalar h_;                                              //!< Segment period
 
         std::size_t nx_;  //!< State dimension for this segment
         std::size_t ndx_; //!< State rate dimension for this segment
@@ -224,9 +224,9 @@ namespace galileo
 
         Scalar cost; //!< Cost integrated over the whole segment
 
-        VectorXs C;  //!< Integration constraint value (each row corresponds to the constraint at a node in the segment)
-        MatrixXs Cx; //!< Jacobian of the integration constraint w.r.t. the state
-        MatrixXs Cu; //!< Jacobian of the integration constraint w.r.t. the control
+        VectorXs_t C;  //!< Integration constraint value (each row corresponds to the constraint at a node in the segment)
+        MatrixXs_t Cx; //!< Jacobian of the integration constraint w.r.t. the state
+        MatrixXs_t Cu; //!< Jacobian of the integration constraint w.r.t. the control
 
     protected:
         // Default constructor: protected
@@ -235,4 +235,4 @@ namespace galileo
         }
     };
 
-}
+} // namespace galileo

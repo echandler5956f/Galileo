@@ -1,20 +1,35 @@
-#pragma once
+#ifndef __galileo_fwd_hpp_
+#define __galileo_fwd_hpp_
 
 namespace galileo
 {
-}
+} // namespace galileo
 
+#include "galileo/utils/cast.hpp"
 #include <Eigen/Core>
 
 namespace galileo
 {
-
     // Common traits structure to fully define base classes for CRTP.
     template <class C>
     struct traits
     {
     };
 
+    // Blank type
+    struct Blank
+    {
+    };
+
+    namespace internal
+    {
+        template <typename T>
+        struct traits
+        {
+        };
+    }
+
+    // Base class for numerical classes.
     template <class Derived>
     struct NumericalBase
     {
@@ -41,4 +56,21 @@ namespace galileo
     {
         return ScalarCast<To, From>::cast(value);
     }
-}
+
+    enum AssignmentOp
+    {
+        setto,
+        addto,
+        rmfrom
+    };
+
+    inline bool is_a_AssignmentOp(AssignmentOp op)
+    {
+        return (op == setto || op == addto || op == rmfrom);
+    }
+
+    struct ReturnTypeNotDefined;
+
+} // namespace galileo
+
+#endif // __galileo_fwd_hpp_

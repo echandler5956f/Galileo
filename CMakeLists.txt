@@ -35,7 +35,7 @@ option(BUILD_WITH_PINOCCHIO_SUPPORT
 
 find_package(Threads REQUIRED)
 find_package (Eigen3 REQUIRED NO_MODULE)
-find_package(Boost REQUIRED COMPONENTS iostreams)
+find_package(Boost REQUIRED COMPONENTS filesystem serialization system)
 
 if(ENABLE_VECTORIZATION_SUOPPORT)
     add_definitions(-march=native)
@@ -69,7 +69,9 @@ target_link_libraries(galileo
     Eigen3::Eigen
     ${Boost_LIBRARIES}
     Threads::Threads
-    Boost::iostreams)
+    Boost::filesystem
+    Boost::serialization
+    Boost::system)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(galileo

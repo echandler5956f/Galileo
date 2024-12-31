@@ -4,11 +4,28 @@
 #include <string>
 #include <vector>
 
+#include "galileo/fwd.hpp"
 #include "galileo/core/math-base.hpp"
+
+#define GALILEO_STATE_MODEL_TYPEDEF_GENERIC(State, TYPENAME)             \
+    typedef TYPENAME traits<State>::Scalar Scalar;                       \
+    typedef TYPENAME traits<State>::StateModelDerived StateModelDerived; \
+    typedef TYPENAME traits<State>::VectorXs_t VectorXs_t;               \
+    typedef TYPENAME traits<State>::MatrixXs_t MatrixXs_t;
+
+#define GALILEO_STATE_TYPEDEF(State) GALILEO_STATE_MODEL_TYPEDEF_GENERIC(State, typename)
+#define GALILEO_STATE_TYPEDEF_TEMPLATE(State) \
+    GALILEO_STATE_MODEL_TYPEDEF_GENERIC(State, typename)
+
+#define GALILEO_STATE_CAST_TYPE_SPECIALIZATION(StateModelTpl) \
+    template <typename Scalar, typename NewScalar>            \
+    struct CastType<NewScalar, StateModelTpl<Scalar>>         \
+    {                                                         \
+        typedef StateModelTpl<NewScalar> type;                \
+    }
 
 namespace galileo
 {
-
     enum Jcomponent
     {
         both = 0,
@@ -23,7 +40,7 @@ namespace galileo
 
     /**
      * @brief Abstract class for the state representation
-     * 
+     *
      * A state is represented by its operators: difference, integrates, transport
      * and their derivatives. The difference operator returns the value of
      * \f$\mathbf{x}_{1}\ominus\mathbf{x}_{0}\f$ operation. Instead the integrate
@@ -35,35 +52,40 @@ namespace galileo
      * \f$\mathcal{M}\f$; and \f$\delta\mathbf{x}\f$ or
      * \f$\mathbf{x}_{1}\ominus\mathbf{x}_{0}\f$ lie on its tangential space.
      */
-    template <typename Derived, typename Scalar>
-    class StateBase
+    template <typename Derived>
+    class StateBase : NumericalBase<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef MathBaseTpl<Scalar> MathBase;
-        typedef typename MathBase::VectorXs VectorXs;
-        typedef typename MathBase::MatrixXs MatrixXs;
+        typedef typename traits<Derived>::StateDerived StateDerived;
+        GALILEO_STATE_TYPEDEF_TEMPLATE(StateDerived);
 
-        /**
-         * @brief Initialize the state dimensions
-         *
-         * @param[in] nx   Dimension of state configuration tuple
-         * @param[in] ndx  Dimension of state tangent vector
-         */
-        StateBase(const std::size_t nx, const std::size_t ndx);
-        StateBase();
-        virtual ~StateBase();
+        StateDerived &derived()
+        {
+            return *static_cast<Derived *>(this);
+        }
+
+        const StateDerived &derived() const
+        {
+            return *static_cast<const Derived *>(this);
+        }
 
         /**
          * @brief Generate a zero state
          */
-        virtual VectorXs zero() const = 0;
+        VectorXs_t zero() const
+        {
+            derived().zero();
+        }
 
         /**
          * @brief Generate a random state
          */
-        virtual VectorXs rand() const = 0;
+        VectorXs_t rand() const
+        {
+            derived().rand();
+        }
 
         /**
          * @brief Compute the state manifold differentiation.
@@ -82,9 +104,12 @@ namespace galileo
          * @param[out] dxout  Difference between the current and previous state points
          * (size `ndx`)
          */
-        virtual void diff(const Eigen::Ref<const VectorXs> &x0,
-                          const Eigen::Ref<const VectorXs> &x1,
-                          Eigen::Ref<VectorXs> dxout) const = 0;
+        void diff(const Eigen::Ref<const VectorXs_t> &x0,
+                  const Eigen::Ref<const VectorXs_t> &x1,
+                  Eigen::Ref<VectorXs_t> dxout) const
+        {
+            derived().diff(x0, x1, dxout);
+        }
 
         /**
          * @brief Compute the state manifold integration.
@@ -102,9 +127,12 @@ namespace galileo
          * @param[in]  dx    Velocity vector (size `ndx`)
          * @param[out] xout  Next state point (size `nx`)
          */
-        virtual void integrate(const Eigen::Ref<const VectorXs> &x,
-                               const Eigen::Ref<const VectorXs> &dx,
-                               Eigen::Ref<VectorXs> xout) const = 0;
+        void integrate(const Eigen::Ref<const VectorXs_t> &x,
+                       const Eigen::Ref<const VectorXs_t> &dx,
+                       Eigen::Ref<VectorXs_t> xout) const
+        {
+            derived().integrate(x, dx, xout);
+        }
 
         /**
          * @brief Compute the Jacobian of the state manifold differentiation.
@@ -147,10 +175,13 @@ namespace galileo
          * @param[in] firstsecond  Argument (either x0 and / or x1) with respect to
          * which the differentiation is performed.
          */
-        virtual void Jdiff(const Eigen::Ref<const VectorXs> &x0,
-                           const Eigen::Ref<const VectorXs> &x1,
-                           Eigen::Ref<MatrixXs> Jfirst, Eigen::Ref<MatrixXs> Jsecond,
-                           const Jcomponent firstsecond = both) const = 0;
+        void Jdiff(const Eigen::Ref<const VectorXs_t> &x0,
+                   const Eigen::Ref<const VectorXs_t> &x1,
+                   Eigen::Ref<MatrixXs_t> Jfirst, Eigen::Ref<MatrixXs_t> Jsecond,
+                   const Jcomponent firstsecond = both) const
+        {
+            derived().Jdiff(x0, x1, Jfirst, Jsecond, firstsecond);
+        }
 
         /**
          * @brief Compute the Jacobian of the state manifold integration.
@@ -191,12 +222,15 @@ namespace galileo
          * @param[in] op           Assignment operator which sets, adds, or removes
          * the given Jacobian matrix
          */
-        virtual void Jintegrate(const Eigen::Ref<const VectorXs> &x,
-                                const Eigen::Ref<const VectorXs> &dx,
-                                Eigen::Ref<MatrixXs> Jfirst,
-                                Eigen::Ref<MatrixXs> Jsecond,
-                                const Jcomponent firstsecond = both,
-                                const AssignmentOp op = setto) const = 0;
+        void Jintegrate(const Eigen::Ref<const VectorXs_t> &x,
+                        const Eigen::Ref<const VectorXs_t> &dx,
+                        Eigen::Ref<MatrixXs_t> Jfirst,
+                        Eigen::Ref<MatrixXs_t> Jsecond,
+                        const Jcomponent firstsecond = both,
+                        const AssignmentOp op = setto) const
+        {
+            derived().Jintegrate(x, dx, Jfirst, Jsecond, firstsecond, op);
+        }
 
         /**
          * @brief Parallel transport from integrate(x, dx) to x.
@@ -212,10 +246,13 @@ namespace galileo
          * @param[in] firstsecond  Argument (either x or dx) with respect to which the
          * differentiation of Jintegrate is performed.
          */
-        virtual void JintegrateTransport(const Eigen::Ref<const VectorXs> &x,
-                                         const Eigen::Ref<const VectorXs> &dx,
-                                         Eigen::Ref<MatrixXs> Jin,
-                                         const Jcomponent firstsecond) const = 0;
+        void JintegrateTransport(const Eigen::Ref<const VectorXs_t> &x,
+                                 const Eigen::Ref<const VectorXs_t> &dx,
+                                 Eigen::Ref<MatrixXs_t> Jin,
+                                 const Jcomponent firstsecond) const
+        {
+            derived().JintegrateTransport(x, dx, Jin, firstsecond);
+        }
 
         /**
          * @copybrief diff()
@@ -225,8 +262,11 @@ namespace galileo
          * @return  Difference between the current and previous state points (size
          * `ndx`)
          */
-        VectorXs diff_dx(const Eigen::Ref<const VectorXs> &x0,
-                         const Eigen::Ref<const VectorXs> &x1);
+        VectorXs_t diff_dx(const Eigen::Ref<const VectorXs_t> &x0,
+                           const Eigen::Ref<const VectorXs_t> &x1)
+        {
+            derived().diff_dx(x0, x1);
+        }
 
         /**
          * @copybrief integrate()
@@ -235,8 +275,11 @@ namespace galileo
          * @param[in]  dx    Velocity vector (size `ndx`)
          * @return  Next state point (size `nx`)
          */
-        VectorXs integrate_x(const Eigen::Ref<const VectorXs> &x,
-                             const Eigen::Ref<const VectorXs> &dx);
+        VectorXs_t integrate_x(const Eigen::Ref<const VectorXs_t> &x,
+                               const Eigen::Ref<const VectorXs_t> &dx)
+        {
+            derived().integrate_x(x, dx);
+        }
 
         /**
          * @copybrief jdiff()
@@ -245,9 +288,12 @@ namespace galileo
          * @param[in]  x1     Current state point (size `nx`)
          * @return  Jacobians
          */
-        std::vector<MatrixXs> Jdiff_Js(const Eigen::Ref<const VectorXs> &x0,
-                                       const Eigen::Ref<const VectorXs> &x1,
-                                       const Jcomponent firstsecond = both);
+        std::vector<MatrixXs_t> Jdiff_Js(const Eigen::Ref<const VectorXs_t> &x0,
+                                         const Eigen::Ref<const VectorXs_t> &x1,
+                                         const Jcomponent firstsecond = both)
+        {
+            derived().Jdiff_Js(x0, x1, firstsecond);
+        }
 
         /**
          * @copybrief Jintegrate()
@@ -256,65 +302,129 @@ namespace galileo
          * @param[in]  dx    Velocity vector (size `ndx`)
          * @return  Jacobians
          */
-        std::vector<MatrixXs> Jintegrate_Js(const Eigen::Ref<const VectorXs> &x,
-                                            const Eigen::Ref<const VectorXs> &dx,
-                                            const Jcomponent firstsecond = both);
+        std::vector<MatrixXs_t> Jintegrate_Js(const Eigen::Ref<const VectorXs_t> &x,
+                                              const Eigen::Ref<const VectorXs_t> &dx,
+                                              const Jcomponent firstsecond = both)
+        {
+            derived().Jintegrate_Js(x, dx, firstsecond);
+        }
 
         /**
          * @brief Return the dimension of the state tuple
          */
-        std::size_t get_nx() const;
+        std::size_t get_nx() const
+        {
+            return derived().get_nx();
+        }
 
         /**
          * @brief Return the dimension of the tangent space of the state manifold
          */
-        std::size_t get_ndx() const;
+        std::size_t get_ndx() const
+        {
+            return derived().get_ndx();
+        }
 
         /**
          * @brief Return the dimension of the configuration tuple
          */
-        std::size_t get_nq() const;
+        std::size_t get_nq() const
+        {
+            return derived().get_nq();
+        }
 
         /**
          * @brief Return the dimension of tangent space of the configuration manifold
          */
-        std::size_t get_nv() const;
+        std::size_t get_nv() const
+        {
+            return derived().get_nv();
+        }
 
         /**
          * @brief Return the state lower bound
          */
-        const VectorXs &get_lb() const;
+        const VectorXs_t &get_lb() const
+        {
+            return derived().get_lb();
+        }
 
         /**
          * @brief Return the state upper bound
          */
-        const VectorXs &get_ub() const;
+        const VectorXs_t &get_ub() const
+        {
+            return derived().get_ub();
+        }
 
         /**
          * @brief Indicate if the state has defined limits
          */
-        bool get_has_limits() const;
+        bool get_has_limits() const
+        {
+            return derived().get_has_limits();
+        }
 
         /**
          * @brief Modify the state lower bound
          */
-        void set_lb(const VectorXs &lb);
+        void set_lb(const VectorXs_t &lb)
+        {
+            derived().set_lb(lb);
+        }
 
         /**
          * @brief Modify the state upper bound
          */
-        void set_ub(const VectorXs &ub);
+        void set_ub(const VectorXs_t &ub)
+        {
+            derived().set_ub(ub);
+        }
 
     protected:
-        void update_has_limits();
+        void update_has_limits()
+        {
+            derived().update_has_limits();
+        }
+
+        // Default constructor: protected.
+        // Prevent the construction of stand-alone StateBase.
+        inline StateBase() : nx_(0), ndx_(0), nq_(0), nv_(0), has_limits_(false)
+        {
+            lb_.resize(0);
+            ub_.resize(0);
+        }
+
+        // Copy constructor: protected.
+        // Copy of stand-alone StateBase are prevented, but can be used from inheriting
+        // objects. Copy is done by calling copy operator.
+        inline StateBase(const StateBase &clone)
+        {
+            *this = clone;
+        }
+
+        // Copy operator: protected.
+        // Copy of stand-alone StateBase are prevented, but can be used from inheriting
+        // objects.
+        inline StateBase &operator=(const StateBase &clone)
+        {
+            nx_ = clone.nx_;
+            ndx_ = clone.ndx_;
+            nq_ = clone.nq_;
+            nv_ = clone.nv_;
+            lb_ = clone.lb_;
+            ub_ = clone.ub_;
+            has_limits_ = clone.has_limits_;
+            return *this;
+        }
 
         std::size_t nx_;  //!< State dimension
         std::size_t ndx_; //!< State rate dimension
         std::size_t nq_;  //!< Configuration dimension
         std::size_t nv_;  //!< Velocity dimension
-        VectorXs lb_;     //!< Lower state limits
-        VectorXs ub_;     //!< Upper state limits
+        VectorXs_t lb_;   //!< Lower state limits
+        VectorXs_t ub_;   //!< Upper state limits
         bool has_limits_; //!< Indicates whether any of the state limits is finite
     };
 
-}
+} // namespace galileo

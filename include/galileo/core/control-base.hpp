@@ -1,11 +1,30 @@
 #pragma once
 
 #include <boost/shared_ptr.hpp>
+
+#include "galileo/fwd.hpp"
 #include "galileo/core/math-base.hpp"
+
+#define GALILEO_CONTROL_MODEL_TYPEDEF_GENERIC(Control, TYPENAME)               \
+    typedef TYPENAME traits<Control>::Scalar Scalar;                           \
+    typedef TYPENAME traits<Control>::ControlModelDerived ControlModelDerived; \
+    typedef TYPENAME traits<Control>::ControlDataDerived ControlDataDerived;   \
+    typedef TYPENAME traits<Control>::VectorXs_t VectorXs_t;                   \
+    typedef TYPENAME traits<Control>::MatrixXs_t MatrixXs_t;
+
+#define GALILEO_CONTROL_TYPEDEF(Control) GALILEO_CONTROL_MODEL_TYPEDEF_GENERIC(Control, typename)
+#define GALILEO_CONTROL_TYPEDEF_TEMPLATE(Control) \
+    GALILEO_CONTROL_MODEL_TYPEDEF_GENERIC(Control, typename)
+
+#define GALILEO_CONTROL_CAST_TYPE_SPECIALIZATION(ControlModelTpl) \
+    template <typename Scalar, typename NewScalar>                \
+    struct CastType<NewScalar, ControlModelTpl<Scalar>>           \
+    {                                                             \
+        typedef ControlModelTpl<NewScalar> type;                  \
+    }
 
 namespace galileo
 {
-
     /**
      * @brief Abstract class for the control trajectory parametrization
      *
@@ -25,28 +44,24 @@ namespace galileo
      * `multiplyByJacobian` and `multiplyJacobianTransposeBy` requires to run `calc`
      * first.
      */
-    template <typename _Scalar>
-    class ControlParametrizationModelAbstractTpl
+    template <typename Derived>
+    class ControlModelBase : NumericalBase<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef _Scalar Scalar;
-        typedef MathBaseTpl<Scalar> MathBase;
-        typedef ControlParametrizationDataAbstractTpl<Scalar>
-            ControlParametrizationDataAbstract;
-        typedef typename MathBase::VectorXs VectorXs;
-        typedef typename MathBase::MatrixXs MatrixXs;
+        typedef typename traits<Derived>::ControlDerived ControlDerived;
+        GALILEO_CONTROL_TYPEDEF_TEMPLATE(ControlDerived);
 
-        /**
-         * @brief Initialize the control dimensions
-         *
-         * @param[in] nw   Dimension of control inputs
-         * @param[in] nu   Dimension of control parameters
-         */
-        ControlParametrizationModelAbstractTpl(const std::size_t nw,
-                                               const std::size_t nu);
-        virtual ~ControlParametrizationModelAbstractTpl();
+        ControlModelDerived &derived()
+        {
+            return *static_cast<Derived *>(this);
+        }
+
+        const ControlModelDerived &derived() const
+        {
+            return *static_cast<const Derived *>(this);
+        }
 
         /**
          * @brief Get the value of the control at the specified time
@@ -55,9 +70,12 @@ namespace galileo
          * @param[in]  t      Time in [0,1]
          * @param[in]  u      Control parameters
          */
-        virtual void calc(
+        void calc(
             const boost::shared_ptr<ControlParametrizationDataAbstract> &data,
-            const Scalar t, const Eigen::Ref<const VectorXs> &u) const = 0;
+            const Scalar t, const Eigen::Ref<const VectorXs_t> &u) const
+        {
+            derived().calc(data, t, u);
+        }
 
         /**
          * @brief Get the value of the Jacobian of the control with respect to the
@@ -69,16 +87,22 @@ namespace galileo
          * @param[in]  t      Time in [0,1]
          * @param[in]  u      Control parameters
          */
-        virtual void calcDiff(
+        void calcDiff(
             const boost::shared_ptr<ControlParametrizationDataAbstract> &data,
-            const Scalar t, const Eigen::Ref<const VectorXs> &u) const = 0;
+            const Scalar t, const Eigen::Ref<const VectorXs_t> &u) const
+        {
+            derived().calcDiff(data, t, u);
+        }
 
         /**
          * @brief Create the control-parametrization data
          *
          * @return the control-parametrization data
          */
-        virtual boost::shared_ptr<ControlParametrizationDataAbstract> createData();
+        boost::shared_ptr<ControlParametrizationDataAbstract> createData()
+        {
+            return derived().createData();
+        }
 
         /**
          * @brief Update the control parameters u for a specified time t given the
@@ -88,9 +112,12 @@ namespace galileo
          * @param[in]  t      Time in [0,1]
          * @param[in]  w      Control inputs
          */
-        virtual void params(
+        void params(
             const boost::shared_ptr<ControlParametrizationDataAbstract> &data,
-            const Scalar t, const Eigen::Ref<const VectorXs> &w) const = 0;
+            const Scalar t, const Eigen::Ref<const VectorXs_t> &w) const
+        {
+            derived().params(data, t, w);
+        }
 
         /**
          * @brief Convert the bounds on the control inputs w to bounds on the control
@@ -101,10 +128,13 @@ namespace galileo
          * @param[out] u_lb   Control parameters lower bound
          * @param[out] u_ub   Control parameters upper bound
          */
-        virtual void convertBounds(const Eigen::Ref<const VectorXs> &w_lb,
-                                   const Eigen::Ref<const VectorXs> &w_ub,
-                                   Eigen::Ref<VectorXs> u_lb,
-                                   Eigen::Ref<VectorXs> u_ub) const = 0;
+        void convertBounds(const Eigen::Ref<const VectorXs_t> &w_lb,
+                           const Eigen::Ref<const VectorXs_t> &w_ub,
+                           Eigen::Ref<VectorXs_t> u_lb,
+                           Eigen::Ref<VectorXs_t> u_ub) const
+        {
+            derived().convertBounds(w_lb, w_ub, u_lb, u_ub);
+        }
 
         /**
          * @brief Compute the product between the given matrix A and the derivative of
@@ -119,14 +149,20 @@ namespace galileo
          * @param[in] op      Assignment operator which sets, adds, or removes the
          * given results
          */
-        virtual void multiplyByJacobian(
+        void multiplyByJacobian(
             const boost::shared_ptr<ControlParametrizationDataAbstract> &data,
-            const Eigen::Ref<const MatrixXs> &A, Eigen::Ref<MatrixXs> out,
-            const AssignmentOp = setto) const = 0;
+            const Eigen::Ref<const MatrixXs_t> &A, Eigen::Ref<MatrixXs_t> out,
+            const AssignmentOp = setto) const
+        {
+            derived().multiplyByJacobian(data, A, out);
+        }
 
-        virtual MatrixXs multiplyByJacobian_J(
+        MatrixXs_t multiplyByJacobian_J(
             const boost::shared_ptr<ControlParametrizationDataAbstract> &data,
-            const Eigen::Ref<const MatrixXs> &A, const AssignmentOp = setto) const;
+            const Eigen::Ref<const MatrixXs_t> &A, const AssignmentOp = setto) const
+        {
+            return derived().multiplyByJacobian_J(data, A);
+        }
 
         /**
          * @brief Compute the product between the transpose of the derivative of the
@@ -142,62 +178,93 @@ namespace galileo
          * @param[in] op      Assignment operator which sets, adds, or removes the
          * given results
          */
-        virtual void multiplyJacobianTransposeBy(
+        void multiplyJacobianTransposeBy(
             const boost::shared_ptr<ControlParametrizationDataAbstract> &data,
-            const Eigen::Ref<const MatrixXs> &A, Eigen::Ref<MatrixXs> out,
-            const AssignmentOp = setto) const = 0;
+            const Eigen::Ref<const MatrixXs_t> &A, Eigen::Ref<MatrixXs_t> out,
+            const AssignmentOp = setto) const
+        {
+            derived().multiplyJacobianTransposeBy(data, A, out);
+        }
 
-        virtual MatrixXs multiplyJacobianTransposeBy_J(
+        MatrixXs_t multiplyJacobianTransposeBy_J(
             const boost::shared_ptr<ControlParametrizationDataAbstract> &data,
-            const Eigen::Ref<const MatrixXs> &A, const AssignmentOp = setto) const;
+            const Eigen::Ref<const MatrixXs_t> &A, const AssignmentOp = setto) const
+        {
+            return derived().multiplyJacobianTransposeBy_J(data, A);
+        }
 
         /**
          * @brief Checks that a specific data belongs to this model
          */
-        virtual bool checkData(
-            const boost::shared_ptr<ControlParametrizationDataAbstract> &data);
+        bool checkData(
+            const boost::shared_ptr<ControlParametrizationDataAbstract> &data)
+        {
+            return derived().checkData(data);
+        }
 
         /**
          * @brief Return the dimension of the control inputs
          */
-        std::size_t get_nw() const;
+        std::size_t get_nw() const
+        {
+            return derived().get_nw();
+        }
 
         /**
          * @brief Return the dimension of control parameters
          */
-        std::size_t get_nu() const;
+        std::size_t get_nu() const
+        {
+            return derived().get_nu();
+        }
 
     protected:
+        // Default constructor: protected.
+        // Prevent the construction of stand-alone ControlModelBase.
+        inline ControlModelBase() : nw_(0), nu_(0)
+        {
+        }
+
+        // Copy constructor: protected.
+        // Copy of stand-alone ControlModelBase are prevented, but can be used from inheriting
+        // objects. Copy is done by calling copy operator.
+        inline ControlModelBase(const ControlModelBase &clone)
+        {
+            *this = clone;
+        }
+
+        // Copy operator: protected.
+        // Copy of stand-alone ControlModelBase are prevented, but can be used from inheriting
+        // objects.
+        inline ControlModelBase &operator=(const ControlModelBase &clone)
+        {
+            nw_ = clone.nw_;
+            nu_ = clone.nu_;
+            return *this;
+        }
+
         std::size_t nw_; //!< Control dimension
         std::size_t nu_; //!< Control parameters dimension
     };
 
-    template <typename _Scalar>
-    struct ControlParametrizationDataAbstractTpl
+    template <typename Derived>
+    struct ControlDataBase : NumericalBase<Derived>
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef _Scalar Scalar;
-        typedef MathBaseTpl<Scalar> MathBase;
-        typedef typename MathBase::VectorXs VectorXs;
-        typedef typename MathBase::MatrixXs MatrixXs;
+        typedef typename traits<Derived>::ControlDerived ControlDerived;
+        GALILEO_CONTROL_TYPEDEF_TEMPLATE(ControlDerived);
 
-        template <template <typename Scalar> class Model>
-        explicit ControlParametrizationDataAbstractTpl(Model<Scalar> *const model)
-            : w(model->get_nw()),
-              u(model->get_nu()),
-              dw_du(model->get_nw(), model->get_nu())
+        VectorXs_t w;     //!< value of the differential control
+        VectorXs_t u;     //!< value of the control parameters
+        MatrixXs_t dw_du; //!< Jacobian of the differential control with respect to the
+                          //!< parameters
+
+    protected:
+        // Default constructor: protected.
+        inline ControlDataBase()
         {
-            w.setZero();
-            u.setZero();
-            dw_du.setZero();
         }
-        virtual ~ControlParametrizationDataAbstractTpl() {}
-
-        VectorXs w;     //!< value of the differential control
-        VectorXs u;     //!< value of the control parameters
-        MatrixXs dw_du; //!< Jacobian of the differential control with respect to the
-                        //!< parameters
     };
 
-}
+} // namespace galileo
