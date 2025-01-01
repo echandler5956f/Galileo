@@ -8,8 +8,6 @@
     typedef TYPENAME traits<Node>::Scalar Scalar;                     \
     typedef TYPENAME traits<Node>::NodeModelDerived NodeModelDerived; \
     typedef TYPENAME traits<Node>::NodeDataDerived NodeDataDerived;   \
-    typedef TYPENAME traits<Node>::State_t State_t;                   \
-    typedef TYPENAME traits<Node>::Control_t Control_t;               \
     enum                                                              \
     {                                                                 \
         Options = traits<Node>::Options,                              \
@@ -110,44 +108,59 @@ namespace galileo
             derived().calcDiff(data, xs.derived());
         }
 
-        X_t &get_x_lb()
+        const X_t &get_x_lb() const
         {
             return derived().get_x_lb();
         }
 
-        X_t &get_x_ub()
+        const X_t &get_x_ub() const
         {
             return derived().get_x_ub();
         }
 
-        U_t &get_u_lb()
+        const U_t &get_u_lb() const
         {
             return derived().get_u_lb();
         }
 
-        U_t &get_u_ub()
+        const U_t &get_u_ub() const
         {
             return derived().get_u_ub();
         }
 
-        H_t &get_h_lb()
+        const H_t &get_h_lb() const
         {
             return derived().get_h_lb();
         }
 
-        H_t &get_h_ub()
+        const H_t &get_h_ub() const
         {
             return derived().get_h_ub();
         }
 
-        G_t &get_g_lb()
+        const G_t &get_g_lb() const
         {
             return derived().get_g_lb();
         }
 
-        G_t &get_g_ub()
+        const G_t &get_g_ub() const
         {
             return derived().get_g_ub();
+        }
+
+        size_t get_nh() const
+        {
+            return derived().get_nh();
+        }
+
+        size_t get_ng() const
+        {
+            return derived().get_ng();
+        }
+
+        size_t get_id() const
+        {
+            return derived().get_id();
         }
 
         template <typename StateVectorType>
@@ -198,6 +211,21 @@ namespace galileo
             derived().set_g_ub(g_ub);
         }
 
+        void set_nh(size_t nh)
+        {
+            derived().set_nh(nh);
+        }
+
+        void set_ng(size_t ng)
+        {
+            derived().set_ng(ng);
+        }
+
+        void set_id(size_t id)
+        {
+            derived().set_id(id);
+        }
+
         template <typename NewScalar>
         typename CastType<NewScalar, Derived>::type cast() const
         {
@@ -230,7 +258,7 @@ namespace galileo
     protected:
         // Default constructor: protected.
         // Prevent the construction of stand-alone NodeModelBase.
-        inline NodeModelBase() : nh_(std::numeric_limits<std::size_t>::max()), ng_(std::numeric_limits<std::size_t>::max())
+        inline NodeModelBase() : nh_(std::numeric_limits<std::size_t>::max()), ng_(std::numeric_limits<std::size_t>::max(), id_(std::numeric_limits<std::size_t>::max()))
         {
         }
 
@@ -260,6 +288,8 @@ namespace galileo
 
             nh_ = clone.nh_;
             ng_ = clone.ng_;
+
+            id_ = clone.id_;
             return *this;
         }
 
@@ -276,6 +306,8 @@ namespace galileo
 
         std::size_t nh_; // Number of equality constraints
         std::size_t ng_; // Number of inequality constraints
+
+        std::size_t id_; // Index of the node in the segment list
 
     }; // class NodeModelBase
 

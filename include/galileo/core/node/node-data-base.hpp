@@ -4,45 +4,41 @@
 #include "galileo/core/node/node-base.hpp"
 #include "galileo/core/node/node-model-base.hpp"
 
-#define GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, TYPENAME)                   \
-    GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, TYPENAME);                     \
-    typedef TYPENAME traits<Node>::StateTypeConstRef StateTypeConstRef;     \
-    typedef TYPENAME traits<Node>::StateTypeRef StateTypeRef;               \
-    typedef TYPENAME traits<Node>::ControlTypeConstRef ControlTypeConstRef; \
-    typedef TYPENAME traits<Node>::ControlTypeRef ControlTypeRef;           \
-    typedef TYPENAME traits<Node>::XTypeConstRef XTypeConstRef;             \
-    typedef TYPENAME traits<Node>::XTypeRef XTypeRef;                       \
-    typedef TYPENAME traits<Node>::dXTypeConstRef dXTypeConstRef;           \
-    typedef TYPENAME traits<Node>::dXTypeRef dXTypeRef;                     \
-    typedef TYPENAME traits<Node>::UTypeConstRef UTypeConstRef;             \
-    typedef TYPENAME traits<Node>::UTypeRef UTypeRef;                       \
-    typedef TYPENAME traits<Node>::FxTypeConstRef FxTypeConstRef;           \
-    typedef TYPENAME traits<Node>::FxTypeRef FxTypeRef;                     \
-    typedef TYPENAME traits<Node>::FuTypeConstRef FuTypeConstRef;           \
-    typedef TYPENAME traits<Node>::FuTypeRef FuTypeRef;                     \
-    typedef TYPENAME traits<Node>::LTypeConstRef LTypeConstRef;             \
-    typedef TYPENAME traits<Node>::LTypeRef LTypeRef;                       \
-    typedef TYPENAME traits<Node>::LxTypeConstRef LxTypeConstRef;           \
-    typedef TYPENAME traits<Node>::LxTypeRef LxTypeRef;                     \
-    typedef TYPENAME traits<Node>::LuTypeConstRef LuTypeConstRef;           \
-    typedef TYPENAME traits<Node>::LuTypeRef LuTypeRef;                     \
-    typedef TYPENAME traits<Node>::LxxTypeConstRef LxxTypeConstRef;         \
-    typedef TYPENAME traits<Node>::LxxTypeRef LxxTypeRef;                   \
-    typedef TYPENAME traits<Node>::LxuTypeConstRef LxuTypeConstRef;         \
-    typedef TYPENAME traits<Node>::LxuTypeRef LxuTypeRef;                   \
-    typedef TYPENAME traits<Node>::LuuTypeConstRef LuuTypeConstRef;         \
-    typedef TYPENAME traits<Node>::LuuTypeRef LuuTypeRef;                   \
-    typedef TYPENAME traits<Node>::HTypeConstRef HTypeConstRef;             \
-    typedef TYPENAME traits<Node>::HTypeRef HTypeRef;                       \
-    typedef TYPENAME traits<Node>::HxTypeConstRef HxTypeConstRef;           \
-    typedef TYPENAME traits<Node>::HxTypeRef HxTypeRef;                     \
-    typedef TYPENAME traits<Node>::HuTypeConstRef HuTypeConstRef;           \
-    typedef TYPENAME traits<Node>::HuTypeRef HuTypeRef;                     \
-    typedef TYPENAME traits<Node>::GTypeConstRef GTypeConstRef;             \
-    typedef TYPENAME traits<Node>::GTypeRef GTypeRef;                       \
-    typedef TYPENAME traits<Node>::GxTypeConstRef GxTypeConstRef;           \
-    typedef TYPENAME traits<Node>::GxTypeRef GxTypeRef;                     \
-    typedef TYPENAME traits<Node>::GuTypeConstRef GuTypeConstRef;           \
+#define GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, TYPENAME)           \
+    GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, TYPENAME);             \
+    typedef TYPENAME traits<Node>::XTypeConstRef XTypeConstRef;     \
+    typedef TYPENAME traits<Node>::XTypeRef XTypeRef;               \
+    typedef TYPENAME traits<Node>::dXTypeConstRef dXTypeConstRef;   \
+    typedef TYPENAME traits<Node>::dXTypeRef dXTypeRef;             \
+    typedef TYPENAME traits<Node>::UTypeConstRef UTypeConstRef;     \
+    typedef TYPENAME traits<Node>::UTypeRef UTypeRef;               \
+    typedef TYPENAME traits<Node>::FxTypeConstRef FxTypeConstRef;   \
+    typedef TYPENAME traits<Node>::FxTypeRef FxTypeRef;             \
+    typedef TYPENAME traits<Node>::FuTypeConstRef FuTypeConstRef;   \
+    typedef TYPENAME traits<Node>::FuTypeRef FuTypeRef;             \
+    typedef TYPENAME traits<Node>::LTypeConstRef LTypeConstRef;     \
+    typedef TYPENAME traits<Node>::LTypeRef LTypeRef;               \
+    typedef TYPENAME traits<Node>::LxTypeConstRef LxTypeConstRef;   \
+    typedef TYPENAME traits<Node>::LxTypeRef LxTypeRef;             \
+    typedef TYPENAME traits<Node>::LuTypeConstRef LuTypeConstRef;   \
+    typedef TYPENAME traits<Node>::LuTypeRef LuTypeRef;             \
+    typedef TYPENAME traits<Node>::LxxTypeConstRef LxxTypeConstRef; \
+    typedef TYPENAME traits<Node>::LxxTypeRef LxxTypeRef;           \
+    typedef TYPENAME traits<Node>::LxuTypeConstRef LxuTypeConstRef; \
+    typedef TYPENAME traits<Node>::LxuTypeRef LxuTypeRef;           \
+    typedef TYPENAME traits<Node>::LuuTypeConstRef LuuTypeConstRef; \
+    typedef TYPENAME traits<Node>::LuuTypeRef LuuTypeRef;           \
+    typedef TYPENAME traits<Node>::HTypeConstRef HTypeConstRef;     \
+    typedef TYPENAME traits<Node>::HTypeRef HTypeRef;               \
+    typedef TYPENAME traits<Node>::HxTypeConstRef HxTypeConstRef;   \
+    typedef TYPENAME traits<Node>::HxTypeRef HxTypeRef;             \
+    typedef TYPENAME traits<Node>::HuTypeConstRef HuTypeConstRef;   \
+    typedef TYPENAME traits<Node>::HuTypeRef HuTypeRef;             \
+    typedef TYPENAME traits<Node>::GTypeConstRef GTypeConstRef;     \
+    typedef TYPENAME traits<Node>::GTypeRef GTypeRef;               \
+    typedef TYPENAME traits<Node>::GxTypeConstRef GxTypeConstRef;   \
+    typedef TYPENAME traits<Node>::GxTypeRef GxTypeRef;             \
+    typedef TYPENAME traits<Node>::GuTypeConstRef GuTypeConstRef;   \
     typedef TYPENAME traits<Node>::GuTypeRef GuTypeRef;
 
 #ifdef __clang__
@@ -68,128 +64,128 @@
 #endif
 
 #define GALILEO_NODE_DATA_BASE_DEFAULT_ACCESSOR \
-    dXTypeConstRef xdot_accessor() const        \
+    dXTypeConstRef XDot_accessor() const        \
     {                                           \
-        return xdot;                            \
+        return XDot;                            \
     }                                           \
-    dXTypeRef xdot_accessor()                   \
+    dXTypeRef XDot_accessor()                   \
     {                                           \
-        return xdot;                            \
+        return XDot;                            \
     }                                           \
-    FxTypeConstRef fx_accessor() const          \
+    FxTypeConstRef Fx_accessor() const          \
     {                                           \
-        return fx;                              \
+        return Fx;                              \
     }                                           \
-    FxTypeRef fx_accessor()                     \
+    FxTypeRef Fx_accessor()                     \
     {                                           \
-        return fx;                              \
+        return Fx;                              \
     }                                           \
-    FuTypeConstRef fu_accessor() const          \
+    FuTypeConstRef Fu_accessor() const          \
     {                                           \
-        return fu;                              \
+        return Fu;                              \
     }                                           \
-    FuTypeRef fu_accessor()                     \
+    FuTypeRef Fu_accessor()                     \
     {                                           \
-        return fu;                              \
+        return Fu;                              \
     }                                           \
-    LTypeConstRef l_accessor() const            \
-    {                                           \
-        return L;                               \
-    }                                           \
-    LTypeRef l_accessor()                       \
+    LTypeConstRef L_accessor() const            \
     {                                           \
         return L;                               \
     }                                           \
-    LxTypeConstRef lx_accessor() const          \
+    LTypeRef L_accessor()                       \
+    {                                           \
+        return L;                               \
+    }                                           \
+    LxTypeConstRef Lx_accessor() const          \
     {                                           \
         return Lx;                              \
     }                                           \
-    LxTypetRef lx_accessor()                    \
+    LxTypetRef Lx_accessor()                    \
     {                                           \
         return Lx;                              \
     }                                           \
-    LuTypeConstRef lu_accessor() const          \
+    LuTypeConstRef Lu_accessor() const          \
     {                                           \
         return Lu;                              \
     }                                           \
-    LuTypeRef lu_accessor()                     \
+    LuTypeRef Lu_accessor()                     \
     {                                           \
         return Lu;                              \
     }                                           \
-    LxxTypeConstRef lxx_accessor() const        \
+    LxxTypeConstRef Lxx_accessor() const        \
     {                                           \
         return Lxx;                             \
     }                                           \
-    LxxTypeRef lxx_accessor()                   \
+    LxxTypeRef Lxx_accessor()                   \
     {                                           \
         return Lxx;                             \
     }                                           \
-    LxuTypeConstRef lxu_accessor() const        \
+    LxuTypeConstRef Lxu_accessor() const        \
     {                                           \
         return Lxu;                             \
     }                                           \
-    LxuTypeRef lxu_accessor()                   \
+    LxuTypeRef Lxu_accessor()                   \
     {                                           \
         return Lxu;                             \
     }                                           \
-    LuuTypeConstRef luu_accessor() const        \
+    LuuTypeConstRef Luu_accessor() const        \
     {                                           \
         return Luu;                             \
     }                                           \
-    LuuTypeRef luu_accessor()                   \
+    LuuTypeRef Luu_accessor()                   \
     {                                           \
         return Luu;                             \
     }                                           \
-    HTypeConstRef h_accessor() const            \
+    HTypeConstRef H_accessor() const            \
     {                                           \
-        return h;                               \
+        return H;                               \
     }                                           \
-    HTypeRef h_accessor()                       \
+    HTypeRef H_accessor()                       \
     {                                           \
-        return h;                               \
+        return H;                               \
     }                                           \
-    HxTypeConstRef hx_accessor() const          \
-    {                                           \
-        return Hx;                              \
-    }                                           \
-    HxTypeRef hx_accessor()                     \
+    HxTypeConstRef Hx_accessor() const          \
     {                                           \
         return Hx;                              \
     }                                           \
-    HuTypeConstRef hu_accessor() const          \
+    HxTypeRef Hx_accessor()                     \
+    {                                           \
+        return Hx;                              \
+    }                                           \
+    HuTypeConstRef Hu_accessor() const          \
     {                                           \
         return Hu;                              \
     }                                           \
-    HuTypeRef hu_accessor()                     \
+    HuTypeRef Hu_accessor()                     \
     {                                           \
         return Hu;                              \
     }                                           \
-    GTypeConstRef g_accessor() const            \
+    GTypeConstRef G_accessor() const            \
     {                                           \
-        return g;                               \
+        return G;                               \
     }                                           \
-    GTypeRef g_accessor()                       \
+    GTypeRef G_accessor()                       \
     {                                           \
-        return g;                               \
+        return G;                               \
     }                                           \
-    GxTypeConstRef gx_accessor() const          \
-    {                                           \
-        return Gx;                              \
-    }                                           \
-    GxTypeRef gx_accessor()                     \
+    GxTypeConstRef Gx_accessor() const          \
     {                                           \
         return Gx;                              \
     }                                           \
-    GuTypeConstRef gu_accessor() const          \
+    GxTypeRef Gx_accessor()                     \
+    {                                           \
+        return Gx;                              \
+    }                                           \
+    GuTypeConstRef Gu_accessor() const          \
     {                                           \
         return Gu;                              \
     }                                           \
-    GuTypeRef gu_accessor()                     \
+    GuTypeRef Gu_accessor()                     \
     {                                           \
         return Gu;                              \
     }
 
-// dX_t xdot; // xdot at x, u
+// dX_t XDot; // XDot at x, u
 // MatrixXs_t Fx;   // Jacobian of the dynamics w.r.t. the state \f$\mathbf{x}\f$
 // MatrixXs_t Fu;   // Jacobian of the dynamics w.r.t. the control \f$\mathbf{u}\f$
 
@@ -269,139 +265,139 @@ namespace galileo
             return *static_cast<const Derived *>(this);
         }
 
-        dXTypeConstRef xdot() const
+        dXTypeConstRef XDot() const
         {
-            return derived().xdot_accessor();
+            return derived().XDot_accessor();
         }
-        dXTypeRef xdot()
+        dXTypeRef XDot()
         {
-            return derived().xdot_accessor();
-        }
-
-        FxTypeConstRef fx() const
-        {
-            return derived().fx_accessor();
-        }
-        FxTypeRef fx()
-        {
-            return derived().fx_accessor();
+            return derived().XDot_accessor();
         }
 
-        FuTypeConstRef fu() const
+        FxTypeConstRef Fx() const
         {
-            return derived().fu_accessor();
+            return derived().Fx_accessor();
         }
-        FuTypeRef fu()
+        FxTypeRef Fx()
         {
-            return derived().fu_accessor();
-        }
-
-        LTypeConstRef l() const
-        {
-            return derived().l_accessor();
-        }
-        LTypeRef l()
-        {
-            return derived().l_accessor();
+            return derived().Fx_accessor();
         }
 
-        LxTypeConstRef lx() const
+        FuTypeConstRef Fu() const
         {
-            return derived().lx_accessor();
+            return derived().Fu_accessor();
         }
-        LxTypeRef lx()
+        FuTypeRef Fu()
         {
-            return derived().lx_accessor();
-        }
-
-        LuTypeConstRef lu() const
-        {
-            return derived().lu_accessor();
-        }
-        LuTypeRef lu()
-        {
-            return derived().lu_accessor();
+            return derived().Fu_accessor();
         }
 
-        LxxTypeConstRef lxx() const
+        LTypeConstRef L() const
         {
-            return derived().lxx_accessor();
+            return derived().L_accessor();
         }
-        LxxTypeRef lxx()
+        LTypeRef L()
         {
-            return derived().lxx_accessor();
-        }
-
-        LxuTypeConstRef lxu() const
-        {
-            return derived().lxu_accessor();
-        }
-        LxuTypeRef lxu()
-        {
-            return derived().lxu_accessor();
+            return derived().L_accessor();
         }
 
-        LuuTypeConstRef luu() const
+        LxTypeConstRef Lx() const
         {
-            return derived().luu_accessor();
+            return derived().Lx_accessor();
         }
-        LuuTypeRef luu()
+        LxTypeRef Lx()
         {
-            return derived().luu_accessor();
-        }
-
-        HTypeConstRef h() const
-        {
-            return derived().h_accessor();
-        }
-        HTypeRef h()
-        {
-            return derived().h_accessor();
+            return derived().Lx_accessor();
         }
 
-        HxTypeConstRef hx() const
+        LuTypeConstRef Lu() const
         {
-            return derived().hx_accessor();
+            return derived().Lu_accessor();
         }
-        HxTypeRef hx()
+        LuTypeRef Lu()
         {
-            return derived().hx_accessor();
-        }
-
-        HuTypeConstRef hu() const
-        {
-            return derived().hu_accessor();
-        }
-        HuTypeRef hu()
-        {
-            return derived().hu_accessor();
+            return derived().Lu_accessor();
         }
 
-        GTypeConstRef g() const
+        LxxTypeConstRef Lxx() const
         {
-            return derived().g_accessor();
+            return derived().Lxx_accessor();
         }
-        GTypeRef g()
+        LxxTypeRef Lxx()
         {
-            return derived().g_accessor();
-        }
-
-        GxTypeConstRef gx() const
-        {
-            return derived().gx_accessor();
-        }
-        GxTypeRef gx()
-        {
-            return derived().gx_accessor();
+            return derived().Lxx_accessor();
         }
 
-        GuTypeConstRef gu() const
+        LxuTypeConstRef Lxu() const
         {
-            return derived().gu_accessor();
+            return derived().Lxu_accessor();
         }
-        GuTypeRef gu()
+        LxuTypeRef Lxu()
         {
-            return derived().gu_accessor();
+            return derived().Lxu_accessor();
+        }
+
+        LuuTypeConstRef Luu() const
+        {
+            return derived().Luu_accessor();
+        }
+        LuuTypeRef Luu()
+        {
+            return derived().Luu_accessor();
+        }
+
+        HTypeConstRef H() const
+        {
+            return derived().H_accessor();
+        }
+        HTypeRef H()
+        {
+            return derived().H_accessor();
+        }
+
+        HxTypeConstRef Hx() const
+        {
+            return derived().Hx_accessor();
+        }
+        HxTypeRef Hx()
+        {
+            return derived().Hx_accessor();
+        }
+
+        HuTypeConstRef Hu() const
+        {
+            return derived().Hu_accessor();
+        }
+        HuTypeRef Hu()
+        {
+            return derived().Hu_accessor();
+        }
+
+        GTypeConstRef G() const
+        {
+            return derived().G_accessor();
+        }
+        GTypeRef G()
+        {
+            return derived().G_accessor();
+        }
+
+        GxTypeConstRef Gx() const
+        {
+            return derived().Gx_accessor();
+        }
+        GxTypeRef Gx()
+        {
+            return derived().Gx_accessor();
+        }
+
+        GuTypeConstRef Gu() const
+        {
+            return derived().Gu_accessor();
+        }
+        GuTypeRef Gu()
+        {
+            return derived().Gu_accessor();
         }
 
         // template <typename OtherDerived>

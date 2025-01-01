@@ -12,7 +12,10 @@ namespace galileo
 {
 
     template <typename _Scalar, int _Options>
-    struct JointCollectionDefaultTpl;
+    struct NodeCollectionDefaultTpl;
+
+    template <typename _Scalar, int _Options>
+    struct SegmentCollectionDefaultTpl;
 
     namespace context
     {
