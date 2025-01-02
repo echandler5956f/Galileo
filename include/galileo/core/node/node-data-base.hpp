@@ -6,12 +6,8 @@
 
 #define GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, TYPENAME)           \
     GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, TYPENAME);             \
-    typedef TYPENAME traits<Node>::XTypeConstRef XTypeConstRef;     \
-    typedef TYPENAME traits<Node>::XTypeRef XTypeRef;               \
     typedef TYPENAME traits<Node>::dXTypeConstRef dXTypeConstRef;   \
     typedef TYPENAME traits<Node>::dXTypeRef dXTypeRef;             \
-    typedef TYPENAME traits<Node>::UTypeConstRef UTypeConstRef;     \
-    typedef TYPENAME traits<Node>::UTypeRef UTypeRef;               \
     typedef TYPENAME traits<Node>::FxTypeConstRef FxTypeConstRef;   \
     typedef TYPENAME traits<Node>::FxTypeRef FxTypeRef;             \
     typedef TYPENAME traits<Node>::FuTypeConstRef FuTypeConstRef;   \
@@ -209,41 +205,37 @@
 // MatrixXs_t Hu; // Jacobian of the equality constraint w.r.t the control
 //                // \f$\mathbf{u}\f$
 
-#define GALILEO_NODE_DATA_BASE_ACCESSOR_DEFAULT_RETURN_TYPE       \
-    typedef const X_t &XTypeConstRef;                             \
-    typedef X_t &XTypeRef;                                        \
-    typedef const dX_t &dXTypeConstRef;                           \
-    typedef dX_t &dXTypeRef;                                      \
-    typedef const U_t &UTypeConstRef;                             \
-    typedef U_t &UTypeRef;                                        \
-    tyedef const H_t &HTypeConstRef;                              \
-    typedef H_t &HTypeRef;                                        \
-    typedef const G_t &GTypeConstRef;                             \
-    typedef G_t &GTypeRef;                                        \
-    typedef const Eigen::Matrix<Scalar, NDX, NX> &FxTypeConstRef; \
-    typedef Eigen::Matrix<Scalar, NDX, NX> &FxTypeRef;            \
-    typedef const Eigen::Matrix<Scalar, NDX, NU> &FuTypeConstRef; \
-    typedef Eigen::Matrix<Scalar, NDX, NU> &FuTypeRef;            \
-    typedef const Scalar &LTypeConstRef;                          \
-    typedef Scalar &LTypeRef;                                     \
-    typedef const Eigen::Matrix<Scalar, 1, NX> &LxTypeConstRef;   \
-    typedef Eigen::Matrix<Scalar, 1, NX> &LxTypeRef;              \
-    typedef const Eigen::Matrix<Scalar, 1, NU> &LuTypeConstRef;   \
-    typedef Eigen::Matrix<Scalar, 1, NU> &LuTypeRef;              \
-    typedef const Eigen::Matrix<Scalar, NX, NX> &LxxTypeConstRef; \
-    typedef Eigen::Matrix<Scalar, NX, NX> &LxxTypeRef;            \
-    typedef const Eigen::Matrix<Scalar, NX, NU> &LxuTypeConstRef; \
-    typedef Eigen::Matrix<Scalar, NX, NU> &LxuTypeRef;            \
-    typedef const Eigen::Matrix<Scalar, NU, NU> &LuuTypeConstRef; \
-    typedef Eigen::Matrix<Scalar, NU, NU> &LuuTypeRef;            \
-    typedef const Eigen::Matrix<Scalar, NH, NX> &HxTypeConstRef;  \
-    typedef Eigen::Matrix<Scalar, NH, NX> &HxTypeRef;             \
-    typedef const Eigen::Matrix<Scalar, NH, NU> &HuTypeConstRef;  \
-    typedef Eigen::Matrix<Scalar, NH, NU> &HuTypeRef;             \
-    typedef const Eigen::Matrix<Scalar, NG, NX> &GxTypeConstRef;  \
-    typedef Eigen::Matrix<Scalar, NG, NX> &GxTypeRef;             \
-    typedef const Eigen::Matrix<Scalar, NG, NU> &GuTypeConstRef;  \
-    typedef Eigen::Matrix<Scalar, NG, NU> &GuTypeRef;
+#define GALILEO_NODE_DATA_BASE_ACCESSOR_DEFAULT_RETURN_TYPE \
+    typedef const dX_t &dXTypeConstRef;                     \
+    typedef dX_t &dXTypeRef;                                \
+    typedef const Fx_t &FxTypeConstRef;                     \
+    typedef Fx_t &FxTypeRef;                                \
+    typedef const Fu_t &FuTypeConstRef;                     \
+    typedef Fu_t &FuTypeRef;                                \
+    typedef const L_t &LTypeConstRef;                       \
+    typedef L_t &LTypeRef;                                  \
+    typedef const Lx_t &LxTypeConstRef;                     \
+    typedef Lx_t &LxTypeRef;                                \
+    typedef const Lu_t &LuTypeConstRef;                     \
+    typedef Lu_t &LuTypeRef;                                \
+    typedef const Lxx_t &LxxTypeConstRef;                   \
+    typedef Lxx_t &LxxTypeRef;                              \
+    typedef const Lxu_t &LxuTypeConstRef;                   \
+    typedef Lxu_t &LxuTypeRef;                              \
+    typedef const Luu_t &LuuTypeConstRef;                   \
+    typedef Luu_t &LuuTypeRef;                              \
+    typedef const H_t &HTypeConstRef;                       \
+    typedef H_t &HTypeRef;                                  \
+    typedef const Hx_t &HxTypeConstRef;                     \
+    typedef Hx_t &HxTypeRef;                                \
+    typedef const Hu_t &HuTypeConstRef;                     \
+    typedef Hu_t &HuTypeRef;                                \
+    typedef const G_t &GTypeConstRef;                       \
+    typedef G_t &GTypeRef;                                  \
+    typedef const Gx_t &GxTypeConstRef;                     \
+    typedef Gx_t &GxTypeRef;                                \
+    typedef const Gu_t &GuTypeConstRef;                     \
+    typedef Gu_t &GuTypeRef;
 
 namespace galileo
 {

@@ -12,16 +12,28 @@
     {                                                                 \
         Options = traits<Node>::Options,                              \
         NX = traits<Node>::NX,                                        \
-        NDX = traits<Node>::NDX,                                      \
         NU = traits<Node>::NU,                                        \
+        NDX = traits<Node>::NDX,                                      \
         NH = traits<Node>::NH,                                        \
         NG = traits<Node>::NG                                         \
     };                                                                \
     typedef TYPENAME traits<Node>::X_t X_t;                           \
-    typedef TYPENAME traits<Node>::dX_t dX_t;                         \
     typedef TYPENAME traits<Node>::U_t U_t;                           \
+    typedef TYPENAME traits<Node>::dX_t dX_t;                         \
+    typedef TYPENAME traits<Node>::Fx_t Fx_t;                         \
+    typedef TYPENAME traits<Node>::Fu_t Fu_t;                         \
+    typedef TYPENAME traits<Node>::L_t L_t;                           \
+    typedef TYPENAME traits<Node>::Lx_t Lx_t;                         \
+    typedef TYPENAME traits<Node>::Lu_t Lu_t;                         \
+    typedef TYPENAME traits<Node>::Lxx_t Lxx_t;                       \
+    typedef TYPENAME traits<Node>::Lxu_t Lxu_t;                       \
+    typedef TYPENAME traits<Node>::Luu_t Luu_t;                       \
     typedef TYPENAME traits<Node>::H_t H_t;                           \
-    typedef TYPENAME traits<Node>::G_t G_t;
+    typedef TYPENAME traits<Node>::Hx_t Hx_t;                         \
+    typedef TYPENAME traits<Node>::Hu_t Hu_t;                         \
+    typedef TYPENAME traits<Node>::G_t G_t;                           \
+    typedef TYPENAME traits<Node>::Gx_t Gx_t;                         \
+    typedef TYPENAME traits<Node>::Gu_t Gu_t;
 
 #ifdef __clang__
 
@@ -86,7 +98,7 @@ namespace galileo
             derived().calc(data, xs.derived(), us.derived());
         }
 
-        template <typename StateVectorType, typename ControlVectorType>
+        template <typename StateVectorType>
         void calc(NodeDataDerived &data,
                   const Eigen::MatrixBase<StateVectorType> &xs) const
         {
@@ -101,7 +113,7 @@ namespace galileo
             derived().calcDiff(data, xs.derived(), us.derived());
         }
 
-        template <typename StateVectorType, typename ControlVectorType>
+        template <typename StateVectorType>
         void calcDiff(NodeDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &xs) const
         {
@@ -148,41 +160,41 @@ namespace galileo
             return derived().get_g_ub();
         }
 
-        size_t get_nh() const
+        Eigen::Index get_nh() const
         {
             return derived().get_nh();
         }
 
-        size_t get_ng() const
+        Eigen::Index get_ng() const
         {
             return derived().get_ng();
         }
 
-        size_t get_id() const
+        Eigen::Index get_id() const
         {
             return derived().get_id();
         }
 
-        template <typename StateVectorType>
-        void set_x_lb(const Eigen::MatrixBase<StateVectorType> &x_lb)
+        template <typename StateBoundVectorType>
+        void set_x_lb(const Eigen::MatrixBase<StateBoundVectorType> &x_lb)
         {
             derived().set_x_lb(x_lb);
         }
 
-        template <typename StateVectorType>
-        void set_x_ub(const Eigen::MatrixBase<StateVectorType> &x_ub)
+        template <typename StateBoundVectorType>
+        void set_x_ub(const Eigen::MatrixBase<StateBoundVectorType> &x_ub)
         {
             derived().set_x_ub(x_ub);
         }
 
-        template <typename ControlVectorType>
-        void set_u_lb(const Eigen::MatrixBase<ControlVectorType> &u_lb)
+        template <typename ControlBoundVectorType>
+        void set_u_lb(const Eigen::MatrixBase<ControlBoundVectorType> &u_lb)
         {
             derived().set_u_lb(u_lb);
         }
 
-        template <typename ControlVectorType>
-        void set_u_ub(const Eigen::MatrixBase<ControlVectorType> &u_ub)
+        template <typename ControlBoundVectorType>
+        void set_u_ub(const Eigen::MatrixBase<ControlBoundVectorType> &u_ub)
         {
             derived().set_u_ub(u_ub);
         }
@@ -211,17 +223,17 @@ namespace galileo
             derived().set_g_ub(g_ub);
         }
 
-        void set_nh(size_t nh)
+        void set_nh(Eigen::Index nh)
         {
             derived().set_nh(nh);
         }
 
-        void set_ng(size_t ng)
+        void set_ng(Eigen::Index ng)
         {
             derived().set_ng(ng);
         }
 
-        void set_id(size_t id)
+        void set_id(Eigen::Index id)
         {
             derived().set_id(id);
         }
@@ -258,7 +270,7 @@ namespace galileo
     protected:
         // Default constructor: protected.
         // Prevent the construction of stand-alone NodeModelBase.
-        inline NodeModelBase() : nh_(std::numeric_limits<std::size_t>::max()), ng_(std::numeric_limits<std::size_t>::max(), id_(std::numeric_limits<std::size_t>::max()))
+        inline NodeModelBase() : nh_(std::numeric_limits<Eigen::Index>::max()), ng_(std::numeric_limits<Eigen::Index>::max(), id_(std::numeric_limits<Eigen::Index>::max()))
         {
         }
 
@@ -304,10 +316,10 @@ namespace galileo
         G_t g_lb_; // Lower bound of the inequality constraints
         G_t g_ub_; // Upper bound of the inequality constraints
 
-        std::size_t nh_; // Number of equality constraints
-        std::size_t ng_; // Number of inequality constraints
+        Eigen::Index nh_; // Number of equality constraints
+        Eigen::Index ng_; // Number of inequality constraints
 
-        std::size_t id_; // Index of the node in the segment list
+        Eigen::Index id_; // Index of the node in the segment list
 
     }; // class NodeModelBase
 

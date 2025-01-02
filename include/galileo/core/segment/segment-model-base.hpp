@@ -124,7 +124,7 @@ namespace galileo
     protected:
         // Default constructor: protected.
         // Prevent the construction of stand-alone SegmentModelBase.
-        inline SegmentModelBase() : period_(std::numeric_limits<double>::quiet_NaN), num_nodes_(std::numeric_limits<size_t>::max()), integ_constraint_size_(std::numeric_limits<size_t>::max())
+        inline SegmentModelBase() : period_(std::numeric_limits<double>::quiet_NaN), num_nodes_(std::numeric_limits<Eigen::Index>::max()), integ_constraint_size_(std::numeric_limits<Eigen::Index>::max())
         {
         }
 
@@ -157,8 +157,8 @@ namespace galileo
         Control_t control_desc_; // control description
 
         Scalar period_;    // time period
-        size_t num_nodes_; // number of nodes
-        size_t nc_;        // number of integration constraints
+        Eigen::Index num_nodes_; // number of nodes
+        Eigen::Index nc_;        // number of integration constraints
 
     }; // class SegmentModelBase
 
