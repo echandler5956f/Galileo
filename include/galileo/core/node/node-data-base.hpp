@@ -241,21 +241,12 @@ namespace galileo
 {
 
     template <typename Derived>
-    struct NodeDataBase : NumericalBase<Derived>
+    struct NodeDataBase : CRTP<Derived>
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef typename traits<Derived>::NodeDerived NodeDerived;
+        using NodeDerived = typename traits<Derived>::NodeDerived;
         GALILEO_NODE_DATA_TYPEDEF_TEMPLATE(NodeDerived);
-
-        Derived &derived()
-        {
-            return *static_cast<Derived *>(this);
-        }
-        const Derived &derived() const
-        {
-            return *static_cast<const Derived *>(this);
-        }
 
         dXTypeConstRef XDot() const
         {

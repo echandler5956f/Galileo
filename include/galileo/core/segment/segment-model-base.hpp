@@ -61,24 +61,15 @@
 
 namespace galileo
 {
+    
     template <typename Derived>
-    class SegmentModelBase : NumericalBase<Derived>
+    class SegmentModelBase : CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef typename traits<Derived>::SegmentDerived SegmentDerived;
+        using SegmentDerived = typename traits<Derived>::SegmentDerived;
         GALILEO_SEGMENT_TYPEDEF_TEMPLATE(SegmentDerived);
-
-        SegmentModelDerived &derived()
-        {
-            return *static_cast<Derived *>(this);
-        }
-
-        const SegmentModelDerived &derived() const
-        {
-            return *static_cast<const Derived *>(this);
-        }
 
         SegmentDataDerived createData() const
         {

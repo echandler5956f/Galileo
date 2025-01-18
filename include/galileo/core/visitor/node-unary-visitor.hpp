@@ -11,6 +11,7 @@ namespace galileo
 {
     namespace fusion
     {
+
         // Base structure for Unary visitation of a NodeModel.
         // This structure provides runners to call the right visitor according to the number of
         // arguments.
@@ -131,7 +132,7 @@ namespace galileo
             template <typename NodeModel, typename ArgType>
             struct InternalVisitorModelAndData : public boost::static_visitor<ReturnType>
             {
-                typedef typename NodeModel::NodeDataDerived NodeData;
+                using NodeData = typename NodeModel::NodeDataDerived;
 
                 InternalVisitorModelAndData(NodeData &node_data, ArgType args)
                     : node_data(node_data), args(args)
@@ -163,7 +164,7 @@ namespace galileo
             struct InternalVisitorModelAndData<NodeModel, NoArg>
                 : public boost::static_visitor<ReturnType>
             {
-                typedef typename NodeModel::NodeDataDerived NodeData;
+                using NodeData = typename NodeModel::NodeDataDerived;
 
                 InternalVisitorModelAndData(NodeData &node_data)
                     : node_data(node_data)
@@ -235,6 +236,7 @@ namespace galileo
                     return NodeVisitorDerived::template algo<NodeDataDerived>(node_data.derived());
                 }
             };
+            
         }; // struct NodeUnaryVisitorBase
 
     } // namespace fusion

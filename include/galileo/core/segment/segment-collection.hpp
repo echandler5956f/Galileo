@@ -12,23 +12,18 @@ namespace galileo
     template <typename _Scalar, int _Options>
     struct SegmentCollectionDefaultTpl
     {
-        typedef _Scalar Scalar;
+        using Scalar = _Scalar;
         enum
         {
             Options = _Options
         };
 
-        typedef boost::variant<
-            SegmentModelVoid>
-            SegmentModelVariant;
-
-        typedef boost::variant<
-            SegmentDataVoid>
-            SegmentDataVariant;
+        using SegmentModelVariant = boost::variant<SegmentModelVoid>;
+        using SegmentDataVariant = boost::variant<SegmentDataVoid>;
     };
 
-    typedef SegmentCollectionDefault::SegmentModelVariant SegmentModelVariant;
-    typedef SegmentCollectionDefault::SegmentDataVariant SegmentDataVariant;
+    using SegmentModelVariant = typename SegmentCollectionDefault::SegmentModelVariant;
+    using SegmentDataVariant = typename SegmentCollectionDefault::SegmentDataVariant;
 
 } // namespace galileo
 

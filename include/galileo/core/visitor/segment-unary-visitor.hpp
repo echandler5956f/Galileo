@@ -11,6 +11,7 @@ namespace galileo
 {
     namespace fusion
     {
+        
         // Base structure for Unary visitation of a SegmentModel.
         // This structure provides runners to call the right visitor according to the number of
         // arguments.
@@ -131,7 +132,7 @@ namespace galileo
             template <typename SegmentModel, typename ArgType>
             struct InternalVisitorModelAndData : public boost::static_visitor<ReturnType>
             {
-                typedef typename SegmentModel::SegmentDataDerived SegmentData;
+                using SegmentData = typename SegmentModel::SegmentDataDerived;
 
                 InternalVisitorModelAndData(SegmentData &segment_data, ArgType args)
                     : segment_data(segment_data), args(args)
@@ -163,7 +164,7 @@ namespace galileo
             struct InternalVisitorModelAndData<SegmentModel, NoArg>
                 : public boost::static_visitor<ReturnType>
             {
-                typedef typename SegmentModel::SegmentDataDerived SegmentData;
+                using SegmentData = typename SegmentModel::SegmentDataDerived;
 
                 InternalVisitorModelAndData(SegmentData &segment_data)
                     : segment_data(segment_data)
@@ -235,6 +236,7 @@ namespace galileo
                     return SegmentVisitorDerived::template algo<SegmentDataDerived>(segment_data.derived());
                 }
             };
+
         }; // struct SegmentUnaryVisitorBase
 
     } // namespace fusion

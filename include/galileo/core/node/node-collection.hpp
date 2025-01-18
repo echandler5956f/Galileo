@@ -12,23 +12,18 @@ namespace galileo
     template <typename _Scalar, int _Options>
     struct NodeCollectionDefaultTpl
     {
-        typedef _Scalar Scalar;
+        using Scalar = _Scalar;
         enum
         {
             Options = _Options
         };
 
-        typedef boost::variant<
-            NodeModelVoid>
-            NodeModelVariant;
-
-        typedef boost::variant<
-            NodeDataVoid>
-            NodeDataVariant;
+        using NodeModelVariant = boost::variant<NodeModelVoid>;
+        using NodeDataVariant = boost::variant<NodeDataVoid>;
     };
 
-    typedef NodeCollectionDefault::NodeModelVariant NodeModelVariant;
-    typedef NodeCollectionDefault::NodeDataVariant NodeDataVariant;
+    using NodeModelVariant = typename NodeCollectionDefault::NodeModelVariant;
+    using NodeDataVariant = typename NodeCollectionDefault::NodeDataVariant;
 
 } // namespace galileo
 

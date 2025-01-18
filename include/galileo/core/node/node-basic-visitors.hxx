@@ -12,9 +12,9 @@ namespace galileo
   template <typename Scalar, int Options, template <typename S, int O> class NodeCollectionTpl>
   struct CreateNodeData : boost::static_visitor<NodeDataTpl<Scalar, Options, NodeCollectionTpl>>
   {
-    typedef NodeCollectionTpl<Scalar, Options> NodeCollection;
-    typedef typename NodeCollection::NodeModelVariant NodeModelVariant;
-    typedef NodeDataTpl<Scalar, Options, NodeCollectionTpl> NodeDataVariant;
+    using NodeCollection = NodeCollectionTpl<Scalar, Options>;
+    using NodeModelVariant = NodeCollection::NodeModelVariant;
+    using NodeDataVariant = NodeDataTpl<Scalar, Options, NodeCollectionTpl>;
 
     template <typename NodeModelDerived>
     NodeDataVariant operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -39,7 +39,7 @@ namespace galileo
   struct NodeCalcVisitor
       : fusion::NodeUnaryVisitorBase<NodeCalcVisitor<StateVectorType, ControlVectorType>>
   {
-    typedef boost::fusion::vector<const StateVectorType &, const ControlVectorType &> ArgsType;
+    using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
     template <typename NodeModel>
     static void algo(
@@ -59,7 +59,7 @@ namespace galileo
       const Eigen::MatrixBase<StateVectorType> &xs,
       const Eigen::MatrixBase<ControlVectorType> &us)
   {
-    typedef NodeCalcVisitor<StateVectorType, ControlVectorType> Algo;
+    using Algo = NodeCalcVisitor<StateVectorType, ControlVectorType>;
 
     Algo::run(node_model, node_data, typename Algo::ArgsType(xs.derived(), us.derived()));
   }
@@ -68,7 +68,7 @@ namespace galileo
   struct NodeCalcDiffVisitor
       : fusion::NodeUnaryVisitorBase<NodeCalcDiffVisitor<StateVectorType, ControlVectorType>>
   {
-    typedef boost::fusion::vector<const StateVectorType &, const ControlVectorType &> ArgsType;
+    using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
     template <typename NodeModel>
     static void algo(
@@ -88,7 +88,7 @@ namespace galileo
       const Eigen::MatrixBase<StateVectorType> &xs,
       const Eigen::MatrixBase<ControlVectorType> &us)
   {
-    typedef NodeCalcDiffVisitor<StateVectorType, ControlVectorType> Algo;
+    using Algo = NodeCalcDiffVisitor<StateVectorType, ControlVectorType>;
 
     Algo::run(node_model, node_data, typename Algo::ArgsType(xs.derived(), us.derived()));
   }
@@ -97,7 +97,7 @@ namespace galileo
   struct NodeGetXLBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::X_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::X_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::X_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -122,7 +122,7 @@ namespace galileo
   struct NodeGetXUBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::X_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::X_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::X_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -147,7 +147,7 @@ namespace galileo
   struct NodeGetULBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::U_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::U_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::U_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -172,7 +172,7 @@ namespace galileo
   struct NodeGetUUBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::U_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::U_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::U_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -197,7 +197,7 @@ namespace galileo
   struct NodeGetHLBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::H_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::H_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::H_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -222,7 +222,7 @@ namespace galileo
   struct NodeGetHUBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::H_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::H_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::H_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -247,7 +247,7 @@ namespace galileo
   struct NodeGetGLBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::G_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::G_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::G_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -272,7 +272,7 @@ namespace galileo
   struct NodeGetGUBVisitor
       : boost::static_visitor<typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::G_t>
   {
-    typedef typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::G_t ReturnType;
+    using ReturnType = typename NodeModelTpl<Scalar, Options, NodeCollectionTpl>::G_t;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -297,7 +297,7 @@ namespace galileo
   struct NodeGetNHVisitor
       : boost::static_visitor<Eigen::Index>
   {
-    typedef Eigen::Index ReturnType;
+    using ReturnType = Eigen::Index;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -322,7 +322,7 @@ namespace galileo
   struct NodeGetNGVisitor
       : boost::static_visitor<Eigen::Index>
   {
-    typedef Eigen::Index ReturnType;
+    using ReturnType = Eigen::Index;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -347,7 +347,7 @@ namespace galileo
   struct NodeGetIDVisitor
       : boost::static_visitor<Eigen::Index>
   {
-    typedef Eigen::Index ReturnType;
+    using ReturnType = Eigen::Index;
 
     template <typename NodeModelDerived>
     ReturnType operator()(const NodeModelBase<NodeModelDerived> &node_model) const
@@ -372,7 +372,7 @@ namespace galileo
   struct NodeSetXLBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<StateBoundVectorType> StateBoundVectorBase;
+    using StateBoundVectorBase = Eigen::MatrixBase<StateBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const StateBoundVectorBase &x_lb) const
@@ -398,7 +398,7 @@ namespace galileo
   struct NodeSetXUBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<StateBoundVectorType> StateBoundVectorBase;
+    using StateBoundVectorBase = Eigen::MatrixBase<StateBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const StateBoundVectorBase &x_ub) const
@@ -424,7 +424,7 @@ namespace galileo
   struct NodeSetULBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<ControlBoundVectorType> ControlBoundVectorBase;
+    using ControlBoundVectorBase = Eigen::MatrixBase<ControlBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const ControlBoundVectorBase &u_lb) const
@@ -450,7 +450,7 @@ namespace galileo
   struct NodeSetUUBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<ControlBoundVectorType> ControlBoundVectorBase;
+    using ControlBoundVectorBase = Eigen::MatrixBase<ControlBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const ControlBoundVectorBase &u_ub) const
@@ -476,7 +476,7 @@ namespace galileo
   struct NodeSetHLBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<EqualityBoundVectorType> EqualityBoundVectorBase;
+    using EqualityBoundVectorBase = Eigen::MatrixBase<EqualityBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const EqualityBoundVectorBase &h_lb) const
@@ -502,7 +502,7 @@ namespace galileo
   struct NodeSetHUBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<EqualityBoundVectorType> EqualityBoundVectorBase;
+    using EqualityBoundVectorBase = Eigen::MatrixBase<EqualityBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const EqualityBoundVectorBase &h_ub) const
@@ -528,7 +528,7 @@ namespace galileo
   struct NodeSetGLBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<InequalityBoundVectorType> InequalityBoundVectorBase;
+    using InequalityBoundVectorBase = Eigen::MatrixBase<InequalityBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const InequalityBoundVectorBase &g_lb) const
@@ -554,7 +554,7 @@ namespace galileo
   struct NodeSetGUBVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::MatrixBase<InequalityBoundVectorType> InequalityBoundVectorBase;
+    using InequalityBoundVectorBase = Eigen::MatrixBase<InequalityBoundVectorType>;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, const InequalityBoundVectorBase &g_ub) const
@@ -580,7 +580,7 @@ namespace galileo
   struct NodeSetNHVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::Index ReturnType;
+    using ReturnType = Eigen::Index;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, Eigen::Index nh) const
@@ -606,7 +606,7 @@ namespace galileo
   struct NodeSetNGVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::Index ReturnType;
+    using ReturnType = Eigen::Index;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, Eigen::Index ng) const
@@ -632,7 +632,7 @@ namespace galileo
   struct NodeSetIDVisitor
       : boost::static_visitor<void>
   {
-    typedef Eigen::Index ReturnType;
+    using ReturnType = Eigen::Index;
 
     template <typename NodeModelDerived>
     void operator()(NodeModelBase<NodeModelDerived> &node_model, Eigen::Index id) const
@@ -660,10 +660,9 @@ namespace galileo
             NodeCastVisitor<NewScalar, Scalar, Options, NodeCollectionTpl>,
             typename CastType<NewScalar, NodeModelTpl<Scalar, Options, NodeCollectionTpl>>::type>
   {
-    typedef fusion::NoArg ArgsType;
+    using ArgsType = fusion::NoArg;
 
-    typedef typename CastType<NewScalar, NodeModelTpl<Scalar, Options, NodeCollectionTpl>>::type
-        ReturnType;
+    using ReturnType = typename CastType<NewScalar, NodeModelTpl<Scalar, Options, NodeCollectionTpl>>::type;
 
     template <typename NodeModelDerived>
     static ReturnType algo(const NodeModelBase<NodeModelDerived> &node_model)
@@ -676,7 +675,7 @@ namespace galileo
   typename CastType<NewScalar, NodeModelTpl<Scalar, Options, NodeCollectionTpl>>::type
   cast_node(const NodeModelTpl<Scalar, Options, NodeCollectionTpl> &node_model)
   {
-    typedef NodeCastVisitor<NewScalar, Scalar, Options, NodeCollectionTpl> Algo;
+    using Algo = NodeCastVisitor<NewScalar, Scalar, Options, NodeCollectionTpl>;
     return Algo::run(node_model);
   }
 
@@ -687,7 +686,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::dX_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::dX_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::dX_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -713,7 +712,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Fx_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Fx_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Fx_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -739,7 +738,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Fu_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Fu_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Fu_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -765,7 +764,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::L_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::L_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::L_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -791,7 +790,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lx_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lx_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lx_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -817,7 +816,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lu_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lu_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lu_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -843,7 +842,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lxx_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lxx_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lxx_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -869,7 +868,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lxu_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lxu_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Lxu_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -895,7 +894,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Luu_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Luu_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Luu_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -921,7 +920,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::H_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::H_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::H_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -947,7 +946,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Hx_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Hx_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Hx_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -973,7 +972,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Hu_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Hu_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Hu_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -999,7 +998,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::G_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::G_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::G_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -1025,7 +1024,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Gx_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Gx_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Gx_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const
@@ -1051,7 +1050,7 @@ namespace galileo
       : boost::static_visitor<
             typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Gu_t>
   {
-    typedef typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Gu_t ReturnType;
+    using ReturnType = typename NodeDataTpl<Scalar, Options, NodeCollectionTpl>::Gu_t;
 
     template <typename NodeDataDerived>
     ReturnType operator()(const NodeDataBase<NodeDataDerived> &node_data) const

@@ -19,7 +19,7 @@ namespace galileo
 
     namespace context
     {
-        typedef GALILEO_SCALAR_TYPE Scalar;
+        using Scalar = GALILEO_SCALAR_TYPE;
         enum
         {
             Options = 0

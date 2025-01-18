@@ -15,7 +15,7 @@ namespace galileo
         int Options = context::Options,
         template <typename S, int O> class SegmentCollectionTpl = SegmentCollectionDefaultTpl>
     struct SegmentTpl;
-    typedef SegmentTpl<context::Scalar> Segment;
+    using Segment = SegmentTpl<context::Scalar>;
 
     template <typename _Scalar, int _Options, template <typename S, int O> class SegmentCollectionTpl>
     struct traits<SegmentTpl<_Scalar, _Options, SegmentCollectionTpl>>
@@ -39,15 +39,15 @@ namespace galileo
     template <typename _Scalar, int _Options, template <typename S, int O> class SegmentCollectionTpl>
     struct traits<SegmentDataTpl<_Scalar, _Options, SegmentCollectionTpl>>
     {
-        typedef SegmentTpl<_Scalar, _Options, SegmentCollectionTpl> SegmentDerived;
-        typedef typename traits<SegmentDerived>::Scalar Scalar;
+        using SegmentDerived = SegmentTpl<_Scalar, _Options, SegmentCollectionTpl>;
+        using Scalar = typename traits<SegmentDerived>::Scalar;
     };
 
     template <typename _Scalar, int _Options, template <typename S, int O> class SegmentCollectionTpl>
     struct traits<SegmentModelTpl<_Scalar, _Options, SegmentCollectionTpl>>
     {
-        typedef SegmentTpl<_Scalar, _Options, SegmentCollectionTpl> SegmentDerived;
-        typedef typename traits<SegmentDerived>::Scalar Scalar;
+        using SegmentDerived = SegmentTpl<_Scalar, _Options, SegmentCollectionTpl>;
+        using Scalar = typename traits<SegmentDerived>::Scalar;
     };
 
     template <typename _Scalar, int _Options, template <typename S, int O> class SegmentCollectionTpl>
@@ -57,13 +57,13 @@ namespace galileo
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef SegmentTpl<_Scalar, _Options, SegmentCollectionTpl> SegmentDerived;
-        typedef SegmentDataBase<SegmentDataTpl> Base;
+        using SegmentDerived = SegmentTpl<_Scalar, _Options, SegmentCollectionTpl>;
+        using Base = SegmentDataBase<SegmentDataTpl>;
 
         GALILEO_SEGMENT_DATA_TYPEDEF_TEMPLATE(SegmentDerived);
 
-        typedef SegmentCollectionTpl<_Scalar, _Options> SegmentCollection;
-        typedef typename SegmentCollection::SegmentDataVariant SegmentDataVariant;
+        using SegmentCollection = SegmentCollectionTpl<_Scalar, _Options>;
+        using SegmentDataVariant = typename SegmentCollection::SegmentDataVariant;
 
         using Base::operator==;
         using Base::operator!=;
@@ -104,7 +104,7 @@ namespace galileo
         template <typename S, int O> class SegmentCollectionTpl>
     struct CastType<NewScalar, SegmentModelTpl<Scalar, Options, SegmentCollectionTpl>>
     {
-        typedef SegmentModelTpl<NewScalar, Options, SegmentCollectionTpl> type;
+        using type = SegmentModelTpl<NewScalar, Options, SegmentCollectionTpl>;
     };
 
     template <typename _Scalar, int _Options, template <typename S, int O> class SegmentCollectionTpl>
@@ -114,13 +114,13 @@ namespace galileo
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef SegmentTpl<_Scalar, _Options, SegmentCollectionTpl> SegmentDerived;
+        using SegmentDerived = SegmentTpl<_Scalar, _Options, SegmentCollectionTpl>;
 
         GALILEO_SEGMENT_TYPEDEF_TEMPLATE(SegmentDerived);
 
-        typedef SegmentCollectionTpl<Scalar, Options> SegmentCollection;
-        typedef typename SegmentCollection::SegmentDataVariant SegmentDataVariant;
-        typedef typename SegmentCollection::SegmentModelVariant SegmentModelVariant;
+        using SegmentCollection = SegmentCollectionTpl<Scalar, Options>;
+        using SegmentDataVariant = typename SegmentCollection::SegmentDataVariant;
+        using SegmentModelVariant = typename SegmentCollection::SegmentModelVariant;
 
         SegmentModelTpl()
             : SegmentModelVariant()
@@ -163,8 +163,8 @@ namespace galileo
         }
     };
 
-    typedef GALILEO_ALIGNED_STD_VECTOR(SegmentData) SegmentDataVector;
-    typedef GALILEO_ALIGNED_STD_VECTOR(SegmentModel) SegmentModelVector;
+    using SegmentModelVector = typename GALILEO_ALIGNED_STD_VECTOR(SegmentData);
+    using SegmentDataVector = typename GALILEO_ALIGNED_STD_VECTOR(SegmentModel);
 
 } // namespace galileo
 

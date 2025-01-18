@@ -95,21 +95,12 @@ namespace galileo
 {
 
     template <typename Derived>
-    struct SegmentDataBase : NumericalBase<Derived>
+    struct SegmentDataBase : CRTP<Derived>
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef typename traits<Derived>::SegmentDerived SegmentDerived;
+        using SegmentDerived = typename traits<Derived>::SegmentDerived;
         GALILEO_SEGMENT_DATA_TYPEDEF_TEMPLATE(SegmentDerived);
-
-        Derived &derived()
-        {
-            return *static_cast<Derived *>(this);
-        }
-        const Derived &derived() const
-        {
-            return *static_cast<const Derived *>(this);
-        }
 
         NodesDataVectorTypeConstRef nodes_data() const
         {

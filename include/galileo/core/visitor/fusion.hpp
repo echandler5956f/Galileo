@@ -12,15 +12,17 @@ namespace galileo
   {
     
     namespace bf = boost::fusion;
-    typedef boost::blank NoArg;
+    using NoArg = boost::blank;
 
   } // namespace fusion
+
 } // namespace galileo
 
 namespace boost
 {
   namespace fusion
   {
+
     // Append the element T at the front of boost fusion vector V.
     template<typename T, typename V>
     typename result_of::push_front<V const, T>::type append(T const & t, V const & v)
@@ -77,4 +79,5 @@ namespace boost
     }
 
   } // namespace fusion
+  
 } // namespace boost

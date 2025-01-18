@@ -5,7 +5,11 @@
 
 namespace galileo
 {
+    namespace solvers
+    {
 
-}
+    } // namespace solvers
+
+} // namespace galileo
 
 #endif // __galileo_solvers_fwd_hpp__

@@ -15,7 +15,7 @@ namespace galileo
         int Options = context::Options,
         template <typename S, int O> class NodeCollectionTpl = NodeCollectionDefaultTpl>
     struct NodeTpl;
-    typedef NodeTpl<context::Scalar> Node;
+    using Node = NodeTpl<context::Scalar>;
 
     template <typename _Scalar, int _Options, template <typename S, int O> class NodeCollectionTpl>
     struct traits<NodeTpl<_Scalar, _Options, NodeCollectionTpl>>
@@ -32,8 +32,8 @@ namespace galileo
 
         typedef _Scalar Scalar;
         typedef NodeCollectionTpl<Scalar, Options> NodeCollection;
-        typedef NodeDataTpl<Scalar, Options, NodeCollectionTpl> NodeDataDerived;
         typedef NodeModelTpl<Scalar, Options, NodeCollectionTpl> NodeModelDerived;
+        typedef NodeDataTpl<Scalar, Options, NodeCollectionTpl> NodeDataDerived;
 
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> X_t;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> U_t;
@@ -76,15 +76,15 @@ namespace galileo
     template <typename _Scalar, int _Options, template <typename S, int O> class NodeCollectionTpl>
     struct traits<NodeDataTpl<_Scalar, _Options, NodeCollectionTpl>>
     {
-        typedef NodeTpl<_Scalar, _Options, NodeCollectionTpl> NodeDerived;
-        typedef typename traits<NodeDerived>::Scalar Scalar;
+        using NodeDerived = NodeTpl<_Scalar, _Options, NodeCollectionTpl>;
+        using Scalar = typename traits<NodeDerived>::Scalar;
     };
 
     template <typename _Scalar, int _Options, template <typename S, int O> class NodeCollectionTpl>
     struct traits<NodeModelTpl<_Scalar, _Options, NodeCollectionTpl>>
     {
-        typedef NodeTpl<_Scalar, _Options, NodeCollectionTpl> NodeDerived;
-        typedef typename traits<NodeDerived>::Scalar Scalar;
+        using NodeDerived = NodeTpl<_Scalar, _Options, NodeCollectionTpl>;
+        using Scalar = typename traits<NodeDerived>::Scalar;
     };
 
     template <typename _Scalar, int _Options, template <typename S, int O> class NodeCollectionTpl>
@@ -94,13 +94,13 @@ namespace galileo
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef NodeTpl<_Scalar, _Options, NodeCollectionTpl> NodeDerived;
-        typedef NodeDataBase<NodeDataTpl> Base;
+        using NodeDerived = NodeTpl<_Scalar, _Options, NodeCollectionTpl>;
+        using Base = NodeDataBase<NodeDataTpl>;
 
         GALILEO_NODE_DATA_TYPEDEF_TEMPLATE(NodeDerived);
 
-        typedef NodeCollectionTpl<_Scalar, _Options> NodeCollection;
-        typedef typename NodeCollection::NodeDataVariant NodeDataVariant;
+        using NodeCollection = NodeCollectionTpl<Scalar, Options>;
+        using NodeDataVariant = typename NodeCollection::NodeDataVariant;
 
         using Base::operator==;
         using Base::operator!=;
@@ -290,7 +290,7 @@ namespace galileo
         template <typename S, int O> class NodeCollectionTpl>
     struct CastType<NewScalar, NodeModelTpl<Scalar, Options, NodeCollectionTpl>>
     {
-        typedef NodeModelTpl<NewScalar, Options, NodeCollectionTpl> type;
+        using type = NodeModelTpl<NewScalar, Options, NodeCollectionTpl>;
     };
 
     template <typename _Scalar, int _Options, template <typename S, int O> class NodeCollectionTpl>
@@ -300,13 +300,13 @@ namespace galileo
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        typedef NodeTpl<_Scalar, _Options, NodeCollectionTpl> NodeDerived;
+        using NodeDerived = NodeTpl<_Scalar, _Options, NodeCollectionTpl>;
 
         GALILEO_NODE_TYPEDEF_TEMPLATE(NodeDerived);
 
-        typedef NodeCollectionTpl<Scalar, Options> NodeCollection;
-        typedef typename NodeCollection::NodeDataVariant NodeDataVariant;
-        typedef typename NodeCollection::NodeModelVariant NodeModelVariant;
+        using NodeCollection = NodeCollectionTpl<Scalar, Options>;
+        using NodeModelVariant = typename NodeCollection::NodeDataVariant;
+        using NodeDataVariant =  typename NodeCollection::NodeModelVariant;
 
         NodeModelTpl()
             : NodeModelVariant()
@@ -323,7 +323,7 @@ namespace galileo
             : NodeModelVariant((NodeModelVariant)node_model.derived())
         {
             BOOST_MPL_ASSERT(
-                (boost::mpl::contains<typename NodeModelVariant::types, NodeModelDerived>));
+                (boost::mpl::contains<typename NodeModelVariant::types, typename NodeModelDerived>));
         }
 
         NodeModelVariant &toVariant()
@@ -483,8 +483,8 @@ namespace galileo
         }
     };
 
-    typedef GALILEO_ALIGNED_STD_VECTOR(NodeData) NodeDataVector;
-    typedef GALILEO_ALIGNED_STD_VECTOR(NodeModel) NodeModelVector;
+    using NodeModelVector = typename GALILEO_ALIGNED_STD_VECTOR(NodeModel);
+    using NodeDataVector = typename GALILEO_ALIGNED_STD_VECTOR(NodeData);
 
 } // namespace galileo
 

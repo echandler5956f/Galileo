@@ -16,21 +16,21 @@ namespace galileo
 
     template <typename Scalar, int Options = context::Options>
     struct NodeCollectionDefaultTpl;
-    typedef NodeCollectionDefaultTpl<context::Scalar> NodeCollectionDefault;
+    using NodeCollectionDefault = NodeCollectionDefaultTpl<context::Scalar>;
 
     template <
         typename Scalar,
         int Options = context::Options,
         template <typename S, int O> class NodeCollectionTpl = NodeCollectionDefaultTpl>
     struct NodeModelTpl;
-    typedef NodeModelTpl<context::Scalar> NodeModel;
+    using NodeModel = NodeModelTpl<context::Scalar>;
 
     template <
         typename Scalar,
         int Options = context::Options,
         template <typename S, int O> class NodeCollectionTpl = NodeCollectionDefaultTpl>
     struct NodeDataTpl;
-    typedef NodeDataTpl<context::Scalar> NodeData;
+    using NodeData = NodeDataTpl<context::Scalar>;
 
 } // namespace galileo
 

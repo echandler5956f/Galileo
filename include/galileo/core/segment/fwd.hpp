@@ -16,21 +16,21 @@ namespace galileo
 
     template <typename Scalar, int Options = context::Options>
     struct SegmentCollectionDefaultTpl;
-    typedef SegmentCollectionDefaultTpl<context::Scalar> SegmentCollectionDefault;
+    using SegmentCollectionDefault = SegmentCollectionDefaultTpl<context::Scalar>;
 
     template <
         typename Scalar,
         int Options = context::Options,
         template <typename S, int O> class SegmentCollectionTpl = SegmentCollectionDefaultTpl>
     struct SegmentModelTpl;
-    typedef SegmentModelTpl<context::Scalar> SegmentModel;
+    using SegmentModel = SegmentModelTpl<context::Scalar>;
 
     template <
         typename Scalar,
         int Options = context::Options,
         template <typename S, int O> class SegmentCollectionTpl = SegmentCollectionDefaultTpl>
     struct SegmentDataTpl;
-    typedef SegmentDataTpl<context::Scalar> SegmentData;
+    using SegmentData = SegmentDataTpl<context::Scalar>;
 
 } // namespace galileo
 

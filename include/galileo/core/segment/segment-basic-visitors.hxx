@@ -10,9 +10,9 @@ namespace galileo
   template <typename Scalar, int Options, template <typename S, int O> class SegmentCollectionTpl>
   struct CreateSegmentData : boost::static_visitor<SegmentDataTpl<Scalar, Options, SegmentCollectionTpl>>
   {
-    typedef SegmentCollectionTpl<Scalar, Options> SegmentCollection;
-    typedef typename SegmentCollection::SegmentModelVariant SegmentModelVariant;
-    typedef SegmentDataTpl<Scalar, Options, SegmentCollectionTpl> SegmentDataVariant;
+    using SegmentCollection = SegmentCollectionTpl<Scalar, Options>;
+    using SegmentModelVariant = typename SegmentCollection::SegmentModelVariant;
+    using SegmentDataVariant = SegmentDataTpl<Scalar, Options, SegmentCollectionTpl>;
 
     template <typename SegmentModelDerived>
     SegmentDataVariant operator()(const SegmentModelBase<SegmentModelDerived> &segment_model) const

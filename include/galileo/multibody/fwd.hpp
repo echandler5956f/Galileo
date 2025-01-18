@@ -5,7 +5,11 @@
 
 namespace galileo
 {
+    namespace multibody
+    {
 
-}
+    } // namespace multibody
+
+} // namespace galileo
 
 #endif // __galileo_multibody_fwd_hpp__
