@@ -21,27 +21,8 @@
     typedef TYPENAME traits<Segment>::CwTypeConstRef CwTypeConstRef;                           \
     typedef TYPENAME traits<Segment>::CwTypeRef CwTypeRef;
 
-#ifdef __clang__
-
-#define GALILEO_SEGMENT_DATA_TYPEDEF(Segment) \
-    GALILEO_SEGMENT_DATA_TYPEDEF_GENERIC(Segment, GALILEO_EMPTY_ARG)
 #define GALILEO_SEGMENT_DATA_TYPEDEF_TEMPLATE(Segment) \
     GALILEO_SEGMENT_DATA_TYPEDEF_GENERIC(Segment, typename)
-
-#elif (__GNUC__ == 4) && (__GNUC_MINOR__ == 4) && (__GNUC_PATCHLEVEL__ == 2)
-
-#define GALILEO_SEGMENT_DATA_TYPEDEF(Segment) \
-    GALILEO_SEGMENT_DATA_TYPEDEF_GENERIC(Segment, GALILEO_EMPTY_ARG)
-#define GALILEO_SEGMENT_DATA_TYPEDEF_TEMPLATE(Segment) \
-    GALILEO_SEGMENT_DATA_TYPEDEF_GENERIC(Segment, typename)
-
-#else
-
-#define GALILEO_SEGMENT_DATA_TYPEDEF(Segment) GALILEO_SEGMENT_DATA_TYPEDEF_GENERIC(Segment, typename)
-#define GALILEO_SEGMENT_DATA_TYPEDEF_TEMPLATE(Segment) \
-    GALILEO_SEGMENT_DATA_TYPEDEF_GENERIC(Segment, typename)
-
-#endif
 
 #define GALILEO_SEGMENT_DATA_BASE_DEFAULT_ACCESSOR          \
     NodesDataVectorTypeConstRef nodes_data_accessor() const \

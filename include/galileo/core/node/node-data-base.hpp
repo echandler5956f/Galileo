@@ -37,27 +37,8 @@
     typedef TYPENAME traits<Node>::GuTypeConstRef GuTypeConstRef;   \
     typedef TYPENAME traits<Node>::GuTypeRef GuTypeRef;
 
-#ifdef __clang__
-
-#define GALILEO_NODE_DATA_TYPEDEF(Node) \
-    GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, GALILEO_EMPTY_ARG)
 #define GALILEO_NODE_DATA_TYPEDEF_TEMPLATE(Node) \
     GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, typename)
-
-#elif (__GNUC__ == 4) && (__GNUC_MINOR__ == 4) && (__GNUC_PATCHLEVEL__ == 2)
-
-#define GALILEO_NODE_DATA_TYPEDEF(Node) \
-    GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, GALILEO_EMPTY_ARG)
-#define GALILEO_NODE_DATA_TYPEDEF_TEMPLATE(Node) \
-    GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, typename)
-
-#else
-
-#define GALILEO_NODE_DATA_TYPEDEF(Node) GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, typename)
-#define GALILEO_NODE_DATA_TYPEDEF_TEMPLATE(Node) \
-    GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, typename)
-
-#endif
 
 #define GALILEO_NODE_DATA_BASE_DEFAULT_ACCESSOR \
     dXTypeConstRef XDot_accessor() const        \

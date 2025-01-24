@@ -68,7 +68,7 @@ namespace galileo
          * @brief Check if the input matrix is a covariance matrix
          * (symmetric positive definite matrix)
          *
-         * @tparam _EigenDerived The EigenDerived type of the matrix
+         * @tparam EigenDerived The EigenDerived type of the matrix
          * @param M The matrix to test for covariance
          * @param eps The test tolerance
          * @return true is the matrix is a covariance, false otherwise
@@ -76,10 +76,10 @@ namespace galileo
          * @see isSymmetric
          * @see isPositiveDefinite
          */
-        template <typename _EigenDerived>
+        template <typename EigenDerived>
         static bool isCovariance(
-            const Eigen::MatrixBase<_EigenDerived> &M,
-            const typename _EigenDerived::Scalar eps = 1e-8)
+            const Eigen::MatrixBase<EigenDerived> &M,
+            const typename EigenDerived::Scalar eps = 1e-8)
         {
             return math::isSymmetric(M, eps) && math::isPositiveDefinite(M, eps);
         }
@@ -88,7 +88,7 @@ namespace galileo
          * @brief Enforce a matrix to be a covariance matrix
          * (symmetric positive definite matrix)
          *
-         * @tparam _EigenDerived  The EigenDerived type of the matrix
+         * @tparam EigenDerived  The EigenDerived type of the matrix
          * @param M The matrix to force as a covariance matrix
          * @param eps The test tolerance
          * @return true if enforcing covariance is successful, false otherwise
@@ -96,10 +96,10 @@ namespace galileo
          * @see enforceSymmetric
          * @see enforcePositiveDefinite
          */
-        template <typename _EigenDerived>
+        template <typename EigenDerived>
         static bool enforceCovariance(
-            Eigen::MatrixBase<_EigenDerived> &M,
-            const typename _EigenDerived::Scalar eps = 1e-8)
+            Eigen::MatrixBase<EigenDerived> &M,
+            const typename EigenDerived::Scalar eps = 1e-8)
         {
             return math::enforceSymmetric(M, eps) && math::enforcePositiveDefinite(M, eps);
         }

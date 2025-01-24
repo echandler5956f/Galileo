@@ -35,27 +35,8 @@
     typedef TYPENAME traits<Node>::Gx_t Gx_t;                         \
     typedef TYPENAME traits<Node>::Gu_t Gu_t;
 
-#ifdef __clang__
-
-#define GALILEO_NODE_TYPEDEF(Node) \
-    GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, GALILEO_EMPTY_ARG)
 #define GALILEO_NODE_TYPEDEF_TEMPLATE(Node) \
     GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, typename)
-
-#elif (__GNUC__ == 4) && (__GNUC_MINOR__ == 4) && (__GNUC_PATCHLEVEL__ == 2)
-
-#define GALILEO_NODE_TYPEDEF(Node) \
-    GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, GALILEO_EMPTY_ARG)
-#define GALILEO_NODE_TYPEDEF_TEMPLATE(Node) \
-    GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, typename)
-
-#else
-
-#define GALILEO_NODE_TYPEDEF(Node) GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, typename)
-#define GALILEO_NODE_TYPEDEF_TEMPLATE(Node) \
-    GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, typename)
-
-#endif
 
 #define GALILEO_NODE_CAST_TYPE_SPECIALIZATION(NodeModelTpl) \
     template <typename Scalar, typename NewScalar>          \

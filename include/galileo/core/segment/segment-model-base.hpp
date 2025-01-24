@@ -30,27 +30,8 @@
     typedef TYPENAME traits<Segment>::G_t G_t;                                 \
     typedef TYPENAME traits<Segment>::C_t C_t;
 
-#ifdef __clang__
-
-#define GALILEO_SEGMENT_TYPEDEF(Segment) \
-    GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, GALILEO_EMPTY_ARG)
 #define GALILEO_SEGMENT_TYPEDEF_TEMPLATE(Segment) \
     GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, typename)
-
-#elif (__GNUC__ == 4) && (__GNUC_MINOR__ == 4) && (__GNUC_PATCHLEVEL__ == 2)
-
-#define GALILEO_SEGMENT_TYPEDEF(Segment) \
-    GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, GALILEO_EMPTY_ARG)
-#define GALILEO_SEGMENT_TYPEDEF_TEMPLATE(Segment) \
-    GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, typename)
-
-#else
-
-#define GALILEO_SEGMENT_TYPEDEF(Segment) GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, typename)
-#define GALILEO_SEGMENT_TYPEDEF_TEMPLATE(Segment) \
-    GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, typename)
-
-#endif
 
 #define GALILEO_SEGMENT_CAST_TYPE_SPECIALIZATION(SegmentModelTpl) \
     template <typename Scalar, typename NewScalar>                \

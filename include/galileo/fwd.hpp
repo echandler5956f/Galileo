@@ -16,7 +16,7 @@ namespace galileo
 namespace galileo
 {
     /**
-     * @brief The kalmanif traits class.
+     * @brief The galileo traits class.
      *
      * @tparam T The type for which to specialize the traits
      * @tparam Enable a SFINAE argument

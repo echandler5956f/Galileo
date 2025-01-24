@@ -7,7 +7,7 @@ namespace galileo
 {
     namespace estimator
     {
-        template <typename _Derived>
+        template <typename Derived>
         struct KalmanFilterBase;
 
         /**
@@ -17,20 +17,20 @@ namespace galileo
          * @param ControlType The vector-type of the control input (usually some type derived from kalman::Vector)
          * @param CovarianceBase The class template used for covariance storage (must be either StandardBase or SquareRootBase)
          */
-        template <typename _Derived>
-        class SystemModelBase : CRTP<_Derived>, public CovarianceBase<typename traits<_Derived>::Control>
+        template <typename Derived>
+        class SystemModelBase : CRTP<Derived>, public CovarianceBase<typename traits<Derived>::Control>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             //! System state type
-            using State = typename traits<_Derived>::State;
+            using State = typename traits<Derived>::State;
 
             //! State Scalar type
             using Scalar = typename traits<State>::Scalar;
 
             //! System control input type
-            using Control = typename traits<_Derived>::Control;
+            using Control = typename traits<Derived>::Control;
 
             /**
              * @brief State transition function f
@@ -47,12 +47,12 @@ namespace galileo
             }
 
         protected:
-            using Base = CovarianceBase<typename traits<_Derived>::Control>;
+            using Base = CovarianceBase<typename traits<Derived>::Control>;
 
             template <typename>
             friend class KalmanFilterBase;
 
-            using CRTP<_Derived>::derived;
+            using CRTP<Derived>::derived;
             using Base::Base;
 
             GALILEO_DEFAULT_CONSTRUCTOR(SystemModelBase);

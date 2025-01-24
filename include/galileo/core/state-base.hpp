@@ -53,7 +53,7 @@ namespace galileo
      * \f$\mathbf{x}_{1}\ominus\mathbf{x}_{0}\f$ lie on its tangential space.
      */
     template <typename Derived>
-    class StateBase : NumericalBase<Derived>
+    class StateBase : CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -326,22 +326,6 @@ namespace galileo
         }
 
         /**
-         * @brief Return the dimension of the configuration tuple
-         */
-        std::size_t get_nq() const
-        {
-            return derived().get_nq();
-        }
-
-        /**
-         * @brief Return the dimension of tangent space of the configuration manifold
-         */
-        std::size_t get_nv() const
-        {
-            return derived().get_nv();
-        }
-
-        /**
          * @brief Return the state lower bound
          */
         const VectorXs_t &get_lb() const
@@ -389,7 +373,7 @@ namespace galileo
 
         // Default constructor: protected.
         // Prevent the construction of stand-alone StateBase.
-        inline StateBase() : nx_(0), ndx_(0), nq_(0), nv_(0), has_limits_(false)
+        inline StateBase() : nx_(0), ndx_(0), has_limits_(false)
         {
             lb_.resize(0);
             ub_.resize(0);
@@ -410,8 +394,6 @@ namespace galileo
         {
             nx_ = clone.nx_;
             ndx_ = clone.ndx_;
-            nq_ = clone.nq_;
-            nv_ = clone.nv_;
             lb_ = clone.lb_;
             ub_ = clone.ub_;
             has_limits_ = clone.has_limits_;
@@ -420,8 +402,6 @@ namespace galileo
 
         std::size_t nx_;  //!< State dimension
         std::size_t ndx_; //!< State rate dimension
-        std::size_t nq_;  //!< Configuration dimension
-        std::size_t nv_;  //!< Velocity dimension
         VectorXs_t lb_;   //!< Lower state limits
         VectorXs_t ub_;   //!< Upper state limits
         bool has_limits_; //!< Indicates whether any of the state limits is finite
