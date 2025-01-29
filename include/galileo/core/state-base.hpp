@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "galileo/fwd.hpp"
-#include "galileo/core/math-base.hpp"
 
 #define GALILEO_STATE_MODEL_TYPEDEF_GENERIC(State, TYPENAME)             \
     typedef TYPENAME traits<State>::Scalar Scalar;                       \

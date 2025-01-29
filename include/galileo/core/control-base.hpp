@@ -3,7 +3,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "galileo/fwd.hpp"
-#include "galileo/core/math-base.hpp"
 
 #define GALILEO_CONTROL_MODEL_TYPEDEF_GENERIC(Control, TYPENAME)               \
     typedef TYPENAME traits<Control>::Scalar Scalar;                           \
@@ -45,23 +44,13 @@ namespace galileo
      * first.
      */
     template <typename Derived>
-    class ControlModelBase : NumericalBase<Derived>
+    class ControlModelBase : CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         typedef typename traits<Derived>::ControlDerived ControlDerived;
         GALILEO_CONTROL_TYPEDEF_TEMPLATE(ControlDerived);
-
-        ControlModelDerived &derived()
-        {
-            return *static_cast<Derived *>(this);
-        }
-
-        const ControlModelDerived &derived() const
-        {
-            return *static_cast<const Derived *>(this);
-        }
 
         /**
          * @brief Get the value of the control at the specified time
@@ -248,7 +237,7 @@ namespace galileo
     };
 
     template <typename Derived>
-    struct ControlDataBase : NumericalBase<Derived>
+    struct ControlDataBase : CRTP<Derived>
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
