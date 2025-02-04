@@ -1,3 +1,0 @@
-ContactMode mode
-int32 knot_num
-float64 knot_time
