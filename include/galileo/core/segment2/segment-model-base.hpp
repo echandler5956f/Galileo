@@ -3,6 +3,7 @@
 
 #include "galileo/core/segment/segment-base.hpp"
 #include "galileo/utils/aligned-vector.hpp"
+#include <limits>
 
 #define GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, TYPENAME)               \
     typedef TYPENAME traits<Segment>::Scalar Scalar;                           \
@@ -29,20 +30,19 @@
     typedef TYPENAME traits<Segment>::G_t G_t;                                 \
     typedef TYPENAME traits<Segment>::C_t C_t;
 
-#define GALILEO_SEGMENT_BASIC_TYPEDEF(Segment)                                 \
-    using Scalar = typename traits<Segment>::Scalar;                           \
-    using SegmentModelDerived = typename traits<Segment>::SegmentModelDerived; \
-    using SegmentDataDerived = typename traits<Segment>::SegmentDataDerived;
+#define GALILEO_SEGMENT_TYPEDEF_TEMPLATE(Segment) \
+    GALILEO_SEGMENT_MODEL_TYPEDEF_GENERIC(Segment, typename)
 
-#define GALILEO_SEGMENT_ACTION_DEF_TYPEDEF(Segment)                                  \
-    using State_t = typename traits<Segment>::State_t;                               \
-    using Actuation_t = typename traits<Segment>::Actuation_t;                       \
-    using ConstraintCollection_t = typename traits<Segment>::ConstraintCollection_t; \
-    using CostCollection_t = typename traits<Segment>::CostCollection_t;
+#define GALILEO_SEGMENT_CAST_TYPE_SPECIALIZATION(SegmentModelTpl) \
+    template <typename Scalar, typename NewScalar>                \
+    struct CastType<NewScalar, SegmentModelTpl<Scalar>>           \
+    {                                                             \
+        typedef SegmentModelTpl<NewScalar> type;                  \
+    }
 
 namespace galileo
 {
-
+    
     template <typename Derived>
     class SegmentModelBase : CRTP<Derived>
     {
@@ -50,7 +50,7 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using SegmentDerived = typename traits<Derived>::SegmentDerived;
-        GALILEO_SEGMENT_MODEL_TYPEDEF(SegmentDerived);
+        GALILEO_SEGMENT_TYPEDEF_TEMPLATE(SegmentDerived);
 
         SegmentDataDerived createData() const
         {
@@ -87,16 +87,30 @@ namespace galileo
             derived().calcDiff(data, xs.derived());
         }
 
+        template <typename NewScalar>
+        typename CastType<NewScalar, Derived>::type cast() const
+        {
+            return derived().template cast<NewScalar>();
+        }
+
     protected:
-        inline SegmentModelBase()
+        // Default constructor: protected.
+        // Prevent the construction of stand-alone SegmentModelBase.
+        inline SegmentModelBase() : period_(std::numeric_limits<double>::quiet_NaN), num_nodes_(std::numeric_limits<Eigen::Index>::max()), integ_constraint_size_(std::numeric_limits<Eigen::Index>::max())
         {
         }
 
+        // Copy constructor: protected.
+        // Copy of stand-alone SegmentModelBase are prevented, but can be used from inheriting
+        // objects. Copy is done by calling copy operator.
         inline SegmentModelBase(const SegmentModelBase &clone)
         {
             *this = clone;
         }
 
+        // Copy operator: protected.
+        // Copy of stand-alone SegmentModelBase are prevented, but can be used from inheriting
+        // objects.
         inline SegmentModelBase &operator=(const SegmentModelBase &clone)
         {
             node_models_ = clone.node_models_;
@@ -114,7 +128,7 @@ namespace galileo
         State_t state_desc_;     // state description
         Control_t control_desc_; // control description
 
-        Scalar period_;          // time period
+        Scalar period_;    // time period
         Eigen::Index num_nodes_; // number of nodes
         Eigen::Index nc_;        // number of integration constraints
 

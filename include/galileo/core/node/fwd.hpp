@@ -6,32 +6,6 @@
 namespace galileo
 {
 
-    struct NodeModelVoid
-    {
-    };
-
-    struct NodeDataVoid
-    {
-    };
-
-    template <typename Scalar, int Options = context::Options>
-    struct NodeCollectionDefaultTpl;
-    using NodeCollectionDefault = NodeCollectionDefaultTpl<context::Scalar>;
-
-    template <
-        typename Scalar,
-        int Options = context::Options,
-        template <typename S, int O> class NodeCollectionTpl = NodeCollectionDefaultTpl>
-    struct NodeModelTpl;
-    using NodeModel = NodeModelTpl<context::Scalar>;
-
-    template <
-        typename Scalar,
-        int Options = context::Options,
-        template <typename S, int O> class NodeCollectionTpl = NodeCollectionDefaultTpl>
-    struct NodeDataTpl;
-    using NodeData = NodeDataTpl<context::Scalar>;
-
 } // namespace galileo
 
 #include "galileo/core/fwd.hpp"

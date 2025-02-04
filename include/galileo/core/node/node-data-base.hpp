@@ -4,220 +4,6 @@
 #include "galileo/core/node/node-base.hpp"
 #include "galileo/core/node/node-model-base.hpp"
 
-#define GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, TYPENAME)           \
-    GALILEO_NODE_MODEL_TYPEDEF_GENERIC(Node, TYPENAME);             \
-    typedef TYPENAME traits<Node>::dXTypeConstRef dXTypeConstRef;   \
-    typedef TYPENAME traits<Node>::dXTypeRef dXTypeRef;             \
-    typedef TYPENAME traits<Node>::FxTypeConstRef FxTypeConstRef;   \
-    typedef TYPENAME traits<Node>::FxTypeRef FxTypeRef;             \
-    typedef TYPENAME traits<Node>::FuTypeConstRef FuTypeConstRef;   \
-    typedef TYPENAME traits<Node>::FuTypeRef FuTypeRef;             \
-    typedef TYPENAME traits<Node>::LTypeConstRef LTypeConstRef;     \
-    typedef TYPENAME traits<Node>::LTypeRef LTypeRef;               \
-    typedef TYPENAME traits<Node>::LxTypeConstRef LxTypeConstRef;   \
-    typedef TYPENAME traits<Node>::LxTypeRef LxTypeRef;             \
-    typedef TYPENAME traits<Node>::LuTypeConstRef LuTypeConstRef;   \
-    typedef TYPENAME traits<Node>::LuTypeRef LuTypeRef;             \
-    typedef TYPENAME traits<Node>::LxxTypeConstRef LxxTypeConstRef; \
-    typedef TYPENAME traits<Node>::LxxTypeRef LxxTypeRef;           \
-    typedef TYPENAME traits<Node>::LxuTypeConstRef LxuTypeConstRef; \
-    typedef TYPENAME traits<Node>::LxuTypeRef LxuTypeRef;           \
-    typedef TYPENAME traits<Node>::LuuTypeConstRef LuuTypeConstRef; \
-    typedef TYPENAME traits<Node>::LuuTypeRef LuuTypeRef;           \
-    typedef TYPENAME traits<Node>::HTypeConstRef HTypeConstRef;     \
-    typedef TYPENAME traits<Node>::HTypeRef HTypeRef;               \
-    typedef TYPENAME traits<Node>::HxTypeConstRef HxTypeConstRef;   \
-    typedef TYPENAME traits<Node>::HxTypeRef HxTypeRef;             \
-    typedef TYPENAME traits<Node>::HuTypeConstRef HuTypeConstRef;   \
-    typedef TYPENAME traits<Node>::HuTypeRef HuTypeRef;             \
-    typedef TYPENAME traits<Node>::GTypeConstRef GTypeConstRef;     \
-    typedef TYPENAME traits<Node>::GTypeRef GTypeRef;               \
-    typedef TYPENAME traits<Node>::GxTypeConstRef GxTypeConstRef;   \
-    typedef TYPENAME traits<Node>::GxTypeRef GxTypeRef;             \
-    typedef TYPENAME traits<Node>::GuTypeConstRef GuTypeConstRef;   \
-    typedef TYPENAME traits<Node>::GuTypeRef GuTypeRef;
-
-#define GALILEO_NODE_DATA_TYPEDEF_TEMPLATE(Node) \
-    GALILEO_NODE_DATA_TYPEDEF_GENERIC(Node, typename)
-
-#define GALILEO_NODE_DATA_BASE_DEFAULT_ACCESSOR \
-    dXTypeConstRef XDot_accessor() const        \
-    {                                           \
-        return XDot;                            \
-    }                                           \
-    dXTypeRef XDot_accessor()                   \
-    {                                           \
-        return XDot;                            \
-    }                                           \
-    FxTypeConstRef Fx_accessor() const          \
-    {                                           \
-        return Fx;                              \
-    }                                           \
-    FxTypeRef Fx_accessor()                     \
-    {                                           \
-        return Fx;                              \
-    }                                           \
-    FuTypeConstRef Fu_accessor() const          \
-    {                                           \
-        return Fu;                              \
-    }                                           \
-    FuTypeRef Fu_accessor()                     \
-    {                                           \
-        return Fu;                              \
-    }                                           \
-    LTypeConstRef L_accessor() const            \
-    {                                           \
-        return L;                               \
-    }                                           \
-    LTypeRef L_accessor()                       \
-    {                                           \
-        return L;                               \
-    }                                           \
-    LxTypeConstRef Lx_accessor() const          \
-    {                                           \
-        return Lx;                              \
-    }                                           \
-    LxTypetRef Lx_accessor()                    \
-    {                                           \
-        return Lx;                              \
-    }                                           \
-    LuTypeConstRef Lu_accessor() const          \
-    {                                           \
-        return Lu;                              \
-    }                                           \
-    LuTypeRef Lu_accessor()                     \
-    {                                           \
-        return Lu;                              \
-    }                                           \
-    LxxTypeConstRef Lxx_accessor() const        \
-    {                                           \
-        return Lxx;                             \
-    }                                           \
-    LxxTypeRef Lxx_accessor()                   \
-    {                                           \
-        return Lxx;                             \
-    }                                           \
-    LxuTypeConstRef Lxu_accessor() const        \
-    {                                           \
-        return Lxu;                             \
-    }                                           \
-    LxuTypeRef Lxu_accessor()                   \
-    {                                           \
-        return Lxu;                             \
-    }                                           \
-    LuuTypeConstRef Luu_accessor() const        \
-    {                                           \
-        return Luu;                             \
-    }                                           \
-    LuuTypeRef Luu_accessor()                   \
-    {                                           \
-        return Luu;                             \
-    }                                           \
-    HTypeConstRef H_accessor() const            \
-    {                                           \
-        return H;                               \
-    }                                           \
-    HTypeRef H_accessor()                       \
-    {                                           \
-        return H;                               \
-    }                                           \
-    HxTypeConstRef Hx_accessor() const          \
-    {                                           \
-        return Hx;                              \
-    }                                           \
-    HxTypeRef Hx_accessor()                     \
-    {                                           \
-        return Hx;                              \
-    }                                           \
-    HuTypeConstRef Hu_accessor() const          \
-    {                                           \
-        return Hu;                              \
-    }                                           \
-    HuTypeRef Hu_accessor()                     \
-    {                                           \
-        return Hu;                              \
-    }                                           \
-    GTypeConstRef G_accessor() const            \
-    {                                           \
-        return G;                               \
-    }                                           \
-    GTypeRef G_accessor()                       \
-    {                                           \
-        return G;                               \
-    }                                           \
-    GxTypeConstRef Gx_accessor() const          \
-    {                                           \
-        return Gx;                              \
-    }                                           \
-    GxTypeRef Gx_accessor()                     \
-    {                                           \
-        return Gx;                              \
-    }                                           \
-    GuTypeConstRef Gu_accessor() const          \
-    {                                           \
-        return Gu;                              \
-    }                                           \
-    GuTypeRef Gu_accessor()                     \
-    {                                           \
-        return Gu;                              \
-    }
-
-// dX_t XDot; // XDot at x, u
-// MatrixXs_t Fx;   // Jacobian of the dynamics w.r.t. the state \f$\mathbf{x}\f$
-// MatrixXs_t Fu;   // Jacobian of the dynamics w.r.t. the control \f$\mathbf{u}\f$
-
-// Scalar cost;    // Cost at x, u
-// VectorXs_t Lx;  // Jacobian of the cost w.r.t. the state \f$\mathbf{x}\f$
-// VectorXs_t Lu;  // Jacobian of the cost w.r.t. the control \f$\mathbf{u}\f$
-// MatrixXs_t Lxx; // Hessian of the cost w.r.t. the state \f$\mathbf{x}\f$
-// MatrixXs_t Lxu; // Hessian of the cost w.r.t. the state \f$\mathbf{x}\f$ and
-//                 // control u
-// MatrixXs_t Luu; // Hessian of the cost w.r.t. the control \f$\mathbf{u}\f$
-
-// VectorXs_t g;  // Inequality constraint values
-// MatrixXs_t Gx; // Jacobian of the inequality constraint w.r.t. the state
-//                // \f$\mathbf{x}\f$
-// MatrixXs_t Gu; // Jacobian of the inequality constraint w.r.t. the control
-//                // \f$\mathbf{u}\f$
-
-// VectorXs_t h;  // Equality constraint values
-// MatrixXs_t Hx; // Jacobian of the equality constraint w.r.t. the state
-//                // \f$\mathbf{x}\f$
-// MatrixXs_t Hu; // Jacobian of the equality constraint w.r.t the control
-//                // \f$\mathbf{u}\f$
-
-#define GALILEO_NODE_DATA_BASE_ACCESSOR_DEFAULT_RETURN_TYPE \
-    typedef const dX_t &dXTypeConstRef;                     \
-    typedef dX_t &dXTypeRef;                                \
-    typedef const Fx_t &FxTypeConstRef;                     \
-    typedef Fx_t &FxTypeRef;                                \
-    typedef const Fu_t &FuTypeConstRef;                     \
-    typedef Fu_t &FuTypeRef;                                \
-    typedef const L_t &LTypeConstRef;                       \
-    typedef L_t &LTypeRef;                                  \
-    typedef const Lx_t &LxTypeConstRef;                     \
-    typedef Lx_t &LxTypeRef;                                \
-    typedef const Lu_t &LuTypeConstRef;                     \
-    typedef Lu_t &LuTypeRef;                                \
-    typedef const Lxx_t &LxxTypeConstRef;                   \
-    typedef Lxx_t &LxxTypeRef;                              \
-    typedef const Lxu_t &LxuTypeConstRef;                   \
-    typedef Lxu_t &LxuTypeRef;                              \
-    typedef const Luu_t &LuuTypeConstRef;                   \
-    typedef Luu_t &LuuTypeRef;                              \
-    typedef const H_t &HTypeConstRef;                       \
-    typedef H_t &HTypeRef;                                  \
-    typedef const Hx_t &HxTypeConstRef;                     \
-    typedef Hx_t &HxTypeRef;                                \
-    typedef const Hu_t &HuTypeConstRef;                     \
-    typedef Hu_t &HuTypeRef;                                \
-    typedef const G_t &GTypeConstRef;                       \
-    typedef G_t &GTypeRef;                                  \
-    typedef const Gx_t &GxTypeConstRef;                     \
-    typedef Gx_t &GxTypeRef;                                \
-    typedef const Gu_t &GuTypeConstRef;                     \
-    typedef Gu_t &GuTypeRef;
-
 namespace galileo
 {
 
@@ -227,184 +13,80 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using NodeDerived = typename traits<Derived>::NodeDerived;
-        GALILEO_NODE_DATA_TYPEDEF_TEMPLATE(NodeDerived);
+        GALILEO_NODE_BASIC_TYPEDEF(NodeDerived);
+        GALILEO_NODE_DATA_TYPEDEF(NodeDerived);
 
-        dXTypeConstRef XDot() const
-        {
-            return derived().XDot_accessor();
-        }
-        dXTypeRef XDot()
-        {
-            return derived().XDot_accessor();
-        }
+        FORWARD_GETTER(F);
+        FORWARD_GETTER(Fx);
+        FORWARD_GETTER(Fu);
 
-        FxTypeConstRef Fx() const
-        {
-            return derived().Fx_accessor();
-        }
-        FxTypeRef Fx()
-        {
-            return derived().Fx_accessor();
-        }
+        FORWARD_GETTER(L);
+        FORWARD_GETTER(Lx);
+        FORWARD_GETTER(Lu);
+        FORWARD_GETTER(Lxx);
+        FORWARD_GETTER(Lxu);
+        FORWARD_GETTER(Luu);
 
-        FuTypeConstRef Fu() const
-        {
-            return derived().Fu_accessor();
-        }
-        FuTypeRef Fu()
-        {
-            return derived().Fu_accessor();
-        }
+        FORWARD_GETTER(H);
+        FORWARD_GETTER(Hx);
+        FORWARD_GETTER(Hu);
 
-        LTypeConstRef L() const
-        {
-            return derived().L_accessor();
-        }
-        LTypeRef L()
-        {
-            return derived().L_accessor();
-        }
-
-        LxTypeConstRef Lx() const
-        {
-            return derived().Lx_accessor();
-        }
-        LxTypeRef Lx()
-        {
-            return derived().Lx_accessor();
-        }
-
-        LuTypeConstRef Lu() const
-        {
-            return derived().Lu_accessor();
-        }
-        LuTypeRef Lu()
-        {
-            return derived().Lu_accessor();
-        }
-
-        LxxTypeConstRef Lxx() const
-        {
-            return derived().Lxx_accessor();
-        }
-        LxxTypeRef Lxx()
-        {
-            return derived().Lxx_accessor();
-        }
-
-        LxuTypeConstRef Lxu() const
-        {
-            return derived().Lxu_accessor();
-        }
-        LxuTypeRef Lxu()
-        {
-            return derived().Lxu_accessor();
-        }
-
-        LuuTypeConstRef Luu() const
-        {
-            return derived().Luu_accessor();
-        }
-        LuuTypeRef Luu()
-        {
-            return derived().Luu_accessor();
-        }
-
-        HTypeConstRef H() const
-        {
-            return derived().H_accessor();
-        }
-        HTypeRef H()
-        {
-            return derived().H_accessor();
-        }
-
-        HxTypeConstRef Hx() const
-        {
-            return derived().Hx_accessor();
-        }
-        HxTypeRef Hx()
-        {
-            return derived().Hx_accessor();
-        }
-
-        HuTypeConstRef Hu() const
-        {
-            return derived().Hu_accessor();
-        }
-        HuTypeRef Hu()
-        {
-            return derived().Hu_accessor();
-        }
-
-        GTypeConstRef G() const
-        {
-            return derived().G_accessor();
-        }
-        GTypeRef G()
-        {
-            return derived().G_accessor();
-        }
-
-        GxTypeConstRef Gx() const
-        {
-            return derived().Gx_accessor();
-        }
-        GxTypeRef Gx()
-        {
-            return derived().Gx_accessor();
-        }
-
-        GuTypeConstRef Gu() const
-        {
-            return derived().Gu_accessor();
-        }
-        GuTypeRef Gu()
-        {
-            return derived().Gu_accessor();
-        }
-
-        // template <typename OtherDerived>
-        // bool operator==(const NodeDataBase<OtherDerived> &other) const
-        // {
-        //     return derived().isEqual(other.derived());
-        // }
-
-        // // Default operator== implementation
-        // bool isEqual(const NodeDataBase<Derived> & other) const
-        // {
-        // return internal::comparison_eq(joint_q(), other.joint_q())
-        //         && internal::comparison_eq(joint_v(), other.joint_v())
-        //         && internal::comparison_eq(S(), other.S()) && internal::comparison_eq(M(), other.M())
-        //         && internal::comparison_eq(v(), other.v()) && internal::comparison_eq(c(), other.c())
-        //         && internal::comparison_eq(U(), other.U())
-        //         && internal::comparison_eq(Dinv(), other.Dinv())
-        //         && internal::comparison_eq(UDinv(), other.UDinv());
-        // }
-
-        // // Default operator== implementation
-        // template <typename OtherDerived>
-        // bool isEqual(const NodeDataBase<OtherDerived> & /*other*/) const
-        // {
-        //     return false;
-        // }
-
-        // bool operator!=(const NodeDataBase<Derived> &other) const
-        // {
-        //     return derived().isNotEqual(other.derived());
-        // }
-
-        // // Default operator!= implementation
-        // bool isNotEqual(const NodeDataBase<Derived> &other) const
-        // {
-        //     return !(internal::comparison_eq(derived(), other.derived()));
-        // }
+        FORWARD_GETTER(G);
+        FORWARD_GETTER(Gx);
+        FORWARD_GETTER(Gu);
 
     protected:
-        // Default constructor: protected.
         inline NodeDataBase()
         {
         }
+
+        inline NodeDataBase(const NodeDataBase &clone)
+        {
+            *this = clone;
+        }
+
+        inline NodeDataBase &operator=(const NodeDataBase &clone)
+        {
+            F_ = clone.F_;
+            Fx_ = clone.Fx_;
+            Fu_ = clone.Fu_;
+
+            L_ = clone.L_;
+            Lx_ = clone.Lx_;
+            Lu_ = clone.Lu_;
+            Lxx_ = clone.Lxx_;
+            Lxu_ = clone.Lxu_;
+            Luu_ = clone.Luu_;
+
+            H_ = clone.H_;
+            Hx_ = clone.Hx_;
+            Hu_ = clone.Hu_;
+
+            G_ = clone.G_;
+            Gx_ = clone.Gx_;
+            Gu_ = clone.Gu_;
+
+            return *this;
+        }
+
+        F_t F_;   // Dynamics at x, u
+        Fx_t Fx_; // Jacobian of the dynamics w.r.t. the state
+        Fu_t Fu_; // Jacobian of the dynamics w.r.t. the control
+
+        L_t L_;     // Cost at x, u
+        Lx_t Lx_;   // Jacobian of the cost w.r.t. the state
+        Lu_t Lu_;   // Jacobian of the cost w.r.t. the control
+        Lxx_t Lxx_; // Hessian of the cost w.r.t. the state
+        Lxu_t Lxu_; // Hessian of the cost w.r.t. the state and control
+        Luu_t Luu_; // Hessian of the cost w.r.t. the control
+
+        H_t H_;   // Equality constraint values
+        Hx_t Hx_; // Jacobian of the equality constraint w.r.t. the state
+        Hu_t Hu_; // Jacobian of the equality constraint w.r.t the control
+
+        G_t G_;   // Inequality constraint values
+        Gx_t Gx_; // Jacobian of the inequality constraint w.r.t. the state
+        Gu_t Gu_; // Jacobian of the inequality constraint w.r.t. the control
 
     }; // struct NodeDataBase
 

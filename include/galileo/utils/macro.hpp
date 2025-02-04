@@ -39,7 +39,7 @@ namespace galileo
         {
             throw E(std::forward<Args>(args)...);
         }
-        
+
     } // namespace detail
 
 } // namespace galileo
@@ -105,6 +105,18 @@ namespace galileo
 #else
 #define GALILEO_ASSERT(...) ((void)0)
 #endif
+
+#define FORWARD_GETTER(getter_name)                \
+    /* lvalue-qualified overload */                \
+    decltype(auto) getter_name() &                 \
+    {                                              \
+        return derived().getter_name();            \
+    }                                              \
+    /* const-lvalue-qualified overload */          \
+    decltype(auto) getter_name() const &           \
+    {                                              \
+        return derived().getter_name();            \
+    }                                              \
 
 #define GALILEO_DEFAULT_CONSTRUCTOR(X) \
     X() = default;                     \
