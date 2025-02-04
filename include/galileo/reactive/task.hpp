@@ -2,7 +2,7 @@
 #define __galileo_reactive_task_hpp__
 
 #include "galileo/reactive/fwd.hpp"
-#include "galileo/math/matrix.hpp"
+#include "galileo/math/concat.hpp"
 #include <type_traits>
 
 namespace galileo

@@ -9,105 +9,19 @@ namespace galileo
     namespace math
     {
 
-        template <typename M1, typename M2>
-        struct VConMat
-        {
-        private:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-            static constexpr int R1 = Eigen::MatrixBase<M1>::RowsAtCompileTime;
-            static constexpr int C1 = Eigen::MatrixBase<M1>::ColsAtCompileTime;
-            static constexpr int R2 = Eigen::MatrixBase<M2>::RowsAtCompileTime;
-            static constexpr int C2 = Eigen::MatrixBase<M2>::ColsAtCompileTime;
-
-            // The new row count is either (R1+R2) if both are fixed, else Dynamic.
-            static constexpr int Rows =
-                (R1 != Eigen::Dynamic && R2 != Eigen::Dynamic)
-                    ? (R1 + R2)
-                    : Eigen::Dynamic;
-
-            // If both have known, identical columns => keep that at compile time
-            static constexpr bool sameFixedCols = (C1 != Eigen::Dynamic && C2 != Eigen::Dynamic && C1 == C2);
-            static constexpr int Cols = sameFixedCols ? C1 : Eigen::Dynamic;
-
-        public:
-            // The underlying scalar type (e.g. double)
-            using Scalar = typename M1::Scalar;
-
-            // The resulting type
-            using type = typename Eigen::Matrix<Scalar, Rows, Cols>;
-        };
-
-        template <typename V1, typename V2>
-        struct VConVec
-        {
-        private:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-            static constexpr int R1 = Eigen::MatrixBase<V1>::RowsAtCompileTime;
-            static constexpr int R2 = Eigen::MatrixBase<V2>::RowsAtCompileTime;
-
-            // The new row count is either (R1+R2) if both are fixed, else Dynamic.
-            static constexpr int Rows =
-                (R1 != Eigen::Dynamic && R2 != Eigen::Dynamic)
-                    ? (R1 + R2)
-                    : Eigen::Dynamic;
-
-        public:
-            // The underlying scalar type (e.g. double)
-            using Scalar = typename V1::Scalar;
-
-            // The resulting type
-            using type = typename Eigen::Matrix<Scalar, Rows, 1>;
-        };
-
-        template <typename M1, typename M2>
-        static typename VConMat<std::decay_t<M1>, std::decay_t<M2>>::type vertcat(M1 &&m1, M2 &&m2)
-        {
-            // 'std::decay_t<M1>' strips references and cv-qualifiers,
-            // so if M1 is exactly some Eigen::Matrix<double,R,C> or expression,
-            // we unify that type with VConMat.
-
-            using M1Plain = std::decay_t<M1>;
-            using M2Plain = std::decay_t<M2>;
-            using ReturnType = typename VConMat<M1Plain, M2Plain>::type;
-
-            // (1) Fully fixed in rows & cols
-            if constexpr (ReturnType::RowsAtCompileTime != Eigen::Dynamic &&
-                          ReturnType::ColsAtCompileTime != Eigen::Dynamic)
-            {
-                ReturnType res; // e.g. Matrix<double, R1+R2, C>
-                res << m1, m2;  // one pass filling top/bottom
-                return res;
-            }
-            // (2) Fixed cols, dynamic rows
-            else if constexpr (ReturnType::RowsAtCompileTime == Eigen::Dynamic &&
-                               ReturnType::ColsAtCompileTime != Eigen::Dynamic)
-            {
-                const int totalRows = m1.rows() + m2.rows();
-                ReturnType res(totalRows, ReturnType::ColsAtCompileTime);
-                res << m1, m2;
-                return res;
-            }
-            // (3) Fixed rows, dynamic cols (unusual for vertical stacking, but included)
-            else if constexpr (ReturnType::RowsAtCompileTime != Eigen::Dynamic &&
-                               ReturnType::ColsAtCompileTime == Eigen::Dynamic)
-            {
-                const int totalCols = m1.cols(); // must match m2.cols() at runtime
-                ReturnType res(ReturnType::RowsAtCompileTime, totalCols);
-                res << m1, m2;
-                return res;
-            }
-            // (4) Fully dynamic
-            else
-            {
-                const int totalRows = m1.rows() + m2.rows();
-                const int totalCols = m1.cols(); // must match m2.cols() at runtime
-                ReturnType res(totalRows, totalCols);
-                res << m1, m2;
-                return res;
-            }
-        }
+        /**
+         * @brief An alias for square matrix
+         *
+         * @tparam Scalar The scalar type
+         * @tparam N The square dim
+         * @tparam Options See Eigen
+         * @tparam MaxRows See Eigen
+         * @tparam MaxCols See Eigen
+         *
+         * @see Eigen::Matrix
+         */
+        template <typename Scalar, int N, int Options = 0, int MaxRows = N, int MaxCols = N>
+        using SquareMatrix = Eigen::Matrix<Scalar, N, N, Options, MaxRows, MaxCols>;
 
         /**
          * @brief Check if the input (square) matrix is symmetric
@@ -159,7 +73,6 @@ namespace galileo
             const typename _EigenDerived::Scalar eps = 1e-8)
         {
             Eigen::SelfAdjointEigenSolver<_EigenDerived> eigensolver(M);
-            GALILEO_ASSERT(eigensolver.info() == Eigen::Success);
             if (eigensolver.info() == Eigen::Success)
             {
                 // All eigenvalues must be >= 0:
@@ -182,7 +95,6 @@ namespace galileo
             const typename _EigenDerived::Scalar eps = 1e-8)
         {
             Eigen::SelfAdjointEigenSolver<_EigenDerived> eigensolver(M);
-            GALILEO_ASSERT(eigensolver.info() == Eigen::Success);
 
             if (eigensolver.info() == Eigen::Success)
             {
@@ -198,14 +110,50 @@ namespace galileo
                     epsilon *= Scalar(10);
                 }
 
-                GALILEO_ASSERT(
-                    isPositiveDefinite(M, eps),
-                    "Failed to make matrix positive definite.");
-
                 return epsilon != eps;
             }
 
             return false;
+        }
+
+        /**
+         * @brief Check if the input matrix is a covariance matrix
+         * (symmetric positive definite matrix)
+         *
+         * @tparam EigenDerived The EigenDerived type of the matrix
+         * @param M The matrix to test for covariance
+         * @param eps The test tolerance
+         * @return true is the matrix is a covariance, false otherwise
+         *
+         * @see isSymmetric
+         * @see isPositiveDefinite
+         */
+        template <typename EigenDerived>
+        static bool isCovariance(
+            const Eigen::MatrixBase<EigenDerived> &M,
+            const typename EigenDerived::Scalar eps = 1e-8)
+        {
+            return isSymmetric(M, eps) && isPositiveDefinite(M, eps);
+        }
+
+        /**
+         * @brief Enforce a matrix to be a covariance matrix
+         * (symmetric positive definite matrix)
+         *
+         * @tparam EigenDerived  The EigenDerived type of the matrix
+         * @param M The matrix to force as a covariance matrix
+         * @param eps The test tolerance
+         * @return true if enforcing covariance is successful, false otherwise
+         *
+         * @see enforceSymmetric
+         * @see enforcePositiveDefinite
+         */
+        template <typename EigenDerived>
+        static bool enforceCovariance(
+            Eigen::MatrixBase<EigenDerived> &M,
+            const typename EigenDerived::Scalar eps = 1e-8)
+        {
+            return enforceSymmetric(M, eps) && enforcePositiveDefinite(M, eps);
         }
 
         // This helper decays an arbitrary Eigen expression or matrix (Derived)

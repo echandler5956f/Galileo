@@ -1,41 +1,45 @@
 cmake_minimum_required(VERSION 3.13)
-project(galileo)
-set(PROJECT_NAME galileo)
-set(PROJECT_DESCRIPTION
-    "A general and efficient optimal control solver library for switched systems.")
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_COLOR_MAKEFILE ON)
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+project(galileo)
+
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+  message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
+
+set(Galileo_SOURCE_DIR ${Galileo_SOURCE_DIR})
+set(Galileo_BINARY_DIR ${Galileo_BINARY_DIR})
+
+# automatically parse the version number
+file(READ "${PROJECT_SOURCE_DIR}/include/galileo/macros.hpp" _galileo_version_header)
+string(REGEX MATCH "define[ \t]+GALILEO_WORLD_VERSION[ \t]+([0-9]+)" _galileo_world_version_match "${_galileo_version_header}")
+set(GALILEO_WORLD_VERSION "${CMAKE_MATCH_1}")
+string(REGEX MATCH "define[ \t]+GALILEO_MAJOR_VERSION[ \t]+([0-9]+)" _galileo_major_version_match "${_galileo_version_header}")
+set(GALILEO_MAJOR_VERSION "${CMAKE_MATCH_1}")
+string(REGEX MATCH "define[ \t]+GALILEO_MINOR_VERSION[ \t]+([0-9]+)" _galileo_minor_version_match "${_galileo_version_header}")
+set(GALILEO_MINOR_VERSION "${CMAKE_MATCH_1}")
+set(GALILEO_VERSION_NUMBER ${GALILEO_WORLD_VERSION}.${GALILEO_MAJOR_VERSION}.${GALILEO_MINOR_VERSION})
+
+include(CheckCXXCompilerFlag)
+include(GNUInstallDirs)
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+option(ENABLE_VECTORIZATION_SUOPPORT 
+    "Enable vectorization and further processor-related optimizations" OFF)
+option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
+option(BUILD_WITH_CASADI_SUPPORT "Build the library with CasADi for AD and code generation" OFF)
+option(BUILD_WITH_CPPADCODEGEN_SUPPORT "Build the library with CppADCodeGen for AD and code generation" OFF)
 
 add_compile_options(-Wall -Wextra -Wcast-align -Wpedantic
                     -Wdisabled-optimization -Wno-sign-conversion
                     -Wformat=2 -Winit-self -Wmissing-include-dirs 
                     -Woverloaded-virtual -Wshadow -Wsign-promo)
-
-option(BUILD_BENCHMARK "Build the benchmarks" ON)
-option(BUILD_EXAMPLES "Build the examples" ON)
-
-option(ENABLE_VECTORIZATION_SUOPPORT 
-    "Enable vectorization and further processor-related optimizations" OFF)
-option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" ON)
-option(BUILD_WITH_CASADI_SUPPORT "Build the library with CasADi for AD and code generation" ON)
-option(BUILD_WITH_CPPADCODEGEN_SUPPORT "Build the library with CppADCodeGen for AD and code generation" OFF)
-option(BUILD_WITH_COLLISION_SUPPORT 
-    "Build the library with the collision support (required HPP-FCL)" OFF)
-option(BUILD_WITH_PINOCCHIO_SUPPORT 
-    "Build the library with Pinocchio for kinematics and dynamics" ON)
-
-find_package(Threads REQUIRED)
-find_package (Eigen3 REQUIRED NO_MODULE)
-find_package(Boost REQUIRED COMPONENTS filesystem serialization system)
 
 if(ENABLE_VECTORIZATION_SUOPPORT)
     add_definitions(-march=native)
@@ -45,104 +49,86 @@ if(BUILD_WITH_OPENMP_SUPPORT)
   add_compile_options(-fopenmp -lgomp)
   find_package(OpenMP REQUIRED)
 endif()
-if(BUILD_WITH_CASADI_SUPPORT)
-  find_package(casadi REQUIRED)
-endif()
-if(BUILD_WITH_CPPADCODEGEN_SUPPORT)
-  find_package(cppadcg REQUIRED)
-endif()
-if(BUILD_WITH_COLLISION_SUPPORT)
-  find_package(hpp-fcl REQUIRED)
-endif()
-if(BUILD_WITH_PINOCCHIO_SUPPORT)
-  find_package(pinocchio REQUIRED)
-endif()
 
-add_library(galileo SHARED galileo.cc)
-set_target_properties(galileo PROPERTIES LINKER_LANGUAGE CXX)
+find_package(Eigen3 REQUIRED)
+find_package(mujoco REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(Threads REQUIRED)
 
-add_subdirectory(third-party)
-add_subdirectory(galileo)
+include_directories(${GALILEO3_INCLUDE_DIRS} ${mujoco_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(galileo
-    PUBLIC
-    Eigen3::Eigen
-    ${Boost_LIBRARIES}
-    Threads::Threads
-    Boost::filesystem
-    Boost::serialization
-    Boost::system)
+set(INCLUDE_INSTALL_DIR
+    "${CMAKE_INSTALL_INCLUDEDIR}/galileo"
+    CACHE PATH "The directory relative to CMAKE_PREFIX_PATH where Galileo header files are installed"
+    )
+set(CMAKEPACKAGE_INSTALL_DIR
+    "${CMAKE_INSTALL_DATADIR}/galileo/cmake"
+    CACHE PATH "The directory relative to CMAKE_PREFIX_PATH where GalileoConfig.cmake is installed"
+    )
+set(PKGCONFIG_INSTALL_DIR
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    CACHE PATH "The directory relative to CMAKE_PREFIX_PATH where galileo.pc is installed"
+    )
 
-if(BUILD_WITH_OPENMP_SUPPORT)
-  target_link_libraries(galileo
-    PUBLIC
-    OpenMP::OpenMP_CXX)
-endif()
-if(BUILD_WITH_CASADI_SUPPORT)
-  target_link_libraries(galileo
-  PUBLIC
-  casadi)
-endif()
-if(BUILD_WITH_CPPADCODEGEN_SUPPORT)
-  target_link_libraries(galileo
-  PUBLIC
-  cppadcg)
-endif()
-if(BUILD_WITH_COLLISION_SUPPORT)
-  target_link_libraries(galileo
-  PUBLIC
-  hpp-fcl::hpp-fcl)
-endif()
-if(BUILD_WITH_PINOCCHIO_SUPPORT)
-  target_link_libraries(galileo
-  PUBLIC
-  pinocchio::pinocchio)
-endif()
+include(RegexUtils)
+test_escape_string_as_regex()
+  
+install(
+    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/galileo/"
+    DESTINATION "${INCLUDE_INSTALL_DIR}" 
+    FILES_MATCHING PATTERN "*.hpp" PATTERN ".*" EXCLUDE
+)
 
-target_include_directories(galileo
-    PUBLIC
-    ${Boost_INCLUDE_DIRS})
+add_subdirectory(examples EXCLUDE_FROM_ALL)
 
-# Install the "galileoConfig.cmake" file and export the target
-install(TARGETS galileo
-  EXPORT galileoTargets
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-# Generate and install the export targets for "galileo"
-install(EXPORT galileoTargets
-  FILE galileoTargets.cmake
-  NAMESPACE galileo::
-  DESTINATION lib/cmake/galileo)
+set (GALILEO_VERSION_STRING ${GALILEO_VERSION_NUMBER} )
+set (GALILEO_VERSION_MAJOR ${GALILEO_WORLD_VERSION} )
+set (GALILEO_VERSION_MINOR ${GALILEO_MAJOR_VERSION} )
+set (GALILEO_VERSION_PATCH ${GALILEO_MINOR_VERSION} )
+set (GALILEO_DEFINITIONS "")
+set(GALILEO_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}")
+set(GALILEO_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
 
-# Generate and install galileoConfig.cmake
 include(CMakePackageConfigHelpers)
 
-# Generate ${PROJECT_NAME}Config.cmake
-configure_package_config_file(
-  galileoConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/galileoConfig.cmake
-  INSTALL_DESTINATION lib/cmake/galileo)
+add_library(galileo INTERFACE)
 
-# Install the generated "galileoConfig.cmake" file
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/galileoConfig.cmake
-    DESTINATION lib/cmake/galileo)
-install(FILES ${PROJECT_SOURCE_DIR}/cmake/FindCASADI.cmake
-    DESTINATION lib/cmake/galileo/Modules)
-install(FILES ${PROJECT_SOURCE_DIR}/cmake/Findcppadcg.cmake
-    DESTINATION lib/cmake/galileo/Modules)
+target_compile_definitions(galileo INTERFACE ${GALILEO_DEFINITIONS})
+target_include_directories(galileo INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
+)
 
-# Uninstall target
-# Source: https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
-if(NOT TARGET uninstall)
-  configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
+set_target_properties(galileo PROPERTIES EXPORT_NAME Galileo)
 
-  add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-endif()
+install(TARGETS galileo EXPORT GalileoTargets)
 
-add_subdirectory(examples)
+configure_package_config_file (
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GalileoConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/GalileoConfig.cmake
+    PATH_VARS GALILEO_INCLUDE_DIR GALILEO_ROOT_DIR
+    INSTALL_DESTINATION ${CMAKEPACKAGE_INSTALL_DIR}
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+  )
+
+set (_GALILEO_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
+unset (CMAKE_SIZEOF_VOID_P)
+write_basic_package_version_file (GalileoConfigVersion.cmake
+                                VERSION ${GALILEO_VERSION_NUMBER}
+                                COMPATIBILITY SameMajorVersion)
+set (CMAKE_SIZEOF_VOID_P ${_Galileo_CMAKE_SIZEOF_VOID_P})
+
+export(TARGETS galileo NAMESPACE Galileo:: FILE GalileoTargets.cmake)
+export(PACKAGE Galileo)
+install(EXPORT GalileoTargets NAMESPACE Galileo:: DESTINATION ${CMAKEPACKAGE_INSTALL_DIR})
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UseGalileo.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/GalileoConfig.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/GalileoConfigVersion.cmake
+          DESTINATION ${CMAKEPACKAGE_INSTALL_DIR} )
+
+# Add uninstall target
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GalileoUninstall.cmake)

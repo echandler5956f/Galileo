@@ -80,7 +80,8 @@ namespace galileo
                 this->m_isInitialized = true;
                 return *this;
             }
-        };
+
+        }; // class Cholesky
 
     } // namespace math
 

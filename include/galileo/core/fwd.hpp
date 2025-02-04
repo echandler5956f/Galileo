@@ -3,9 +3,6 @@
 
 #include "galileo/fwd.hpp"
 
-#include "galileo/core/node/fwd.hpp"
-#include "galileo/core/segment/fwd.hpp"
-
 namespace galileo
 {
 
