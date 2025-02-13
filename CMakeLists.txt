@@ -51,11 +51,13 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 
 find_package(Eigen3 REQUIRED)
+find_package(pinocchio REQUIRED)
 find_package(mujoco REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(Threads REQUIRED)
+find_package(qpOASES REQUIRED)
 
-include_directories(${GALILEO3_INCLUDE_DIRS} ${mujoco_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${GALILEO3_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${mujoco_INCLUDE_DIRS} ${qpOASES_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(INCLUDE_INSTALL_DIR
     "${CMAKE_INSTALL_INCLUDEDIR}/galileo"

@@ -72,37 +72,60 @@ namespace galileo
             using M2Plain = std::decay_t<M2>;
             using ReturnType = typename VConMat<M1Plain, M2Plain>::type;
 
-            // (1) Fully fixed in rows & cols
+            // Ensure the number of columns agree at runtime.
+            assert(m1.cols() == m2.cols() && "vertcat: matrices must have the same number of columns.");
+
+            // Grab the runtime number of rows.
+            const int rows1 = m1.rows();
+            const int rows2 = m2.rows();
+
+            // (A) If one (or both) matrices is empty, simply return the nonempty one.
+            if (rows1 == 0 && rows2 == 0)
+            {
+                // Both are empty: return an empty matrix with the proper number of columns.
+                return ReturnType(0, m1.cols());
+            }
+            else if (rows1 == 0)
+            {
+                // m1 is empty: return m2 converted to the ReturnType.
+                return ReturnType(m2);
+            }
+            else if (rows2 == 0)
+            {
+                // m2 is empty: return m1 converted to the ReturnType.
+                return ReturnType(m1);
+            }
+
+            // (B) Neither matrix is empty. Now do the normal vertical concatenation.
             if constexpr (ReturnType::RowsAtCompileTime != Eigen::Dynamic &&
                           ReturnType::ColsAtCompileTime != Eigen::Dynamic)
             {
-                ReturnType res; // e.g. Matrix<double, R1+R2, C>
-                res << m1, m2;  // one pass filling top/bottom
+                // Fully fixed-size: let Eigen’s comma initializer fill the result.
+                ReturnType res; // (size is fixed at compile time)
+                res << m1, m2;  // fills res in one pass (top rows from m1, bottom from m2)
                 return res;
             }
-            // (2) Fixed cols, dynamic rows
             else if constexpr (ReturnType::RowsAtCompileTime == Eigen::Dynamic &&
                                ReturnType::ColsAtCompileTime != Eigen::Dynamic)
             {
-                const int totalRows = m1.rows() + m2.rows();
+                const int totalRows = rows1 + rows2;
                 ReturnType res(totalRows, ReturnType::ColsAtCompileTime);
                 res << m1, m2;
                 return res;
             }
-            // (3) Fixed rows, dynamic cols (unusual for vertical stacking, but included)
             else if constexpr (ReturnType::RowsAtCompileTime != Eigen::Dynamic &&
                                ReturnType::ColsAtCompileTime == Eigen::Dynamic)
             {
+                // Unusual for vertical stacking (fixed rows, dynamic columns).
                 const int totalCols = m1.cols(); // must match m2.cols() at runtime
                 ReturnType res(ReturnType::RowsAtCompileTime, totalCols);
                 res << m1, m2;
                 return res;
             }
-            // (4) Fully dynamic
-            else
+            else // (Fully dynamic)
             {
-                const int totalRows = m1.rows() + m2.rows();
-                const int totalCols = m1.cols(); // must match m2.cols() at runtime
+                const int totalRows = rows1 + rows2;
+                const int totalCols = m1.cols(); // again, m1.cols() == m2.cols()
                 ReturnType res(totalRows, totalCols);
                 res << m1, m2;
                 return res;
