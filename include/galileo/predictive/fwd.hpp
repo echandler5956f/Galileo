@@ -6,6 +6,11 @@
 namespace galileo
 {
 
-}
+    namespace predictive
+    {
+
+    } // namespace predictive
+
+} // namespace galileo
 
 #endif // __galileo_predictive_fwd_hpp__

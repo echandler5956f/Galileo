@@ -6,6 +6,11 @@
 namespace galileo
 {
 
-}
+    namespace estimator
+    {
+
+    } // namespace estimator
+
+} // namespace galileo
 
 #endif // __galileo_estimator_fwd_hpp__

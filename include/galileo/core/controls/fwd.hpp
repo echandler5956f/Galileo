@@ -6,6 +6,11 @@
 namespace galileo
 {
 
-}
+    namespace core
+    {
+
+    } // namespace core
+
+} // namespace galileo
 
 #endif // __galileo_core_controls_fwd_hpp__

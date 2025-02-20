@@ -24,6 +24,7 @@
 #include <qpOASES.hpp>
 #include <memory>
 #include <iostream>
+#include <chrono>
 
 namespace galileo
 {
@@ -33,8 +34,8 @@ namespace galileo
         {
             int nq;
             int nv;
-            int nu;
-            int num_3dof_ee;
+            int actuatedDofNum;
+            int numThreeDofContacts;
         }; // struct Info
 
         // decision vars are [a, f, tau]
@@ -66,16 +67,16 @@ namespace galileo
                   info_(info),
                   ees_(ees)
             {
-                num_decision_vars_ = info_.nv + 3 * info_.num_3dof_ee + info_.nu;
+                num_decision_vars_ = info_.nv + 3 * info_.numThreeDofContacts + info_.actuatedDofNum;
 
-                num_contacts_ = info_.num_3dof_ee; // for now
+                num_contacts_ = info_.numThreeDofContacts; // for now
                 // all contacts are active
-                contact_flag_ = std::vector<bool>(info_.num_3dof_ee, true); // for now
+                contact_flag_ = std::vector<bool>(info_.numThreeDofContacts, true); // for now
 
                 q_measured_ = vector_t(info_.nq);
                 v_measured_ = vector_t(info_.nv);
 
-                control_limits_ = vector3_t::Constant(3, 500);
+                control_limits_ = vector3_t::Constant(3, 24);
 
                 std::cout << "WBCBase created" << std::endl;
             }
@@ -83,7 +84,7 @@ namespace galileo
             template <typename DesStateVector, typename DesControlVector, typename RBDStateVector>
             vector_t update(const Eigen::MatrixBase<DesStateVector> &stateDesired, const Eigen::MatrixBase<DesControlVector> &controlDesired, const Eigen::MatrixBase<RBDStateVector> &rbdStateMeasured, size_t mode, NumScalar period)
             {
-
+                auto start = std::chrono::high_resolution_clock::now();
                 updateMeasured(rbdStateMeasured.derived());
                 updateDesired(stateDesired.derived(), controlDesired.derived());
 
@@ -113,11 +114,16 @@ namespace galileo
                 // std::cout << "H: " << H << std::endl;
                 // std::cout << "g: " << g << std::endl;
 
+                auto end = std::chrono::high_resolution_clock::now();
+                std::cout << "QP Setup Time Taken: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds" << std::endl;
+
+                start = std::chrono::high_resolution_clock::now();
+
                 // Solve
                 qpOASES::QProblem qpProblem = qpOASES::QProblem(getNumDecisionVars(), numConstraints);
                 qpOASES::Options options;
                 options.setToMPC();
-                options.printLevel = qpOASES::PL_HIGH;
+                options.printLevel = qpOASES::PL_LOW;
                 options.enableEqualities = qpOASES::BT_TRUE;
                 qpProblem.setOptions(options);
                 int nWsr = 20;
@@ -131,9 +137,13 @@ namespace galileo
 
                 // std::cout << "QP solved" << std::endl;
 
-                vector_t tau = qpSol.tail(info_.nu);
+                // vector_t tau = qpSol.tail(info_.actuatedDofNum);
 
-                return tau;
+                end = std::chrono::high_resolution_clock::now();
+                std::cout << "QP Solve Time Taken: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds" << std::endl;
+
+                // return tau;
+                return qpSol;
             }
 
         protected:
@@ -152,9 +162,9 @@ namespace galileo
                 pinocchio::crba(model, data_measured_, q_measured_);
                 data_measured_.M.template triangularView<Eigen::StrictlyLower>() = data_measured_.M.transpose().template triangularView<Eigen::StrictlyLower>();
                 pinocchio::nonLinearEffects(model, data_measured_, q_measured_, v_measured_);
-                frame_jac_ = matrix_t(3 * info_.num_3dof_ee, info_.nv);
+                frame_jac_ = matrix_t(3 * info_.numThreeDofContacts, info_.nv);
                 frame_jac_.setZero();
-                for (size_t i = 0; i < info_.num_3dof_ee; ++i)
+                for (size_t i = 0; i < info_.numThreeDofContacts; ++i)
                 {
                     matrix_t jac = matrix_t::Zero(6, info_.nv);
                     pinocchio::getFrameJacobian(model, data_measured_, ees_[i].frame_idx, pinocchio::LOCAL_WORLD_ALIGNED, jac);
@@ -163,9 +173,9 @@ namespace galileo
 
                 // For not contact motion task
                 pinocchio::computeJointJacobiansTimeVariation(model, data_measured_, q_measured_, v_measured_);
-                frame_jac_dot_ = matrix_t(3 * info_.num_3dof_ee, info_.nv);
+                frame_jac_dot_ = matrix_t(3 * info_.numThreeDofContacts, info_.nv);
                 frame_jac_dot_.setZero();
-                for (size_t i = 0; i < info_.num_3dof_ee; ++i)
+                for (size_t i = 0; i < info_.numThreeDofContacts; ++i)
                 {
                     matrix_t jac = matrix_t::Zero(6, info_.nv);
                     pinocchio::getFrameJacobianTimeVariation(model, data_measured_, ees_[i].frame_idx, pinocchio::LOCAL_WORLD_ALIGNED, jac);
@@ -186,12 +196,13 @@ namespace galileo
                 Model model = model_;
 
                 const vector_t qDesired = stateDesired.head(info_.nq); // some mapping
-                const vector_t vDesired = stateDesired.tail(info_.nv); // some mapping
 
-                pinocchio::forwardKinematics(model, data_desired_, qDesired, vDesired);
+                pinocchio::forwardKinematics(model, data_desired_, qDesired);
                 pinocchio::computeJointJacobians(model, data_desired_, qDesired);
                 pinocchio::updateFramePlacements(model, data_desired_);
                 // updateCentroidalDynamics(pinocchioInterfaceDesired_, info_, qDesired);
+                const vector_t vDesired = stateDesired.tail(info_.nv); // some mapping
+                pinocchio::forwardKinematics(model, data_desired_, qDesired, vDesired);
             }
 
             TaskDefault<NumScalar> formulateConstraints()
@@ -235,19 +246,19 @@ namespace galileo
 
             TaskDefault<NumScalar> formulateFloatingBaseEomTask()
             {
-                matrix_t s(info_.nu, info_.nv);
+                matrix_t s(info_.actuatedDofNum, info_.nv);
                 s.setZero();
-                s.block(0, 6, info_.nu, info_.nu).setIdentity();
+                s.block(0, 6, info_.actuatedDofNum, info_.actuatedDofNum).setIdentity();
 
-                matrix_t a(info_.nv, num_decision_vars_);
+                // matrix_t a(info_.nv, num_decision_vars_);
 
-                a.setZero();
-                a.block(0, 0, info_.nv, info_.nv) = data_measured_.M;
-                a.block(0, info_.nv, info_.nv, 3 * info_.num_3dof_ee) = -frame_jac_.transpose();
-                a.block(0, info_.nv + 3 * info_.num_3dof_ee, info_.nv, info_.nu) = -s.transpose();
+                // a.setZero();
+                // a.block(0, 0, info_.nv, info_.nv) = data_measured_.M;
+                // a.block(0, info_.nv, info_.nv, 3 * info_.numThreeDofContacts) = -frame_jac_.transpose();
+                // a.block(0, info_.nv + 3 * info_.numThreeDofContacts, info_.nv, info_.actuatedDofNum) = -s.transpose();
 
                 // should be equal to this
-                // matrix_t a = (matrix_t(info_.nv, num_decision_vars_) << data_measured_.M, -frame_jac_.transpose(), -s.transpose()).finished();
+                matrix_t a = (matrix_t(info_.nv, num_decision_vars_) << data_measured_.M, -frame_jac_.transpose(), -s.transpose()).finished();
 
                 vector_t b = -data_measured_.nle;
 
@@ -256,15 +267,15 @@ namespace galileo
 
             TaskDefault<NumScalar> formulateTorqueLimitsTask()
             {
-                matrix_t d(2 * info_.nu, num_decision_vars_);
+                matrix_t d(2 * info_.actuatedDofNum, num_decision_vars_);
                 d.setZero();
-                matrix_t i = matrix_t::Identity(info_.nu, info_.nu);
-                d.block(0, info_.nv + 3 * info_.num_3dof_ee, info_.nu, info_.nu) = i;
-                d.block(info_.nu, info_.nv + 3 * info_.num_3dof_ee, info_.nu,
-                        info_.nu) = -i;
-                vector_t f(2 * info_.nu);
+                matrix_t i = matrix_t::Identity(info_.actuatedDofNum, info_.actuatedDofNum);
+                d.block(0, info_.nv + 3 * info_.numThreeDofContacts, info_.actuatedDofNum, info_.actuatedDofNum) = i;
+                d.block(info_.actuatedDofNum, info_.nv + 3 * info_.numThreeDofContacts, info_.actuatedDofNum,
+                        info_.actuatedDofNum) = -i;
+                vector_t f(2 * info_.actuatedDofNum);
                 f.setZero();
-                for (size_t l = 0; l < 2 * info_.nu / 3; ++l)
+                for (size_t l = 0; l < 2 * info_.actuatedDofNum / 3; ++l)
                 {
                     f.segment(3 * l, 3) = control_limits_;
                 }
@@ -279,7 +290,7 @@ namespace galileo
                 a.setZero();
                 b.setZero();
                 size_t j = 0;
-                for (size_t i = 0; i < info_.num_3dof_ee; i++)
+                for (size_t i = 0; i < info_.numThreeDofContacts; i++)
                 {
                     if (contact_flag_[i])
                     {
@@ -294,10 +305,10 @@ namespace galileo
 
             TaskDefault<NumScalar> formulateFrictionConeTask()
             {
-                matrix_t a(3 * (info_.num_3dof_ee - num_contacts_), num_decision_vars_);
+                matrix_t a(3 * (info_.numThreeDofContacts - num_contacts_), num_decision_vars_);
                 a.setZero();
                 size_t j = 0;
-                for (size_t i = 0; i < info_.num_3dof_ee; ++i)
+                for (size_t i = 0; i < info_.numThreeDofContacts; ++i)
                 {
                     if (!contact_flag_[i])
                     {
@@ -314,10 +325,10 @@ namespace galileo
                     0, 1, -friction_coeff_,
                     0, -1, -friction_coeff_;
 
-                matrix_t d(5 * num_contacts_ + 3 * (info_.num_3dof_ee - num_contacts_), num_decision_vars_);
+                matrix_t d(5 * num_contacts_ + 3 * (info_.numThreeDofContacts - num_contacts_), num_decision_vars_);
                 d.setZero();
                 j = 0;
-                for (size_t i = 0; i < info_.num_3dof_ee; ++i)
+                for (size_t i = 0; i < info_.numThreeDofContacts; ++i)
                 {
                     if (contact_flag_[i])
                     {
@@ -363,12 +374,12 @@ namespace galileo
             {
                 Model model = model_;
 
-                matrix_t a(3 * (info_.num_3dof_ee - num_contacts_), num_decision_vars_);
+                matrix_t a(3 * (info_.numThreeDofContacts - num_contacts_), num_decision_vars_);
                 vector_t b(a.rows());
                 a.setZero();
                 b.setZero();
                 size_t j = 0;
-                for (size_t i = 0; i < info_.num_3dof_ee; ++i)
+                for (size_t i = 0; i < info_.numThreeDofContacts; ++i)
                 {
                     vector3_t pos_measured_i = data_measured_.oMf[ees_[i].frame_idx].translation();
                     vector3_t vel_measured_i = pinocchio::getFrameVelocity(model, data_measured_, ees_[i].frame_idx, pinocchio::LOCAL_WORLD_ALIGNED).linear();
@@ -390,15 +401,15 @@ namespace galileo
             TaskDefault<NumScalar> formulateContactForceTask(const vector_t &controlDesired) const
             {
                 // std::cout << "Formulating contact force task" << std::endl;
-                matrix_t a(3 * info_.num_3dof_ee, num_decision_vars_);
+                matrix_t a(3 * info_.numThreeDofContacts, num_decision_vars_);
                 vector_t b(a.rows());
                 a.setZero();
 
-                for (size_t i = 0; i < info_.num_3dof_ee; ++i)
+                for (size_t i = 0; i < info_.numThreeDofContacts; ++i)
                 {
                     a.block(3 * i, info_.nv + 3 * i, 3, 3) = matrix_t::Identity(3, 3);
                 }
-                b = controlDesired.segment(info_.nv, 3 * info_.num_3dof_ee);
+                b = controlDesired.segment(info_.nv, 3 * info_.numThreeDofContacts);
 
                 return TaskDefault<NumScalar>(a, b, matrix_t(), vector_t());
             }
