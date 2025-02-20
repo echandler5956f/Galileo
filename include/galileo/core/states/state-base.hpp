@@ -1,7 +1,7 @@
 #ifndef __galileo_core_states_state_base_hpp__
 #define __galileo_core_states_state_base_hpp__
 
-#include "galileo/fwd.hpp"
+#include "galileo/core/fwd.hpp"
 
 namespace galileo
 {
