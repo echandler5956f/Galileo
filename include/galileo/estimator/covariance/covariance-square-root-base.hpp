@@ -31,12 +31,12 @@ namespace galileo
              * @param [in] covariance The input covariance
              * @return true if the covariance is successfully decomposed, false otherwise
              */
-            template <typename EigenDerived>
-            bool setCovariance(const Eigen::MatrixBase<EigenDerived> &covariance)
+            template <typename CovarianceMatrixType>
+            bool setCovariance(const Eigen::MatrixBase<CovarianceMatrixType> &covariance)
             {
                 static_assert(
-                    Eigen::MatrixBase<EigenDerived>::RowsAtCompileTime == Covariance<StateType>::RowsAtCompileTime &&
-                        Eigen::MatrixBase<EigenDerived>::ColsAtCompileTime == Covariance<StateType>::ColsAtCompileTime,
+                    Eigen::MatrixBase<CovarianceMatrixType>::RowsAtCompileTime == Covariance<StateType>::RowsAtCompileTime &&
+                        Eigen::MatrixBase<CovarianceMatrixType>::ColsAtCompileTime == Covariance<StateType>::ColsAtCompileTime,
                     "Covariance matrix dimensions must match.");
 
                 S.compute(covariance);
@@ -57,12 +57,12 @@ namespace galileo
              * @param covariance_square_root Lower triangular matrix
              * representing the covariance square root (i.e. P = LLˆT).
              */
-            template <typename EigenDerived>
-            bool setCovarianceSquareRoot(const Eigen::MatrixBase<EigenDerived> &covariance_square_root)
+            template <typename LowerTriangularMatrixType>
+            bool setCovarianceSquareRoot(const Eigen::MatrixBase<LowerTriangularMatrixType> &covariance_square_root)
             {
                 static_assert(
-                    Eigen::MatrixBase<EigenDerived>::RowsAtCompileTime == Covariance<StateType>::RowsAtCompileTime &&
-                        Eigen::MatrixBase<EigenDerived>::ColsAtCompileTime == Covariance<StateType>::ColsAtCompileTime,
+                    Eigen::MatrixBase<LowerTriangularMatrixType>::RowsAtCompileTime == Covariance<StateType>::RowsAtCompileTime &&
+                        Eigen::MatrixBase<LowerTriangularMatrixType>::ColsAtCompileTime == Covariance<StateType>::ColsAtCompileTime,
                     "Covariance matrix dimensions must match.");
 
                 CovarianceSquareRoot<StateType> S;

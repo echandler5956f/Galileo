@@ -11,23 +11,23 @@ namespace galileo
         /**
          * @brief An alias for covariance matrix
          *
-         * @tparam Type The vector type for which to generate a covariance
+         * @tparam VectorType The vector type for which to generate a covariance
          * (usually a state or measurement type)
          *
          * @see SquareMatrix
          */
-        template <typename Type>
-        using Covariance = SquareMatrix<typename traits<Type>::Scalar, traits<Type>::Size>;
+        template <typename VectorType>
+        using Covariance = SquareMatrix<typename traits<VectorType>::Scalar, traits<VectorType>::Size>;
 
         /**
          * @brief An alias for covariance square root matrix
-         * @param Type The vector type for which to generate a covariance
+         * @param VectorType The vector type for which to generate a covariance
          * (usually a state or measurement type)
          *
          * @see Cholesky
          */
-        template <typename Type>
-        using CovarianceSquareRoot = math::Cholesky<Covariance<Type>>;
+        template <typename VectorType>
+        using CovarianceSquareRoot = math::Cholesky<Covariance<VectorType>>;
 
     } // namespace estimator
 

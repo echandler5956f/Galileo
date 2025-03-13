@@ -5,8 +5,23 @@
 
 namespace galileo
 {
+
     namespace predictive
     {
+
+        template <
+            typename VarScalar,
+            typename NumScalar,
+            int Options,
+            template <typename, typename, int> class PhaseCollectionTpl>
+        struct PhaseModelTpl;
+
+        template <
+            typename VarScalar,
+            typename NumScalar,
+            int Options,
+            template <typename, typename, int> class PhaseCollectionTpl>
+        struct PhaseDataTpl;
 
     } // namespace predictive
 

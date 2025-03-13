@@ -3,6 +3,22 @@
 
 #include "galileo/core/fwd.hpp"
 
+#define GALILEO_STATE_BASIC_TYPEDEF(State)               \
+    using Scalar = typename traits<State>::Scalar;       \
+    using VarScalar = typename traits<State>::VarScalar; \
+    static constexpr int Options = traits<State>::Options;
+
+#define GALILEO_STATE_CONSTANTS(State)           \
+    static constexpr int NX = traits<State>::NX; \
+    static constexpr int NU = traits<State>::NU; \
+    static constexpr int NDX = traits<State>::NDX;
+
+#define GALILEO_STATE_TYPEDEF(State)                         \
+    using VectorNX_t = typename traits<State>::VectorNX_t;   \
+    using VectorNU_t = typename traits<State>::VectorNU_t;   \
+    using VectorNDX_t = typename traits<State>::VectorNDX_t; \
+    using MatrixNDX_t = typename traits<State>::MatrixNDX_t;
+
 namespace galileo
 {
 
@@ -39,10 +55,15 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+            using StateDerived = typename traits<Derived>::StateDerived;
+            GALILEO_STATE_BASIC_TYPEDEF(StateDerived);
+            GALILEO_STATE_CONSTANTS(StateDerived);
+            GALILEO_STATE_TYPEDEF(StateDerived);
+
             /**
              * @brief Generate a zero state
              */
-            VectorXs_t zero() const
+            VectorNX_t zero() const
             {
                 derived().zero();
             }
@@ -50,7 +71,7 @@ namespace galileo
             /**
              * @brief Generate a random state
              */
-            VectorXs_t rand() const
+            VectorNX_t rand() const
             {
                 derived().rand();
             }
@@ -264,9 +285,9 @@ namespace galileo
              * @return  Jacobians
              */
             template <typename StateVector1, typename StateVector2>
-            std::vector<MatrixXs_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
-                                             const Eigen::MatrixBase<StateVector2> &x1,
-                                             const Jcomponent firstsecond = both)
+            std::vector<MatrixNDX_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
+                                              const Eigen::MatrixBase<StateVector2> &x1,
+                                              const Jcomponent firstsecond = both)
             {
                 derived().Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
             }
@@ -279,9 +300,9 @@ namespace galileo
              * @return  Jacobians
              */
             template <typename StateVector, typename StateTangentVector>
-            std::vector<MatrixXs_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
-                                                  const Eigen::MatrixBase<StateTangentVector> &dx,
-                                                  const Jcomponent firstsecond = both)
+            std::vector<MatrixNDX_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
+                                                   const Eigen::MatrixBase<StateTangentVector> &dx,
+                                                   const Jcomponent firstsecond = both)
             {
                 derived().Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
             }
@@ -295,6 +316,14 @@ namespace galileo
             }
 
             /**
+             * @brief Return the dimension of the control tuple
+             */
+            std::size_t get_nu() const
+            {
+                return derived().get_nu();
+            }
+
+            /**
              * @brief Return the dimension of the tangent space of the state manifold
              */
             std::size_t get_ndx() const
@@ -305,7 +334,7 @@ namespace galileo
             /**
              * @brief Return the state lower bound
              */
-            const VectorXs_t &get_lb() const
+            const VectorNX_t &get_lb() const
             {
                 return derived().get_lb();
             }
@@ -313,7 +342,7 @@ namespace galileo
             /**
              * @brief Return the state upper bound
              */
-            const VectorXs_t &get_ub() const
+            const VectorNX_t &get_ub() const
             {
                 return derived().get_ub();
             }
@@ -337,7 +366,7 @@ namespace galileo
             }
 
         protected:
-            inline StateBase() : nx_(0), ndx_(0), has_limits_(false)
+            inline StateBase()
             {
             }
 
@@ -348,17 +377,14 @@ namespace galileo
 
             inline StateBase &operator=(const StateBase &clone)
             {
-                nx_ = clone.nx_;
-                ndx_ = clone.ndx_;
-                lb_ = clone.lb_;
-                ub_ = clone.ub_;
                 return *this;
             }
 
             std::size_t nx_;  //!< State dimension
+            std::size_t nu_;  //!< Control dimension
             std::size_t ndx_; //!< State rate dimension
-            VectorXs_t lb_;   //!< Lower state limits
-            VectorXs_t ub_;   //!< Upper state limits
+            VectorNX_t lb_;   //!< Lower state limits
+            VectorNX_t ub_;   //!< Upper state limits
 
         }; // class StateBase
 

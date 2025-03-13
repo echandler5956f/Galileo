@@ -15,21 +15,22 @@ namespace galileo
 namespace galileo
 {
 
+    template <typename T>
+    struct traits; // forward declaration
+
+    // From Eigen:
+    // Here we say once and for all that traits<const T> == traits<T>
+    // When constness must affect traits, it has to be constness on template parameters on which T itself depends.
+    // For example, traits<Map<const T> > != traits<Map<T> >, but
+    //              traits<const Map<T> > == traits<Map<T> >
+    template <typename T>
+    struct traits<const T> : traits<T>
+    {
+    }; // specialization for const types
+
+
     namespace internal
     {
-
-        template <typename T>
-        struct traits; // forward declaration
-
-        // From Eigen:
-        // Here we say once and for all that traits<const T> == traits<T>
-        // When constness must affect traits, it has to be constness on template parameters on which T itself depends.
-        // For example, traits<Map<const T> > != traits<Map<T> >, but
-        //              traits<const Map<T> > == traits<Map<T> >
-        template <typename T>
-        struct traits<const T> : traits<T>
-        {
-        }; // specialization for const types
 
         struct Blank
         {
@@ -39,8 +40,8 @@ namespace galileo
         template <class Derived>
         struct CRTP
         {
-            using NumScalar = typename traits<Derived>::NumScalar;
             using VarScalar = typename traits<Derived>::VarScalar;
+            using NumScalar = typename traits<Derived>::NumScalar;
 
         protected:
             /** Return reference to this as derived object */

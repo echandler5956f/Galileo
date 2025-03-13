@@ -6,16 +6,16 @@
 #define GALILEO_NODE_BASIC_TYPEDEF(Node)                              \
     using Scalar = typename traits<Node>::Scalar;                     \
     using VarScalar = typename traits<Node>::VarScalar;               \
-    constexpr int Options = traits<Node>::Options;                    \
+    static constexpr int Options = traits<Node>::Options;             \
     using NodeModelDerived = typename traits<Node>::NodeModelDerived; \
     using NodeDataDerived = typename traits<Node>::NodeDataDerived;
 
-#define GALILEO_NODE_CONSTANTS(Node)       \
-    constexpr int NX = traits<Node>::NX;   \
-    constexpr int NU = traits<Node>::NU;   \
-    constexpr int NDX = traits<Node>::NDX; \
-    constexpr int NH = traits<Node>::NH;   \
-    constexpr int NG = traits<Node>::NG;
+#define GALILEO_NODE_CONSTANTS(Node)              \
+    static constexpr int NX = traits<Node>::NX;   \
+    static constexpr int NU = traits<Node>::NU;   \
+    static constexpr int NDX = traits<Node>::NDX; \
+    static constexpr int NH = traits<Node>::NH;   \
+    static constexpr int NG = traits<Node>::NG;
 
 #define GALILEO_NODE_MODEL_TYPEDEF(Node)                                                    \
     using State_t = typename traits<Node>::State_t;                                         \

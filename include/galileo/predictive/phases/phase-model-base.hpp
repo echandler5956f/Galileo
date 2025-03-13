@@ -11,13 +11,11 @@
     using SegmentDataVector = typename traits<Phase>::SegmentDataVector;
 
 #define GALILEO_PHASE_CONSTANTS(Phase) \
-    constexpr int NumSegments = traits<Phase>::NumSegments;
+    static constexpr int NumSegments = traits<Phase>::NumSegments;
 
-#define GALILEO_PHASE_MODEL_TYPEDEF(Phase) \
-    using JumpModel_t = typename traits<Phase>::JumpModel_t;
+#define GALILEO_PHASE_MODEL_TYPEDEF(Phase)
 
-#define GALILEO_PHASE_DATA_TYPEDEF(Phase) \
-    using JumpData_t = typename traits<Phase>::JumpModel_t;
+#define GALILEO_PHASE_DATA_TYPEDEF(Phase)
 
 namespace galileo
 {
@@ -87,7 +85,6 @@ namespace galileo
 
             SegmentModelVector segments_;
 
-            JumpModel_t jump_;
             Scalar phase_period_;
 
             ControlParamModel_t control_parameterization_;

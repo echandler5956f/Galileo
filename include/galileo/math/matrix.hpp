@@ -117,41 +117,41 @@ namespace galileo
         }
 
         /**
-         * @brief Check if the input matrix is a covariance matrix
-         * (symmetric positive definite matrix)
+         * @brief Check if the input matrix is a symmetric 
+         * positive definite matrix
          *
-         * @tparam EigenDerived The EigenDerived type of the matrix
-         * @param M The matrix to test for covariance
+         * @tparam MatrixType The MatrixType type of the matrix
+         * @param M The matrix to test for symmetry and positive definiteness
          * @param eps The test tolerance
-         * @return true is the matrix is a covariance, false otherwise
+         * @return true is the matrix is SPD, false otherwise
          *
          * @see isSymmetric
          * @see isPositiveDefinite
          */
-        template <typename EigenDerived>
-        static bool isCovariance(
-            const Eigen::MatrixBase<EigenDerived> &M,
-            const typename EigenDerived::Scalar eps = 1e-8)
+        template <typename MatrixType>
+        static bool isSPD(
+            const Eigen::MatrixBase<MatrixType> &M,
+            const typename MatrixType::Scalar eps = 1e-8)
         {
             return isSymmetric(M, eps) && isPositiveDefinite(M, eps);
         }
 
         /**
-         * @brief Enforce a matrix to be a covariance matrix
-         * (symmetric positive definite matrix)
+         * @brief Enforce a matrix to be a symmetric 
+         * positive definite matrix
          *
-         * @tparam EigenDerived  The EigenDerived type of the matrix
-         * @param M The matrix to force as a covariance matrix
+         * @tparam MatrixType The MatrixType type of the matrix
+         * @param M The matrix to force as an SPD matrix
          * @param eps The test tolerance
-         * @return true if enforcing covariance is successful, false otherwise
+         * @return true if enforcing SPD is successful, false otherwise
          *
          * @see enforceSymmetric
          * @see enforcePositiveDefinite
          */
-        template <typename EigenDerived>
-        static bool enforceCovariance(
-            Eigen::MatrixBase<EigenDerived> &M,
-            const typename EigenDerived::Scalar eps = 1e-8)
+        template <typename MatrixType>
+        static bool enforceSPD(
+            Eigen::MatrixBase<MatrixType> &M,
+            const typename MatrixType::Scalar eps = 1e-8)
         {
             return enforceSymmetric(M, eps) && enforcePositiveDefinite(M, eps);
         }

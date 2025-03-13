@@ -11,7 +11,7 @@
     using NodeDataVector = typename traits<Segment>::NodeDataVector;
 
 #define GALILEO_SEGMENT_CONSTANTS(Segment) \
-    constexpr int NumStages = traits<Segment>::NumStages;
+    static constexpr int NumStages = traits<Segment>::NumStages;
 
 #define GALILEO_SEGMENT_MODEL_TYPEDEF(Segment)                                 \
     using ControlParamModel_t = typename traits<Segment>::ControlParamModel_t; \

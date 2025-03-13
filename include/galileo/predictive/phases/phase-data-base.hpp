@@ -33,7 +33,6 @@ namespace galileo
             GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
 
             SegmentDataVector segments;
-            JumpData_t jump;
 
         protected:
             inline PhaseDataBase()

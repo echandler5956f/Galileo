@@ -221,12 +221,12 @@ namespace galileo
         //   at compile time.
         //==============================================================================
 
-        template <typename Scalar, std::size_t N>
+        template <typename Scalar, int N>
         inline Eigen::Matrix<Scalar, N, 1>
         j_polynomial_zeros(Scalar alpha, Scalar beta)
         {
             using VectorType = Eigen::Matrix<Scalar, N, 1>;
-            constexpr std::size_t n = static_cast<std::size_t>(N);
+            static constexpr int n = N;
 
             if (alpha <= Scalar(-1) || beta <= Scalar(-1))
             {
