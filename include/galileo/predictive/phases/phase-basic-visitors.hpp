@@ -12,20 +12,85 @@ namespace galileo
         template <typename VarScalar,
                   typename NumScalar,
                   int Options,
-                  template <typename, typename, int> class PhaseCollectionTpl>
-        inline void calc_segment_from_phase(
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename ControlVectorType>
+        inline void segment_calc_zeroth_order(
             const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
             PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data,
-            const std::size_t &index);
+            const std::size_t &segment_index,
+            const Eigen::MatrixBase<StateVectorType> &xs,
+            const Eigen::MatrixBase<ControlVectorType> &us);
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename ControlVectorType>
+        inline void segment_calc_first_order(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data,
+            const std::size_t &segment_index,
+            const Eigen::MatrixBase<StateVectorType> &xs,
+            const Eigen::MatrixBase<ControlVectorType> &us);
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename ControlVectorType>
+        inline void segment_quasi_static(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data,
+            const std::size_t &segment_index,
+            const Eigen::MatrixBase<StateVectorType> &xs,
+            Eigen::MatrixBase<ControlVectorType> &us,
+            const std::size_t &maxiter,
+            const NumScalar &tol);
 
         template <typename VarScalar,
                   typename NumScalar,
                   int Options,
                   template <typename, typename, int> class PhaseCollectionTpl>
-        inline void calc_diff_segment_from_phase(
-            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
-            PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data,
-            const std::size_t &index);
+        inline int nx(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model);
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline int nu(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model);
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline int ndx(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model);
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline int nh(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model);
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline int ng(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model);
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline int nc(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model);
 
     } // namespace predictive
 

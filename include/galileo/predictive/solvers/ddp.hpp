@@ -26,8 +26,8 @@ namespace galileo
             static constexpr int Options = _Options;
 
             using OptimalControlProblem_t = OptimalControlProblem<VarScalar, NumScalar, Options, PhaseCollectionTpl>;
-            using VectorXvs = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
-            using VectorXns = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
+            using VectorXv = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
+            using VectorXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
         }; // struct traits
 
         template <typename _VarScalar, typename _NumScalar, int _Options, template <typename, typename, int> class PhaseCollectionTpl>
@@ -47,43 +47,43 @@ namespace galileo
 
             explicit SolverDDP(std::shared_ptr<ShootingProblem> problem);
 
-            virtual ~SolverDDP();
+            ~SolverDDP();
 
-            virtual bool solve(
-                const std::vector<VectorXns> &init_xs,
-                const std::vector<VectorXns> &init_us,
+            bool solve(
+                const std::vector<VectorXn> &init_xs,
+                const std::vector<VectorXn> &init_us,
                 const std::size_t maxiter = 100, const bool is_feasible = false,
                 const NumScalar init_reg = NAN);
 
-            virtual void computeDirection(const bool recalc = true);
+            void computeDirection(const bool recalc = true);
 
-            virtual NumScalar tryStep(const NumScalar steplength = 1);
+            NumScalar tryStep(const NumScalar steplength = 1);
 
-            virtual NumScalar stoppingCriteria();
+            NumScalar stoppingCriteria();
 
-            virtual const Vector2ns &expectedImprovement();
+            const Vector2ns &expectedImprovement();
 
-            virtual void resizeData();
+            void resizeData();
 
-            virtual NumScalar calcDiff();
+            NumScalar calcDiff();
 
-            virtual void backwardPass();
+            void backwardPass();
 
-            virtual void forwardPass(const NumScalar stepLength);
+            void forwardPass(const NumScalar stepLength);
 
-            virtual void computeActionValueFunction(
+            void computeActionValueFunction(
                 const std::size_t t, const std::shared_ptr<ActionModelAbstract> &model,
                 const std::shared_ptr<ActionDataAbstract> &data);
 
-            virtual void computeValueFunction(const std::size_t t, const std::shared_ptr<ActionModelAbstract> &model);
+            void computeValueFunction(const std::size_t t, const std::shared_ptr<ActionModelAbstract> &model);
 
-            virtual void computeGains(const std::size_t t);
+            void computeGains(const std::size_t t);
 
             void increaseRegularization();
 
             void decreaseRegularization();
 
-            virtual void allocateData();
+            void allocateData();
 
             NumScalar get_reg_incfactor() const;
 
@@ -103,7 +103,7 @@ namespace galileo
 
             const std::vector<MatrixXn> &get_Vxx() const;
 
-            const std::vector<VectorXns> &get_Vx() const;
+            const std::vector<VectorXn> &get_Vx() const;
 
             const std::vector<MatrixXn> &get_Qxx() const;
 
@@ -111,13 +111,13 @@ namespace galileo
 
             const std::vector<MatrixXn> &get_Quu() const;
 
-            const std::vector<VectorXns> &get_Qx() const;
+            const std::vector<VectorXn> &get_Qx() const;
 
-            const std::vector<VectorXns> &get_Qu() const;
+            const std::vector<VectorXn> &get_Qu() const;
 
             const std::vector<MatrixXnsRowMajor> &get_K() const;
 
-            const std::vector<VectorXns> &get_k() const;
+            const std::vector<VectorXn> &get_k() const;
             void set_reg_incfactor(const NumScalar reg_factor);
 
             void set_reg_decfactor(const NumScalar reg_factor);
@@ -143,30 +143,30 @@ namespace galileo
             NumScalar reg_max_;
 
             NumScalar cost_try_;
-            std::vector<VectorXns> xs_try_;
-            std::vector<VectorXns> us_try_;
-            std::vector<VectorXns> dx_;
+            std::vector<VectorXn> xs_try_;
+            std::vector<VectorXn> us_try_;
+            std::vector<VectorXn> dx_;
 
             std::vector<MatrixXn> Vxx_;
             MatrixXn Vxx_tmp_;
-            std::vector<VectorXns> Vx_;
+            std::vector<VectorXn> Vx_;
             std::vector<MatrixXn> Qxx_;
             std::vector<MatrixXn> Qxu_;
             std::vector<MatrixXn> Quu_;
-            std::vector<VectorXns> Qx_;
-            std::vector<VectorXns> Qu_;
+            std::vector<VectorXn> Qx_;
+            std::vector<VectorXn> Qu_;
             std::vector<MatrixXnsRowMajor> K_;
-            std::vector<VectorXns> k_;
+            std::vector<VectorXn> k_;
 
-            VectorXns xnext_;
+            VectorXn xnext_;
             MatrixXnsRowMajor FxTVxx_p_;
 
             std::vector<MatrixXnsRowMajor> FuTVxx_p_;
 
-            VectorXns fTVxx_p_;
+            VectorXn fTVxx_p_;
 
             std::vector<Eigen::LLT<MatrixXn>> Quu_llt_;
-            std::vector<VectorXns> Quuk_;
+            std::vector<VectorXn> Quuk_;
 
             std::vector<NumScalar> alphas_;
             NumScalar th_grad_;

@@ -24,29 +24,29 @@ namespace galileo
                 template <typename, int> class PhaseCollectionTpl,
                 typename ArgsTmp>
             static ReturnType run(
-                const PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model,
-                PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data,
+                const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model,
+                predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data,
                 ArgsTmp args)
             {
-                InternalVisitorModelAndData<PhaseModelTpl<Scalar, Options, PhaseCollectionTpl>, ArgsTmp>
+                InternalVisitorModelAndData<predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl>, ArgsTmp>
                     visitor(phase_data, args);
                 return boost::apply_visitor(visitor, phase_model);
             }
 
             template <typename Scalar, int Options, template <typename, int> class PhaseCollectionTpl>
             static ReturnType run(
-                const PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model,
-                PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data)
+                const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model,
+                predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data)
             {
-                InternalVisitorModelAndData<PhaseModelTpl<Scalar, Options, PhaseCollectionTpl>, NoArg>
+                InternalVisitorModelAndData<predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl>, NoArg>
                     visitor(phase_data);
                 return boost::apply_visitor(visitor, phase_model);
             }
 
             template <typename PhaseModelDerived, typename ArgsTmp>
             static ReturnType run(
-                const PhaseModelBase<PhaseModelDerived> &phase_model,
-                typename PhaseModelBase<PhaseModelDerived>::PhaseDataDerived &phase_data,
+                const predictive::PhaseModelBase<PhaseModelDerived> &phase_model,
+                typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived &phase_data,
                 ArgsTmp args)
             {
                 InternalVisitorModelAndData<PhaseModelDerived, ArgsTmp> visitor(phase_data, args);
@@ -55,8 +55,8 @@ namespace galileo
 
             template <typename PhaseModelDerived>
             static ReturnType run(
-                const PhaseModelBase<PhaseModelDerived> &phase_model,
-                typename PhaseModelBase<PhaseModelDerived>::PhaseDataDerived &phase_data)
+                const predictive::PhaseModelBase<PhaseModelDerived> &phase_model,
+                typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived &phase_data)
             {
                 InternalVisitorModelAndData<PhaseModelDerived, NoArg> visitor(phase_data);
                 return visitor(phase_model.derived());
@@ -68,7 +68,7 @@ namespace galileo
                 template <typename, int> class PhaseCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model, ArgsTmp args)
+            run(const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, phase_model);
@@ -80,49 +80,49 @@ namespace galileo
                 template <typename, int> class PhaseCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data, ArgsTmp args)
+            run(const predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, phase_data);
             }
 
             template <typename Scalar, int Options, template <typename, int> class PhaseCollectionTpl>
-            static ReturnType run(const PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model)
+            static ReturnType run(const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, phase_model);
             }
 
             template <typename Scalar, int Options, template <typename, int> class PhaseCollectionTpl>
-            static ReturnType run(const PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data)
+            static ReturnType run(const predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, phase_data);
             }
 
             template <typename PhaseModelDerived, typename ArgsTmp>
-            static ReturnType run(const PhaseModelBase<PhaseModelDerived> &phase_model, ArgsTmp args)
+            static ReturnType run(const predictive::PhaseModelBase<PhaseModelDerived> &phase_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(phase_model.derived());
             }
 
             template <typename PhaseDataDerived, typename ArgsTmp>
-            static ReturnType run(const PhaseDataBase<PhaseDataDerived> &phase_data, ArgsTmp args)
+            static ReturnType run(const predictive::PhaseDataBase<PhaseDataDerived> &phase_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(phase_data.derived());
             }
 
             template <typename PhaseModelDerived>
-            static ReturnType run(const PhaseModelBase<PhaseModelDerived> &phase_model)
+            static ReturnType run(const predictive::PhaseModelBase<PhaseModelDerived> &phase_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(phase_model.derived());
             }
 
             template <typename PhaseDataDerived>
-            static ReturnType run(const PhaseDataBase<PhaseDataDerived> &phase_data)
+            static ReturnType run(const predictive::PhaseDataBase<PhaseDataDerived> &phase_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(phase_data.derived());
@@ -140,14 +140,14 @@ namespace galileo
                 }
 
                 template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived> &phase_model) const
+                ReturnType operator()(const predictive::PhaseModelBase<PhaseModelDerived> &phase_model) const
                 {
                     return bf::invoke(
                         &PhaseVisitorDerived::template algo<PhaseModelDerived>,
                         bf::append(
                             boost::ref(phase_model.derived()),
                             boost::ref(
-                                boost::get<typename PhaseModelBase<PhaseModelDerived>::PhaseDataDerived>(phase_data)),
+                                boost::get<typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived>(phase_data)),
                             args));
                 }
 
@@ -172,14 +172,14 @@ namespace galileo
                 }
 
                 template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived> &phase_model) const
+                ReturnType operator()(const predictive::PhaseModelBase<PhaseModelDerived> &phase_model) const
                 {
                     return bf::invoke(
                         &PhaseVisitorDerived::template algo<PhaseModelDerived>,
                         bf::make_vector(
                             boost::ref(phase_model.derived()),
                             boost::ref(
-                                boost::get<typename PhaseModelBase<PhaseModelDerived>::PhaseDataDerived>(phase_data))));
+                                boost::get<typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived>(phase_data))));
                 }
 
                 PhaseData &phase_data;
@@ -194,7 +194,7 @@ namespace galileo
                 }
 
                 template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived> &phase_model) const
+                ReturnType operator()(const predictive::PhaseModelBase<PhaseModelDerived> &phase_model) const
                 {
                     return bf::invoke(
                         &PhaseVisitorDerived::template algo<PhaseModelDerived>,
@@ -202,7 +202,7 @@ namespace galileo
                 }
 
                 template <typename PhaseDataDerived>
-                ReturnType operator()(const PhaseDataBase<PhaseDataDerived> &phase_data) const
+                ReturnType operator()(const predictive::PhaseDataBase<PhaseDataDerived> &phase_data) const
                 {
                     return bf::invoke(
                         &PhaseVisitorDerived::template algo<PhaseDataDerived>,
@@ -225,13 +225,13 @@ namespace galileo
                 }
 
                 template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived> &phase_model) const
+                ReturnType operator()(const predictive::PhaseModelBase<PhaseModelDerived> &phase_model) const
                 {
                     return PhaseVisitorDerived::template algo<PhaseModelDerived>(phase_model.derived());
                 }
 
                 template <typename PhaseDataDerived>
-                ReturnType operator()(const PhaseDataBase<PhaseDataDerived> &phase_data) const
+                ReturnType operator()(const predictive::PhaseDataBase<PhaseDataDerived> &phase_data) const
                 {
                     return PhaseVisitorDerived::template algo<PhaseDataDerived>(phase_data.derived());
                 }

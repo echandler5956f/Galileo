@@ -25,7 +25,7 @@ namespace galileo
             using VectorXvs = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
             using VectorXns = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
 
-        protected:
+        // protected:
             Trajectory<VarScalar, NumScalar, Options, PhaseCollectionTpl> trajectory_;
             VarScalar cost_;
             VectorXvs x0_;
