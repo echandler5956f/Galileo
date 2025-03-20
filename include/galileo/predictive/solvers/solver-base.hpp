@@ -15,8 +15,7 @@
 
 #define GALILEO_SOLVER_TYPEDEF(Solver)                                                \
     using OptimalControlProblem_t = typename traits<Solver>::OptimalControlProblem_t; \
-    enum FeasibilityNormOptions feasnorm_ = traits<Solver>::feasnorm_; \
-    using PrimalSolution_t = typename traits<Solver>::PrimalSolution_t;               \
+    enum FeasibilityNormOptions feasnorm_ = traits<Solver>::feasnorm_;                \
     using VectorXv = typename traits<Solver>::VectorXv;                               \
     using VectorXn = typename traits<Solver>::VectorXn;
 
@@ -42,16 +41,13 @@ namespace galileo
             GALILEO_SOLVER_BASIC_TYPEDEF(SolverDerived);
             GALILEO_SOLVER_TYPEDEF(SolverDerived);
 
-            template <typename StateVectorType>
-            void run(const NumScalar init_time, const Eigen::MatrixBase<StateVectorType> &init_state, const NumScalar final_time)
+            bool solve(const std::vector<VectorXn> &init_xs,
+                       const std::vector<VectorXn> &init_us,
+                       const std::size_t maxiter = 100,
+                       const bool is_feasible = false,
+                       const NumScalar init_reg = NAN)
             {
-                derived().run(init_time, init_state.derived(), final_time);
-            }
-
-            template <typename StateVectorType>
-            void run(const NumScalar init_time, const Eigen::MatrixBase<StateVectorType> &init_state, const NumScalar final_time, const PrimalSolution_t &primal_solution)
-            {
-                derived().run(init_time, init_state.derived(), final_time, primal_solution)
+                return derived().solve(init_xs, init_us, maxiter, is_feasible, init_reg);
             }
 
         protected:
@@ -68,6 +64,8 @@ namespace galileo
             {
                 return *this;
             }
+
+            void resizeData();
 
             NumScalar computeDynamicFeasibility();
 

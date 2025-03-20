@@ -4,8 +4,8 @@
 #include "galileo/core/fwd.hpp"
 
 #define GALILEO_STATE_BASIC_TYPEDEF(State)               \
-    using Scalar = typename traits<State>::Scalar;       \
     using VarScalar = typename traits<State>::VarScalar; \
+    using NumScalar = typename traits<State>::NumScalar;       \
     static constexpr int Options = traits<State>::Options;
 
 #define GALILEO_STATE_CONSTANTS(State)           \

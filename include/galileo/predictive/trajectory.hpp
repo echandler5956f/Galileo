@@ -47,17 +47,17 @@ namespace galileo
                 phase_offsets_ = offset;
             }
 
-            size_t find_phase_index(size_t g, const std::vector<size_t> &offsets)
+            size_t find_phase_index(size_t g)
             {
                 // offsets[i] <= g < offsets[i+1], find i
                 // e.g. by lower_bound:
                 //    we want the largest i s.t. offsets[i] <= g
                 //    but we must also check g < offsets[i+1].
                 // Example:
-                auto it = std::upper_bound(offsets.begin(), offsets.end(), g);
+                auto it = std::upper_bound(phase_offsets_.begin(), phase_offsets_.end(), g);
                 // upper_bound returns first element > g, so the phase is (it-1).
                 // But we must be sure it's not at offsets.begin()
-                size_t i = (it - offsets.begin()) - 1;
+                size_t i = (it - phase_offsets_.begin()) - 1;
                 return i;
             }
 

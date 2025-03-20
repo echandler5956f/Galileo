@@ -22,13 +22,13 @@ namespace galileo
             static constexpr int Options = _Options;
             using PhaseCollection = PhaseCollectionTpl<VarScalar, NumScalar, Options>;
 
-            using VectorXvs = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
-            using VectorXns = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
+            using VectorXv = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
+            using VectorXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
 
         // protected:
             Trajectory<VarScalar, NumScalar, Options, PhaseCollectionTpl> trajectory_;
             VarScalar cost_;
-            VectorXvs x0_;
+            VectorXv x0_;
 
         }; // class OptimalControlProblem
 

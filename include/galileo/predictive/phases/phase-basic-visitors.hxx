@@ -131,6 +131,403 @@ namespace galileo
             Algo::run(phase_model, phase_data, typename Algo::ArgsType(segment_index, xs, us, maxiter, tol));
         }
 
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        struct PhasePeriodVisitor
+            : fusion::PhaseUnaryVisitorBase<PhasePeriodVisitor<VarScalar, NumScalar, Options, PhaseCollectionTpl>>
+        {
+            using ArgsType = boost::fusion::vector<>;
+
+            template <typename PhaseModel>
+            static auto algo(
+                const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model)
+            {
+                return phase_model.phase_period_;
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline NumScalar phase_period(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model)
+        {
+            typedef PhasePeriodVisitor<VarScalar, NumScalar, Options, PhaseCollectionTpl> Algo;
+
+            return Algo::run(phase_model, typename Algo::ArgsType());
+        }
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline typename PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>::State_t::VectorNX_t state_zero(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model)
+        {
+            typedef StateZeroVisitor<NumScalar> Algo;
+
+            return Algo::run(phase_model, typename Algo::ArgsType());
+        }
+
+        template <typename NumScalar>
+        struct StateRandVisitor
+            : fusion::PhaseUnaryVisitorBase<StateRandVisitor<NumScalar>>
+        {
+            using ArgsType = boost::fusion::vector<>;
+
+            template <typename PhaseModel>
+            static auto algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data)
+            {
+                return phase_model.state_.rand();
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl>
+        inline typename PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>::State_t::VectorNX_t state_rand(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model)
+        {
+            typedef StateRandVisitor<NumScalar> Algo;
+
+            return Algo::run(phase_model, typename Algo::ArgsType());
+        }
+
+        template <typename StateVectorType1, typename StateVectorType2, typename StateTangentVectorType>
+        struct StateDiffVisitor
+            : fusion::PhaseUnaryVisitorBase<StateDiffVisitor<StateVectorType1, StateVectorType2, StateTangentVectorType>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>, Eigen::MatrixBase<StateTangentVectorType>>;
+
+            template <typename PhaseModel>
+            static void algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType1> &xs,
+                const Eigen::MatrixBase<StateVectorType2> &xs_next,
+                Eigen::MatrixBase<StateTangentVectorType> &dxout)
+            {
+                phase_model.state_.diff(xs.derived(), xs_next.derived(), dxout.derived());
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType1,
+                  typename StateVectorType2,
+                  typename StateTangentVectorType>
+        inline void state_diff(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType1> &xs,
+            const Eigen::MatrixBase<StateVectorType2> &xs_next,
+            Eigen::MatrixBase<StateTangentVectorType> &dxout)
+        {
+            typedef StateDiffVisitor<StateVectorType1, StateVectorType2, StateTangentVectorType> Algo;
+
+            Algo::run(phase_model, typename Algo::ArgsType(xs, xs_next, dxout));
+        }
+
+        template <typename StateVectorType, typename StateTangentVectorType, typename StateVectorType2>
+        struct StateIntegrateVisitor
+            : fusion::PhaseUnaryVisitorBase<StateIntegrateVisitor<StateVectorType, StateTangentVectorType, StateVectorType2>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Eigen::MatrixBase<StateVectorType2>>;
+
+            template <typename PhaseModel>
+            static void algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType> &x,
+                const Eigen::MatrixBase<StateTangentVectorType> &dx,
+                Eigen::MatrixBase<StateVectorType2> &xout)
+            {
+                phase_model.state_.integrate(x.derived(), dx.derived(), xout.derived());
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename StateTangentVectorType,
+                  typename StateVectorType2>
+        inline void state_integrate(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType> &x,
+            const Eigen::MatrixBase<StateTangentVectorType> &dx,
+            Eigen::MatrixBase<StateVectorType2> &xout)
+        {
+            typedef StateIntegrateVisitor<StateVectorType, StateTangentVectorType, StateVectorType2> Algo;
+
+            Algo::run(phase_model, typename Algo::ArgsType(x, dx, xout));
+        }
+
+        template <typename StateVectorType1, typename StateVectorType2, typename JMatrix1, typename JMatrix2>
+        struct StateJdiffVisitor
+            : fusion::PhaseUnaryVisitorBase<StateJdiffVisitor<StateVectorType1, StateVectorType2, JMatrix1, JMatrix2>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>, Eigen::MatrixBase<JMatrix1>, Eigen::MatrixBase<JMatrix2>, galileo::core::Jcomponent>;
+
+            template <typename PhaseModel>
+            static void algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType1> &x0,
+                const Eigen::MatrixBase<StateVectorType2> &x1,
+                Eigen::MatrixBase<JMatrix1> &Jfirst,
+                Eigen::MatrixBase<JMatrix2> &Jsecond,
+                const galileo::core::Jcomponent firstsecond)
+            {
+                phase_model.state_.Jdiff(x0.derived(), x1.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond);
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType1,
+                  typename StateVectorType2,
+                  typename JMatrix1,
+                  typename JMatrix2>
+        inline void state_jdiff(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType1> &x0,
+            const Eigen::MatrixBase<StateVectorType2> &x1,
+            Eigen::MatrixBase<JMatrix1> &Jfirst,
+            Eigen::MatrixBase<JMatrix2> &Jsecond,
+            const galileo::core::Jcomponent firstsecond)
+        {
+            typedef StateJdiffVisitor<StateVectorType1, StateVectorType2, JMatrix1, JMatrix2> Algo;
+
+            Algo::run(phase_model, typename Algo::ArgsType(x0, x1, Jfirst, Jsecond, firstsecond));
+        }
+
+        template <typename StateVectorType, typename StateTangentVectorType, typename JMatrix1, typename JMatrix2>
+        struct StateJintegrateVisitor
+            : fusion::PhaseUnaryVisitorBase<StateJintegrateVisitor<StateVectorType, StateTangentVectorType, JMatrix1, JMatrix2>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Eigen::MatrixBase<JMatrix1>, Eigen::MatrixBase<JMatrix2>, galileo::core::Jcomponent, galileo::core::AssignmentOp>;
+
+            template <typename PhaseModel>
+            static void algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType> &x,
+                const Eigen::MatrixBase<StateTangentVectorType> &dx,
+                Eigen::MatrixBase<JMatrix1> &Jfirst,
+                Eigen::MatrixBase<JMatrix2> &Jsecond,
+                const galileo::core::Jcomponent firstsecond,
+                const galileo::core::AssignmentOp op)
+            {
+                phase_model.state_.Jintegrate(x.derived(), dx.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond, op);
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename StateTangentVectorType,
+                  typename JMatrix1,
+                  typename JMatrix2>
+        inline void state_jintegrate(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType> &x,
+            const Eigen::MatrixBase<StateTangentVectorType> &dx,
+            Eigen::MatrixBase<JMatrix1> &Jfirst,
+            Eigen::MatrixBase<JMatrix2> &Jsecond,
+            const galileo::core::Jcomponent firstsecond,
+            const galileo::core::AssignmentOp op)
+        {
+            typedef StateJintegrateVisitor<StateVectorType, StateTangentVectorType, JMatrix1, JMatrix2> Algo;
+
+            Algo::run(phase_model, typename Algo::ArgsType(x, dx, Jfirst, Jsecond, firstsecond, op));
+        }
+
+        template <typename StateVectorType, typename StateTangentVectorType, typename JMatrix>
+        struct StateJintegrateTransportVisitor
+            : fusion::PhaseUnaryVisitorBase<StateJintegrateTransportVisitor<StateVectorType, StateTangentVectorType, JMatrix>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Eigen::MatrixBase<JMatrix>, galileo::core::Jcomponent>;
+
+            template <typename PhaseModel>
+            static void algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType> &x,
+                const Eigen::MatrixBase<StateTangentVectorType> &dx,
+                Eigen::MatrixBase<JMatrix> &Jin,
+                const galileo::core::Jcomponent firstsecond)
+            {
+                phase_model.state_.JintegrateTransport(x.derived(), dx.derived(), Jin.derived(), firstsecond);
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename StateTangentVectorType,
+                  typename JMatrix>
+        inline void state_jintegrate_transport(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType> &x,
+            const Eigen::MatrixBase<StateTangentVectorType> &dx,
+            Eigen::MatrixBase<JMatrix> &Jin,
+            const galileo::core::Jcomponent firstsecond)
+        {
+            typedef StateJintegrateTransportVisitor<StateVectorType, StateTangentVectorType, JMatrix> Algo;
+
+            Algo::run(phase_model, typename Algo::ArgsType(x, dx, Jin, firstsecond));
+        }
+
+        template <typename StateVectorType1, typename StateVectorType2>
+        struct StateDiffDxVisitor
+            : fusion::PhaseUnaryVisitorBase<StateDiffDxVisitor<StateVectorType1, StateVectorType2>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>>;
+
+            template <typename PhaseModel>
+            static auto algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType1> &x0,
+                const Eigen::MatrixBase<StateVectorType2> &x1)
+            {
+                return phase_model.state_.diff_dx(x0.derived(), x1.derived());
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType>
+        inline typename PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>::State_t::VectorNX_t state_diff_dx(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType> &x0,
+            const Eigen::MatrixBase<StateVectorType> &x1)
+        {
+            typedef StateDiffDxVisitor<StateVectorType, StateVectorType> Algo;
+
+            return Algo::run(phase_model, typename Algo::ArgsType(x0, x1));
+        }
+
+        template <typename StateVectorType, typename StateTangentVectorType>
+        struct StateIntegrateXVisitor
+            : fusion::PhaseUnaryVisitorBase<StateIntegrateXVisitor<StateVectorType, StateTangentVectorType>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>>;
+
+            template <typename PhaseModel>
+            static auto algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType> &x,
+                const Eigen::MatrixBase<StateTangentVectorType> &dx)
+            {
+                return phase_model.state_.integrate_x(x.derived(), dx.derived());
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename StateTangentVectorType>
+        inline typename PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>::State_t::VectorNX_t state_integrate_x(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType> &x,
+            const Eigen::MatrixBase<StateTangentVectorType> &dx)
+        {
+            typedef StateIntegrateXVisitor<StateVectorType, StateTangentVectorType> Algo;
+
+            return Algo::run(phase_model, typename Algo::ArgsType(x, dx));
+        }
+
+        template <typename StateVectorType1, typename StateVectorType2>
+        struct StateJdiffJsVisitor
+            : fusion::PhaseUnaryVisitorBase<StateJdiffJsVisitor<StateVectorType1, StateVectorType2>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>, galileo::core::Jcomponent>;
+
+            template <typename PhaseModel>
+            static auto algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType1> &x0,
+                const Eigen::MatrixBase<StateVectorType2> &x1,
+                const galileo::core::Jcomponent firstsecond)
+            {
+                return phase_model.state_.Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType1,
+                  typename StateVectorType2>
+        inline std::vector<typename PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>::State_t::MatrixNDX_t> state_jdiff_Js(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType1> &x0,
+            const Eigen::MatrixBase<StateVectorType2> &x1,
+            const galileo::core::Jcomponent firstsecond)
+        {
+            typedef StateJdiffJsVisitor<StateVectorType1, StateVectorType2> Algo;
+
+            return Algo::run(phase_model, typename Algo::ArgsType(x0, x1, firstsecond));
+        }
+
+        template <typename StateVectorType, typename StateTangentVectorType>
+        struct StateJintegrateJsVisitor
+            : fusion::PhaseUnaryVisitorBase<StateJintegrateJsVisitor<StateVectorType, StateTangentVectorType>>
+        {
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, galileo::core::Jcomponent>;
+
+            template <typename PhaseModel>
+            static auto algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+                const Eigen::MatrixBase<StateVectorType> &x,
+                const Eigen::MatrixBase<StateTangentVectorType> &dx,
+                const galileo::core::Jcomponent firstsecond)
+            {
+                return phase_model.state_.Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
+            }
+        };
+
+        template <typename VarScalar,
+                  typename NumScalar,
+                  int Options,
+                  template <typename, typename, int> class PhaseCollectionTpl,
+                  typename StateVectorType,
+                  typename StateTangentVectorType>
+        inline std::vector<typename PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>::State_t::MatrixNDX_t> state_jintegrate_Js(
+            const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+            const Eigen::MatrixBase<StateVectorType> &x,
+            const Eigen::MatrixBase<StateTangentVectorType> &dx,
+            const galileo::core::Jcomponent firstsecond)
+        {
+            typedef StateJintegrateJsVisitor<StateVectorType, StateTangentVectorType> Algo;
+
+            return Algo::run(phase_model, typename Algo::ArgsType(x, dx, firstsecond));
+        }
+
         struct PhaseNxVisitor : boost::static_visitor<int>
         {
             template <typename PhaseModelDerived>
@@ -292,6 +689,21 @@ namespace galileo
         {
             return PhaseNcVisitor::run(phase_model);
         }
+
+        template <typename NumScalar>
+        struct StateZeroVisitor
+            : fusion::PhaseUnaryVisitorBase<StateZeroVisitor<NumScalar>>
+        {
+            using ArgsType = boost::fusion::vector<>;
+
+            template <typename PhaseModel>
+            static auto algo(
+                const galileo::predictive::PhaseModelBase<PhaseModel> &phase_model,
+                typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data)
+            {
+                return phase_model.state_.zero();
+            }
+        };
 
     } // namespace predictive
 
