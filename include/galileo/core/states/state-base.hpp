@@ -37,18 +37,6 @@ namespace galileo
             return (firstsecond == first || firstsecond == second || firstsecond == both);
         }
 
-        enum AssignmentOp
-        {
-            setto,
-            addto,
-            rmfrom
-        };
-
-        inline bool is_a_AssignmentOp(AssignmentOp op)
-        {
-            return (op == setto || op == addto || op == rmfrom);
-        }
-
         template <typename Derived>
         class StateBase : internal::CRTP<Derived>
         {

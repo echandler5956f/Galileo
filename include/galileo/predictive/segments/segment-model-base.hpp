@@ -7,7 +7,6 @@
 #define GALILEO_SEGMENT_BASIC_TYPEDEF(Segment)                                 \
     using SegmentModelDerived = typename traits<Segment>::SegmentModelDerived; \
     using SegmentDataDerived = typename traits<Segment>::SegmentDataDerived;   \
-    using NodeModelVector = typename traits<Segment>::NodeModelVector;         \
     using NodeDataVector = typename traits<Segment>::NodeDataVector;
 
 #define GALILEO_SEGMENT_CONSTANTS(Segment) \
@@ -87,7 +86,7 @@ namespace galileo
                 return *this;
             }
 
-            NodeModelVector nodes_;
+            NodeModelDerived node_;
 
             StageCoefficients_t stage_coefficients_;
             Quadrature_t quadrature_;

@@ -10,16 +10,14 @@ namespace galileo
     {
 
         template <typename VarScalar, typename NumScalar, int Options>
-        class ActuationModelFull;
+        class ActuationModelFullTpl;
+        template <typename VarScalar, typename NumScalar, int Options>
+        struct ActuationDataFullTpl;
 
         template <typename VarScalar, typename NumScalar, int Options>
-        class ActuationDataFull;
-
+        class ActuationModelFloatingBaseTpl;
         template <typename VarScalar, typename NumScalar, int Options>
-        class ActuationModelFloatingBase;
-
-        template <typename VarScalar, typename NumScalar, int Options>
-        class ActuationDataFloatingBase;
+        struct ActuationDataFloatingBaseTpl;
 
     } // namespace core
 

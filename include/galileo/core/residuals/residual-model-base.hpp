@@ -11,6 +11,8 @@
     using ResidualDataDerived = typename traits<Residual>::ResidualDataDerived;
 
 #define GALILEO_RESIDUAL_CONSTANTS(Residual) \
+    static constexpr int NX = traits<Residual>::NX; \
+    static constexpr int NU = traits<Residual>::NU; \
     static constexpr int NR = traits<Residual>::NR;
 
 #define GALILEO_RESIDUAL_MODEL_TYPEDEF(Residual)

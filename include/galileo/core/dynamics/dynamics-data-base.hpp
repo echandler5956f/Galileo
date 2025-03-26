@@ -20,6 +20,11 @@ namespace galileo
             GALILEO_DYNAMICS_CONSTANTS(DynamicsDerived);
             GALILEO_DYNAMICS_DATA_TYPEDEF(DynamicsDerived);
 
+            ActuationData_t actuation;
+            F_t F;
+            Fx_t Fx;
+            Fu_t Fu;
+
         protected:
             inline DynamicsDataBase()
             {

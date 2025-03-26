@@ -3,18 +3,24 @@
 
 #include "galileo/core/dynamics/dynamics-base.hpp"
 
-#define GALILEO_DYNAMICS_BASIC_TYPEDEF(Dynamics)                                    \
-    using Scalar = typename traits<Dynamics>::Scalar;                                 \
-    using VarScalar = typename traits<Dynamics>::VarScalar;                           \
-    static constexpr int Options = traits<Dynamics>::Options;                                \
+#define GALILEO_DYNAMICS_BASIC_TYPEDEF(Dynamics)                                  \
+    using VarScalar = typename traits<Dynamics>::VarScalar;                       \
+    using NumScalar = typename traits<Dynamics>::NumScalar;                       \
+    static constexpr int Options = traits<Dynamics>::Options;                     \
     using DynamicsModelDerived = typename traits<Dynamics>::DynamicsModelDerived; \
     using DynamicsDataDerived = typename traits<Dynamics>::DynamicsDataDerived;
 
-#define GALILEO_DYNAMICS_CONSTANTS(Dynamics) \
+#define GALILEO_DYNAMICS_CONSTANTS(Dynamics)
 
-#define GALILEO_DYNAMICS_MODEL_TYPEDEF(Dynamics)
+#define GALILEO_DYNAMICS_MODEL_TYPEDEF(Dynamics)        \
+    using State_t = typename traits<Dynamics>::State_t; \
+    using ActuationModel_t = typename traits<Dynamics>::ActuationModel_t;
 
-#define GALILEO_DYNAMICS_DATA_TYPEDEF(Dynamics) \
+#define GALILEO_DYNAMICS_DATA_TYPEDEF(Dynamics)                         \
+    using ActuationData_t = typename traits<Dynamics>::ActuationData_t; \
+    using F_t = typename traits<Dynamics>::F_t;                         \
+    using Fx_t = typename traits<Dynamics>::Fx_t;                       \
+    using Fu_t = typename traits<Dynamics>::Fu_t;
 
 namespace galileo
 {
@@ -32,18 +38,20 @@ namespace galileo
             GALILEO_DYNAMICS_CONSTANTS(DynamicsDerived);
             GALILEO_DYNAMICS_MODEL_TYPEDEF(DynamicsDerived);
 
-            template <typename ResidualVectorType>
+            template <typename StateVectorType, typename ControlVectorType>
             void calc(DynamicsDataDerived &data,
-                      const Eigen::MatrixBase<ResidualVectorType> &r) const
+                      const Eigen::MatrixBase<StateVectorType> &x,
+                      const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calc(data, r.derived());
+                derived().calc(data, x.derived(), u.derived());
             }
 
-            template <typename ResidualVectorType>
+            template <typename StateVectorType, typename ControlVectorType>
             void calcDiff(DynamicsDataDerived &data,
-                          const Eigen::MatrixBase<ResidualVectorType> &r) const
+                          const Eigen::MatrixBase<StateVectorType> &x,
+                          const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calcDiff(data, r.derived());
+                derived().calcDiff(data, x.derived(), u.derived());
             }
 
         protected:
@@ -60,6 +68,9 @@ namespace galileo
             {
                 return *this;
             }
+
+            State_t *state_;
+            ActuationModel_t *actuation_;
 
         }; // class DynamicsModelBase
 

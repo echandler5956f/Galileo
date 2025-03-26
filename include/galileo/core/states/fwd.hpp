@@ -9,17 +9,17 @@ namespace galileo
     namespace core
     {
 
-        template <typename VarScalar, typename NumScalar, int Options>
-        class StateEuclidean;
+        template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
+        class StateEuclideanTpl;
 
-        template <typename VarScalar, typename NumScalar, int Options>
-        class StateSingleRigidBody;
+        template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
+        class StateSingleRigidBodyTpl;
 
-        template <typename VarScalar, typename NumScalar, int Options>
-        class StateCentroidalMomentumFullKinematics;
+        template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
+        class StateCentroidalMomentumFullKinematicsTpl;
         
-        template <typename VarScalar, typename NumScalar, int Options>
-        class StateFloatingBase;
+        template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
+        class StateFloatingBaseTpl;
 
     } // namespace core
 

@@ -6,6 +6,7 @@
 
 namespace galileo
 {
+
     namespace predictive
     {
 
@@ -16,28 +17,31 @@ namespace galileo
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             using NodeDerived = typename traits<Derived>::NodeDerived;
+            
             GALILEO_NODE_BASIC_TYPEDEF(NodeDerived);
             GALILEO_NODE_CONSTANTS(NodeDerived);
             GALILEO_NODE_DATA_TYPEDEF(NodeDerived);
 
-            ActuationData_t *actuation;
-            ConstraintDataCollection_t *constraints;
-            CostDataCollection_t *costs;
-            F_t F;
-            Fx_t Fx;
-            Fu_t Fu;
-            L_t L;
-            Lx_t Lx;
-            Lu_t Lu;
-            Lxx_t Lxx;
-            Lxu_t Lxu;
-            Luu_t Luu;
-            H_t H;
-            Hx_t Hx;
-            Hu_t Hu;
-            G_t G;
-            Gx_t Gx;
-            Gu_t Gu;
+            // F_t F;
+            // Fx_t Fx;
+            // Fu_t Fu;
+            // L_t L;
+            // Lx_t Lx;
+            // Lu_t Lu;
+            // Lxx_t Lxx;
+            // Lxu_t Lxu;
+            // Luu_t Luu;
+            // H_t H;
+            // Hx_t Hx;
+            // Hu_t Hu;
+            // G_t G;
+            // Gx_t Gx;
+            // Gu_t Gu;
+
+            // DynamicsData_t dynamics;
+            // ActuationData_t actuation;
+            // ConstraintDataCollection_t constraints;
+            // CostDataCollection_t costs;
 
         protected:
             inline NodeDataBase()

@@ -4,6 +4,10 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/phases/phase-model-base.hpp"
 
+// #define GALILEO_PHASE_DATA_BASE_DEFAULT_ACCESSOR \
+
+// #define GALILEO_PHASE_DATA_BASE_ACCESSOR_DEFAULT_RETURN_TYPE \
+
 namespace galileo
 {
 
@@ -32,7 +36,100 @@ namespace galileo
             GALILEO_SEGMENT_DATA_TYPEDEF(SegmentDerived);
             GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
 
-            SegmentDataVector segments;
+            // The fully expanded contents of each PhaseData derived class should be
+            // SegmentDataVector segments;
+            // ---For each segment data, we have---
+            // | - C_t C;
+            // | - Ck_t Ck;
+            // | - Cw_t Cw;
+            // | - ControlParamData_t control;
+            // |   | - W_t W;
+            // |   | - U_t U;
+            // |   | - Wu_t Wu;
+            // | - ConstraintDataCollection_t constraints;
+            // |   | - ResidualData_t residual;
+            // |   |   | - R_t R;
+            // |   |   | - Rx_t Rx;
+            // |   |   | - Ru_t Ru;
+            // |   |   | - Arr_Rx_t Arr_Rx;
+            // |   |   | - Arr_Ru_t Arr_Ru;
+            // |   | - Seg_H_t H;
+            // |   | - Seg_Hx_t Hx;
+            // |   | - Seg_Hu_t Hu;
+            // |   | - Seg_G_t G;
+            // |   | - Seg_Gx_t Gx;
+            // |   | - Seg_Gu_t Gu;
+            // | - CostDataCollection_t costs;
+            // |   | - ResidualData_t residual;
+            // |   |   | - R_t R;
+            // |   |   | - Rx_t Rx;
+            // |   |   | - Ru_t Ru;
+            // |   |   | - Arr_Rx_t Arr_Rx;
+            // |   |   | - Arr_Ru_t Arr_Ru;
+            // |   | - ActivationData_t activation;
+            // |   |   | - A_t A;
+            // |   |   | - Ar_t Ar;
+            // |   |   | - Arr_t Arr;
+            // |   | - L_t L;
+            // |   | - Lx_t Lx;
+            // |   | - Lu_t Lu;
+            // |   | - Lxx_t Lxx;
+            // |   | - Lxu_t Lxu;
+            // |   | - Luu_t Luu;
+            // | - NodeDataVector nodes;
+            // | ---For each node data, we have---
+            // |   | - ActuationData_t actuation;
+            // |   | - ConstraintDataCollection_t constraints;
+            // |   |   | - ResidualData_t residual;
+            // |   |   |   | - R_t R;
+            // |   |   |   | - Rx_t Rx;
+            // |   |   |   | - Ru_t Ru;
+            // |   |   |   | - Arr_Rx_t Arr_Rx;
+            // |   |   |   | - Arr_Ru_t Arr_Ru;
+            // |   |   | - H_t H;
+            // |   |   | - Hx_t Hx;
+            // |   |   | - Hu_t Hu;
+            // |   |   | - G_t G;
+            // |   |   | - Gx_t Gx;
+            // |   |   | - Gu_t Gu;
+            // |   | - CostDataCollection_t costs;
+            // |   |   | - ResidualData_t residual;
+            // |   |   |   | - R_t R;
+            // |   |   |   | - Rx_t Rx;
+            // |   |   |   | - Ru_t Ru;
+            // |   |   |   | - Arr_Rx_t Arr_Rx;
+            // |   |   |   | - Arr_Ru_t Arr_Ru;
+            // |   |   | - ActivationData_t activation;
+            // |   |   |   | - A_t A;
+            // |   |   |   | - Ar_t Ar;
+            // |   |   |   | - Arr_t Arr;
+            // |   |   | - L_t L;
+            // |   |   | - Lx_t Lx;
+            // |   |   | - Lu_t Lu;
+            // |   |   | - Lxx_t Lxx;
+            // |   |   | - Lxu_t Lxu;
+            // |   |   | - Luu_t Luu;
+            // |   | - DynamicsData_t dynamics;
+            // |   |   | - F_t F;
+            // |   |   | - Fx_t Fx;
+            // |   |   | - Fu_t Fu;
+
+            // Thus, we need generic accessors for each of the above.
+
+            C_t segment_C(const std::size_t &segment_index) const
+            {
+                return derived().segment_C(segment_index);
+            }
+
+            Ck_t segment_Ck(const std::size_t &segment_index) const
+            {
+                return derived().segment_Ck(segment_index);
+            }
+
+            Cw_t segment_Cw(const std::size_t &segment_index) const
+            {
+                return derived().segment_Cw(segment_index);
+            }
 
         protected:
             inline PhaseDataBase()

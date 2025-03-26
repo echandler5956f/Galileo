@@ -10,32 +10,32 @@ namespace galileo
     {
 
         template <typename Derived>
-        struct ActuationsDataBase : internal::CRTP<Derived>
+        struct ActuationDataBase : internal::CRTP<Derived>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ActuationsDerived = typename traits<Derived>::ActuationsDerived;
-            GALILEO_ACTUATIONS_BASIC_TYPEDEF(ActuationsDerived);
-            GALILEO_ACTUATIONS_CONSTANTS(ActuationsDerived);
-            GALILEO_ACTUATIONS_DATA_TYPEDEF(ActuationsDerived);
+            using ActuationDerived = typename traits<Derived>::ActuationDerived;
+            GALILEO_ACTUATIONS_BASIC_TYPEDEF(ActuationDerived);
+            GALILEO_ACTUATIONS_CONSTANTS(ActuationDerived);
+            GALILEO_ACTUATIONS_DATA_TYPEDEF(ActuationDerived);
 
         protected:
-            inline ActuationsDataBase()
+            inline ActuationDataBase()
             {
             }
 
-            inline ActuationsDataBase(const ActuationsDataBase &clone)
+            inline ActuationDataBase(const ActuationDataBase &clone)
             {
                 *this = clone;
             }
 
-            inline ActuationsDataBase &operator=(const ActuationsDataBase &clone)
+            inline ActuationDataBase &operator=(const ActuationDataBase &clone)
             {
                 return *this;
             }
 
-        }; // struct ActuationsDataBase
+        }; // struct ActuationDataBase
 
     } // namespace core
 

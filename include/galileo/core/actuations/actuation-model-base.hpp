@@ -3,18 +3,18 @@
 
 #include "galileo/core/actuations/actuation-base.hpp"
 
-#define GALILEO_ACTUATIONS_BASIC_TYPEDEF(Actuations)                                    \
-    using Scalar = typename traits<Actuations>::Scalar;                                 \
-    using VarScalar = typename traits<Actuations>::VarScalar;                           \
-    static constexpr int Options = traits<Actuations>::Options;                                \
-    using ActuationsModelDerived = typename traits<Actuations>::ActuationsModelDerived; \
-    using ActuationsDataDerived = typename traits<Actuations>::ActuationsDataDerived;
+#define GALILEO_ACTUATIONS_BASIC_TYPEDEF(Actuation)                                    \
+    using Scalar = typename traits<Actuation>::Scalar;                                 \
+    using VarScalar = typename traits<Actuation>::VarScalar;                           \
+    static constexpr int Options = traits<Actuation>::Options;                         \
+    using ActuationModelDerived = typename traits<Actuation>::ActuationModelDerived; \
+    using ActuationDataDerived = typename traits<Actuation>::ActuationDataDerived;
 
-#define GALILEO_ACTUATIONS_CONSTANTS(Actuations) \
+#define GALILEO_ACTUATIONS_CONSTANTS(Actuation)
 
-#define GALILEO_ACTUATIONS_MODEL_TYPEDEF(Actuations)
+#define GALILEO_ACTUATIONS_MODEL_TYPEDEF(Actuation)
 
-#define GALILEO_ACTUATIONS_DATA_TYPEDEF(Actuations) \
+#define GALILEO_ACTUATIONS_DATA_TYPEDEF(Actuation)
 
 namespace galileo
 {
@@ -22,46 +22,46 @@ namespace galileo
     {
 
         template <typename Derived>
-        class ActuationsModelBase : internal::CRTP<Derived>
+        class ActuationModelBase : internal::CRTP<Derived>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ActuationsDerived = typename traits<Derived>::ActuationsDerived;
-            GALILEO_ACTUATIONS_BASIC_TYPEDEF(ActuationsDerived);
-            GALILEO_ACTUATIONS_CONSTANTS(ActuationsDerived);
-            GALILEO_ACTUATIONS_MODEL_TYPEDEF(ActuationsDerived);
+            using ActuationDerived = typename traits<Derived>::ActuationDerived;
+            GALILEO_ACTUATIONS_BASIC_TYPEDEF(ActuationDerived);
+            GALILEO_ACTUATIONS_CONSTANTS(ActuationDerived);
+            GALILEO_ACTUATIONS_MODEL_TYPEDEF(ActuationDerived);
 
             template <typename ResidualVectorType>
-            void calc(ActuationsDataDerived &data,
+            void calc(ActuationDataDerived &data,
                       const Eigen::MatrixBase<ResidualVectorType> &r) const
             {
                 derived().calc(data, r.derived());
             }
 
             template <typename ResidualVectorType>
-            void calcDiff(ActuationsDataDerived &data,
+            void calcDiff(ActuationDataDerived &data,
                           const Eigen::MatrixBase<ResidualVectorType> &r) const
             {
                 derived().calcDiff(data, r.derived());
             }
 
         protected:
-            inline ActuationsModelBase()
+            inline ActuationModelBase()
             {
             }
 
-            inline ActuationsModelBase(const ActuationsModelBase &clone)
+            inline ActuationModelBase(const ActuationModelBase &clone)
             {
                 *this = clone;
             }
 
-            inline ActuationsModelBase &operator=(const ActuationsModelBase &clone)
+            inline ActuationModelBase &operator=(const ActuationModelBase &clone)
             {
                 return *this;
             }
 
-        }; // class ActuationsModelBase
+        }; // class ActuationModelBase
 
     } // namespace core
 

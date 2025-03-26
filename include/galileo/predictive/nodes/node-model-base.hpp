@@ -4,7 +4,7 @@
 #include "galileo/predictive/nodes/node-base.hpp"
 
 #define GALILEO_NODE_BASIC_TYPEDEF(Node)                              \
-    using Scalar = typename traits<Node>::Scalar;                     \
+    using NumScalar = typename traits<Node>::NumScalar;                     \
     using VarScalar = typename traits<Node>::VarScalar;               \
     static constexpr int Options = traits<Node>::Options;             \
     using NodeModelDerived = typename traits<Node>::NodeModelDerived; \
