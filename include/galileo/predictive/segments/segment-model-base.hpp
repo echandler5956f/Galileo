@@ -20,9 +20,9 @@
 
 #define GALILEO_SEGMENT_DATA_TYPEDEF(Segment)                                \
     using ControlParamData_t = typename traits<Segment>::ControlParamData_t; \
-    using C_t = typename traits<Segment>::C_t;                               \
-    using Ck_t = typename traits<Segment>::Ck_t;                             \
-    using Cw_t = typename traits<Segment>::Cw_t;
+    using S_t = typename traits<Segment>::S_t;                               \
+    using Sk_t = typename traits<Segment>::Sk_t;                             \
+    using Sw_t = typename traits<Segment>::Sw_t;
 
 namespace galileo
 {

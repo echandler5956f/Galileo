@@ -21,13 +21,13 @@ namespace galileo
                   template <typename V, typename N, int O> class _ResidualModelTpl>
         struct traits<ActivationQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>>
         {
-            using ResidualTpl = traits<_ResidualModelTpl<_VarScalar, _NumScalar, _Options>>::ResidualTpl;
+            using ResidualDerived = traits<_ResidualModelTpl<_VarScalar, _NumScalar, _Options>>::ResidualDerived;
 
             using VarScalar = _VarScalar;
             using NumScalar = _NumScalar;
             static constexpr int Options = _Options;
 
-            static constexpr int NR = traits<ResidualTpl>::NR;
+            static constexpr int NR = traits<ResidualDerived>::NR;
 
             using ActivationDataDerived = ActivationDataQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;
             using ActivationModelDerived = ActivationModelQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;

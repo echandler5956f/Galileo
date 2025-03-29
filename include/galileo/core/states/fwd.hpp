@@ -12,13 +12,7 @@ namespace galileo
         template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
         class StateEuclideanTpl;
 
-        template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
-        class StateSingleRigidBodyTpl;
-
-        template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
-        class StateCentroidalMomentumFullKinematicsTpl;
-
-        template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
+        template <typename VarScalar, typename NumScalar, int Options, int NQ = -1, int NV = -1, int NFb = -1>
         class StateMultibodyTpl;
 
     } // namespace core

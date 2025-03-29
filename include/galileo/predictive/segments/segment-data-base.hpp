@@ -28,11 +28,11 @@ namespace galileo
             GALILEO_NODE_DATA_TYPEDEF(NodeDerived);
             GALILEO_SEGMENT_DATA_TYPEDEF(SegmentDerived);
 
-            NodeDataVector nodes;
-            ControlParamData_t *control;
-            C_t C;
-            Ck_t Ck;
-            Cw_t Cw;
+            // NodeDataVector nodes;
+            // ControlParamData_t *control;
+            // S_t S;
+            // Sk_t Sk;
+            // Sw_t Sw;
 
         protected:
             inline SegmentDataBase()

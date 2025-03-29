@@ -10,14 +10,14 @@ namespace galileo
     {
 
         template <typename _NumScalar, int _N, int _Options>
-        class JacobiPolynomial
+        class JacobiPolynomialTpl
         {
         public:
             using NumScalar = _NumScalar;
             static constexpr int N = _N;
             static constexpr int Options = _Options;
 
-            JacobiPolynomial(const NumScalar &alpha, const NumScalar &beta) : alpha_(alpha), beta_(beta)
+            JacobiPolynomialTpl(const NumScalar &alpha, const NumScalar &beta) : alpha_(alpha), beta_(beta)
             {
                 compute_nodes_and_weights();
                 compute_coefficients();
@@ -25,34 +25,85 @@ namespace galileo
             }
 
             template <typename InputMatrixType, typename OutputVectorType>
-            inline void BarycentricInterpolation(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &terms, Eigen::MatrixBase<OutputVectorType> &output) const
+            void barycentricInterpolation(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputVectorType> &u) const
             {
                 typedef typename Eigen::internal::plain_row_type<OutputVectorType>::type RowVectorType;
 
-                assert(terms.cols() == N);
-                assert(t >= -1e-8 && t <= 1. + 1e-8);
+                assert(w.cols() == N);
+                assert(t >= 0. && t <= 1.);
 
                 // Compute the interpolated value
-                RowVectorType numerator = RowVectorType::Zero(terms.rows());
-                RowVectorType denominator = RowVectorType::Zero(terms.rows());
+                RowVectorType numerator = RowVectorType::Zero(w.rows());
+                RowVectorType denominator = RowVectorType::Zero(w.rows());
                 NumScalar interpolant;
                 for (std::size_t i = 0; i < N; ++i)
                 {
-                    if (std::abs(t - nodes_[i]) < 1e-6)
+                    if (std::abs(t - nodes_[i]) < 1e-8)
                     {
-                        output = terms.col(i);
+                        u = w.col(i);
                         return;
                     }
                     interpolant = barycentric_weights_(i) / (t - nodes_(i));
-                    numerator += interpolant * terms.col(i);
-                    denominator += RowVectorType::Constant(terms.rows(), interpolant);
+                    numerator += interpolant * w.col(i);
+                    denominator += RowVectorType::Constant(w.rows(), interpolant);
                 }
 
                 if ((denominator.array() == 0).any())
                 {
                     throw std::runtime_error("Error: Division by zero in BarycentricInterpolation");
                 }
-                output = numerator.array() / denominator.array();
+                u = numerator.array() / denominator.array();
+            }
+
+            template <typename InputMatrixType, typename OutputMatrixType>
+            void barycentricInterpolationDiff(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputMatrixType> &du_dw) const
+            {
+                assert(w.cols() == N);
+                assert(t >= NumScalar(0.) && t <= NumScalar(1.));
+
+                assert(du_dw.rows() == w.rows());
+                assert(du_dw.cols() == w.rows() * N);
+
+                // If t is very close to one of the nodes, the interpolation directly returns w.col(i).
+                // In that case, the sensitivity with respect to that column is the identity,
+                // and with respect to all other columns is zero.
+                for (std::size_t i = 0; i < N; ++i)
+                {
+                    if (std::abs(t - nodes_[i]) < 1e-8)
+                    {
+                        du_dw.setZero();
+                        du_dw.block(0, i * w.rows(), w.rows(), w.rows()) = Eigen::Matrix<NumScalar, w.rows(), w.rows, Options>::Identity();
+                        return;
+                    }
+                }
+
+                // Compute the barycentric coefficients c_i and their sum.
+                Eigen::Matrix<NumScalar, N, 1, Options> c;
+                c.setZero();
+                NumScalar sum_c = 0.0;
+                for (std::size_t i = 0; i < N; ++i)
+                {
+                    c[i] = barycentric_weights_[i] / (t - nodes_[i]);
+                    sum_c += c[i];
+                }
+
+                // Check for division by zero
+                if (std::abs(sum_c) < 1e-12)
+                {
+                    throw std::runtime_error("Error: Division by zero in barycentricInterpolationDiff");
+                }
+
+                // The interpolated value is u = (sum_i c_i * w.col(i)) / sum_c.
+                // Thus, for each element k of u:
+                //     u(k) = (sum_i c_i * w(k,i)) / sum_c.
+                // Therefore, the partial derivative with respect to w(k,j) is c_j/sum_c (if the row index matches).
+                // We pack these derivatives into a vector of matrices, where each matrix is (w.rows() x w.rows())
+                // representing the derivative with respect to one column of w.
+                for (std::size_t j = 0; j < N; ++j)
+                {
+                    // For each column j, the sensitivity matrix is diagonal with constant c[j] / sum_c.
+                    du_dw.block(0, j * w.rows(), w.rows(), w.rows()).diagonal().setConstant(c[j] / sum_c);
+                }
             }
 
         protected:
@@ -173,7 +224,7 @@ namespace galileo
             NumScalar alpha_;
             NumScalar beta_;
 
-        }; // class JacobiPolynomial
+        }; // class JacobiPolynomialTpl
 
     } // namespace math
 

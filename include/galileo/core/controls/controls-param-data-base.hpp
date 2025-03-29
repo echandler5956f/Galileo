@@ -20,9 +20,9 @@ namespace galileo
             GALILEO_CONTROL_PARAM_CONSTANTS(ControlParamDerived);
             GALILEO_CONTROL_PARAM_DATA_TYPEDEF(ControlParamDerived);
 
-            // W_t W;
-            // U_t U;
-            // Wu_t Wu;
+            U_t U;
+            W_t W;
+            Uw_t Uw;
 
         protected:
             inline ControlParamDataBase()

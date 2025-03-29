@@ -4,8 +4,8 @@
 #include "galileo/core/controls/controls-param-base.hpp"
 
 #define GALILEO_CONTROL_PARAM_BASIC_TYPEDEF(ControlParam)       \
-    using NumScalar = typename traits<ControlParam>::NumScalar; \
     using VarScalar = typename traits<ControlParam>::VarScalar; \
+    using NumScalar = typename traits<ControlParam>::NumScalar; \
     static constexpr int Options = traits<ControlParam>::Options;
 
 #define GALILEO_CONTROL_PARAM_CONSTANTS(ControlParam)   \
@@ -15,9 +15,9 @@
 #define GALILEO_CONTROL_PARAM_MODEL_TYPEDEF(ControlParam)
 
 #define GALILEO_CONTROL_PARAM_DATA_TYPEDEF(ControlParam) \
-    using W_t = typename traits<ControlParam>::W_t;      \
     using U_t = typename traits<ControlParam>::U_t;      \
-    using Wu_t = typename traits<ControlParam>::Wu_t;
+    using W_t = typename traits<ControlParam>::W_t;      \
+    using Uw_t = typename traits<ControlParam>::Uw_t;
 
 namespace galileo
 {
@@ -35,34 +35,34 @@ namespace galileo
             GALILEO_CONTROL_PARAM_CONSTANTS(ControlParamDerived);
             GALILEO_CONTROL_PARAM_MODEL_TYPEDEF(ControlParamDerived);
 
-            template <typename ControlVectorType>
+            template <typename ControlParamVectorType>
             void calc(ControlParamDataDerived &data, const NumScalar t,
-                      const Eigen::MatrixBase<ControlVectorType> &u) const
+                      const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
-                derived().calc(data, t, u.derived());
-            }
-
-            template <typename ControlVectorType>
-            void calcDiff(ControlDataDerived &data,
-                          const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                derived().calcDiff(data, t, u.derived());
+                derived().calc(data, t, w.derived());
             }
 
             template <typename ControlParamVectorType>
-            void params(ControlParamDataDerived &data, const NumScalar t,
-                        const Eigen::MatrixBase<ControlParamVectorType> &w) const
+            void calcDiff(ControlParamDataDerived &data,
+                          const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
-                derived().params(data, t, w.derived());
+                derived().calcDiff(data, w.derived());
             }
 
-            template <typename ControlParamBoundVectorType, typename ControlBoundVectorType>
-            void convertBounds(const Eigen::MatrixBase<ControlParamBoundVectorType> &w_lb,
-                               const Eigen::MatrixBase<ControlParamBoundVectorType> &w_ub,
-                               const Eigen::MatrixBase<ControlBoundVectorType> &u_lb,
-                               const Eigen::MatrixBase<ControlBoundVectorType> &u_ub) const
+            template <typename ControlVectorType>
+            void params(ControlParamDataDerived &data, const NumScalar t,
+                        const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().convertBounds(w_lb.derived(), w_ub.derived(), u_lb.derived(), u_ub.derived());
+                derived().params(data, t, u.derived());
+            }
+
+            template <typename ControlBoundVectorType, typename ControlParamBoundVectorType>
+            void convertBounds(const Eigen::MatrixBase<ControlBoundVectorType> &u_lb,
+                               const Eigen::MatrixBase<ControlBoundVectorType> &u_ub,
+                               const Eigen::MatrixBase<ControlParamBoundVectorType> &w_lb,
+                               const Eigen::MatrixBase<ControlParamBoundVectorType> &w_ub) const
+            {
+                derived().convertBounds(u_lb.derived(), u_ub.derived(), w_lb.derived(), w_ub.derived());
             }
 
             template <typename InputMatrixType, typename OutputMatrixType>
