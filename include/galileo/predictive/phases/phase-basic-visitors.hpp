@@ -117,7 +117,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType2> &x1,
             Eigen::MatrixBase<JMatrix1> &Jfirst,
             Eigen::MatrixBase<JMatrix2> &Jsecond,
-            const galileo::core::Jcomponent firstsecond = galileo::core::Jcomponent::both);
+            const Jcomponent firstsecond = Jcomponent::both);
 
         template <typename VarScalar,
                   typename NumScalar,
@@ -133,8 +133,8 @@ namespace galileo
             const Eigen::MatrixBase<StateTangentVectorType> &dx,
             Eigen::MatrixBase<JMatrix1> &Jfirst,
             Eigen::MatrixBase<JMatrix2> &Jsecond,
-            const galileo::core::Jcomponent firstsecond = galileo::core::Jcomponent::both,
-            const galileo::core::AssignmentOp op = galileo::core::AssignmentOp::setto);
+            const Jcomponent firstsecond = Jcomponent::both,
+            const AssignmentOp op = AssignmentOp::setto);
 
         template <typename VarScalar,
                   typename NumScalar,
@@ -148,7 +148,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<StateTangentVectorType> &dx,
             Eigen::MatrixBase<JMatrix> &Jin,
-            const galileo::core::Jcomponent firstsecond);
+            const Jcomponent firstsecond);
 
         template <typename VarScalar,
                   typename NumScalar,
@@ -181,7 +181,7 @@ namespace galileo
             const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
             const Eigen::MatrixBase<StateVectorType1> &x0,
             const Eigen::MatrixBase<StateVectorType2> &x1,
-            const galileo::core::Jcomponent firstsecond = galileo::core::Jcomponent::both);
+            const Jcomponent firstsecond = Jcomponent::both);
 
         template <typename VarScalar,
                   typename NumScalar,
@@ -193,7 +193,7 @@ namespace galileo
             const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<StateTangentVectorType> &dx,
-            const galileo::core::Jcomponent firstsecond = galileo::core::Jcomponent::both);
+            const Jcomponent firstsecond = Jcomponent::both);
 
         template <typename VarScalar,
                   typename NumScalar,

@@ -20,9 +20,9 @@ namespace galileo
             GALILEO_ACTIVATION_CONSTANTS(ActivationDerived);
             GALILEO_ACTIVATION_DATA_TYPEDEF(ActivationDerived);
 
-            A_t A;
-            Ar_t Ar;
-            Arr_t Arr;
+            // A_t A;
+            // Ar_t Ar;
+            // Arr_t Arr;
 
         protected:
             inline ActivationDataBase()

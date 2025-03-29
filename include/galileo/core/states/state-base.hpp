@@ -5,7 +5,7 @@
 
 #define GALILEO_STATE_BASIC_TYPEDEF(State)               \
     using VarScalar = typename traits<State>::VarScalar; \
-    using NumScalar = typename traits<State>::NumScalar;       \
+    using NumScalar = typename traits<State>::NumScalar; \
     static constexpr int Options = traits<State>::Options;
 
 #define GALILEO_STATE_CONSTANTS(State)           \
@@ -24,18 +24,6 @@ namespace galileo
 
     namespace core
     {
-
-        enum Jcomponent
-        {
-            both = 0,
-            first = 1,
-            second = 2
-        };
-
-        inline bool is_a_Jcomponent(Jcomponent firstsecond)
-        {
-            return (firstsecond == first || firstsecond == second || firstsecond == both);
-        }
 
         template <typename Derived>
         class StateBase : internal::CRTP<Derived>
@@ -367,12 +355,6 @@ namespace galileo
             {
                 return *this;
             }
-
-            std::size_t nx_;  //!< State dimension
-            std::size_t nu_;  //!< Control dimension
-            std::size_t ndx_; //!< State rate dimension
-            VectorNX_t lb_;   //!< Lower state limits
-            VectorNX_t ub_;   //!< Upper state limits
 
         }; // class StateBase
 

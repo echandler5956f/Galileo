@@ -20,20 +20,27 @@ namespace galileo
             GALILEO_ACTUATIONS_CONSTANTS(ActuationDerived);
             GALILEO_ACTUATIONS_DATA_TYPEDEF(ActuationDerived);
 
-        protected:
-            inline ActuationDataBase()
-            {
-            }
+            VectorTau_t tau;
+            VectorU_t u;
+            MatrixTauX_t dTaudX;
+            MatrixTauU_t dTaudU;
+            MatrixMtau_t Mtau;
+            std::vector<bool> tau_set;
 
-            inline ActuationDataBase(const ActuationDataBase &clone)
-            {
-                *this = clone;
-            }
+        // protected:
+        //     inline ActuationDataBase()
+        //     {
+        //     }
 
-            inline ActuationDataBase &operator=(const ActuationDataBase &clone)
-            {
-                return *this;
-            }
+        //     inline ActuationDataBase(const ActuationDataBase &clone)
+        //     {
+        //         *this = clone;
+        //     }
+
+        //     inline ActuationDataBase &operator=(const ActuationDataBase &clone)
+        //     {
+        //         return *this;
+        //     }
 
         }; // struct ActuationDataBase
 

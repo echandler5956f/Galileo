@@ -3,12 +3,14 @@
 
 #include "galileo/core/costs/cost-base.hpp"
 
-#define GALILEO_COST_BASIC_TYPEDEF(Cost)                              \
-    using Scalar = typename traits<Cost>::Scalar;                     \
-    using VarScalar = typename traits<Cost>::VarScalar;               \
-    static constexpr int Options = traits<Cost>::Options;                    \
-    using CostModelDerived = typename traits<Cost>::CostModelDerived; \
-    using CostDataDerived = typename traits<Cost>::CostDataDerived;
+#define GALILEO_COST_BASIC_TYPEDEF(Residual, Activation)                                \
+    using Scalar = typename traits<Residual>::Scalar;                                   \
+    using VarScalar = typename traits<Residual>::VarScalar;                             \
+    static constexpr int Options = traits<Residual>::Options;                           \
+    using ResidualModelDerived = typename traits<Residual>::ResidualModelDerived;       \
+    using ResidualDataDerived = typename traits<Residual>::ResidualDataDerived;         \
+    using ActivationModelDerived = typename traits<Activation>::ActivationModelDerived; \
+    using ActivationDataDerived = typename traits<Activation>::ActivationDataDerived;
 
 #define GALILEO_COST_CONSTANTS(Cost)
 
@@ -31,16 +33,17 @@ namespace galileo
     namespace core
     {
 
-        template <typename Derived>
-        class CostModelBase : internal::CRTP<Derived>
+        template <class _ResidualDerived, class _ActivationDerived>
+        class CostModel
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using CostDerived = typename traits<Derived>::CostDerived;
-            GALILEO_COST_BASIC_TYPEDEF(CostDerived);
-            GALILEO_COST_CONSTANTS(CostDerived);
-            GALILEO_COST_MODEL_TYPEDEF(CostDerived);
+            using ResidualDerived = typename traits<_ResidualDerived>::ResidualDerived;
+            using ActivationDerived = typename traits<_ActivationDerived>::ActivationDerived;
+            GALILEO_COST_BASIC_TYPEDEF(ResidualDerived, ActivationDerived);
+            GALILEO_COST_CONSTANTS(ResidualDerived, ActivationDerived);
+            GALILEO_COST_MODEL_TYPEDEF(ResidualDerived, ActivationDerived);
 
             template <typename StateVectorType, typename ControlVectorType>
             void calc(CostDataDerived &data,
@@ -67,20 +70,6 @@ namespace galileo
             }
 
         protected:
-            inline CostModelBase()
-            {
-            }
-
-            inline CostModelBase(const CostModelBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline CostModelBase &operator=(const CostModelBase &clone)
-            {
-                return *this;
-            }
-
             ResidualModel_t residual_;
             ActivationModel_t activation_;
 

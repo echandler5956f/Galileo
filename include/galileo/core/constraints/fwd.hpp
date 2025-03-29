@@ -17,6 +17,28 @@ namespace galileo
         {
         }; // struct ConstraintDataVoid
 
+        enum class ConstraintType
+        {
+            Equality = 0,
+            Inequality = 1
+        };
+
+        template <
+            typename VarScalar,
+            typename NumScalar,
+            int Options,
+            template <typename V, typename N, int O> class ResidualModelTpl,
+            ConstraintType EqualityInequality>
+        struct ConstraintModelResidualTpl;
+
+        template <
+            typename VarScalar,
+            typename NumScalar,
+            int Options,
+            template <typename V, typename N, int O> class ResidualModelTpl,
+            ConstraintType EqualityInequality>
+        struct ConstraintDataResidualTpl;
+
         template <typename VarScalar, typename NumScalar, int Options>
         struct ConstraintCollectionDefaultTpl;
 

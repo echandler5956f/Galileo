@@ -113,6 +113,18 @@ namespace galileo
         return (op == setto || op == addto || op == rmfrom);
     }
 
+    enum Jcomponent
+    {
+        both = 0,
+        first = 1,
+        second = 2
+    }; // enum Jcomponent
+
+    inline bool is_a_Jcomponent(Jcomponent firstsecond)
+    {
+        return (firstsecond == first || firstsecond == second || firstsecond == both);
+    }
+
     // Use an Eigen::Map if the matrix is shared.
     template <typename MatrixType, bool Share>
     using SelectMatrix = std::conditional_t<Share, Eigen::Map<MatrixType>, MatrixType>;

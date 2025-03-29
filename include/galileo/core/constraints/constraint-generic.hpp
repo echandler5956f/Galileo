@@ -54,9 +54,9 @@ namespace galileo
                   template <typename V, typename N, int O> class ConstraintCollectionTpl>
         struct traits<ConstraintDataTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>>
         {
-            typedef ConstraintTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl> ConstraintDerived;
-            typedef typename traits<ConstraintDerived>::VarScalar VarScalar;
-            typedef typename traits<ConstraintDerived>::NumScalar NumScalar;
+            using ConstraintDerived = ConstraintTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>;
+            using VarScalar = traits<ConstraintDerived>::VarScalar;
+            using NumScalar = traits<ConstraintDerived>::NumScalar;
         };
 
         template <typename _VarScalar,
@@ -65,9 +65,9 @@ namespace galileo
                   template <typename V, typename N, int O> class ConstraintCollectionTpl>
         struct traits<ConstraintModelTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>>
         {
-            typedef ConstraintTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl> ConstraintDerived;
-            typedef typename traits<ConstraintDerived>::VarScalar VarScalar;
-            typedef typename traits<ConstraintDerived>::NumScalar NumScalar;
+            using ConstraintDerived = ConstraintTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>;
+            using VarScalar = traits<ConstraintDerived>::VarScalar;
+            using NumScalar = traits<ConstraintDerived>::NumScalar;
         };
 
         template <typename _VarScalar,
@@ -82,6 +82,8 @@ namespace galileo
             using ConstraintDerived = ConstraintTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>;
             using Base = ConstraintDataBase<ConstraintDataTpl>;
 
+            GALILEO_CONSTRAINT_BASIC_TYPEDEF(ConstraintDerived);
+            GALILEO_CONSTRAINT_CONSTANTS(ConstraintDerived);
             GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
 
             using ConstraintCollection = ConstraintCollectionTpl<VarScalar, NumScalar, Options>;
@@ -187,6 +189,8 @@ namespace galileo
             using ConstraintDerived = ConstraintTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>;
             using Base = ConstraintModelBase<ConstraintModelTpl>;
 
+            GALILEO_CONSTRAINT_BASIC_TYPEDEF(ConstraintDerived);
+            GALILEO_CONSTRAINT_CONSTANTS(ConstraintDerived);
             GALILEO_CONSTRAINT_MODEL_TYPEDEF(ConstraintDerived);
 
             using ConstraintCollection = ConstraintCollectionTpl<VarScalar, NumScalar, Options>;

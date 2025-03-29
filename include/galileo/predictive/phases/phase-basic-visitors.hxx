@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <boost/fusion/container/generation/make_vector.hpp>
-#include "galileo/predictive/visitor/phase-unary-visitor.hpp"
+#include "galileo/predictive/phases/phase-unary-visitor.hpp"
 
 #include "galileo/predictive/phases/phase-basic-visitors.hpp"
 
@@ -275,7 +275,7 @@ namespace galileo
         struct StateJdiffVisitor
             : fusion::PhaseUnaryVisitorBase<StateJdiffVisitor<StateVectorType1, StateVectorType2, JMatrix1, JMatrix2>>
         {
-            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>, Eigen::MatrixBase<JMatrix1>, Eigen::MatrixBase<JMatrix2>, galileo::core::Jcomponent>;
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>, Eigen::MatrixBase<JMatrix1>, Eigen::MatrixBase<JMatrix2>, Jcomponent>;
 
             template <typename PhaseModel>
             static void algo(
@@ -285,7 +285,7 @@ namespace galileo
                 const Eigen::MatrixBase<StateVectorType2> &x1,
                 Eigen::MatrixBase<JMatrix1> &Jfirst,
                 Eigen::MatrixBase<JMatrix2> &Jsecond,
-                const galileo::core::Jcomponent firstsecond)
+                const Jcomponent firstsecond)
             {
                 phase_model.state_.Jdiff(x0.derived(), x1.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond);
             }
@@ -305,7 +305,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType2> &x1,
             Eigen::MatrixBase<JMatrix1> &Jfirst,
             Eigen::MatrixBase<JMatrix2> &Jsecond,
-            const galileo::core::Jcomponent firstsecond)
+            const Jcomponent firstsecond)
         {
             typedef StateJdiffVisitor<StateVectorType1, StateVectorType2, JMatrix1, JMatrix2> Algo;
 
@@ -316,7 +316,7 @@ namespace galileo
         struct StateJintegrateVisitor
             : fusion::PhaseUnaryVisitorBase<StateJintegrateVisitor<StateVectorType, StateTangentVectorType, JMatrix1, JMatrix2>>
         {
-            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Eigen::MatrixBase<JMatrix1>, Eigen::MatrixBase<JMatrix2>, galileo::core::Jcomponent, galileo::core::AssignmentOp>;
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Eigen::MatrixBase<JMatrix1>, Eigen::MatrixBase<JMatrix2>, Jcomponent, AssignmentOp>;
 
             template <typename PhaseModel>
             static void algo(
@@ -326,8 +326,8 @@ namespace galileo
                 const Eigen::MatrixBase<StateTangentVectorType> &dx,
                 Eigen::MatrixBase<JMatrix1> &Jfirst,
                 Eigen::MatrixBase<JMatrix2> &Jsecond,
-                const galileo::core::Jcomponent firstsecond,
-                const galileo::core::AssignmentOp op)
+                const Jcomponent firstsecond,
+                const AssignmentOp op)
             {
                 phase_model.state_.Jintegrate(x.derived(), dx.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond, op);
             }
@@ -347,8 +347,8 @@ namespace galileo
             const Eigen::MatrixBase<StateTangentVectorType> &dx,
             Eigen::MatrixBase<JMatrix1> &Jfirst,
             Eigen::MatrixBase<JMatrix2> &Jsecond,
-            const galileo::core::Jcomponent firstsecond,
-            const galileo::core::AssignmentOp op)
+            const Jcomponent firstsecond,
+            const AssignmentOp op)
         {
             typedef StateJintegrateVisitor<StateVectorType, StateTangentVectorType, JMatrix1, JMatrix2> Algo;
 
@@ -359,7 +359,7 @@ namespace galileo
         struct StateJintegrateTransportVisitor
             : fusion::PhaseUnaryVisitorBase<StateJintegrateTransportVisitor<StateVectorType, StateTangentVectorType, JMatrix>>
         {
-            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Eigen::MatrixBase<JMatrix>, galileo::core::Jcomponent>;
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Eigen::MatrixBase<JMatrix>, Jcomponent>;
 
             template <typename PhaseModel>
             static void algo(
@@ -368,7 +368,7 @@ namespace galileo
                 const Eigen::MatrixBase<StateVectorType> &x,
                 const Eigen::MatrixBase<StateTangentVectorType> &dx,
                 Eigen::MatrixBase<JMatrix> &Jin,
-                const galileo::core::Jcomponent firstsecond)
+                const Jcomponent firstsecond)
             {
                 phase_model.state_.JintegrateTransport(x.derived(), dx.derived(), Jin.derived(), firstsecond);
             }
@@ -386,7 +386,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<StateTangentVectorType> &dx,
             Eigen::MatrixBase<JMatrix> &Jin,
-            const galileo::core::Jcomponent firstsecond)
+            const Jcomponent firstsecond)
         {
             typedef StateJintegrateTransportVisitor<StateVectorType, StateTangentVectorType, JMatrix> Algo;
 
@@ -462,7 +462,7 @@ namespace galileo
         struct StateJdiffJsVisitor
             : fusion::PhaseUnaryVisitorBase<StateJdiffJsVisitor<StateVectorType1, StateVectorType2>>
         {
-            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>, galileo::core::Jcomponent>;
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType1>, Eigen::MatrixBase<StateVectorType2>, Jcomponent>;
 
             template <typename PhaseModel>
             static auto algo(
@@ -470,7 +470,7 @@ namespace galileo
                 typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
                 const Eigen::MatrixBase<StateVectorType1> &x0,
                 const Eigen::MatrixBase<StateVectorType2> &x1,
-                const galileo::core::Jcomponent firstsecond)
+                const Jcomponent firstsecond)
             {
                 return phase_model.state_.Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
             }
@@ -486,7 +486,7 @@ namespace galileo
             const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
             const Eigen::MatrixBase<StateVectorType1> &x0,
             const Eigen::MatrixBase<StateVectorType2> &x1,
-            const galileo::core::Jcomponent firstsecond)
+            const Jcomponent firstsecond)
         {
             typedef StateJdiffJsVisitor<StateVectorType1, StateVectorType2> Algo;
 
@@ -497,7 +497,7 @@ namespace galileo
         struct StateJintegrateJsVisitor
             : fusion::PhaseUnaryVisitorBase<StateJintegrateJsVisitor<StateVectorType, StateTangentVectorType>>
         {
-            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, galileo::core::Jcomponent>;
+            using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<StateTangentVectorType>, Jcomponent>;
 
             template <typename PhaseModel>
             static auto algo(
@@ -505,7 +505,7 @@ namespace galileo
                 typename galileo::predictive::PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
                 const Eigen::MatrixBase<StateVectorType> &x,
                 const Eigen::MatrixBase<StateTangentVectorType> &dx,
-                const galileo::core::Jcomponent firstsecond)
+                const Jcomponent firstsecond)
             {
                 return phase_model.state_.Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
             }
@@ -521,7 +521,7 @@ namespace galileo
             const PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<StateTangentVectorType> &dx,
-            const galileo::core::Jcomponent firstsecond)
+            const Jcomponent firstsecond)
         {
             typedef StateJintegrateJsVisitor<StateVectorType, StateTangentVectorType> Algo;
 

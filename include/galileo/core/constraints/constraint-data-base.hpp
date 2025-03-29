@@ -20,13 +20,6 @@ namespace galileo
             GALILEO_CONSTRAINT_CONSTANTS(ConstraintDerived);
             GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
 
-            // H_t H;
-            // Hx_t Hx;
-            // Hu_t Hu;
-            // G_t G;
-            // Gx_t Gx;
-            // Gu_t Gu;
-
         protected:
             inline ConstraintDataBase()
             {

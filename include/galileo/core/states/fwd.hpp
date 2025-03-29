@@ -17,9 +17,9 @@ namespace galileo
 
         template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
         class StateCentroidalMomentumFullKinematicsTpl;
-        
+
         template <typename VarScalar, typename NumScalar, int Options, int NX = -1, int NU = -1, int NDX = -1>
-        class StateFloatingBaseTpl;
+        class StateMultibodyTpl;
 
     } // namespace core
 

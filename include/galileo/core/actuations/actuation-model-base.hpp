@@ -3,10 +3,10 @@
 
 #include "galileo/core/actuations/actuation-base.hpp"
 
-#define GALILEO_ACTUATIONS_BASIC_TYPEDEF(Actuation)                                    \
-    using Scalar = typename traits<Actuation>::Scalar;                                 \
-    using VarScalar = typename traits<Actuation>::VarScalar;                           \
-    static constexpr int Options = traits<Actuation>::Options;                         \
+#define GALILEO_ACTUATIONS_BASIC_TYPEDEF(Actuation)                                  \
+    using Scalar = typename traits<Actuation>::Scalar;                               \
+    using VarScalar = typename traits<Actuation>::VarScalar;                         \
+    static constexpr int Options = traits<Actuation>::Options;                       \
     using ActuationModelDerived = typename traits<Actuation>::ActuationModelDerived; \
     using ActuationDataDerived = typename traits<Actuation>::ActuationDataDerived;
 
@@ -14,7 +14,12 @@
 
 #define GALILEO_ACTUATIONS_MODEL_TYPEDEF(Actuation)
 
-#define GALILEO_ACTUATIONS_DATA_TYPEDEF(Actuation)
+#define GALILEO_ACTUATIONS_DATA_TYPEDEF(Actuation)                 \
+    using VectorTau_t = typename traits<Actuation>::VectorTau_t;   \
+    using VectorU_t = typename traits<Actuation>::VectorU_t;       \
+    using MatrixTauX_t = typename traits<Actuation>::MatrixTauX_t; \
+    using MatrixTauU_t = typename traits<Actuation>::MatrixTauU_t; \
+    using MatrixMtau_t = typename traits<Actuation>::MatrixMtau_t;
 
 namespace galileo
 {
@@ -32,18 +37,36 @@ namespace galileo
             GALILEO_ACTUATIONS_CONSTANTS(ActuationDerived);
             GALILEO_ACTUATIONS_MODEL_TYPEDEF(ActuationDerived);
 
-            template <typename ResidualVectorType>
+            template <typename StateVectorType, typename ControlVectorType>
             void calc(ActuationDataDerived &data,
-                      const Eigen::MatrixBase<ResidualVectorType> &r) const
+                      const Eigen::MatrixBase<StateVectorType> &x,
+                      const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calc(data, r.derived());
+                derived().calc(data, x.derived(), u.derived());
             }
 
-            template <typename ResidualVectorType>
+            template <typename StateVectorType, typename ControlVectorType>
             void calcDiff(ActuationDataDerived &data,
-                          const Eigen::MatrixBase<ResidualVectorType> &r) const
+                          const Eigen::MatrixBase<StateVectorType> &x,
+                          const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calcDiff(data, r.derived());
+                derived().calcDiff(data, x.derived(), u.derived());
+            }
+
+            template <typename StateVectorType, typename TauVectorType>
+            void commands(ActuationDataDerived &data,
+                          const Eigen::MatrixBase<StateVectorType> &x,
+                          const Eigen::MatrixBase<TauVectorType> &tau) const
+            {
+                derived().commands(data, x.derived(), tau.derived());
+            }
+
+            template <typename StateVectorType, typename ControlVectorType>
+            void torqueTransform(ActuationDataDerived &data,
+                                 const Eigen::MatrixBase<StateVectorType> &x,
+                                 const Eigen::MatrixBase<ControlVectorType> &u) const
+            {
+                derived().torqueTransform(data, x.derived(), u.derived());
             }
 
         protected:

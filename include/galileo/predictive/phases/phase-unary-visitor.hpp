@@ -1,10 +1,10 @@
-#ifndef __galileo_predictive_visitor_phase_unary_visitor_hpp__
-#define __galileo_predictive_visitor_phase_unary_visitor_hpp__
+#ifndef __galileo_predictive_phases_phase_unary_visitor_hpp__
+#define __galileo_predictive_phases_phase_unary_visitor_hpp__
 
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/get.hpp>
 
-#include "galileo/predictive/visitor/fusion.hpp"
+#include "galileo/utils/fusion.hpp"
 #include "galileo/predictive/phases/phase-base.hpp"
 
 namespace galileo
@@ -19,26 +19,27 @@ namespace galileo
         struct PhaseUnaryVisitorBase
         {
             template <
-                typename Scalar,
+                typename VarScalar,
+                typename NumScalar,
                 int Options,
-                template <typename, int> class PhaseCollectionTpl,
+                template <typename, typename, int> class PhaseCollectionTpl,
                 typename ArgsTmp>
             static ReturnType run(
-                const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model,
-                predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data,
+                const predictive::PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+                predictive::PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data,
                 ArgsTmp args)
             {
-                InternalVisitorModelAndData<predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl>, ArgsTmp>
+                InternalVisitorModelAndData<predictive::PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>, ArgsTmp>
                     visitor(phase_data, args);
                 return boost::apply_visitor(visitor, phase_model);
             }
 
-            template <typename Scalar, int Options, template <typename, int> class PhaseCollectionTpl>
+            template <typename VarScalar, typename NumScalar, int Options, template <typename, typename, int> class PhaseCollectionTpl>
             static ReturnType run(
-                const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model,
-                predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data)
+                const predictive::PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model,
+                predictive::PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data)
             {
-                InternalVisitorModelAndData<predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl>, NoArg>
+                InternalVisitorModelAndData<predictive::PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl>, NoArg>
                     visitor(phase_data);
                 return boost::apply_visitor(visitor, phase_model);
             }
@@ -63,12 +64,13 @@ namespace galileo
             }
 
             template <
-                typename Scalar,
+                typename VarScalar,
+                typename NumScalar,
                 int Options,
-                template <typename, int> class PhaseCollectionTpl,
+                template <typename, typename, int> class PhaseCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model, ArgsTmp args)
+            run(const predictive::PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, phase_model);
@@ -80,21 +82,21 @@ namespace galileo
                 template <typename, int> class PhaseCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data, ArgsTmp args)
+            run(const predictive::PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, phase_data);
             }
 
-            template <typename Scalar, int Options, template <typename, int> class PhaseCollectionTpl>
-            static ReturnType run(const predictive::PhaseModelTpl<Scalar, Options, PhaseCollectionTpl> &phase_model)
+            template <typename VarScalar, typename NumScalar, int Options, template <typename, typename, int> class PhaseCollectionTpl>
+            static ReturnType run(const predictive::PhaseModelTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, phase_model);
             }
 
-            template <typename Scalar, int Options, template <typename, int> class PhaseCollectionTpl>
-            static ReturnType run(const predictive::PhaseDataTpl<Scalar, Options, PhaseCollectionTpl> &phase_data)
+            template <typename VarScalar, typename NumScalar, int Options, template <typename, typename, int> class PhaseCollectionTpl>
+            static ReturnType run(const predictive::PhaseDataTpl<VarScalar, NumScalar, Options, PhaseCollectionTpl> &phase_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, phase_data);
@@ -243,4 +245,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_predictive_visitor_phase_unary_visitor_hpp__
+#endif // __galileo_predictive_phases_phase_unary_visitor_hpp__
