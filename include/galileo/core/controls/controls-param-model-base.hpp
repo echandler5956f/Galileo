@@ -3,22 +3,6 @@
 
 #include "galileo/core/controls/controls-param-base.hpp"
 
-#define GALILEO_CONTROL_PARAM_BASIC_TYPEDEF(ControlParam)       \
-    using VarScalar = typename traits<ControlParam>::VarScalar; \
-    using NumScalar = typename traits<ControlParam>::NumScalar; \
-    static constexpr int Options = traits<ControlParam>::Options;
-
-#define GALILEO_CONTROL_PARAM_CONSTANTS(ControlParam)   \
-    static constexpr int NU = traits<ControlParam>::NU; \
-    static constexpr int NW = traits<ControlParam>::NW;
-
-#define GALILEO_CONTROL_PARAM_MODEL_TYPEDEF(ControlParam)
-
-#define GALILEO_CONTROL_PARAM_DATA_TYPEDEF(ControlParam) \
-    using U_t = typename traits<ControlParam>::U_t;      \
-    using W_t = typename traits<ControlParam>::W_t;      \
-    using Uw_t = typename traits<ControlParam>::Uw_t;
-
 namespace galileo
 {
     namespace core
@@ -30,27 +14,24 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ControlParamDerived = typename traits<Derived>::ControlParamDerived;
-            GALILEO_CONTROL_PARAM_BASIC_TYPEDEF(ControlParamDerived);
-            GALILEO_CONTROL_PARAM_CONSTANTS(ControlParamDerived);
-            GALILEO_CONTROL_PARAM_MODEL_TYPEDEF(ControlParamDerived);
+            using PS = PhaseSpec;
 
             template <typename ControlParamVectorType>
-            void calc(ControlParamDataDerived &data, const NumScalar t,
+            void calc(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
                 derived().calc(data, t, w.derived());
             }
 
             template <typename ControlParamVectorType>
-            void calcDiff(ControlParamDataDerived &data,
+            void calcDiff(typename PS::ControlParamData_t &data,
                           const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
                 derived().calcDiff(data, w.derived());
             }
 
             template <typename ControlVectorType>
-            void params(ControlParamDataDerived &data, const NumScalar t,
+            void params(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
                         const Eigen::MatrixBase<ControlVectorType> &u) const
             {
                 derived().params(data, t, u.derived());
@@ -67,7 +48,7 @@ namespace galileo
 
             template <typename InputMatrixType, typename OutputMatrixType>
             void multiplyByJacobian(
-                ControlParamDataDerived &data,
+                typename PS::ControlParamData_t &data,
                 const Eigen::MatrixBase<InputMatrixType> &A,
                 Eigen::MatrixBase<OutputMatrixType> &out,
                 const AssignmentOp op = setto) const
@@ -77,7 +58,7 @@ namespace galileo
 
             template <typename InputMatrixType, typename OutputMatrixType>
             void multiplyJacobianTransposeBy(
-                ControlParamDataDerived &data,
+                typename PS::ControlParamData_t &data,
                 const Eigen::MatrixBase<InputMatrixType> &A,
                 Eigen::MatrixBase<OutputMatrixType> &out,
                 const AssignmentOp op = setto) const

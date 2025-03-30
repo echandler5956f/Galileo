@@ -9,61 +9,22 @@ namespace galileo
     namespace core
     {
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  int NX,
-                  int NU,
-                  int NDX>
-        struct StateEuclideanTpl;
-
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  int _NX,
-                  int _NU,
-                  int _NDX>
-        struct traits<StateEuclideanTpl<_VarScalar, _NumScalar, _Options, _NX, _NU, _NDX>>
-        {
-
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            static constexpr int Options = _Options;
-
-            static constexpr int NX = _NX;
-            static constexpr int NU = _NU;
-            static constexpr int NDX = _NDX;
-
-            using VectorNX_t = Eigen::Matrix<VarScalar, NX, 1, Options>;
-            using VectorNU_t = Eigen::Matrix<VarScalar, NU, 1, Options>;
-            using VectorNDX_t = Eigen::Matrix<VarScalar, NDX, 1, Options>;
-            using MatrixNDX_t = Eigen::Matrix<VarScalar, NDX, NDX, Options>;
-        };
-
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  int _NX,
-                  int _NU,
-                  int _NDX>
-        class StateEuclideanTpl : public StateBase<StateEuclideanTpl<_VarScalar, _NumScalar, _Options, _NX, _NU, _NDX>>
+        template <typename PhaseSpec>
+        class StateEuclideanTpl : public StateBase<StateEuclideanTpl<PhaseSpec>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using StateDerived = StateEuclideanTpl<_VarScalar, _NumScalar, _Options, _NX, _NU, _NDX>;
-            GALILEO_STATE_BASIC_TYPEDEF(StateDerived);
-            GALILEO_STATE_CONSTANTS(StateDerived);
-            GALILEO_STATE_TYPEDEF(StateDerived);
+            using PS = PhaseSpec;
 
-            VectorNX_t zero() const
+            typename PS::VectorNx_t zero() const
             {
-                return VectorNX_t::Zero();
+                return typename PS::VectorNx_t::Zero();
             }
 
-            VectorNX_t rand() const
+            typename PS::VectorNx_t rand() const
             {
-                return VectorNX_t::Random();
+                return typename PS::VectorNx_t::Random();
             }
 
             template <typename StateVector1, typename StateVector2, typename StateTangentVector>
@@ -91,12 +52,12 @@ namespace galileo
                 if (firstsecond == first || firstsecond == both)
                 {
                     Jfirst.setZero();
-                    Jfirst.diagonal() = VectorNDX_t::Constant(NDX, -1.);
+                    Jfirst.diagonal() = typename PS::VectorNdx_t::Constant(PS::NDX, -1.);
                 }
                 if (firstsecond == second || firstsecond == both)
                 {
                     Jsecond.setZero();
-                    Jsecond.diagonal() = VectorNDX_t::Constant(NDX, 1.);
+                    Jsecond.diagonal() = typename PS::VectorNdx_t::Constant(PS::NDX, 1.);
                 }
             }
 
@@ -113,13 +74,13 @@ namespace galileo
                     switch (op)
                     {
                     case setto:
-                        Jfirst.diagonal().array() = Scalar(1.);
+                        Jfirst.diagonal().array() = typename PS::VarScalar(1.);
                         break;
                     case addto:
-                        Jfirst.diagonal().array() += Scalar(1.);
+                        Jfirst.diagonal().array() += typename PS::VarScalar(1.);
                         break;
                     case rmfrom:
-                        Jfirst.diagonal().array() -= Scalar(1.);
+                        Jfirst.diagonal().array() -= typename PS::VarScalar(1.);
                         break;
                     default:
                         break;
@@ -130,13 +91,13 @@ namespace galileo
                     switch (op)
                     {
                     case setto:
-                        Jsecond.diagonal().array() = Scalar(1.);
+                        Jsecond.diagonal().array() = typename PS::VarScalar(1.);
                         break;
                     case addto:
-                        Jsecond.diagonal().array() += Scalar(1.);
+                        Jsecond.diagonal().array() += typename PS::VarScalar(1.);
                         break;
                     case rmfrom:
-                        Jsecond.diagonal().array() -= Scalar(1.);
+                        Jsecond.diagonal().array() -= typename PS::VarScalar(1.);
                         break;
                     default:
                         break;

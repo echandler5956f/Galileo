@@ -4,45 +4,29 @@
 #include "galileo/core/actuations/actuation-base.hpp"
 #include "galileo/core/actuations/actuation-model-base.hpp"
 
+#include <array>
+
 namespace galileo
 {
     namespace core
     {
 
-        template <typename Derived, typename PhaseSpec>
-        struct ActuationDataBase : internal::CRTP<Derived>
+        template <typename PhaseSpec>
+        struct ActuationDataTpl
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ActuationDerived = typename traits<Derived>::ActuationDerived;
-            GALILEO_ACTUATIONS_BASIC_TYPEDEF(ActuationDerived);
-            GALILEO_ACTUATIONS_CONSTANTS(ActuationDerived);
-            GALILEO_ACTUATIONS_DATA_TYPEDEF(ActuationDerived);
+            using PS = PhaseSpec;
 
-            VectorTau_t tau;
-            VectorU_t u;
-            MatrixTauX_t dTaudX;
-            MatrixTauU_t dTaudU;
-            MatrixMtau_t Mtau;
-            std::vector<bool> tau_set;
+            typename PS::VectorNv_t tau;
+            typename PS::VectorNu_t u;
+            typename PS::MatrixNvNdx_t dTaudX;
+            typename PS::MatrixNvNu_t dTaudU;
+            typename PS::MatrixNuNv_t Mtau;
+            std::array<bool, PS::NV> tau_set;
 
-        // protected:
-        //     inline ActuationDataBase()
-        //     {
-        //     }
-
-        //     inline ActuationDataBase(const ActuationDataBase &clone)
-        //     {
-        //         *this = clone;
-        //     }
-
-        //     inline ActuationDataBase &operator=(const ActuationDataBase &clone)
-        //     {
-        //         return *this;
-        //     }
-
-        }; // struct ActuationDataBase
+        }; // struct ActuationDataTpl
 
     } // namespace core
 

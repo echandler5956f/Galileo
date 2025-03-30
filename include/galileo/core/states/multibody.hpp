@@ -11,87 +11,46 @@ namespace galileo
     namespace core
     {
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  int NQ,
-                  int NV,
-                  int NFb>
-        struct StateMultibodyTpl;
-
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  int _NQ,
-                  int _NV,
-                  int _NFb>
-        struct traits<StateMultibodyTpl<_VarScalar, _NumScalar, _Options, _NQ, _NV, _NFb>>
-        {
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            static constexpr int Options = _Options;
-
-            static constexpr int NQ = _NQ;
-            static constexpr int NV = _NV;
-            static constexpr int NFb = _NFb;
-
-            static constexpr int NX = NQ + NV;
-            static constexpr int NU = NV - NFb;
-            static constexpr int NDX = NV + NV;
-
-            using VectorNFb_t = Eigen::Matrix<VarScalar, NFb, 1, Options>;
-            using VectorNX_t = Eigen::Matrix<VarScalar, NX, 1, Options>;
-            using VectorNU_t = Eigen::Matrix<VarScalar, NU, 1, Options>;
-            using VectorNDX_t = Eigen::Matrix<VarScalar, NDX, 1, Options>;
-            using MatrixNDX_t = Eigen::Matrix<VarScalar, NDX, NDX, Options>;
-        };
-
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  int _NQ,
-                  int _NV,
-                  int _NFb>
-        class StateMultibodyTpl : public StateBase<StateMultibodyTpl<_VarScalar, _NumScalar, _Options, _NQ, _NV, _NFb>>
+        template <typename PhaseSpec, int _NFbq>
+        class StateMultibodyTpl : public StateBase<StateMultibodyTpl<PhaseSpec, _NFbq>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using StateDerived = StateMultibodyTpl<_VarScalar, _NumScalar, _Options, _NQ, _NV, _NFb>;
-            GALILEO_STATE_BASIC_TYPEDEF(StateDerived);
-            GALILEO_STATE_CONSTANTS(StateDerived);
-            GALILEO_STATE_TYPEDEF(StateDerived);
+            using PS = PhaseSpec;
+            static constexpr int NFbq = _NFbq;
+            using VectorNFbq_t = Eigen::Matrix<typename PS::NumScalar, NFbq, 1>;
 
             StateMultibodyTpl(
-                pinocchio::ModelTpl<VarScalar> *model)
+                pinocchio::ModelTpl<typename PS::VarScalar> *model)
                 : model_(model),
-                  x0_(VectorNX_t::Zero(NX))
+                  x0_(typename PS::VectorNx_t::Zero(PS::NX))
             {
-                x0_.head(NQ) = pinocchio::neutral(*model_);
+                x0_.head(PS::NQ) = pinocchio::neutral(*model_);
 
-                lb_.head(NFb) =
-                    -std::numeric_limits<VarScalar>::infinity() * VectorNFb_t::Ones(NFb);
-                ub_.head(NFb) = std::numeric_limits<VarScalar>::infinity() * VectorNFb_t::Ones(NFb);
-                lb_.segment(NFb, NQ - NFb) = pinocchio_->lowerPositionLimit.tail(NQ - NFb);
-                ub_.segment(NFb, NQ - NFb) = pinocchio_->upperPositionLimit.tail(NQ - NFb);
-                lb_.tail(NV) = -pinocchio_->velocityLimit;
-                ub_.tail(NV) = pinocchio_->velocityLimit;
+                lb_.head(NFbq) =
+                    -std::numeric_limits<typename PS::NumScalar>::infinity() * VectorNFbq_t::Ones(NFbq);
+                ub_.head(NFbq) = std::numeric_limits<typename PS::NumScalar>::infinity() * VectorNFbq_t::Ones(NFbq);
+                lb_.segment(NFbq, PS::NQ - NFbq) = pinocchio_->lowerPositionLimit.tail(PS::NQ - NFbq);
+                ub_.segment(NFbq, PS::NQ - NFbq) = pinocchio_->upperPositionLimit.tail(PS::NQ - NFbq);
+                lb_.tail(PS::NV) = -pinocchio_->velocityLimit;
+                ub_.tail(PS::NV) = pinocchio_->velocityLimit;
             }
 
             StateMultibodyTpl()
-                : x0_(VectorNX_t::Zero(NX)) {}
+                : x0_(typename PS::VectorNx_t::Zero(PS::NX)) {}
 
             ~StateMultibodyTpl() {}
 
-            VectorNX_t zero() const
+            typename PS::VectorNx_t zero() const
             {
                 return x0_;
             }
 
-            VectorNX_t rand() const
+            typename PS::VectorNx_t rand() const
             {
-                VectorNX_t xrand = VectorNX_t::Random(NX);
-                xrand.head(NQ) = pinocchio::randomConfiguration(*model_);
+                typename PS::VectorNx_t xrand = typename PS::VectorNx_t::Random(PS::NX);
+                xrand.head(PS::NQ) = pinocchio::randomConfiguration(*model_);
                 return xrand;
             }
 
@@ -100,9 +59,9 @@ namespace galileo
                       const Eigen::MatrixBase<StateVector2> &x1,
                       Eigen::MatrixBase<StateTangentVector> &dxout) const
             {
-                pinocchio::difference(*model_, x0.head(NQ), x1.head(NQ),
-                                      dxout.head(NV));
-                dxout.tail(NV) = x1.tail(NV) - x0.tail(NV);
+                pinocchio::difference(*model_, x0.head(PS::NQ), x1.head(PS::NQ),
+                                      dxout.head(PS::NV));
+                dxout.tail(PS::NV) = x1.tail(PS::NV) - x0.tail(PS::NV);
             }
 
             template <typename StateVector1, typename StateTangentVector, typename StateVector2>
@@ -110,9 +69,9 @@ namespace galileo
                            const Eigen::MatrixBase<StateTangentVector> &dx,
                            Eigen::MatrixBase<StateVector2> &xout) const
             {
-                pinocchio::integrate(*model_, x.head(NQ), dx.head(NV),
-                                     xout.head(NQ));
-                xout.tail(NV) = x.tail(NV) + dx.tail(NV);
+                pinocchio::integrate(*model_, x.head(PS::NQ), dx.head(PS::NV),
+                                     xout.head(PS::NQ));
+                xout.tail(PS::NV) = x.tail(PS::NV) + dx.tail(PS::NV);
             }
 
             template <typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
@@ -123,24 +82,24 @@ namespace galileo
             {
                 if (firstsecond == first)
                 {
-                    pinocchio::dDifference(*model_, x0.head(NQ), x1.head(NQ),
-                                           Jfirst.topLeftCorner(NV, NV), pinocchio::ARG0);
-                    Jfirst.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)-1;
+                    pinocchio::dDifference(*model_, x0.head(PS::NQ), x1.head(PS::NQ),
+                                           Jfirst.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG0);
+                    Jfirst.bottomRightCorner(PS::NV, PS::NV).diagonal().array() = (typename PS::VarScalar) - 1;
                 }
                 else if (firstsecond == second)
                 {
-                    pinocchio::dDifference(*model_, x0.head(NQ), x1.head(NQ),
-                                           Jsecond.topLeftCorner(NV, NV), pinocchio::ARG1);
-                    Jsecond.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)1;
+                    pinocchio::dDifference(*model_, x0.head(PS::NQ), x1.head(PS::NQ),
+                                           Jsecond.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG1);
+                    Jsecond.bottomRightCorner(PS::NV, PS::NV).diagonal().array() = typename PS::VarScalar(1);
                 }
                 else
                 { // computing both
-                    pinocchio::dDifference(*model_, x0.head(NQ), x1.head(NQ),
-                                           Jfirst.topLeftCorner(NV, NV), pinocchio::ARG0);
-                    pinocchio::dDifference(*model_, x0.head(NQ), x1.head(NQ),
-                                           Jsecond.topLeftCorner(NV, NV), pinocchio::ARG1);
-                    Jfirst.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)-1;
-                    Jsecond.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)1;
+                    pinocchio::dDifference(*model_, x0.head(PS::NQ), x1.head(PS::NQ),
+                                           Jfirst.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG0);
+                    pinocchio::dDifference(*model_, x0.head(PS::NQ), x1.head(PS::NQ),
+                                           Jsecond.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG1);
+                    Jfirst.bottomRightCorner(PS::NV, PS::NV).diagonal().array() = (typename PS::VarScalar) - 1;
+                    Jsecond.bottomRightCorner(PS::NV, PS::NV).diagonal().array() = (typename PS::VarScalar)1;
                 }
             }
 
@@ -157,22 +116,22 @@ namespace galileo
                     switch (op)
                     {
                     case setto:
-                        pinocchio::dIntegrate(*model_, x.head(NQ), dx.head(NV),
-                                              Jfirst.topLeftCorner(NV, NV), pinocchio::ARG0,
+                        pinocchio::dIntegrate(*model_, x.head(PS::NQ), dx.head(PS::NV),
+                                              Jfirst.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG0,
                                               pinocchio::SETTO);
-                        Jfirst.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)1;
+                        Jfirst.bottomRightCorner(PS::NV, PS::NV).diagonal().array() = typename PS::VarScalar(1);
                         break;
                     case addto:
-                        pinocchio::dIntegrate(*model_, x.head(NQ), dx.head(NV),
-                                              Jfirst.topLeftCorner(NV, NV), pinocchio::ARG0,
+                        pinocchio::dIntegrate(*model_, x.head(PS::NQ), dx.head(PS::NV),
+                                              Jfirst.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG0,
                                               pinocchio::ADDTO);
-                        Jfirst.bottomRightCorner(NV, NV).diagonal().array() += (VarScalar)1;
+                        Jfirst.bottomRightCorner(PS::NV, PS::NV).diagonal().array() += typename PS::VarScalar(1);
                         break;
                     case rmfrom:
-                        pinocchio::dIntegrate(*model_, x.head(NQ), dx.head(NV),
-                                              Jfirst.topLeftCorner(NV, NV), pinocchio::ARG0,
+                        pinocchio::dIntegrate(*model_, x.head(PS::NQ), dx.head(PS::NV),
+                                              Jfirst.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG0,
                                               pinocchio::RMTO);
-                        Jfirst.bottomRightCorner(NV, NV).diagonal().array() -= (VarScalar)1;
+                        Jfirst.bottomRightCorner(PS::NV, PS::NV).diagonal().array() -= typename PS::VarScalar(1);
                         break;
                     default:
                         break;
@@ -183,22 +142,22 @@ namespace galileo
                     switch (op)
                     {
                     case setto:
-                        pinocchio::dIntegrate(*model_, x.head(NQ), dx.head(NV),
-                                              Jsecond.topLeftCorner(NV, NV), pinocchio::ARG1,
+                        pinocchio::dIntegrate(*model_, x.head(PS::NQ), dx.head(PS::NV),
+                                              Jsecond.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG1,
                                               pinocchio::SETTO);
-                        Jsecond.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)1;
+                        Jsecond.bottomRightCorner(PS::NV, PS::NV).diagonal().array() = typename PS::VarScalar(1);
                         break;
                     case addto:
-                        pinocchio::dIntegrate(*model_, x.head(NQ), dx.head(NV),
-                                              Jsecond.topLeftCorner(NV, NV), pinocchio::ARG1,
+                        pinocchio::dIntegrate(*model_, x.head(PS::NQ), dx.head(PS::NV),
+                                              Jsecond.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG1,
                                               pinocchio::ADDTO);
-                        Jsecond.bottomRightCorner(NV, NV).diagonal().array() += (VarScalar)1;
+                        Jsecond.bottomRightCorner(PS::NV, PS::NV).diagonal().array() += typename PS::VarScalar(1);
                         break;
                     case rmfrom:
-                        pinocchio::dIntegrate(*model_, x.head(NQ), dx.head(NV),
-                                              Jsecond.topLeftCorner(NV, NV), pinocchio::ARG1,
+                        pinocchio::dIntegrate(*model_, x.head(PS::NQ), dx.head(PS::NV),
+                                              Jsecond.topLeftCorner(PS::NV, PS::NV), pinocchio::ARG1,
                                               pinocchio::RMTO);
-                        Jsecond.bottomRightCorner(NV, NV).diagonal().array() -= (VarScalar)1;
+                        Jsecond.bottomRightCorner(PS::NV, PS::NV).diagonal().array() -= typename PS::VarScalar(1);
                         break;
                     default:
                         break;
@@ -215,13 +174,13 @@ namespace galileo
                 switch (firstsecond)
                 {
                 case first:
-                    pinocchio::dIntegrateTransport(*model_, x.head(NQ),
-                                                   dx.head(NV), Jin.topRows(NV),
+                    pinocchio::dIntegrateTransport(*model_, x.head(PS::NQ),
+                                                   dx.head(PS::NV), Jin.topRows(PS::NV),
                                                    pinocchio::ARG0);
                     break;
                 case second:
-                    pinocchio::dIntegrateTransport(*model_, x.head(NQ),
-                                                   dx.head(NV), Jin.topRows(NV),
+                    pinocchio::dIntegrateTransport(*model_, x.head(PS::NQ),
+                                                   dx.head(PS::NV), Jin.topRows(PS::NV),
                                                    pinocchio::ARG1);
                     break;
                 default:
@@ -229,16 +188,27 @@ namespace galileo
                 }
             }
 
-            const pinocchio::ModelTpl<VarScalar> *get_model() const
+            const pinocchio::ModelTpl<typename PS::VarScalar> *get_model() const
             {
                 return model_;
             }
 
         protected:
-            pinocchio::ModelTpl<VarScalar> *model_;
-            VectorNX_t x0_;
+            pinocchio::ModelTpl<typename PS::VarScalar> *model_;
+            typename PS::VectorNx_t x0_;
 
         }; // class StateMultibodyTpl
+
+        // A wrapper that collapses <PS, _NFbq> into a single template <PS>.
+        template <int _NFbq>
+        struct StateMetaMultibody
+        {
+            template <typename PhaseSpec>
+            struct Implementation
+            {
+                using State_t = StateMultibodyTpl<PhaseSpec, _NFbq>;
+            };
+        };
 
     } // namespace core
 

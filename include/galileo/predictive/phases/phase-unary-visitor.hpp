@@ -47,7 +47,7 @@ namespace galileo
             template <typename PhaseModelDerived, typename ArgsTmp>
             static ReturnType run(
                 const predictive::PhaseModelBase<PhaseModelDerived> &phase_model,
-                typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived &phase_data,
+                typename predictive::PhaseModelBase<PhaseModelDerived>::PS::PhaseData_t &phase_data,
                 ArgsTmp args)
             {
                 InternalVisitorModelAndData<PhaseModelDerived, ArgsTmp> visitor(phase_data, args);
@@ -57,7 +57,7 @@ namespace galileo
             template <typename PhaseModelDerived>
             static ReturnType run(
                 const predictive::PhaseModelBase<PhaseModelDerived> &phase_model,
-                typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived &phase_data)
+                typename predictive::PhaseModelBase<PhaseModelDerived>::PS::PhaseData_t &phase_data)
             {
                 InternalVisitorModelAndData<PhaseModelDerived, NoArg> visitor(phase_data);
                 return visitor(phase_model.derived());
@@ -134,7 +134,7 @@ namespace galileo
             template <typename PhaseModel, typename ArgType>
             struct InternalVisitorModelAndData : public boost::static_visitor<ReturnType>
             {
-                using PhaseData = typename PhaseModel::PhaseDataDerived;
+                using PhaseData = typename PhaseModel::PS::PhaseData_t;
 
                 InternalVisitorModelAndData(PhaseData &phase_data, ArgType args)
                     : phase_data(phase_data), args(args)
@@ -149,7 +149,7 @@ namespace galileo
                         bf::append(
                             boost::ref(phase_model.derived()),
                             boost::ref(
-                                boost::get<typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived>(phase_data)),
+                                boost::get<typename predictive::PhaseModelBase<PhaseModelDerived>::PS::PhaseData_t>(phase_data)),
                             args));
                 }
 
@@ -166,7 +166,7 @@ namespace galileo
             struct InternalVisitorModelAndData<PhaseModel, NoArg>
                 : public boost::static_visitor<ReturnType>
             {
-                using PhaseData = typename PhaseModel::PhaseDataDerived;
+                using PhaseData = typename PhaseModel::PS::PhaseData_t;
 
                 InternalVisitorModelAndData(PhaseData &phase_data)
                     : phase_data(phase_data)
@@ -181,7 +181,7 @@ namespace galileo
                         bf::make_vector(
                             boost::ref(phase_model.derived()),
                             boost::ref(
-                                boost::get<typename predictive::PhaseModelBase<PhaseModelDerived>::PhaseDataDerived>(phase_data))));
+                                boost::get<typename predictive::PhaseModelBase<PhaseModelDerived>::PS::PhaseData_t>(phase_data))));
                 }
 
                 PhaseData &phase_data;

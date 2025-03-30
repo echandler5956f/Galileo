@@ -3,24 +3,6 @@
 
 #include "galileo/core/actuations/actuation-base.hpp"
 
-#define GALILEO_ACTUATIONS_BASIC_TYPEDEF(Actuation)                                  \
-    using Scalar = typename traits<Actuation>::Scalar;                               \
-    using VarScalar = typename traits<Actuation>::VarScalar;                         \
-    static constexpr int Options = traits<Actuation>::Options;                       \
-    using ActuationModelDerived = typename traits<Actuation>::ActuationModelDerived; \
-    using ActuationDataDerived = typename traits<Actuation>::ActuationDataDerived;
-
-#define GALILEO_ACTUATIONS_CONSTANTS(Actuation)
-
-#define GALILEO_ACTUATIONS_MODEL_TYPEDEF(Actuation)
-
-#define GALILEO_ACTUATIONS_DATA_TYPEDEF(Actuation)                 \
-    using VectorTau_t = typename traits<Actuation>::VectorTau_t;   \
-    using VectorU_t = typename traits<Actuation>::VectorU_t;       \
-    using MatrixTauX_t = typename traits<Actuation>::MatrixTauX_t; \
-    using MatrixTauU_t = typename traits<Actuation>::MatrixTauU_t; \
-    using MatrixMtau_t = typename traits<Actuation>::MatrixMtau_t;
-
 namespace galileo
 {
     namespace core
@@ -32,13 +14,10 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ActuationDerived = typename traits<Derived>::ActuationDerived;
-            GALILEO_ACTUATIONS_BASIC_TYPEDEF(ActuationDerived);
-            GALILEO_ACTUATIONS_CONSTANTS(ActuationDerived);
-            GALILEO_ACTUATIONS_MODEL_TYPEDEF(ActuationDerived);
+            using PS = PhaseSpec;
 
             template <typename StateVectorType, typename ControlVectorType>
-            void calc(ActuationDataDerived &data,
+            void calc(typename PS::ActuationData_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
             {
@@ -46,7 +25,7 @@ namespace galileo
             }
 
             template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(ActuationDataDerived &data,
+            void calcDiff(typename PS::ActuationData_t &data,
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
@@ -54,7 +33,7 @@ namespace galileo
             }
 
             template <typename StateVectorType, typename TauVectorType>
-            void commands(ActuationDataDerived &data,
+            void commands(typename PS::ActuationData_t &data,
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<TauVectorType> &tau) const
             {
@@ -62,7 +41,7 @@ namespace galileo
             }
 
             template <typename StateVectorType, typename ControlVectorType>
-            void torqueTransform(ActuationDataDerived &data,
+            void torqueTransform(typename PS::ActuationData_t &data,
                                  const Eigen::MatrixBase<StateVectorType> &x,
                                  const Eigen::MatrixBase<ControlVectorType> &u) const
             {

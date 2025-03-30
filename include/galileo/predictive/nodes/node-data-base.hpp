@@ -16,15 +16,11 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using NodeDerived = typename traits<Derived>::NodeDerived;
-            
-            GALILEO_NODE_BASIC_TYPEDEF(NodeDerived);
-            GALILEO_NODE_CONSTANTS(NodeDerived);
-            GALILEO_NODE_DATA_TYPEDEF(NodeDerived);
+            using PS = PhaseSpec;
 
-            // F_t F;
-            // Fx_t Fx;
-            // Fu_t Fu;
+            // Acc_t F;
+            // Accx_t Fx;
+            // Accu_t Fu;
             // L_t L;
             // Lx_t Lx;
             // Lu_t Lu;

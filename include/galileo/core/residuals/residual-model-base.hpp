@@ -29,7 +29,7 @@ namespace galileo
     namespace core
     {
 
-        template <typename Derived, typename PhaseSpec>
+        template <typename Derived>
         class ResidualModelBase : internal::CRTP<Derived>
         {
         public:

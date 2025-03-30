@@ -16,17 +16,7 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using NodeDerived = typename traits<Derived>::NodeDerived;
-            using SegmentDerived = typename traits<Derived>::SegmentDerived;
-
-            GALILEO_NODE_BASIC_TYPEDEF(NodeDerived);
-            GALILEO_SEGMENT_BASIC_TYPEDEF(SegmentDerived);
-
-            GALILEO_NODE_CONSTANTS(NodeDerived);
-            GALILEO_SEGMENT_CONSTANTS(SegmentDerived);
-
-            GALILEO_NODE_DATA_TYPEDEF(NodeDerived);
-            GALILEO_SEGMENT_DATA_TYPEDEF(SegmentDerived);
+            using PS = PhaseSpec;
 
             // NodeDataVector nodes;
             // ControlParamData_t *control;

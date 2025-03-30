@@ -15,14 +15,7 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ControlParamDerived = typename traits<Derived>::ControlParamDerived;
-            GALILEO_CONTROL_PARAM_BASIC_TYPEDEF(ControlParamDerived);
-            GALILEO_CONTROL_PARAM_CONSTANTS(ControlParamDerived);
-            GALILEO_CONTROL_PARAM_DATA_TYPEDEF(ControlParamDerived);
-
-            U_t U;
-            W_t W;
-            Uw_t Uw;
+            using PS = PhaseSpec;
 
         protected:
             inline ControlParamDataBase()

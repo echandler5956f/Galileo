@@ -20,21 +20,7 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using NodeDerived = typename traits<Derived>::NodeDerived;
-            using SegmentDerived = typename traits<Derived>::SegmentDerived;
-            using PhaseDerived = typename traits<Derived>::PhaseDerived;
-
-            GALILEO_NODE_BASIC_TYPEDEF(NodeDerived);
-            GALILEO_SEGMENT_BASIC_TYPEDEF(SegmentDerived);
-            GALILEO_PHASE_BASIC_TYPEDEF(PhaseDerived);
-
-            GALILEO_NODE_CONSTANTS(NodeDerived);
-            GALILEO_SEGMENT_CONSTANTS(SegmentDerived);
-            GALILEO_PHASE_CONSTANTS(PhaseDerived);
-
-            GALILEO_NODE_DATA_TYPEDEF(NodeDerived);
-            GALILEO_SEGMENT_DATA_TYPEDEF(SegmentDerived);
-            GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
+            using PS = PhaseSpec;
 
             // The fully expanded contents of each PhaseData derived class should be
             // SegmentDataVector segments;
@@ -116,20 +102,20 @@ namespace galileo
 
             // Thus, we need generic accessors for each of the above.
 
-            C_t segment_C(const std::size_t &segment_index) const
-            {
-                return derived().segment_C(segment_index);
-            }
+            // C_t segment_C(const std::size_t &segment_index) const
+            // {
+            //     return derived().segment_C(segment_index);
+            // }
 
-            Ck_t segment_Ck(const std::size_t &segment_index) const
-            {
-                return derived().segment_Ck(segment_index);
-            }
+            // Ck_t segment_Ck(const std::size_t &segment_index) const
+            // {
+            //     return derived().segment_Ck(segment_index);
+            // }
 
-            Cw_t segment_Cw(const std::size_t &segment_index) const
-            {
-                return derived().segment_Cw(segment_index);
-            }
+            // Cw_t segment_Cw(const std::size_t &segment_index) const
+            // {
+            //     return derived().segment_Cw(segment_index);
+            // }
 
         protected:
             inline PhaseDataBase()

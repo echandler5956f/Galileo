@@ -4,19 +4,6 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/segments/segment-base.hpp"
 
-#define GALILEO_PHASE_BASIC_TYPEDEF(Phase)                                 \
-    using PhaseModelDerived = typename traits<Phase>::PhaseModelDerived;   \
-    using PhaseDataDerived = typename traits<Phase>::PhaseDataDerived;     \
-    using SegmentModelVector = typename traits<Phase>::SegmentModelVector; \
-    using SegmentDataVector = typename traits<Phase>::SegmentDataVector;
-
-#define GALILEO_PHASE_CONSTANTS(Phase) \
-    static constexpr int NumSegments = traits<Phase>::NumSegments;
-
-#define GALILEO_PHASE_MODEL_TYPEDEF(Phase)
-
-#define GALILEO_PHASE_DATA_TYPEDEF(Phase)
-
 namespace galileo
 {
     namespace predictive
@@ -28,24 +15,10 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using NodeDerived = typename traits<Derived>::NodeDerived;
-            using SegmentDerived = typename traits<Derived>::SegmentDerived;
-            using PhaseDerived = typename traits<Derived>::PhaseDerived;
-
-            GALILEO_NODE_BASIC_TYPEDEF(NodeDerived);
-            GALILEO_SEGMENT_BASIC_TYPEDEF(SegmentDerived);
-            GALILEO_PHASE_BASIC_TYPEDEF(PhaseDerived);
-
-            GALILEO_NODE_CONSTANTS(NodeDerived);
-            GALILEO_SEGMENT_CONSTANTS(SegmentDerived);
-            GALILEO_PHASE_CONSTANTS(PhaseDerived);
-
-            GALILEO_NODE_MODEL_TYPEDEF(NodeDerived);
-            GALILEO_SEGMENT_MODEL_TYPEDEF(SegmentDerived);
-            GALILEO_PHASE_MODEL_TYPEDEF(PhaseDerived);
+            using PS = PhaseSpec;
 
             template <typename StateMatrixType, typename ControlMatrixType>
-            void calc(PhaseDataDerived &data,
+            void calc(typename PS::PhaseData_t &data,
                       const Eigen::MatrixBase<StateMatrixType> &xs,
                       const Eigen::MatrixBase<ControlMatrixType> &us) const
             {
@@ -53,7 +26,7 @@ namespace galileo
             }
 
             template <typename StateMatrixType, typename ControlMatrixType>
-            void calcDiff(PhaseDataDerived &data,
+            void calcDiff(typename PS::PhaseData_t &data,
                           const Eigen::MatrixBase<StateMatrixType> &xs,
                           const Eigen::MatrixBase<ControlMatrixType> &us) const
             {
@@ -61,14 +34,14 @@ namespace galileo
             }
 
             template <typename StateMatrixType, typename ControlMatrixType>
-            void quasiStatic(PhaseDataDerived &data, const Eigen::MatrixBase<StateMatrixType> &xs,
+            void quasiStatic(typename PS::PhaseData_t &data, const Eigen::MatrixBase<StateMatrixType> &xs,
                              Eigen::MatrixBase<ControlMatrixType> &us,
-                             const std::size_t maxiter, const Scalar tol) const
+                             const std::size_t maxiter, const typename PS::NumScalar tol) const
             {
                 derived().quasiStatic(data, xs.derived(), us.derived(), maxiter, tol);
             }
 
-            NumScalar period() const
+            typename PS::NumScalar period() const
             {
                 return derived().period();
             }
@@ -93,17 +66,17 @@ namespace galileo
             void segmentQuasiStatic(const std::size_t &segment_index,
                                     const Eigen::MatrixBase<StateVectorType> &xs,
                                     Eigen::MatrixBase<ControlVectorType> &us,
-                                    const std::size_t maxiter, const Scalar tol) const
+                                    const std::size_t maxiter, const typename PS::NumScalar tol) const
             {
                 derived().segmentQuasiStatic(segment_index, xs.derived(), us.derived(), maxiter, tol);
             }
 
-            State_t::VectorNX_t stateZero() const
+            typename PS::VectorNx_t stateZero() const
             {
                 return derived().stateZero();
             }
 
-            State_t::VectorNX_t stateRand() const
+            typename PS::VectorNx_t stateRand() const
             {
                 return derived().stateRand();
             }
@@ -139,25 +112,25 @@ namespace galileo
             }
 
             template <typename StateVectorType1, typename StateVectorType2, typename StateTangentVectorType>
-            State_t::VectorNDX_t stateDiffDx(const Eigen::MatrixBase<StateVectorType1> &x0, const Eigen::MatrixBase<StateVectorType2> &x1) const
+            typename PS::VectorNdx_t stateDiffDx(const Eigen::MatrixBase<StateVectorType1> &x0, const Eigen::MatrixBase<StateVectorType2> &x1) const
             {
                 return derived().stateDiffDx(x0.derived(), x1.derived());
             }
 
             template <typename StateVectorType, typename StateTangentVectorType>
-            State_t::VectorNX_t stateIntegrateX(const Eigen::MatrixBase<StateVectorType> &x, const Eigen::MatrixBase<StateTangentVectorType> &dx) const
+            typename PS::VectorNx_t stateIntegrateX(const Eigen::MatrixBase<StateVectorType> &x, const Eigen::MatrixBase<StateTangentVectorType> &dx) const
             {
                 return derived().stateIntegrateX(x.derived(), dx.derived());
             }
 
             template <typename StateVectorType1, typename StateVectorType2>
-            std::vector<State_t::MatrixNDX_t> stateJdiffJs(const Eigen::MatrixBase<StateVectorType1> &x0, const Eigen::MatrixBase<StateVectorType2> &x1, const Jcomponent firstsecond = Jcomponent::both) const
+            std::vector<typename PS::MatrixNdx_t> stateJdiffJs(const Eigen::MatrixBase<StateVectorType1> &x0, const Eigen::MatrixBase<StateVectorType2> &x1, const Jcomponent firstsecond = Jcomponent::both) const
             {
                 return derived().stateJdiffJs(x0.derived(), x1.derived(), firstsecond);
             }
 
             template <typename StateVectorType, typename StateTangentVectorType>
-            std::vector<State_t::MatrixNDX_t> stateJintegrateJs(const Eigen::MatrixBase<StateVectorType> &x, const Eigen::MatrixBase<StateTangentVectorType> &dx, const Jcomponent firstsecond = Jcomponent::both) const
+            std::vector<typename PS::MatrixNdx_t> stateJintegrateJs(const Eigen::MatrixBase<StateVectorType> &x, const Eigen::MatrixBase<StateTangentVectorType> &dx, const Jcomponent firstsecond = Jcomponent::both) const
             {
                 return derived().stateJintegrateJs(x.derived(), dx.derived(), firstsecond);
             }
@@ -192,17 +165,17 @@ namespace galileo
                 return derived().nc();
             }
 
-            const typename ConstraintModelCollection_t::H_Equality_t &h_eq() const
+            const typename PS::H_Equality_t &h_eq() const
             {
                 return derived().h_eq();
             }
 
-            const typename ConstraintModelCollection_t::G_Bound_t &g_lb() const
+            const typename PS::G_Bound_t &g_lb() const
             {
                 return derived().g_lb();
             }
 
-            const typename ConstraintModelCollection_t::G_Bound_t &g_ub() const
+            const typename PS::G_Bound_t &g_ub() const
             {
                 return derived().g_ub();
             }
@@ -222,15 +195,15 @@ namespace galileo
                 return *this;
             }
 
-            SegmentModelVector segments_;
+            // SegmentModelVector segments_;
 
-            Scalar phase_period_;
+            // Scalar phase_period_;
 
-            ControlParamModel_t control_parameterization_;
-            State_t state_;
-            ActuationModel_t actuation_;
-            ConstraintModelCollection_t constraints_;
-            CostModelCollection_t costs_;
+            // ControlParamModel_t control_parameterization_;
+            // State_t state_;
+            // ActuationModel_t actuation_;
+            // ConstraintModelCollection_t constraints_;
+            // CostModelCollection_t costs_;
 
         }; // class PhaseModelBase
 

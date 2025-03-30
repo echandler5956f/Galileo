@@ -9,15 +9,11 @@ namespace galileo
     namespace core
     {
 
-        template <typename VarScalar, typename NumScalar, int Options>
+        template <typename PhaseSpec>
         class ActuationModelFullTpl;
-        template <typename VarScalar, typename NumScalar, int Options>
-        struct ActuationDataFullTpl;
 
-        template <typename VarScalar, typename NumScalar, int Options>
+        template <typename PhaseSpec, int _NFb>
         class ActuationModelFloatingBaseTpl;
-        template <typename VarScalar, typename NumScalar, int Options>
-        struct ActuationDataFloatingBaseTpl;
 
     } // namespace core
 
