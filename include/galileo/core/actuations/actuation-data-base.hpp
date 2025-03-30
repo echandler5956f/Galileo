@@ -9,7 +9,7 @@ namespace galileo
     namespace core
     {
 
-        template <typename Derived>
+        template <typename Derived, typename PhaseSpec>
         struct ActuationDataBase : internal::CRTP<Derived>
         {
         public:

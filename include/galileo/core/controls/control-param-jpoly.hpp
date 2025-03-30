@@ -38,7 +38,7 @@ namespace galileo
 
             using U_t = Eigen::Matrix<VarScalar, NU, 1, Options>;
             using W_t = Eigen::Matrix<VarScalar, NDeg, 1, Options>;
-            using Uw_t = Eigen::Matrix<VarScalar, NW, 1, Options>;
+            using Uw_t = Eigen::Matrix<VarScalar, NU, NW, Options>;
         };
 
         template <typename _VarScalar,
@@ -96,10 +96,6 @@ namespace galileo
             GALILEO_CONTROL_PARAM_BASIC_TYPEDEF(ControlParamDerived);
             GALILEO_CONTROL_PARAM_CONSTANTS(ControlParamDerived);
             GALILEO_CONTROL_PARAM_MODEL_TYPEDEF(ControlParamDerived);
-
-            template <typename Scalar>
-            ControlParametrizationModelPolyTwoRKTpl<
-                Scalar>::~ControlParametrizationModelPolyTwoRKTpl() {}
 
             template <typename ControlParamVectorType>
             void calc(ControlParamDataDerived &data, const NumScalar &t,

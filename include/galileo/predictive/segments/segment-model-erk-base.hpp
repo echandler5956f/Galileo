@@ -6,30 +6,51 @@
 
 #define GALILEO_SEGMENT_ERK_BASIC_TYPEDEF(Segment)                                   \
     using SegmentModelERKDerived = typename traits<Segment>::SegmentModelERKDerived; \
-    using SegmentDataERKDerived = typename traits<Segment>::SegmentDataERKDerived;   \
-    using NodeDataVector = typename traits<Segment>::NodeDataVector;
+    using SegmentDataERKDerived = typename traits<Segment>::SegmentDataERKDerived;
 
 #define GALILEO_SEGMENT_ERK_CONSTANTS(Segment) \
-    static constexpr int NumStages = traits<Segment>::NumStages;
+    static constexpr int NStages = traits<Segment>::NStages;
 
-#define GALILEO_SEGMENT_MODEL_ERK_TYPEDEF(Segment)                             \
-    using ControlParamModel_t = typename traits<Segment>::ControlParamModel_t; \
-    using StageCoefficients_t = typename traits<Segment>::StageCoefficients_t; \
-    using Quadrature_t = typename traits<Segment>::Quadrature_t;               \
+#define GALILEO_SEGMENT_MODEL_ERK_TYPEDEF(Segment)                                       \
+    using NodeModelDerived = typename traits<Segment>::NodeModelDerived;                 \
+    using ControlParamModelDerived = typename traits<Segment>::ControlParamModelDerived; \
+    using StageCoefficients_t = typename traits<Segment>::StageCoefficients_t;           \
+    using Quadrature_t = typename traits<Segment>::Quadrature_t;                         \
     using Timings_t = typename traits<Segment>::Timings_t;
 
-#define GALILEO_SEGMENT_DATA_ERK_TYPEDEF(Segment)                            \
-    using ControlParamData_t = typename traits<Segment>::ControlParamData_t; \
-    using S_t = typename traits<Segment>::S_t;                               \
-    using Sk_t = typename traits<Segment>::Sk_t;                             \
-    using Sw_t = typename traits<Segment>::Sw_t;
+#define GALILEO_SEGMENT_DATA_ERK_TYPEDEF(Segment)                          \
+    using NodeDataVector = typename traits<Segment>::NodeDataVector;       \
+    using ControlDataVector = typename traits<Segment>::ControlDataVector; \
+    using F_t = typename traits<Segment>::F_t;                             \
+    using Fx_t = typename traits<Segment>::Fx_t;                           \
+    using Fu_t = typename traits<Segment>::Fu_t;                           \
+    using L_t = typename traits<Segment>::L_t;                             \
+    using Lx_t = typename traits<Segment>::Lx_t;                           \
+    using Lu_t = typename traits<Segment>::Lu_t;                           \
+    using Lxx_t = typename traits<Segment>::Lxx_t;                         \
+    using Lxu_t = typename traits<Segment>::Lxu_t;                         \
+    using Luu_t = typename traits<Segment>::Luu_t;                         \
+    using H_t = typename traits<Segment>::H_t;                             \
+    using Hx_t = typename traits<Segment>::Hx_t;                           \
+    using Hu_t = typename traits<Segment>::Hu_t;                           \
+    using G_t = typename traits<Segment>::G_t;                             \
+    using Gx_t = typename traits<Segment>::Gx_t;                           \
+    using Gu_t = typename traits<Segment>::Gu_t;
 
 namespace galileo
 {
     namespace predictive
     {
 
-        template <typename Derived>
+        enum ERKType : int
+        {
+            Euler = 1,
+            RK2 = 2,
+            RK3 = 3,
+            RK4 = 4
+        };
+
+        template <typename Derived, typename PhaseSpec>
         class SegmentModelERKBase : internal::CRTP<Derived>
         {
         public:

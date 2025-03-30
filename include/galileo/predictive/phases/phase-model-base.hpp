@@ -22,7 +22,7 @@ namespace galileo
     namespace predictive
     {
 
-        template <typename Derived>
+        template <typename Derived, typename PhaseSpec>
         class PhaseModelBase : internal::CRTP<Derived>
         {
         public:

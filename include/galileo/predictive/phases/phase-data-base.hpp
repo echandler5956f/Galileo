@@ -14,7 +14,7 @@ namespace galileo
     namespace predictive
     {
 
-        template <typename Derived>
+        template <typename Derived, typename PhaseSpec>
         struct PhaseDataBase : internal::CRTP<Derived>
         {
         public:

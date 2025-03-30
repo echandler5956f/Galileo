@@ -26,7 +26,7 @@ namespace galileo
     namespace core
     {
 
-        template <typename Derived>
+        template <typename Derived, typename PhaseSpec>
         class ActuationModelBase : internal::CRTP<Derived>
         {
         public:
