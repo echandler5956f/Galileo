@@ -9,16 +9,16 @@
                                                                          (GALILEO_MAJOR_VERSION > y || (GALILEO_MAJOR_VERSION >= y && \
                                                                                                         GALILEO_MINOR_VERSION >= z))))
 
-#define FORWARD_GETTER(getter_name)       \
-    /* lvalue-qualified overload */       \
-    decltype(auto) getter_name() &        \
-    {                                     \
-        return derived().getter_name();   \
-    }                                     \
-    /* const-lvalue-qualified overload */ \
-    decltype(auto) getter_name() const &  \
-    {                                     \
-        return derived().getter_name();   \
+#define FORWARD_ACCESSOR(getter_name)              \
+    /* lvalue-qualified overload */                \
+    decltype(auto) getter_name() &                 \
+    {                                              \
+        return derived().getter_name##_accessor(); \
+    }                                              \
+    /* const-lvalue-qualified overload */          \
+    decltype(auto) getter_name() const &           \
+    {                                              \
+        return derived().getter_name##_accessor(); \
     }
 
 #define GALILEO_DEFAULT_CONSTRUCTOR(X) \

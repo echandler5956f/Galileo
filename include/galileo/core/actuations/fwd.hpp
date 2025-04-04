@@ -9,10 +9,10 @@ namespace galileo
     namespace core
     {
 
-        template <typename PhaseSpec>
+        template <typename BasicSpec>
         class ActuationModelFullTpl;
 
-        template <typename PhaseSpec, int _NFb>
+        template <typename BasicSpec>
         class ActuationModelFloatingBaseTpl;
 
     } // namespace core

@@ -8,16 +8,16 @@ namespace galileo
     namespace core
     {
 
-        template <typename Derived, typename PhaseSpec>
+        template <typename Derived, typename BasicSpec>
         class ActuationModelBase : internal::CRTP<Derived>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using PS = PhaseSpec;
+            using BS = BasicSpec;
 
             template <typename StateVectorType, typename ControlVectorType>
-            void calc(typename PS::ActuationData_t &data,
+            void calc(typename BS::ActuationData_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
             {
@@ -25,7 +25,7 @@ namespace galileo
             }
 
             template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(typename PS::ActuationData_t &data,
+            void calcDiff(typename BS::ActuationData_t &data,
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
@@ -33,7 +33,7 @@ namespace galileo
             }
 
             template <typename StateVectorType, typename TauVectorType>
-            void commands(typename PS::ActuationData_t &data,
+            void commands(typename BS::ActuationData_t &data,
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<TauVectorType> &tau) const
             {
@@ -41,7 +41,7 @@ namespace galileo
             }
 
             template <typename StateVectorType, typename ControlVectorType>
-            void torqueTransform(typename PS::ActuationData_t &data,
+            void torqueTransform(typename BS::ActuationData_t &data,
                                  const Eigen::MatrixBase<StateVectorType> &x,
                                  const Eigen::MatrixBase<ControlVectorType> &u) const
             {

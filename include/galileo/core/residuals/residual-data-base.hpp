@@ -20,11 +20,11 @@ namespace galileo
             GALILEO_RESIDUAL_CONSTANTS(ResidualDerived);
             GALILEO_RESIDUAL_DATA_TYPEDEF(ResidualDerived);
 
-            R_t R;
-            Rx_t Rx;
-            Ru_t Ru;
-            Arr_Rx_t Arr_Rx;
-            Arr_Ru_t Arr_Ru;
+            // R_t R;
+            // Rx_t Rx;
+            // Ru_t Ru;
+            // Arr_Rx_t Arr_Rx;
+            // Arr_Ru_t Arr_Ru;
 
         protected:
             inline ResidualDataBase()

@@ -8,23 +8,24 @@
 
 namespace galileo
 {
+    
     namespace core
     {
 
-        template <typename PhaseSpec>
+        template <typename BasicSpec>
         struct ActuationDataTpl
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using PS = PhaseSpec;
+            using BS = BasicSpec;
 
-            typename PS::VectorNv_t tau;
-            typename PS::VectorNu_t u;
-            typename PS::MatrixNvNdx_t dTaudX;
-            typename PS::MatrixNvNu_t dTaudU;
-            typename PS::MatrixNuNv_t Mtau;
-            std::array<bool, PS::NV> tau_set;
+            typename BS::VectorNv_t tau;
+            typename BS::VectorNua_t u;
+            typename BS::MatrixNvNdx_t dTaudX;
+            typename BS::MatrixNvNua_t dTaudU;
+            typename BS::MatrixNuaNv_t Mtau;
+            std::array<bool, BS::NV> tau_set;
 
         }; // struct ActuationDataTpl
 

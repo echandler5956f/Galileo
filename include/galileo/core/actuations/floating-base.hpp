@@ -9,26 +9,24 @@ namespace galileo
     namespace core
     {
 
-        template <typename PhaseSpec, int _NFbv>
-        class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<PhaseSpec, _NFbv>>
+        template <typename BasicSpec>
+        class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<BasicSpec>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using PS = PhaseSpec;
-            static constexpr int NFbv = _NFbv;
-            static constexpr int Ntau = PS::NV - NFbv;
+            using BS = BasicSpec;
 
             template <typename StateVectorType, typename ControlVectorType>
-            void calc(typename PS::ActuationData_t &data,
+            void calc(typename BS::ActuationData_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                data->tau.tail(Ntau) = u;
+                data->tau.tail(BS::NUa) = u;
             }
 
             template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(typename PS::ActuationData_t &data,
+            void calcDiff(typename BS::ActuationData_t &data,
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
@@ -36,15 +34,15 @@ namespace galileo
             }
 
             template <typename StateVectorType, typename TauVectorType>
-            void commands(typename PS::ActuationData_t &data,
+            void commands(typename BS::ActuationData_t &data,
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<TauVectorType> &tau) const
             {
-                data->u.tail(Ntau) = tau;
+                data->u = tau.tail(BS::NUa);
             }
 
             template <typename StateVectorType, typename ControlVectorType>
-            void torqueTransform(typename PS::ActuationData_t &data,
+            void torqueTransform(typename BS::ActuationData_t &data,
                                  const Eigen::MatrixBase<StateVectorType> &x,
                                  const Eigen::MatrixBase<ControlVectorType> &u) const
             {

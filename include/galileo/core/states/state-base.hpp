@@ -9,28 +9,28 @@ namespace galileo
     namespace core
     {
 
-        template <typename Derived, typename PhaseSpec>
+        template <typename Derived, typename BasicSpec>
         class StateBase : internal::CRTP<Derived>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using PS = PhaseSpec;
+            using BS = BasicSpec;
 
             /**
              * @brief Generate a zero state
              */
-            typename PS::VectorNx_t zero() const
+            typename BS::VectorNx_t zero() const
             {
-                derived().zero();
+                return derived().zero();
             }
 
             /**
              * @brief Generate a random state
              */
-            typename PS::VectorNx_t rand() const
+            typename BS::VectorNx_t rand() const
             {
-                derived().rand();
+                return derived().rand();
             }
 
             /**
@@ -214,10 +214,10 @@ namespace galileo
              * `ndx`)
              */
             template <typename StateVector1, typename StateVector2>
-            typename PS::VectorNdx_t diff_dx(const Eigen::MatrixBase<StateVector1> &x0,
+            typename BS::VectorNdx_t diff_dx(const Eigen::MatrixBase<StateVector1> &x0,
                                              const Eigen::MatrixBase<StateVector2> &x1)
             {
-                derived().diff_dx(x0.derived(), x1.derived());
+                return derived().diff_dx(x0.derived(), x1.derived());
             }
 
             /**
@@ -228,10 +228,10 @@ namespace galileo
              * @return  Next state point (size `nx`)
              */
             template <typename StateVector, typename StateTangentVector>
-            typename PS::VectorNx_t integrate_x(const Eigen::MatrixBase<StateVector> &x,
+            typename BS::VectorNx_t integrate_x(const Eigen::MatrixBase<StateVector> &x,
                                                 const Eigen::MatrixBase<StateTangentVector> &dx)
             {
-                derived().integrate_x(x.derived(), dx.derived());
+                return derived().integrate_x(x.derived(), dx.derived());
             }
 
             /**
@@ -242,11 +242,11 @@ namespace galileo
              * @return  Jacobians
              */
             template <typename StateVector1, typename StateVector2>
-            std::vector<typename PS::MatrixNdx_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
+            std::vector<typename BS::MatrixNdx_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
                                                            const Eigen::MatrixBase<StateVector2> &x1,
                                                            const Jcomponent firstsecond = both)
             {
-                derived().Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
+                return derived().Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
             }
 
             /**
@@ -257,11 +257,11 @@ namespace galileo
              * @return  Jacobians
              */
             template <typename StateVector, typename StateTangentVector>
-            std::vector<typename PS::MatrixNdx_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
+            std::vector<typename BS::MatrixNdx_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
                                                                 const Eigen::MatrixBase<StateTangentVector> &dx,
                                                                 const Jcomponent firstsecond = both)
             {
-                derived().Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
+                return derived().Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
             }
 
             /**
@@ -291,7 +291,7 @@ namespace galileo
             /**
              * @brief Return the state lower bound
              */
-            const typename PS::VectorNx_t &get_lb() const
+            const typename BS::VectorNx_t &get_lb() const
             {
                 return derived().get_lb();
             }
@@ -299,7 +299,7 @@ namespace galileo
             /**
              * @brief Return the state upper bound
              */
-            const typename PS::VectorNx_t &get_ub() const
+            const typename BS::VectorNx_t &get_ub() const
             {
                 return derived().get_ub();
             }

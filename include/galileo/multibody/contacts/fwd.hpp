@@ -9,7 +9,12 @@ namespace galileo
     namespace multibody
     {
 
+        template <typename PhaseSpec>
+        struct ContactModelTpl;
 
+        template <typename PhaseSpec>
+        struct ContactDataTpl;
+        
     } // namespace multibody
 
 } // namespace galileo

@@ -3,43 +3,64 @@
 
 #include "galileo/multibody/contacts/contact-base.hpp"
 
-#define GALILEO_CONTACT_BASIC_TYPEDEF(Contact)                                 \
-    using VarScalar = typename traits<Contact>::VarScalar;                     \
-    using NumScalar = typename traits<Contact>::NumScalar;                     \
-    static constexpr int Options = traits<Contact>::Options;                   \
-    using ContactModelDerived = typename traits<Contact>::ContactModelDerived; \
-    using ContactDataDerived = typename traits<Contact>::ContactDataDerived;
-
-#define GALILEO_CONTACT_CONSTANTS(Contact)           \
-    static constexpr int NX = traits<Contact>::NX;   \
-    static constexpr int NU = traits<Contact>::NU;   \
-    static constexpr int NDX = traits<Contact>::NDX; \
-    static constexpr int NQ = traits<Contact>::NQ;   \
-    static constexpr int NV = traits<Contact>::NV;   \
-    static constexpr int NC = traits<Contact>::NC;
-
-#define GALILEO_CONTACT_MODEL_TYPEDEF(Contact)
-
-#define GALILEO_CONTACT_DATA_TYPEDEF(Contact)    \
-    using Jc_t = typename traits<Contact>::Jc_t; \
-    using Fx_t = typename traits<Contact>::Fx_t; \
-    using Fu_t = typename traits<Contact>::Fu_t;
-
 namespace galileo
 {
     namespace multibody
     {
 
-        template <typename Derived>
+        template <typename Derived, typename PhaseSpec>
         struct ContactModelBase : internal::CRTP<Derived>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+            using PS = PhaseSpec;
+
             using ContactDerived = typename traits<Derived>::ContactDerived;
-            GALILEO_CONTACT_BASIC_TYPEDEF(ContactDerived);
-            GALILEO_CONTACT_CONSTANTS(ContactDerived);
-            GALILEO_CONTACT_MODEL_TYPEDEF(ContactDerived);
+            using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
+            using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
+
+            template <typename StateVectorType>
+            void calc(ContactDataDerived &data,
+                      const Eigen::MatrixBase<StateVectorType> &x)
+            {
+                derived().calc(data, x);
+            }
+
+            template <typename StateVectorType>
+            void calcDiff(ContactDataDerived &data,
+                          const Eigen::MatrixBase<StateVectorType> &x)
+            {
+                derived().calcDiff(data, x);
+            }
+
+            template <typename ForceVectorType>
+            void updateForce(ContactDataDerived &data,
+                             const Eigen::MatrixBase<ForceVectorType> &f)
+            {
+                derived().updateForce(data, f);
+            }
+
+            template <typename JacobianXType, typename JacobianUType>
+            void updateForceDiff(ContactDataDerived &data,
+                                 const Eigen::MatrixBase<JacobianXType> &df_dx,
+                                 const Eigen::MatrixBase<JacobianUType> &df_du)
+            {
+                data.df_dx = df_dx;
+                data.df_du = df_du;
+            }
+
+            void setZeroForce(ContactDataDerived &data) const
+            {
+                data.f.setZero();
+                data.fext.setZero();
+            }
+
+            void setZeroForceDiff(ContactDataDerived &data) const
+            {
+                data.df_dx.setZero();
+                data.df_du.setZero();
+            }
 
         protected:
             inline ContactModelBase()

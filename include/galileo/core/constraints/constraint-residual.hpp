@@ -32,6 +32,7 @@ namespace galileo
 
             static constexpr int NX = traits<ResidualTpl>::NX;
             static constexpr int NU = traits<ResidualTpl>::NU;
+            static constexpr int NDX = traits<ResidualTpl>::NDX;
             static constexpr int NH = constexpr(EqualityInequality == ConstraintType::Equality) ? traits<ResidualTpl>::NH : 0;
             static constexpr int NG = constexpr(EqualityInequality == ConstraintType::Inequality) ? traits<ResidualTpl>::NG : 0;
 
@@ -42,10 +43,10 @@ namespace galileo
             using ResidualData_t = traits<ResidualTpl>::ResidualData_t;
 
             using H_t = Eigen::Matrix<VarScalar, NH, 1, Options>;
-            using Hx_t = Eigen::Matrix<VarScalar, NH, NX, Options>;
+            using Hx_t = Eigen::Matrix<VarScalar, NH, NDX, Options>;
             using Hu_t = Eigen::Matrix<VarScalar, NH, NU, Options>;
             using G_t = Eigen::Matrix<VarScalar, NG, 1, Options>;
-            using Gx_t = Eigen::Matrix<VarScalar, NG, NX, Options>;
+            using Gx_t = Eigen::Matrix<VarScalar, NG, NDX, Options>;
             using Gu_t = Eigen::Matrix<VarScalar, NG, NU, Options>;
         };
 
