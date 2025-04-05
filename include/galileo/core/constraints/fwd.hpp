@@ -24,36 +24,28 @@ namespace galileo
         };
 
         template <
-            typename VarScalar,
-            typename NumScalar,
-            int Options,
-            template <typename V, typename N, int O> class ResidualModelTpl,
+            typename PhaseSpec,
+            template <typename PS> class ResidualTpl,
             ConstraintType EqualityInequality>
         struct ConstraintModelResidualTpl;
 
         template <
-            typename VarScalar,
-            typename NumScalar,
-            int Options,
-            template <typename V, typename N, int O> class ResidualModelTpl,
+            typename PhaseSpec,
+            template <typename PS> class ResidualTpl,
             ConstraintType EqualityInequality>
         struct ConstraintDataResidualTpl;
 
-        template <typename VarScalar, typename NumScalar, int Options>
+        template <typename PhaseSpec>
         struct ConstraintCollectionDefaultTpl;
 
         template <
-            typename VarScalar,
-            typename NumScalar,
-            int Options,
-            template <typename V, typename N, int O> class ConstraintCollectionTpl>
+            typename PhaseSpec,
+            template <typename PS> class ConstraintCollectionTpl>
         struct ConstraintModelTpl;
 
         template <
-            typename VarScalar,
-            typename NumScalar,
-            int Options,
-            template <typename V, typename N, int O> class ConstraintCollectionTpl>
+            typename PhaseSpec,
+            template <typename PS> class ConstraintCollectionTpl>
         struct ConstraintDataTpl;
 
     } // namespace core
