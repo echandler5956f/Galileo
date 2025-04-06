@@ -59,8 +59,8 @@ namespace galileo
 
         template <typename PhaseSpec,
                   template <typename PS> class ConstraintCollectionTpl>
-        struct ConstraintDataTpl : ConstraintDataBase<ConstraintDataTpl<PS, ConstraintCollectionTpl>>,
-                                   ConstraintCollectionTpl<PS>::ConstraintDataVariant
+        struct ConstraintDataTpl : public ConstraintDataBase<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
+                                   ConstraintCollectionTpl<PhaseSpec>::ConstraintDataVariant
         {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -84,7 +84,7 @@ namespace galileo
                 return *static_cast<const ConstraintDataVariant *>(this);
             }
 
-            H_t &H() const
+            H_t H() const
             {
                 return galileo::core::constraint_H(*this);
             }

@@ -66,7 +66,7 @@ namespace galileo
             typename PhaseSpec,
             template <typename PS> class ResidualTpl,
             ConstraintType EqualityInequality>
-        struct ConstraintDataResidualTpl : ConstraintDataBase<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>, PhaseSpec>
+        struct ConstraintDataResidualTpl : public ConstraintDataBase<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
