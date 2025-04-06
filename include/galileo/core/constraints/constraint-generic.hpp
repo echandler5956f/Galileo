@@ -14,79 +14,63 @@ namespace galileo
     {
 
         template <
-            typename VarScalar,
-            typename NumScalar,
-            int Options,
-            template <typename V, typename N, int O> class ConstraintCollectionTpl>
-        struct ConstraintTpl
-        {
-        };
+            typename PhaseSpec,
+            template <typename PS> class ConstraintCollectionTpl>
+        struct ConstraintTpl;
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class ConstraintCollectionTpl>
-        struct traits<ConstraintTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ConstraintCollectionTpl>
+        struct traits<ConstraintTpl<PhaseSpec, ConstraintCollectionTpl>>
         {
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            static constexpr int Options = _Options;
+            using PS = PhaseSpec;
+            using ConstraintCollection = ConstraintCollectionTpl<PS>;
 
-            static constexpr int NX = ConstraintCollectionTpl<VarScalar, NumScalar, Options>::NX;
-            static constexpr int NU = ConstraintCollectionTpl<VarScalar, NumScalar, Options>::NU;
             static constexpr int NH = Eigen::Dynamic;
             static constexpr int NG = Eigen::Dynamic;
 
-            using ConstraintDataDerived = ConstraintDataTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>;
-            using ConstraintModelDerived = ConstraintModelTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>;
+            using ConstraintDataDerived = ConstraintDataTpl<PS, ConstraintCollectionTpl>;
+            using ConstraintModelDerived = ConstraintModelTpl<PS, ConstraintCollectionTpl>;
 
-            using H_t = Eigen::Matrix<VarScalar, NH, NX, Options>;
-            using Hx_t = Eigen::Matrix<VarScalar, NH, NX, Options>;
-            using Hu_t = Eigen::Matrix<VarScalar, NH, NU, Options>;
-            using G_t = Eigen::Matrix<VarScalar, NG, NX, Options>;
-            using Gx_t = Eigen::Matrix<VarScalar, NG, NX, Options>;
-            using Gu_t = Eigen::Matrix<VarScalar, NG, NU, Options>;
+            using H_t = Eigen::Matrix<typename PS::VarScalar, NH, 1, PS::Options>;
+            using Hx_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
+            using Hu_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
+            using G_t = Eigen::Matrix<typename PS::VarScalar, NG, 1, PS::Options>;
+            using Gx_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
+            using Gu_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
         };
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class ConstraintCollectionTpl>
-        struct traits<ConstraintDataTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ConstraintCollectionTpl>
+        struct traits<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>>
         {
-            using ConstraintDerived = ConstraintTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>;
-            using VarScalar = traits<ConstraintDerived>::VarScalar;
-            using NumScalar = traits<ConstraintDerived>::NumScalar;
+            using PS = PhaseSpec;
+            using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
         };
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class ConstraintCollectionTpl>
-        struct traits<ConstraintModelTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ConstraintCollectionTpl>
+        struct traits<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>>
         {
-            using ConstraintDerived = ConstraintTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>;
-            using VarScalar = traits<ConstraintDerived>::VarScalar;
-            using NumScalar = traits<ConstraintDerived>::NumScalar;
+            using PS = PhaseSpec;
+            using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
         };
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class ConstraintCollectionTpl>
-        struct ConstraintDataTpl : ConstraintDataBase<ConstraintDataTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>>,
-                                   ConstraintCollectionTpl<VarScalar, NumScalar, Options>::ConstraintDataVariant
+        template <typename PhaseSpec,
+                  template <typename PS> class ConstraintCollectionTpl>
+        struct ConstraintDataTpl : ConstraintDataBase<ConstraintDataTpl<PS, ConstraintCollectionTpl>>,
+                                   ConstraintCollectionTpl<PS>::ConstraintDataVariant
         {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ConstraintDerived = ConstraintTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>;
-            using Base = ConstraintDataBase<ConstraintDataTpl>;
+            using PS = PhaseSpec;
 
-            GALILEO_CONSTRAINT_BASIC_TYPEDEF(ConstraintDerived);
-            GALILEO_CONSTRAINT_CONSTANTS(ConstraintDerived);
+            using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+            using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+
             GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
 
-            using ConstraintCollection = ConstraintCollectionTpl<VarScalar, NumScalar, Options>;
+            using ConstraintCollection = ConstraintCollectionTpl<PS>;
             using ConstraintDataVariant = typename ConstraintCollection::ConstraintDataVariant;
 
             ConstraintDataVariant &toVariant()
@@ -98,7 +82,7 @@ namespace galileo
                 return *static_cast<const ConstraintDataVariant *>(this);
             }
 
-            H_t H() const
+            H_t &H() const
             {
                 return galileo::core::constraint_H(*this);
             }
@@ -145,56 +129,29 @@ namespace galileo
                 BOOST_MPL_ASSERT((boost::mpl::contains<typename ConstraintDataVariant::types, ConstraintDataDerived>));
             }
 
-            H_t H_accessor()
-            {
-                return H();
-            }
-
-            Hx_t Hx_accessor()
-            {
-                return Hx();
-            }
-
-            Hu_t Hu_accessor()
-            {
-                return Hu();
-            }
-
-            G_t G_accessor()
-            {
-                return G();
-            }
-
-            Gx_t Gx_accessor()
-            {
-                return Gx();
-            }
-
-            Gu_t Gu_accessor()
-            {
-                return Gu();
-            }
+            GENERIC_ACCESSOR(H_t, H);
+            GENERIC_ACCESSOR(Hx_t, Hx);
+            GENERIC_ACCESSOR(Hu_t, Hu);
+            GENERIC_ACCESSOR(G_t, G);
+            GENERIC_ACCESSOR(Gx_t, Gx);
+            GENERIC_ACCESSOR(Gu_t, Gu);
 
         }; // struct ConstraintDataTpl
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class ConstraintCollectionTpl>
-        struct ConstraintModelTpl : ConstraintModelBase<ConstraintModelTpl<_VarScalar, _NumScalar, _Options, ConstraintCollectionTpl>>,
-                                    ConstraintCollectionTpl<VarScalar, NumScalar, Options>::ConstraintModelVariant
+        template <typename PhaseSpec,
+                  template <typename PS> class ConstraintCollectionTpl>
+        struct ConstraintModelTpl : ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>>,
+                                    ConstraintCollectionTpl<PS>::ConstraintModelVariant
         {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ConstraintDerived = ConstraintTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>;
-            using Base = ConstraintModelBase<ConstraintModelTpl>;
+            using PS = PhaseSpec;
 
-            GALILEO_CONSTRAINT_BASIC_TYPEDEF(ConstraintDerived);
-            GALILEO_CONSTRAINT_CONSTANTS(ConstraintDerived);
-            GALILEO_CONSTRAINT_MODEL_TYPEDEF(ConstraintDerived);
+            using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+            using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
 
-            using ConstraintCollection = ConstraintCollectionTpl<VarScalar, NumScalar, Options>;
-            using ConstraintDataVariant = typename ConstraintCollection::ConstraintDataVariant;
+            using ConstraintCollection = ConstraintCollectionTpl<PS>;
             using ConstraintModelVariant = typename ConstraintCollection::ConstraintModelVariant;
 
             ConstraintModelTpl()
@@ -232,12 +189,59 @@ namespace galileo
                 galileo::core::constraint_calc_zeroth_order(*this, data, x.derived(), u.derived());
             }
 
+            template <typename StateVectorType>
+            void calc(ConstraintDataDerived &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+            {
+                galileo::core::constraint_calc_zeroth_order(*this, data, x.derived());
+            }
+
             template <typename StateVectorType, typename ControlVectorType>
             void calcDiff(ConstraintDataDerived &data,
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
                 galileo::core::constraint_calc_first_order(*this, data, x.derived(), u.derived());
+            }
+
+            template <typename StateVectorType>
+            void calcDiff(ConstraintDataDerived &data,
+                          const Eigen::MatrixBase<StateVectorType> &x) const
+            {
+                galileo::core::constraint_calc_first_order(*this, data, x.derived());
+            }
+
+            template <typename DataCollector>
+            auto createData(DataCollector *const collector)
+            {
+                return galileo::core::constraint_create_data(*this, collector);
+            }
+
+            template <typename LowerBoundType, typename UpperBoundType>
+            void updateBounds(const Eigen::MatrixBase<LowerBoundType> &lb,
+                              const Eigen::MatrixBase<UpperBoundType> &ub)
+            {
+                galileo::core::constraint_update_bounds(*this, lb.derived(), ub.derived());
+            }
+
+            const BoundVector_t &lb() const
+            {
+                return galileo::core::constraint_lb(*this);
+            }
+
+            const BoundVector_t &ub() const
+            {
+                return galileo::core::constraint_ub(*this);
+            }
+
+            int ng_impl() const
+            {
+                return galileo::core::constraint_ng(*this);
+            }
+
+            int nh_impl() const
+            {
+                return galileo::core::constraint_nh(*this);
             }
 
         }; // struct ConstraintModelTpl

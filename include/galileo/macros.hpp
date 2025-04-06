@@ -21,14 +21,24 @@
         return derived().accessor_name##_accessor(); \
     }
 
-#define DEFAULT_ACCESSOR(Type, accessor_name) \
-    Type &accessor_name()                     \
-    {                                         \
-        return accessor_name;                 \
-    }                                         \
-    const Type &accessor_name() const         \
-    {                                         \
-        return accessor_name;                 \
+#define DEFAULT_ACCESSOR(Type, accessor_name)    \
+    Type &accessor_name##_accessor()             \
+    {                                            \
+        return accessor_name;                    \
+    }                                            \
+    const Type &accessor_name##_accessor() const \
+    {                                            \
+        return accessor_name;                    \
+    }
+
+#define GENERIC_ACCESSOR(Type, accessor_name)    \
+    Type &accessor_name##_accessor()             \
+    {                                            \
+        return accessor_name();                  \
+    }                                            \
+    const Type &accessor_name##_accessor() const \
+    {                                            \
+        return accessor_name();                  \
     }
 
 #define GALILEO_DEFAULT_CONSTRUCTOR(X) \

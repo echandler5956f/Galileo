@@ -38,6 +38,8 @@ namespace galileo
             using G_t = Eigen::Matrix<typename PS::VarScalar, NG, 1, PS::Options>;
             using Gx_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
             using Gu_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
+
+            using BoundVector_t = Eigen::Matrix<typename PS::NumScalar, NG, 1, PS::Options>;
         };
 
         template <
@@ -105,10 +107,10 @@ namespace galileo
             using PS = PhaseSpec;
             static constexpr ConstraintType EqualityInequality = EqualityInequality_;
             using Constraint_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
-            using ConstraintModel_t = traits<Constraint_t>::ConstraintModelDerived;
-            using ConstraintData_t = traits<Constraint_t>::ConstraintDataDerived;
+            using ConstraintModel_t = typename traits<Constraint_t>::ConstraintModelDerived;
+            using ConstraintData_t = typename traits<Constraint_t>::ConstraintDataDerived;
 
-            using BoundVector_t = Eigen::Matrix<typename PS::NumScalar, traits<Constraint_t>::NG, 1, PS::Options>;
+            using BoundVector_t = typename traits<Constraint_t>::BoundVector_t;
 
             ConstraintModelResidualTpl(const ResidualModel_t &residual)
                 : residual_(residual)

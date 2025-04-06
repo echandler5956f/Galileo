@@ -20,7 +20,7 @@ namespace galileo
             using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
             using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
 
-            using BoundVector_t = Eigen::Matrix<typename PS::NumScalar, traits<Derived>::NG, 1, PS::Options>;
+            using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
 
             template <typename StateVectorType, typename ControlVectorType>
             void calc(ConstraintDataDerived &data,
