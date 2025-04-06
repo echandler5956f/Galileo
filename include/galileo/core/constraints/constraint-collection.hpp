@@ -11,12 +11,10 @@ namespace galileo
     namespace core
     {
 
-        template <typename _VarScalar, typename _NumScalar, int _Options>
+        template <typename PhaseSpec>
         struct ConstraintCollectionDefaultTpl
         {
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            using Options = _Options;
+            using PhaseSpec = PhaseSpec;
 
             using ConstraintModelVariant = boost::variant<>; // TODO: add constraint models
 
@@ -24,11 +22,11 @@ namespace galileo
 
         }; // struct ConstraintCollectionDefaultTpl
 
-        template <typename VarScalar, typename NumScalar, int Options>
-        using ConstraintModelVariantTpl = ConstraintCollectionDefaultTpl<VarScalar, NumScalar, Options>::ConstraintModelVariant;
+        template <typename PhaseSpec>
+        using ConstraintModelVariantTpl = ConstraintCollectionDefaultTpl<PhaseSpec>::ConstraintModelVariant;
 
-        template <typename VarScalar, typename NumScalar, int Options>
-        using ConstraintDataVariantTpl = ConstraintCollectionDefaultTpl<VarScalar, NumScalar, Options>::ConstraintDataVariant;
+        template <typename PhaseSpec>
+        using ConstraintDataVariantTpl = ConstraintCollectionDefaultTpl<PhaseSpec>::ConstraintDataVariant;
 
     } // namespace core
 

@@ -55,6 +55,7 @@ namespace galileo
         {
             using PS = PhaseSpec;
             using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
+            using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
         };
 
         template <typename PhaseSpec,
@@ -125,7 +126,7 @@ namespace galileo
             }
 
             template <typename ConstraintDataDerived>
-            ConstraintDataTpl(const ConstraintDataBase<ConstraintDataDerived> &constraint_data)
+            ConstraintDataTpl(const ConstraintDataBase<ConstraintDataDerived, PhaseSpec> &constraint_data)
                 : ConstraintCollection::ConstraintDataVariant((ConstraintDataVariant)constraint_data.derived())
             {
                 BOOST_MPL_ASSERT((boost::mpl::contains<typename ConstraintDataVariant::types, ConstraintDataDerived>));
@@ -142,8 +143,8 @@ namespace galileo
 
         template <typename PhaseSpec,
                   template <typename PS> class ConstraintCollectionTpl>
-        struct ConstraintModelTpl : ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>>,
-                                    ConstraintCollectionTpl<PS>::ConstraintModelVariant
+        struct ConstraintModelTpl : public ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
+                                    ConstraintCollectionTpl<PhaseSpec>::ConstraintModelVariant
         {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -169,7 +170,7 @@ namespace galileo
             }
 
             template <typename ConstraintModelDerived>
-            ConstraintModelTpl(const ConstraintModelBase<ConstraintModelDerived> &constraint_model)
+            ConstraintModelTpl(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model)
                 : ConstraintCollection::ConstraintModelVariant((ConstraintModelVariant)constraint_model.derived())
             {
                 BOOST_MPL_ASSERT((boost::mpl::contains<typename ConstraintModelVariant::types, ConstraintModelDerived>));

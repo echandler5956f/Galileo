@@ -122,30 +122,27 @@ namespace galileo
 
             template <typename ForceVectorType>
             void updateForce(ContactDataDerived &data,
-                             const Eigen::MatrixBase<ForceVectorType> &f)
+                             const Eigen::MatrixBase<ForceVectorType> &force)
             {
-                derived().updateForce(data, f.derived());
+                derived().updateForce(data, force.derived());
             }
 
-            template <typename JacobianXType, typename JacobianUType>
+            template <typename MatrixNcNdxType, typename MatrixNcNuType>
             void updateForceDiff(ContactDataDerived &data,
-                                 const Eigen::MatrixBase<JacobianXType> &df_dx,
-                                 const Eigen::MatrixBase<JacobianUType> &df_du)
+                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
             {
-                data.df_dx() = df_dx;
-                data.df_du() = df_du;
+                derived().updateForceDiff(data, df_dx.derived(), df_du.derived());
             }
 
             void setZeroForce(ContactDataDerived &data) const
             {
-                data.f().setZero();
-                data.fext().setZero();
+                derived().setZeroForce(data);
             }
 
             void setZeroForceDiff(ContactDataDerived &data) const
             {
-                data.df_dx().setZero();
-                data.df_du().setZero();
+                derived().setZeroForceDiff(data);
             }
 
             int nc() const

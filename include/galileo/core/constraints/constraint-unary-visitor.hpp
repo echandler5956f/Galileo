@@ -19,35 +19,33 @@ namespace galileo
         struct ConstraintUnaryVisitorBase
         {
             template <
-                typename VarScalar,
-                typename NumScalar,
-                int Options,
-                template <typename, typename, int> class ConstraintCollectionTpl,
+                typename PhaseSpec,
+                template <typename PS> class ConstraintCollectionTpl,
                 typename ArgsTmp>
             static ReturnType run(
-                const core::ConstraintModelTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_model,
-                core::ConstraintDataTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_data,
+                const galileo::core::ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+                galileo::core::ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
                 ArgsTmp args)
             {
-                InternalVisitorModelAndData<core::ConstraintModelTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>, ArgsTmp>
+                InternalVisitorModelAndData<galileo::core::ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, ArgsTmp>
                     visitor(constraint_data, args);
                 return boost::apply_visitor(visitor, constraint_model);
             }
 
-            template <typename VarScalar, typename NumScalar, int Options, template <typename, typename, int> class ConstraintCollectionTpl>
+            template <typename PhaseSpec, template <typename PS> class ConstraintCollectionTpl>
             static ReturnType run(
-                const core::ConstraintModelTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_model,
-                core::ConstraintDataTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_data)
+                const galileo::core::ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+                galileo::core::ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
             {
-                InternalVisitorModelAndData<core::ConstraintModelTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl>, NoArg>
+                InternalVisitorModelAndData<galileo::core::ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, NoArg>
                     visitor(constraint_data);
                 return boost::apply_visitor(visitor, constraint_model);
             }
 
             template <typename ConstraintModelDerived, typename ArgsTmp>
             static ReturnType run(
-                const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model,
-                typename core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived &constraint_data,
+                const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model,
+                typename galileo::core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived &constraint_data,
                 ArgsTmp args)
             {
                 InternalVisitorModelAndData<ConstraintModelDerived, ArgsTmp> visitor(constraint_data, args);
@@ -56,75 +54,72 @@ namespace galileo
 
             template <typename ConstraintModelDerived>
             static ReturnType run(
-                const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model,
-                typename core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived &constraint_data)
+                const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model,
+                typename galileo::core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived &constraint_data)
             {
                 InternalVisitorModelAndData<ConstraintModelDerived, NoArg> visitor(constraint_data);
                 return visitor(constraint_model.derived());
             }
 
             template <
-                typename VarScalar,
-                typename NumScalar,
-                int Options,
-                template <typename, typename, int> class ConstraintCollectionTpl,
+                typename PhaseSpec,
+                template <typename PS> class ConstraintCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const core::ConstraintModelTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_model, ArgsTmp args)
+            run(const galileo::core::ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, constraint_model);
             }
 
             template <
-                typename Scalar,
-                int Options,
-                template <typename, int> class ConstraintCollectionTpl,
+                typename PhaseSpec,
+                template <typename PS> class ConstraintCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const core::ConstraintDataTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_data, ArgsTmp args)
+            run(const galileo::core::ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, constraint_data);
             }
 
-            template <typename VarScalar, typename NumScalar, int Options, template <typename, typename, int> class ConstraintCollectionTpl>
-            static ReturnType run(const core::ConstraintModelTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_model)
+            template <typename PhaseSpec, template <typename PS> class ConstraintCollectionTpl>
+            static ReturnType run(const galileo::core::ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, constraint_model);
             }
 
-            template <typename VarScalar, typename NumScalar, int Options, template <typename, typename, int> class ConstraintCollectionTpl>
-            static ReturnType run(const core::ConstraintDataTpl<VarScalar, NumScalar, Options, ConstraintCollectionTpl> &constraint_data)
+            template <typename PhaseSpec, template <typename PS> class ConstraintCollectionTpl>
+            static ReturnType run(const galileo::core::ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, constraint_data);
             }
 
             template <typename ConstraintModelDerived, typename ArgsTmp>
-            static ReturnType run(const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model, ArgsTmp args)
+            static ReturnType run(const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(constraint_model.derived());
             }
 
             template <typename ConstraintDataDerived, typename ArgsTmp>
-            static ReturnType run(const core::ConstraintDataBase<ConstraintDataDerived> &constraint_data, ArgsTmp args)
+            static ReturnType run(const galileo::core::ConstraintDataBase<ConstraintDataDerived> &constraint_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(constraint_data.derived());
             }
 
             template <typename ConstraintModelDerived>
-            static ReturnType run(const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model)
+            static ReturnType run(const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(constraint_model.derived());
             }
 
             template <typename ConstraintDataDerived>
-            static ReturnType run(const core::ConstraintDataBase<ConstraintDataDerived> &constraint_data)
+            static ReturnType run(const galileo::core::ConstraintDataBase<ConstraintDataDerived> &constraint_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(constraint_data.derived());
@@ -142,14 +137,14 @@ namespace galileo
                 }
 
                 template <typename ConstraintModelDerived>
-                ReturnType operator()(const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
+                ReturnType operator()(const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
                 {
                     return bf::invoke(
                         &ConstraintVisitorDerived::template algo<ConstraintModelDerived>,
                         bf::append(
                             boost::ref(constraint_model.derived()),
                             boost::ref(
-                                boost::get<typename core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived>(constraint_data)),
+                                boost::get<typename galileo::core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived>(constraint_data)),
                             args));
                 }
 
@@ -174,14 +169,14 @@ namespace galileo
                 }
 
                 template <typename ConstraintModelDerived>
-                ReturnType operator()(const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
+                ReturnType operator()(const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
                 {
                     return bf::invoke(
                         &ConstraintVisitorDerived::template algo<ConstraintModelDerived>,
                         bf::make_vector(
                             boost::ref(constraint_model.derived()),
                             boost::ref(
-                                boost::get<typename core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived>(constraint_data))));
+                                boost::get<typename galileo::core::ConstraintModelBase<ConstraintModelDerived>::ConstraintDataDerived>(constraint_data))));
                 }
 
                 ConstraintData &constraint_data;
@@ -196,7 +191,7 @@ namespace galileo
                 }
 
                 template <typename ConstraintModelDerived>
-                ReturnType operator()(const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
+                ReturnType operator()(const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
                 {
                     return bf::invoke(
                         &ConstraintVisitorDerived::template algo<ConstraintModelDerived>,
@@ -204,7 +199,7 @@ namespace galileo
                 }
 
                 template <typename ConstraintDataDerived>
-                ReturnType operator()(const core::ConstraintDataBase<ConstraintDataDerived> &constraint_data) const
+                ReturnType operator()(const galileo::core::ConstraintDataBase<ConstraintDataDerived> &constraint_data) const
                 {
                     return bf::invoke(
                         &ConstraintVisitorDerived::template algo<ConstraintDataDerived>,
@@ -227,13 +222,13 @@ namespace galileo
                 }
 
                 template <typename ConstraintModelDerived>
-                ReturnType operator()(const core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
+                ReturnType operator()(const galileo::core::ConstraintModelBase<ConstraintModelDerived> &constraint_model) const
                 {
                     return ConstraintVisitorDerived::template algo<ConstraintModelDerived>(constraint_model.derived());
                 }
 
                 template <typename ConstraintDataDerived>
-                ReturnType operator()(const core::ConstraintDataBase<ConstraintDataDerived> &constraint_data) const
+                ReturnType operator()(const galileo::core::ConstraintDataBase<ConstraintDataDerived> &constraint_data) const
                 {
                     return ConstraintVisitorDerived::template algo<ConstraintDataDerived>(constraint_data.derived());
                 }

@@ -55,6 +55,7 @@ namespace galileo
         {
             using PS = PhaseSpec;
             using ContactDerived = ContactTpl<PS, ContactCollectionTpl>;
+            using Index_t = typename traits<ContactDerived>::Index_t;
         };
 
         template <typename PhaseSpec,
@@ -161,8 +162,8 @@ namespace galileo
             {
             }
 
-            template <typename ConstraintDataDerived>
-            ContactDataTpl(const ContactDataBase<ContactDataDerived> &contact_data)
+            template <typename ContactDataDerived>
+            ContactDataTpl(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data)
                 : ContactCollection::ContactDataVariant((ContactDataVariant)contact_data.derived())
             {
                 BOOST_MPL_ASSERT((boost::mpl::contains<typename ContactDataVariant::types, ContactDataDerived>));
@@ -186,7 +187,7 @@ namespace galileo
 
         template <typename PhaseSpec,
                   template <typename PS> class ContactCollectionTpl>
-        struct ContactModelTpl : public ContactModelBase<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>,
+        struct ContactModelTpl : public ContactModelBase<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
                                  ContactCollectionTpl<PhaseSpec>::ContactModelVariant
         {
         public:
@@ -214,7 +215,7 @@ namespace galileo
             }
 
             template <typename ContactModelDerived>
-            ContactModelTpl(const ContactModelBase<ContactModelDerived> &contact_model)
+            ContactModelTpl(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model)
                 : ContactCollection::ContactModelVariant((ContactModelVariant)contact_model.derived())
             {
                 BOOST_MPL_ASSERT((boost::mpl::contains<typename ContactModelVariant::types, ContactModelDerived>));
@@ -234,42 +235,39 @@ namespace galileo
             void calc(ContactDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x)
             {
-                contact_calc_zeroth_order(*this, data, x);
+                galileo::multibody::contact_calc_zeroth_order(*this, data, x);
             }
 
             template <typename StateVectorType>
             void calcDiff(ContactDataDerived &data,
                           const Eigen::MatrixBase<StateVectorType> &x)
             {
-                contact_calc_first_order(*this, data, x);
+                galileo::multibody::contact_calc_first_order(*this, data, x);
             }
 
             template <typename ForceVectorType>
             void updateForce(ContactDataDerived &data,
-                             const Eigen::MatrixBase<ForceVectorType> &f)
+                             const Eigen::MatrixBase<ForceVectorType> &force)
             {
-                contact_update_force(*this, data, f.derived());
+                galileo::multibody::contact_update_force(*this, data, force.derived());
             }
 
-            template <typename JacobianXType, typename JacobianUType>
+            template <typename MatrixNcNdxType, typename MatrixNcNuType>
             void updateForceDiff(ContactDataDerived &data,
-                                 const Eigen::MatrixBase<JacobianXType> &df_dx,
-                                 const Eigen::MatrixBase<JacobianUType> &df_du)
+                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
             {
-                data.df_dx() = df_dx;
-                data.df_du() = df_du;
+                galileo::multibody::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
             }
 
             void setZeroForce(ContactDataDerived &data) const
             {
-                data.f().setZero();
-                data.fext().setZero();
+                galileo::multibody::contact_set_zero_force(*this, data);
             }
 
             void setZeroForceDiff(ContactDataDerived &data) const
             {
-                data.df_dx().setZero();
-                data.df_du().setZero();
+                galileo::multibody::contact_set_zero_force_diff(*this, data);
             }
 
             int nc_impl() const
