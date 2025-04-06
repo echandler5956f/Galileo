@@ -37,6 +37,8 @@ namespace galileo
             using G_t = Eigen::Matrix<typename PS::VarScalar, NG, 1, PS::Options>;
             using Gx_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
             using Gu_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
+
+            using BoundVector_t = Eigen::Matrix<typename PS::NumScalar, NG, 1, PS::Options>;
         };
 
         template <typename PhaseSpec,
@@ -153,6 +155,8 @@ namespace galileo
 
             using ConstraintCollection = ConstraintCollectionTpl<PS>;
             using ConstraintModelVariant = typename ConstraintCollection::ConstraintModelVariant;
+
+            using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
 
             ConstraintModelTpl()
                 : ConstraintModelVariant()
