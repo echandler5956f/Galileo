@@ -49,7 +49,9 @@ namespace galileo
             using ConstraintData = ConstraintDataTpl<PS, ConstraintCollectionTpl>;
             using ConstraintDataContainer = std::map<std::string, ConstraintData>;
 
-            GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintData);
+            using ConstraintDerived = typename traits<ConstraintData>::ConstraintDerived;
+
+            GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
 
             ConstraintDataContainer constraints;
             Eigen::Map<H_t> H;
