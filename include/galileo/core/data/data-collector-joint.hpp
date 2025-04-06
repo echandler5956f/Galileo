@@ -21,7 +21,7 @@ namespace galileo
             typename PS::VectorNua_t tau;        // Joint torques
             typename PS::VectorNv_t a;           // Joint accelerations
             typename PS::MatrixNuaNdx_t dtau_dx; // Torque derivatives w.r.t. state
-            typename PS::MatrixNu_t dtau_du;     // Torque derivatives w.r.t. control
+            typename PS::MatrixNuaNu_t dtau_du;  // Torque derivatives w.r.t. control
             typename PS::MatrixNvNdx_t da_dx;    // Acceleration derivatives w.r.t. state
             typename PS::MatrixNvNu_t da_du;     // Acceleration derivatives w.r.t. control
 

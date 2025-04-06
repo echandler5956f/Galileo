@@ -1,13 +1,13 @@
-#ifndef __galileo_multibody_data_fwd_hpp__
-#define __galileo_multibody_data_fwd_hpp__
+#ifndef __galileo_core_data_data_collector_multibody_hpp__
+#define __galileo_core_data_data_collector_multibody_hpp__
 
 #include <pinocchio/multibody/data.hpp>
-#include "galileo/multibody/fwd.hpp"
+#include "galileo/core/data/fwd.hpp"
 
 namespace galileo
 {
 
-    namespace multibody
+    namespace core
     {
 
         // Pinocchio multibody data mixin
@@ -21,8 +21,8 @@ namespace galileo
             MultibodyDataMixin(pinocchio::DataTpl<Scalar> *data) : pinocchio(data) {}
         };
 
-    } // namespace multibody
+    } // namespace core
 
 } // namespace galileo
 
-#endif // __galileo_multibody_data_fwd_hpp__
+#endif // __galileo_core_data_data_collector_multibody_hpp__

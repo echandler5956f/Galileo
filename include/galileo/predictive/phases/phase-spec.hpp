@@ -222,10 +222,16 @@ namespace galileo
             /* ---------------------------------------------------------------- */
             /* Compile-time constants */
             /* ---------------------------------------------------------------- */
+            static constexpr int NQb = BS::NQb;         // Dimension of floating base generalized coordinates
+            static constexpr int NQj = BS::NQj;         // Dimension of joint generalized coordinates
+            static constexpr int NVb = BS::NVb;         // Dimension of floating base generalized velocities
+            static constexpr int NVj = BS::NVj;         // Dimension of joint generalized velocities
+            static constexpr int NRotors = BS::NRotors; // Number of rotors attached to the floating base
+            static constexpr int NQ = BS::NQ; // Dimension of generalized coordinates
+            static constexpr int NV = BS::NV; // Dimension of generalized velocities
             static constexpr int NX = BS::NX;   // State dimension
             static constexpr int NDX = BS::NDX; // State tangent space dimension
-            static constexpr int NQ = BS::NQ;   // Dimension of generalized coordinates
-            static constexpr int NV = BS::NV;   // Dimension of generalized velocities
+            static constexpr int NUa = BS::NUa; // Dimension of actuated torque inputs
 
             /* ---------------------------------------------------------------- */
             /* Dependent compile-time constants */
@@ -312,6 +318,7 @@ namespace galileo
             using MatrixNvNdx_t = typename BS::MatrixNvNdx_t;
             using MatrixNvNu_t = typename BS::MatrixNvNu_t;
             using MatrixNuNv_t = typename BS::MatrixNuNv_t;
+            using MatrixNuaNu_t = Eigen::Matrix<VarScalar, NUa, NU, Options>;
 
             using VarScalarArray_t = std::array<VarScalar, NStages>;
 

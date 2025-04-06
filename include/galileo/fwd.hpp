@@ -8,6 +8,8 @@ namespace galileo
 
 #include <cassert>
 #include <type_traits>
+#include <memory>
+
 #include <galileo/macros.hpp>
 
 #include <Eigen/Core>

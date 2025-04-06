@@ -22,8 +22,8 @@ namespace galileo
 
             typename BS::VectorNv_t tau;
             typename BS::VectorNua_t u;
-            typename BS::MatrixNvNdx_t dTaudX;
-            typename BS::MatrixNvNua_t dTaudU;
+            typename BS::MatrixNvNdx_t dtau_dx;
+            typename BS::MatrixNu_t dtau_du;
             typename BS::MatrixNuaNv_t Mtau;
             std::array<bool, BS::NV> tau_set;
 
