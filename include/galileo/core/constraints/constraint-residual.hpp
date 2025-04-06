@@ -46,7 +46,8 @@ namespace galileo
             ConstraintType EqualityInequality>
         struct traits<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>>
         {
-            using ConstraintDerived = ConstraintResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>;
+            using PS = PhaseSpec;
+            using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
         };
 
         template <
@@ -55,7 +56,8 @@ namespace galileo
             ConstraintType EqualityInequality>
         struct traits<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>>
         {
-            using ConstraintDerived = ConstraintResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>;
+            using PS = PhaseSpec;
+            using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
         };
 
         template <
@@ -94,16 +96,19 @@ namespace galileo
         template <
             typename PhaseSpec,
             template <typename PS> class ResidualTpl,
-            ConstraintType EqualityInequality>
-        class ConstraintModelResidualTpl : public ConstraintModelBase<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>, PhaseSpec>
+            ConstraintType EqualityInequality_>
+        class ConstraintModelResidualTpl : public ConstraintModelBase<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality_>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             using PS = PhaseSpec;
+            static constexpr ConstraintType EqualityInequality = EqualityInequality_;
             using Constraint_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
             using ConstraintModel_t = traits<Constraint_t>::ConstraintModelDerived;
             using ConstraintData_t = traits<Constraint_t>::ConstraintDataDerived;
+
+            using BoundVector_t = Eigen::Matrix<typename PS::NumScalar, traits<Constraint_t>::NG, 1, PS::Options>;
 
             ConstraintModelResidualTpl(const ResidualModel_t &residual)
                 : residual_(residual)
@@ -136,6 +141,24 @@ namespace galileo
                     updateInequalityCalcDiff(data);
             }
 
+            template <typename LowerBoundType, typename UpperBoundType>
+            void updateBounds(const Eigen::MatrixBase<LowerBoundType> &lb,
+                              const Eigen::MatrixBase<UpperBoundType> &ub)
+            {
+                lb_ = lb.derived();
+                ub_ = ub.derived();
+            }
+
+            const BoundVector_t &lb() const
+            {
+                return lb_;
+            }
+
+            const BoundVector_t &ub() const
+            {
+                return ub_;
+            }
+
         protected:
             void updateEqualityCalc(ConstraintData_t &data) const
             {
@@ -160,6 +183,8 @@ namespace galileo
             }
 
             ResidualModel_t residual_;
+            BoundVector_t lb_;
+            BoundVector_t ub_;
 
         }; // class ConstraintModelResidualTpl
 

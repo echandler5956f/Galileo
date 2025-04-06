@@ -3,31 +3,6 @@
 
 #include "galileo/core/constraints/constraint-base.hpp"
 
-// #define GALILEO_CONSTRAINT_BASIC_TYPEDEF(Constraint)                                    \
-//     using VarScalar = typename traits<Constraint>::VarScalar;                           \
-//     using NumScalar = typename traits<Constraint>::NumScalar;                           \
-//     static constexpr int Options = traits<Constraint>::Options;                         \
-//     using ConstraintModelDerived = typename traits<Constraint>::ConstraintModelDerived; \
-//     using ConstraintDataDerived = typename traits<Constraint>::ConstraintDataDerived;
-
-// #define GALILEO_CONSTRAINT_CONSTANTS(Constraint)      \
-//     static constexpr int NX = traits<Constraint>::NX; \
-//     static constexpr int NU = traits<Constraint>::NU; \
-//     static constexpr int NH = traits<Constraint>::NH; \
-//     static constexpr int NG = traits<Constraint>::NG;
-
-// #define GALILEO_CONSTRAINT_MODEL_TYPEDEF(Constraint) \
-//     using ResidualModel_t = typename traits<Constraint>::ResidualModel_t;
-
-// #define GALILEO_CONSTRAINT_DATA_TYPEDEF(Constraint)                     \
-//     using ResidualData_t = typename traits<Constraint>::ResidualData_t; \
-//     using H_t = typename traits<Constraint>::H_t;                       \
-//     using Hx_t = typename traits<Constraint>::Hx_t;                     \
-//     using Hu_t = typename traits<Constraint>::Hu_t;                     \
-//     using G_t = typename traits<Constraint>::G_t;                       \
-//     using Gx_t = typename traits<Constraint>::Gx_t;                     \
-//     using Gu_t = typename traits<Constraint>::Gu_t;
-
 namespace galileo
 {
     namespace core
@@ -88,11 +63,6 @@ namespace galileo
                               const Eigen::MatrixBase<UpperBoundType> &ub)
             {
                 derived().updateBounds(lb.derived(), ub.derived());
-            }
-
-            void removeBounds()
-            {
-                derived().removeBounds();
             }
 
             const BoundVector_t &lb() const
