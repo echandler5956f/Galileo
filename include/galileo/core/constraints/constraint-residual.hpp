@@ -10,7 +10,7 @@ namespace galileo
 
         template <
             typename PhaseSpec,
-            template <typename PS> class ResidualModelTpl,
+            template <typename PS> class ResidualTpl,
             ConstraintType EqualityInequality>
         struct ConstraintResidualTpl;
 
@@ -22,15 +22,15 @@ namespace galileo
         {
             using PS = PhaseSpec;
             using ResidualMeta = traits<ResidualTpl<PS>>;
-            using ResidualModel_t = traits<ResidualMeta>::ResidualModel_t;
-            using ResidualData_t = traits<ResidualMeta>::ResidualData_t;
+            using ResidualModel_t = typename traits<ResidualMeta>::ResidualModel_t;
+            using ResidualData_t = typename traits<ResidualMeta>::ResidualData_t;
 
             using EqualityInequality = EqualityInequality_;
             static constexpr int NH = constexpr(EqualityInequality == typename ConstraintType::Equality) ? traits<ResidualMeta>::NR : 0;
             static constexpr int NG = constexpr(EqualityInequality == typename ConstraintType::Inequality) ? traits<ResidualMeta>::NR : 0;
 
-            using ConstraintDataDerived = ConstraintDataResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>;
-            using ConstraintModelDerived = ConstraintModelResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>;
+            using ConstraintDataDerived = ConstraintDataResidualTpl<PS, ResidualTpl, EqualityInequality>;
+            using ConstraintModelDerived = ConstraintModelResidualTpl<PS, ResidualTpl, EqualityInequality>;
 
             using H_t = Eigen::Matrix<typename PS::VarScalar, NH, 1, PS::Options>;
             using Hx_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
@@ -107,8 +107,8 @@ namespace galileo
             using PS = PhaseSpec;
             static constexpr ConstraintType EqualityInequality = EqualityInequality_;
             using Constraint_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
-            using ConstraintModel_t = typename traits<Constraint_t>::ConstraintModelDerived;
             using ConstraintData_t = typename traits<Constraint_t>::ConstraintDataDerived;
+            using ConstraintModel_t = typename traits<Constraint_t>::ConstraintModelDerived;
 
             using BoundVector_t = typename traits<Constraint_t>::BoundVector_t;
 

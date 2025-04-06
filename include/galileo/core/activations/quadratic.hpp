@@ -9,69 +9,60 @@ namespace galileo
     namespace core
     {
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationQuadraticTpl;
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class _ResidualModelTpl>
-        struct traits<ActivationQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
+        struct traits<ActivationQuadraticTpl<PhaseSpec, ResidualTpl>>
         {
-            using ResidualDerived = traits<_ResidualModelTpl<_VarScalar, _NumScalar, _Options>>::ResidualDerived;
+            using PS = PhaseSpec;
+            using ResidualMeta = traits<ResidualTpl<PS>>;
+            using ResidualModel_t = typename traits<ResidualMeta>::ResidualModel_t;
+            using ResidualData_t = typename traits<ResidualMeta>::ResidualData_t;
 
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            static constexpr int Options = _Options;
+            static constexpr int NR = traits<ResidualMeta>::NR;
 
-            static constexpr int NR = traits<ResidualDerived>::NR;
+            using ActivationDataDerived = ActivationDataQuadraticTpl<PS, ResidualTpl>;
+            using ActivationModelDerived = ActivationModelQuadraticTpl<PS, ResidualTpl>;
 
-            using ActivationDataDerived = ActivationDataQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;
-            using ActivationModelDerived = ActivationModelQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;
-
-            using A_t = VarScalar;
-            using Ar_t = Eigen::Matrix<VarScalar, NR, 1, Options>;
-            using Arr_t = Eigen::DiagonalMatrix<VarScalar, NR, Options>;
+            using A_t = PS::VarScalar;
+            using Ar_t = Eigen::Matrix<typename PS::VarScalar, NR, 1, PS::Options>;
+            using Arr_t = Eigen::Matrix<typename PS::VarScalar, NR, NR, PS::Options>;
         };
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class _ResidualModelTpl>
-        struct traits<ActivationDataQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
+        struct traits<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>>
         {
-            using ActivationDerived = ActivationQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;
-            using VarScalar = traits<ActivationDerived>::VarScalar;
-            using NumScalar = traits<ActivationDerived>::NumScalar;
+            using PS = PhaseSpec;
+            using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
         };
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class _ResidualModelTpl>
-        struct traits<ActivationModelQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
+        struct traits<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>>
         {
-            using ActivationDerived = ActivationQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;
-            using VarScalar = traits<ActivationDerived>::VarScalar;
-            using NumScalar = traits<ActivationDerived>::NumScalar;
+            using PS = PhaseSpec;
+            using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
         };
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class _ResidualModelTpl>
-        struct ActivationDataQuadraticTpl : public ActivationDataBase<ActivationDataQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
+        struct ActivationDataQuadraticTpl : public ActivationDataBase<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ActivationDerived = ActivationQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;
-            GALILEO_ACTIVATION_BASIC_TYPEDEF(ActivationDerived);
-            GALILEO_ACTIVATION_CONSTANTS(ActivationDerived);
+            using PS = PhaseSpec;
+
+            using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
             GALILEO_ACTIVATION_DATA_TYPEDEF(ActivationDerived);
+
+            DEFAULT_ACCESSOR(A_t, A);
+            DEFAULT_ACCESSOR(Ar_t, Ar);
+            DEFAULT_ACCESSOR(Arr_t, Arr);
 
             A_t A;
             Ar_t Ar;
@@ -79,30 +70,28 @@ namespace galileo
 
         }; // class ActivationDataQuadraticTpl
 
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  template <typename V, typename N, int O> class _ResidualModelTpl>
-        class ActivationModelQuadraticTpl : public ActivationModelBase<ActivationModelQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
+        class ActivationModelQuadraticTpl : public ActivationModelBase<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using ActivationDerived = ActivationQuadraticTpl<_VarScalar, _NumScalar, _Options, _ResidualModelTpl>;
-            GALILEO_ACTIVATION_BASIC_TYPEDEF(ActivationDerived);
-            GALILEO_ACTIVATION_CONSTANTS(ActivationDerived);
-            GALILEO_ACTIVATION_MODEL_TYPEDEF(ActivationDerived);
+            using PS = PhaseSpec;
+            using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
+            using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
+            using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
 
             template <typename ResidualVectorType>
             void calc(ActivationDataDerived &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
             {
-                data.A = VarScalar(0.5) * r.dot(r);
+                data.A() = typename PS::VarScalar(0.5) * r.dot(r);
             }
 
             template <typename ResidualVectorType>
             void calcDiff(ActivationDataDerived &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
             {
-                data.Ar = r;
+                data.Ar() = r;
                 // The Hessian has constant values which were set in createData.
             }
 

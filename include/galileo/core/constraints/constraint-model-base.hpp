@@ -17,8 +17,8 @@ namespace galileo
             using PS = PhaseSpec;
 
             using ConstraintDerived = typename traits<Derived>::ConstraintDerived;
-            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
             using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
 
             using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
 
@@ -87,12 +87,12 @@ namespace galileo
 
             int ng_impl() const
             {
-                return traits<Derived>::NG;
+                return traits<ConstraintDerived>::NG;
             }
 
             int nh_impl() const
             {
-                return traits<Derived>::NH;
+                return traits<ConstraintDerived>::NH;
             }
 
         protected:

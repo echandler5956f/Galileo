@@ -9,109 +9,71 @@ namespace galileo
     namespace core
     {
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationBoundsTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelQuadraticBarrierTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataQuadraticBarrierTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelWeightedQuadraticBarrierTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataWeightedQuadraticBarrierTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelQuadraticTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataQuadraticTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelQuadFlatExpTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataQuadFlatExpTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelQuadFlatLogTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataQuadFlatLogTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelWeightedQuadTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataWeightedQuadTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelSmooth1NormTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataSmooth1NormTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModelSmooth2NormTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationDataSmooth2NormTpl;
 
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         class ActivationModel2NormBarrierTpl;
-        template <typename VarScalar,
-                  typename NumScalar,
-                  int Options,
-                  template <typename V, typename N, int O> class ResidualModelTpl>
+        template <typename PhaseSpec,
+                  template <typename PS> class ResidualTpl>
         struct ActivationData2NormBarrierTpl;
 
     } // namespace core

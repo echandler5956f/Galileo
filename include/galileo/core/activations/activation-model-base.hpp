@@ -3,38 +3,22 @@
 
 #include "galileo/core/activations/activation-base.hpp"
 
-#define GALILEO_ACTIVATION_BASIC_TYPEDEF(Activation)                                    \
-    using Scalar = typename traits<Activation>::Scalar;                                 \
-    using VarScalar = typename traits<Activation>::VarScalar;                           \
-    static constexpr int Options = traits<Activation>::Options;                                \
-    using ActivationModelDerived = typename traits<Activation>::ActivationModelDerived; \
-    using ActivationDataDerived = typename traits<Activation>::ActivationDataDerived;
-
-#define GALILEO_ACTIVATION_CONSTANTS(Activation) \
-    static constexpr int NR = traits<Activation>::NR;
-
-#define GALILEO_ACTIVATION_MODEL_TYPEDEF(Activation)
-
-#define GALILEO_ACTIVATION_DATA_TYPEDEF(Activation) \
-    using A_t = typename traits<Activation>::A_t;   \
-    using Ar_t = typename traits<Activation>::Ar_t; \
-    using Arr_t = typename traits<Activation>::Arr_t;
-
 namespace galileo
 {
     namespace core
     {
 
-        template <typename Derived>
+        template <typename Derived, typename PhaseSpec>
         class ActivationModelBase : internal::CRTP<Derived>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+            using PS = PhaseSpec;
+
             using ActivationDerived = typename traits<Derived>::ActivationDerived;
-            GALILEO_ACTIVATION_BASIC_TYPEDEF(ActivationDerived);
-            GALILEO_ACTIVATION_CONSTANTS(ActivationDerived);
-            GALILEO_ACTIVATION_MODEL_TYPEDEF(ActivationDerived);
+            using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
+            using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
 
             template <typename ResidualVectorType>
             void calc(ActivationDataDerived &data,
@@ -48,6 +32,16 @@ namespace galileo
                           const Eigen::MatrixBase<ResidualVectorType> &r) const
             {
                 derived().calcDiff(data, r.derived());
+            }
+
+            int nr() const
+            {
+                return derived().nr_impl();
+            }
+
+            int nr_impl() const
+            {
+                return traits<ActivationDerived>::NR;
             }
 
         protected:
