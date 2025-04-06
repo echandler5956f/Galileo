@@ -1,5 +1,5 @@
-#ifndef __galileo_core_constraints_constraint_model_hpp__
-#define __galileo_core_constraints_constraint_model_hpp__
+#ifndef __galileo_core_constraints_constraint_residual_hpp__
+#define __galileo_core_constraints_constraint_residual_hpp__
 
 #include "galileo/core/constraints/constraint-base.hpp"
 
@@ -194,4 +194,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_model_hpp__
+#endif // __galileo_core_constraints_constraint_residual_hpp__
