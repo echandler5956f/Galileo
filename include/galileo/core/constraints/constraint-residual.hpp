@@ -50,6 +50,8 @@ namespace galileo
         {
             using PS = PhaseSpec;
             using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
+            using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
         };
 
         template <
@@ -60,6 +62,8 @@ namespace galileo
         {
             using PS = PhaseSpec;
             using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
+            using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
         };
 
         template <

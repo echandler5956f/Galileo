@@ -47,6 +47,8 @@ namespace galileo
         {
             using PS = PhaseSpec;
             using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
+            using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
         };
 
         template <typename PhaseSpec,
@@ -56,6 +58,8 @@ namespace galileo
             using PS = PhaseSpec;
             using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
             using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
+            using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
         };
 
         template <typename PhaseSpec,
