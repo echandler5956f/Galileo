@@ -122,15 +122,15 @@
     using MatrixNuNwArray_t = typename PhaseSpec::MatrixNuNwArray_t;   \
     using MatrixNwArray_t = typename PhaseSpec::MatrixNwArray_t;
 
-#define GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec)          \
-    GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec)                \
-    GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec)             \
-    GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec)           \
-    GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec)          \
-    GALILEO_PHASE_SPEC_CONTROL_PARAM_TYPES_TYPEDEF(PhaseSpec) \
-    GALILEO_PHASE_SPEC_SEGMENT_TYPES_TYPEDEF(PhaseSpec)       \
-    GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec)         \
-    GALILEO_PHASE_SPEC_ARRAY_TYPES_TYPEDEF(PhaseSpec)
+#define GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec)           \
+    GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec);                \
+    GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec);             \
+    GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec);           \
+    GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec);          \
+    GALILEO_PHASE_SPEC_CONTROL_PARAM_TYPES_TYPEDEF(PhaseSpec); \
+    GALILEO_PHASE_SPEC_SEGMENT_TYPES_TYPEDEF(PhaseSpec);       \
+    GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec);         \
+    GALILEO_PHASE_SPEC_ARRAY_TYPES_TYPEDEF(PhaseSpec);
 
 namespace galileo
 {
@@ -227,11 +227,11 @@ namespace galileo
             static constexpr int NVb = BS::NVb;         // Dimension of floating base generalized velocities
             static constexpr int NVj = BS::NVj;         // Dimension of joint generalized velocities
             static constexpr int NRotors = BS::NRotors; // Number of rotors attached to the floating base
-            static constexpr int NQ = BS::NQ; // Dimension of generalized coordinates
-            static constexpr int NV = BS::NV; // Dimension of generalized velocities
-            static constexpr int NX = BS::NX;   // State dimension
-            static constexpr int NDX = BS::NDX; // State tangent space dimension
-            static constexpr int NUa = BS::NUa; // Dimension of actuated torque inputs
+            static constexpr int NQ = BS::NQ;           // Dimension of generalized coordinates
+            static constexpr int NV = BS::NV;           // Dimension of generalized velocities
+            static constexpr int NX = BS::NX;           // State dimension
+            static constexpr int NDX = BS::NDX;         // State tangent space dimension
+            static constexpr int NUa = BS::NUa;         // Dimension of actuated torque inputs
 
             /* ---------------------------------------------------------------- */
             /* Dependent compile-time constants */

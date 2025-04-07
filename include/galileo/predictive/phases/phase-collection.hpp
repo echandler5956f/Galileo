@@ -12,22 +12,22 @@ namespace galileo
     namespace predictive
     {
 
-        template<typename _VarScalar,
-                 typename _NumScalar,
-                 int _Options>
+        template<typename PhaseSpec>
         struct PhaseCollectionDefaultTpl
         {
         public:
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            using Options = _Options;
+            using PS = PhaseSpec;
 
             using PhaseModelVariant = boost::variant<>; // TODO: Add phase models
+
             using PhaseDataVariant = boost::variant<>;   // TODO: Add phase data
         };
 
-        using PhaseModelVariant =  PhaseCollectionDefault::PhaseModelVariant;
-        using PhaseDataVariant = PhaseCollectionDefault::PhaseDataVariant;
+        template<typename PhaseSpec>
+        using PhaseModelVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseModelVariant;
+
+        template<typename PhaseSpec>
+        using PhaseDataVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseDataVariant;
 
     } // namespace predictive
 

@@ -4,6 +4,7 @@
 #include "galileo/core/constraints/fwd.hpp"
 #include "galileo/core/constraints/constraint-base.hpp"
 #include "galileo/core/constraints/constraint-collection.hpp"
+#include "galileo/core/constraints/constraint-basic-visitors.hxx"
 
 #include <boost/mpl/contains.hpp>
 
@@ -57,9 +58,10 @@ namespace galileo
         {
             using PS = PhaseSpec;
             using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
-            using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
             using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
             using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+
+            using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
         };
 
         template <typename PhaseSpec,
@@ -72,8 +74,8 @@ namespace galileo
             using PS = PhaseSpec;
 
             using ConstraintDerived = ConstraintTpl<PS, ConstraintCollectionTpl>;
-            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
             using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
 
             GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
 

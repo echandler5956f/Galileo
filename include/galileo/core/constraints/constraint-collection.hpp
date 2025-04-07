@@ -14,7 +14,7 @@ namespace galileo
         template <typename PhaseSpec>
         struct ConstraintCollectionDefaultTpl
         {
-            using PhaseSpec = PhaseSpec;
+            using PS = PhaseSpec;
 
             using ConstraintModelVariant = boost::variant<>; // TODO: add constraint models
 

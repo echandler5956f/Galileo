@@ -4,9 +4,9 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/phases/phase-model-base.hpp"
 
-// #define GALILEO_PHASE_DATA_BASE_DEFAULT_ACCESSOR \
-
-// #define GALILEO_PHASE_DATA_BASE_ACCESSOR_DEFAULT_RETURN_TYPE \
+#define GALILEO_PHASE_DATA_TYPEDEF(Phase)                                    \
+    using SegmentDataVector_t = typename traits<Phase>::SegmentDataVector_t; \
+    using SegmentData_t = typename traits<Phase>::SegmentData_t;
 
 namespace galileo
 {
@@ -21,6 +21,22 @@ namespace galileo
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             using PS = PhaseSpec;
+
+            using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
+            using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
+            using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+
+            GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
+
+            const SegmentDataVector_t &segments() const
+            {
+                return derived().segments();
+            }
+
+            SegmentDataVector_t &segments()
+            {
+                return derived().segments();
+            }
 
             // The fully expanded contents of each PhaseData derived class should be
             // SegmentDataVector segments;

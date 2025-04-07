@@ -9,36 +9,36 @@
                                                                          (GALILEO_MAJOR_VERSION > y || (GALILEO_MAJOR_VERSION >= y && \
                                                                                                         GALILEO_MINOR_VERSION >= z))))
 
-#define FORWARD_ACCESSOR(Type, accessor_name)        \
+#define FORWARD_ACCESSOR(ReturnType, accessor_name)  \
     /* lvalue-qualified overload */                  \
-    Type &accessor_name()                            \
+    ReturnType &accessor_name()                      \
     {                                                \
         return derived().accessor_name##_accessor(); \
     }                                                \
     /* const-lvalue-qualified overload */            \
-    const Type &accessor_name() const                \
+    const ReturnType &accessor_name() const          \
     {                                                \
         return derived().accessor_name##_accessor(); \
     }
 
-#define DEFAULT_ACCESSOR(Type, accessor_name)    \
-    Type &accessor_name##_accessor()             \
-    {                                            \
-        return accessor_name;                    \
-    }                                            \
-    const Type &accessor_name##_accessor() const \
-    {                                            \
-        return accessor_name;                    \
+#define DEFAULT_ACCESSOR(ReturnType, accessor_name)    \
+    ReturnType &accessor_name##_accessor()             \
+    {                                                  \
+        return accessor_name;                          \
+    }                                                  \
+    const ReturnType &accessor_name##_accessor() const \
+    {                                                  \
+        return accessor_name;                          \
     }
 
-#define GENERIC_ACCESSOR(Type, accessor_name)    \
-    Type &accessor_name##_accessor()             \
-    {                                            \
-        return accessor_name();                  \
-    }                                            \
-    const Type &accessor_name##_accessor() const \
-    {                                            \
-        return accessor_name();                  \
+#define GENERIC_ACCESSOR(ReturnType, accessor_name)    \
+    ReturnType &accessor_name##_accessor()             \
+    {                                                  \
+        return accessor_name();                        \
+    }                                                  \
+    const ReturnType &accessor_name##_accessor() const \
+    {                                                  \
+        return accessor_name();                        \
     }
 
 #define GALILEO_DEFAULT_CONSTRUCTOR(X) \
