@@ -9,11 +9,38 @@ namespace galileo
     namespace core
     {
 
-        template <typename VarScalar, typename NumScalar, bool ShareData = false, int NX = -1, int NU = -1, int Options>
-        struct CostMatricesTpl; // forward declaration
+        struct CostModelVoid
+        {
+        }; // struct CostModelVoid
 
-        template <typename VarScalar, typename NumScalar, int Options>
-        using CostMatricesDynamic = CostMatricesTpl<VarScalar, NumScalar, Options>;
+        struct CostDataVoid
+        {
+        }; // struct CostDataVoid
+
+        template <
+            typename PhaseSpec,
+            template <typename PS> class ResidualTpl,
+            template <typename PS> class ActivationTpl>
+        struct CostModelResidualTpl;
+
+        template <
+            typename PhaseSpec,
+            template <typename PS> class ResidualTpl,
+            template <typename PS> class ActivationTpl>
+        struct CostDataResidualTpl;
+
+        template <typename PhaseSpec>
+        struct CostCollectionDefaultTpl;
+
+        template <
+            typename PhaseSpec,
+            template <typename PS> class CostCollectionTpl>
+        struct CostModelTpl;
+
+        template <
+            typename PhaseSpec,
+            template <typename PS> class CostCollectionTpl>
+        struct CostDataTpl;
 
     } // namespace core
 

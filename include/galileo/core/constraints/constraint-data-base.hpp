@@ -26,8 +26,8 @@ namespace galileo
             using PS = PhaseSpec;
 
             using ConstraintDerived = typename traits<Derived>::ConstraintDerived;
-            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
             using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
 
             GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
 

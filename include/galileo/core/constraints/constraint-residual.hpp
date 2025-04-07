@@ -21,6 +21,7 @@ namespace galileo
         struct traits<ConstraintResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality_>>
         {
             using PS = PhaseSpec;
+
             using ResidualMeta = traits<ResidualTpl<PS>>;
             using ResidualModel_t = typename traits<ResidualMeta>::ResidualModel_t;
             using ResidualData_t = typename traits<ResidualMeta>::ResidualData_t;

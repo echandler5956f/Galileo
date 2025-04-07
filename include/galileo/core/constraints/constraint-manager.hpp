@@ -90,7 +90,7 @@ namespace galileo
 
             ConstraintModelManagerTpl() {}
 
-            void add_constraint(const std::string &name, const ConstraintModel &constraint, const bool active = true)
+            void addConstraint(const std::string &name, const ConstraintModel &constraint, const bool active = true)
             {
                 std::pair<typename ConstraintModelContainer::iterator, bool> ret =
                     constraints_.insert(std::make_pair(
@@ -114,7 +114,7 @@ namespace galileo
                 }
             }
 
-            void remove_constraint(const std::string &name)
+            void removeConstraint(const std::string &name)
             {
                 typename ConstraintModelContainer::iterator it = constraints_.find(name);
                 if (it != constraints_.end())
@@ -300,12 +300,12 @@ namespace galileo
                 return inactive_set_;
             }
 
-            const BoundVector_t &get_lb() const
+            const BoundVector_t &lb() const
             {
                 return lb_;
             }
 
-            const BoundVector_t &get_ub() const
+            const BoundVector_t &ub() const
             {
                 return ub_;
             }

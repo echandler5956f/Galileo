@@ -3,8 +3,6 @@
 
 #include "galileo/core/constraints/fwd.hpp"
 
-#include "galileo/core/states/state-base.hpp"
-
 namespace galileo
 {
 

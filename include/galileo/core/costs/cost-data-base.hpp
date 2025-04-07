@@ -2,7 +2,14 @@
 #define __galileo_core_costs_cost_data_base_hpp__
 
 #include "galileo/core/costs/cost-base.hpp"
-#include "galileo/core/costs/cost-model-base.hpp"
+
+#define GALILEO_COST_DATA_TYPEDEF(Cost)         \
+    using L_t = typename traits<Cost>::L_t;     \
+    using Lx_t = typename traits<Cost>::Lx_t;   \
+    using Lu_t = typename traits<Cost>::Lu_t;   \
+    using Lxx_t = typename traits<Cost>::Lxx_t; \
+    using Lxu_t = typename traits<Cost>::Lxu_t; \
+    using Luu_t = typename traits<Cost>::Luu_t;
 
 namespace galileo
 {
@@ -15,19 +22,20 @@ namespace galileo
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+            using PS = PhaseSpec;
+
             using CostDerived = typename traits<Derived>::CostDerived;
-            GALILEO_COST_BASIC_TYPEDEF(CostDerived);
-            GALILEO_COST_CONSTANTS(CostDerived);
+            using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
+            using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+
             GALILEO_COST_DATA_TYPEDEF(CostDerived);
 
-            ResidualData_t residual;
-            ActivationData_t activation;
-            L_t L;
-            Lx_t Lx;
-            Lu_t Lu;
-            Lxx_t Lxx;
-            Lxu_t Lxu;
-            Luu_t Luu;
+            FORWARD_ACCESSOR(L_t, L);
+            FORWARD_ACCESSOR(Lx_t, Lx);
+            FORWARD_ACCESSOR(Lu_t, Lu);
+            FORWARD_ACCESSOR(Lxx_t, Lxx);
+            FORWARD_ACCESSOR(Lxu_t, Lxu);
+            FORWARD_ACCESSOR(Luu_t, Luu);
 
         protected:
             inline CostDataBase()
