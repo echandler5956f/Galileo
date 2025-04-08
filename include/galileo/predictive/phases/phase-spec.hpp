@@ -243,6 +243,13 @@ namespace galileo
             static constexpr int NStages = traits<SegmentMeta_t>::NStages;                 // Number of Runge-Kutta stages per segment
             static constexpr SegmentType SegmentType = traits<SegmentMeta_t>::SegmentType; // Type of segment: ERK, IRK, LIRK
 
+            /*NOTE: NU is calculated differently depending on the node type*/
+            // FreeFwd: NU = NUa
+            // FreeInv: NU = NV
+            // ContactFwd: NU = NUa
+            // ContactInv: NU = NV + NContacts
+            // We do this calculation in the traits specialization for each derived node type.
+
             /* ---------------------------------------------------------------- */
             /* Node type definitions */
             /* ---------------------------------------------------------------- */

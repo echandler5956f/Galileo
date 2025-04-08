@@ -18,26 +18,34 @@ namespace galileo
 
             using PS = PhaseSpec;
 
-            // Acc_t F;
-            // Accx_t Fx;
-            // Accu_t Fu;
-            // L_t L;
-            // Lx_t Lx;
-            // Lu_t Lu;
-            // Lxx_t Lxx;
-            // Lxu_t Lxu;
-            // Luu_t Luu;
-            // H_t H;
-            // Hx_t Hx;
-            // Hu_t Hu;
-            // G_t G;
-            // Gx_t Gx;
-            // Gu_t Gu;
+            GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-            // DynamicsData_t dynamics;
-            // ActuationData_t actuation;
-            // ConstraintDataCollection_t constraints;
-            // CostDataCollection_t costs;
+            using NodeDerived = typename traits<Derived>::NodeDerived;
+            using NodeDataDerived = typename traits<NodeDerived>::NodeDataDerived;
+            using NodeModelDerived = typename traits<NodeDerived>::NodeModelDerived;
+
+            FORWARD_ACCESSOR(ActuationData_t, actuation);
+            FORWARD_ACCESSOR(ConstraintDataManager_t, constraints);
+            FORWARD_ACCESSOR(CostDataManager_t, costs);
+
+            FORWARD_ACCESSOR(XAcc_t, XAcc);
+            FORWARD_ACCESSOR(XAccx_t, XAccx);
+            FORWARD_ACCESSOR(XAccu_t, XAccu);
+
+            FORWARD_ACCESSOR(L_t, L);
+            FORWARD_ACCESSOR(Lx_t, Lx);
+            FORWARD_ACCESSOR(Lu_t, Lu);
+            FORWARD_ACCESSOR(Lxx_t, Lxx);
+            FORWARD_ACCESSOR(Lxu_t, Lxu);
+            FORWARD_ACCESSOR(Luu_t, Luu);
+
+            FORWARD_ACCESSOR(H_t, H);
+            FORWARD_ACCESSOR(Hx_t, Hx);
+            FORWARD_ACCESSOR(Hu_t, Hu);
+
+            FORWARD_ACCESSOR(G_t, G);
+            FORWARD_ACCESSOR(Gx_t, Gx);
+            FORWARD_ACCESSOR(Gu_t, Gu);
 
         protected:
             inline NodeDataBase()

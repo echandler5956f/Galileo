@@ -86,12 +86,12 @@ namespace galileo
             using ContactData = ContactDataTpl<PS, ContactCollectionTpl>;
             using ContactModel = ContactModelTpl<PS, ContactCollectionTpl>;
 
-            using ContactItem = ContactItemTpl<PS>;
+            using ContactItem = ContactItemTpl<PS, ContactCollectionTpl>;
 
             using ContactModelContainer = std::map<std::string, ContactItem>;
             using ContactDataContainer = std::map<std::string, ContactData>;
 
-            using ContactDataManager = ContactDataManagerTpl<PS>;
+            using ContactDataManager = ContactDataManagerTpl<PS, ContactCollectionTpl>;
 
             using RobotData = typename PS::RobotData_t;
 

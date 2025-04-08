@@ -61,15 +61,6 @@ namespace galileo
                 derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);
             }
 
-            template <typename StateVectorType>
-            void quasiStatic(SegmentERKDataDerived &data,
-                             const Eigen::MatrixBase<StateVectorType> &x,
-                             const std::size_t maxiter,
-                             const typename PS::NumScalar &tol) const
-            {
-                derived().quasiStatic(data, x.derived(), maxiter, tol);
-            }
-
         protected:
             inline SegmentERKModelBase()
             {

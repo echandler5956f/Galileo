@@ -22,13 +22,13 @@ namespace galileo
         {
             using PS = PhaseSpec;
 
-            using ResidualMeta = traits<ResidualTpl<PS>>;
-            using ResidualModel_t = typename traits<ResidualMeta>::ResidualModel_t;
-            using ResidualData_t = typename traits<ResidualMeta>::ResidualData_t;
+            using ResidualMeta_t = traits<ResidualTpl<PS>>;
+            using ResidualModel_t = typename traits<ResidualMeta_t>::ResidualModel_t;
+            using ResidualData_t = typename traits<ResidualMeta_t>::ResidualData_t;
 
             using EqualityInequality = EqualityInequality_;
-            static constexpr int NH = constexpr(EqualityInequality == typename ConstraintType::Equality) ? traits<ResidualMeta>::NR : 0;
-            static constexpr int NG = constexpr(EqualityInequality == typename ConstraintType::Inequality) ? traits<ResidualMeta>::NR : 0;
+            static constexpr int NH = constexpr(EqualityInequality == typename ConstraintType::Equality) ? traits<ResidualMeta_t>::NR : 0;
+            static constexpr int NG = constexpr(EqualityInequality == typename ConstraintType::Inequality) ? traits<ResidualMeta_t>::NR : 0;
 
             using ConstraintDataDerived = ConstraintDataResidualTpl<PS, ResidualTpl, EqualityInequality>;
             using ConstraintModelDerived = ConstraintModelResidualTpl<PS, ResidualTpl, EqualityInequality>;
@@ -50,6 +50,7 @@ namespace galileo
         struct traits<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>>
         {
             using PS = PhaseSpec;
+
             using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
             using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
             using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
@@ -62,6 +63,7 @@ namespace galileo
         struct traits<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>>
         {
             using PS = PhaseSpec;
+
             using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
             using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
             using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
@@ -111,11 +113,11 @@ namespace galileo
 
             using PS = PhaseSpec;
             static constexpr ConstraintType EqualityInequality = EqualityInequality_;
-            using Constraint_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
-            using ConstraintData_t = typename traits<Constraint_t>::ConstraintDataDerived;
-            using ConstraintModel_t = typename traits<Constraint_t>::ConstraintModelDerived;
+            using ConstraintMeta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
+            using ConstraintData_t = typename traits<ConstraintMeta_t>::ConstraintDataDerived;
+            using ConstraintModel_t = typename traits<ConstraintMeta_t>::ConstraintModelDerived;
 
-            using BoundVector_t = typename traits<Constraint_t>::BoundVector_t;
+            using BoundVector_t = typename traits<ConstraintMeta_t>::BoundVector_t;
 
             ConstraintModelResidualTpl(const ResidualModel_t &residual)
                 : residual_(residual)
