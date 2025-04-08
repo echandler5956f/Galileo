@@ -1,15 +1,22 @@
-#ifndef __galileo_predictive_segments_segment_erk_hpp__
-#define __galileo_predictive_segments_segment_erk_hpp__
+#ifndef __galileo_predictive_segments_segment_erk_234_hpp__
+#define __galileo_predictive_segments_segment_erk_234_hpp__
 
-#include "galileo/predictive/segments/segment-base.hpp"
+#include "galileo/predictive/segments/segment-erk-base.hpp"
 
 namespace galileo
 {
     namespace predictive
     {
 
-        template <typename PhaseSpec, ERKType _ERKType>
-        struct SegmentDataERKTpl : public SegmentDataERKBase<SegmentDataERKTpl<PhaseSpec, _ERKType>>
+        enum class RKType
+        {
+            RK2 = 2,
+            RK3 = 3,
+            RK4 = 4
+        };
+
+        template <typename PhaseSpec, RKType _RKType>
+        struct SegmentERKData234Tpl : public SegmentERKDataBase<SegmentERKData234Tpl<PhaseSpec, _RKType>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -63,10 +70,10 @@ namespace galileo
             typename PS::Gx_t Gx;
             typename PS::Gw_t Gw;
 
-        }; // struct SegmentDataERKTpl
+        }; // struct SegmentERKData234Tpl
 
-        template <typename PhaseSpec, ERKType _ERKType>
-        class SegmentModelERKTpl : public SegmentModelERKBase<SegmentModelERKTpl<PhaseSpec, _ERKType>>
+        template <typename PhaseSpec, RKType _RKType>
+        class SegmentERKModel234Tpl : public SegmentERKModelBase<SegmentERKModel234Tpl<PhaseSpec, _RKType>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -332,17 +339,17 @@ namespace galileo
 
             typename PS::NumScalar period_;
 
-        }; // class SegmentModelERKTpl
+        }; // class SegmentERKModel234Tpl
 
-        // A wrapper that collapses <PS, _ERKType> into a single template <PS>.
-        template <ERKType _ERKType>
-        struct SegmentMetaERK
+        // A wrapper that collapses <PS, _RKType> into a single template <PS>.
+        template <RKType _RKType>
+        struct SegmentERKMeta234
         {
             template <typename PhaseSpec>
             struct Implementation
             {
-                using Model = SegmentModelERKTpl<PhaseSpec, _ERKType>;
-                using Data = SegmentDataERKTpl<PhaseSpec, _ERKType>;
+                using Model = SegmentERKModel234Tpl<PhaseSpec, _RKType>;
+                using Data = SegmentERKData234Tpl<PhaseSpec, _RKType>;
             };
         };
 
@@ -350,4 +357,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_predictive_segments_segment_erk_hpp__
+#endif // __galileo_predictive_segments_segment_erk_234_hpp__

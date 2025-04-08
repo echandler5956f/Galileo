@@ -2,8 +2,6 @@
 #define __galileo_predictive_phases_phase_model_base_hpp__
 
 #include "galileo/predictive/phases/phase-base.hpp"
-#include "galileo/predictive/segments/segment-base.hpp"
-
 #include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
@@ -19,7 +17,7 @@ namespace galileo
 
             using PS = PhaseSpec;
 
-            using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
+            using PhaseDerived = typename traits<Derived>::PhaseDerived;
             using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
             using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
 
