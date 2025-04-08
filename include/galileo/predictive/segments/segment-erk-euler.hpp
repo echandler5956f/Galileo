@@ -40,7 +40,7 @@ namespace galileo
         };
 
         template <typename PhaseSpec>
-        struct SegmentERKDataEulerTpl : public SegmentERKDataBase<SegmentERKDataEulerTpl<PhaseSpec>>
+        struct SegmentERKDataEulerTpl : public SegmentERKDataBase<SegmentERKDataEulerTpl<PhaseSpec>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -100,7 +100,7 @@ namespace galileo
         }; // struct SegmentERKDataEulerTpl
 
         template <typename PhaseSpec>
-        class SegmentERKModelEulerTpl : public SegmentERKModelBase<SegmentERKModelEulerTpl<PhaseSpec>>
+        class SegmentERKModelEulerTpl : public SegmentERKModelBase<SegmentERKModelEulerTpl<PhaseSpec>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW

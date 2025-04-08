@@ -3,6 +3,54 @@
 
 #include "galileo/core/fwd.hpp"
 
+// Macros to import the types and constants from a basic spec
+#define GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec)               \
+    using RobotModel_t = typename BasicSpec::RobotModel_t;       \
+    using RobotData_t = typename BasicSpec::RobotData_t;         \
+    using State_t = typename BasicSpec::State_t;                 \
+    using ActuationMeta_t = typename BasicSpec::ActuationMeta_t; \
+    using ActuationModel_t = typename ActuationMeta_t::Model;    \
+    using ActuationData_t = typename ActuationMeta_t::Data;
+
+#define GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec) \
+    using VarScalar = typename BasicSpec::VarScalar;  \
+    using NumScalar = typename BasicSpec::NumScalar;  \
+    static constexpr int Options = BasicSpec::Options;
+
+#define GALILEO_BASIC_SPEC_CONSTANTS_TYPEDEF(BasicSpec) \
+    static constexpr int NQb = BasicSpec::NQb;          \
+    static constexpr int NQj = BasicSpec::NQj;          \
+    static constexpr int NVb = BasicSpec::NVb;          \
+    static constexpr int NVj = BasicSpec::NVj;          \
+    static constexpr int NRotors = BasicSpec::NRotors;  \
+    static constexpr int NQ = BasicSpec::NQ;            \
+    static constexpr int NV = BasicSpec::NV;            \
+    static constexpr int NX = BasicSpec::NX;            \
+    static constexpr int NDX = BasicSpec::NDX;          \
+    static constexpr int NUa = BasicSpec::NUa;
+
+#define GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(BasicSpec) \
+    using VectorNqb_t = BasicSpec::VectorNqb_t;           \
+    using VectorNqj_t = BasicSpec::VectorNqj_t;           \
+    using VectorNvb_t = BasicSpec::VectorNvb_t;           \
+    using VectorNvj_t = BasicSpec::VectorNvj_t;           \
+    using VectorNx_t = BasicSpec::VectorNx_t;             \
+    using VectorNua_t = BasicSpec::VectorNua_t;           \
+    using VectorNdx_t = BasicSpec::VectorNdx_t;           \
+    using VectorNq_t = BasicSpec::VectorNq_t;             \
+    using VectorNv_t = BasicSpec::VectorNv_t;             \
+    using MatrixNx_t = BasicSpec::MatrixNx_t;             \
+    using MatrixNua_t = BasicSpec::MatrixNua_t;           \
+    using MatrixNdx_t = BasicSpec::MatrixNdx_t;           \
+    using MatrixNq_t = BasicSpec::MatrixNq_t;             \
+    using MatrixNv_t = BasicSpec::MatrixNv_t;
+
+#define GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BasicSpec) \
+    GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec);      \
+    GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec);   \
+    GALILEO_BASIC_SPEC_CONSTANTS_TYPEDEF(BasicSpec); \
+    GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(BasicSpec);
+
 namespace galileo
 {
 
@@ -20,7 +68,6 @@ namespace galileo
                   int _NVb,
                   int _NVj,
                   int _NRotors,
-                  template <typename> class RobotTpl,
                   template <typename> class StateTpl,
                   template <typename> class ActuationTpl>
         struct BasicSpecTpl
@@ -54,11 +101,6 @@ namespace galileo
             /* ---------------------------------------------------------------- */
             /* Fixed-size Eigen types */
             /* ---------------------------------------------------------------- */
-            using Vector2_t = Eigen::Matrix<VarScalar, 2, 1, Options>;
-            using Vector3_t = Eigen::Matrix<VarScalar, 3, 1, Options>;
-            using Vector4_t = Eigen::Matrix<VarScalar, 4, 1, Options>;
-            using Vector6_t = Eigen::Matrix<VarScalar, 6, 1, Options>;
-
             using VectorNqb_t = Eigen::Matrix<VarScalar, NQb, 1, Options>;
             using VectorNqj_t = Eigen::Matrix<VarScalar, NQj, 1, Options>;
             using VectorNvb_t = Eigen::Matrix<VarScalar, NVb, 1, Options>;
@@ -70,34 +112,17 @@ namespace galileo
             using VectorNq_t = Eigen::Matrix<VarScalar, NQ, 1, Options>;
             using VectorNv_t = Eigen::Matrix<VarScalar, NV, 1, Options>;
 
-            using Matrix2_t = Eigen::Matrix<VarScalar, 2, 2, Options>;
-            using Matrix3_t = Eigen::Matrix<VarScalar, 3, 3, Options>;
-            using Matrix4_t = Eigen::Matrix<VarScalar, 4, 4, Options>;
-            using Matrix6_t = Eigen::Matrix<VarScalar, 6, 6, Options>;
-
-            using Matrix3Ndx_t = Eigen::Matrix<VarScalar, 3, NDX, Options>;
-            using Matrix3Nv_t = Eigen::Matrix<VarScalar, 3, NV, Options>;
-            using Matrix6Ndx_t = Eigen::Matrix<VarScalar, 6, NDX, Options>;
-            using Matrix6Nv_t = Eigen::Matrix<VarScalar, 6, NV, Options>;
-
             using MatrixNx_t = Eigen::Matrix<VarScalar, NX, NX, Options>;
             using MatrixNua_t = Eigen::Matrix<VarScalar, NUa, NUa, Options>;
             using MatrixNdx_t = Eigen::Matrix<VarScalar, NDX, NDX, Options>;
             using MatrixNq_t = Eigen::Matrix<VarScalar, NQ, NQ, Options>;
             using MatrixNv_t = Eigen::Matrix<VarScalar, NV, NV, Options>;
 
-            using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
-            using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
-            using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
-            using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
-
             /* ---------------------------------------------------------------- */
             /* Template types */
             /* ---------------------------------------------------------------- */
-
-            using RobotMeta_t = RobotTpl<BasicSpec>;
-            using RobotModel_t = typename RobotMeta_t::Model;
-            using RobotData_t = typename RobotMeta_t::Data;
+            using RobotModel_t = pinocchio::ModelTpl<VarScalar, Options>;
+            using RobotData_t = pinocchio::DataTpl<VarScalar, Options>;
 
             using State_t = StateTpl<BasicSpec>;
 

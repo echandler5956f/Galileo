@@ -9,13 +9,7 @@
 #include <array>
 
 #define GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec)                                 \
-    using RobotMeta_t = typename PhaseSpec::RobotMeta_t;                           \
-    using RobotModel_t = typename PhaseSpec::RobotModel_t;                         \
-    using RobotData_t = typename PhaseSpec::RobotData_t;                           \
-    using State_t = typename PhaseSpec::State_t;                                   \
-    using ActuationMeta_t = typename PhaseSpec::ActuationMeta_t;                   \
-    using ActuationModel_t = typename PhaseSpec::ActuationModel_t;                 \
-    using ActuationData_t = typename PhaseSpec::ActuationData_t;                   \
+    GALILEO_BASIC_SPEC_META_TYPEDEF(PhaseSpec::BS);                                \
     using ConstraintManagerMeta_t = typename PhaseSpec::ConstraintManagerMeta_t;   \
     using ConstraintCollection_t = typename PhaseSpec::ConstraintCollection_t;     \
     using ConstraintModelManager_t = typename PhaseSpec::ConstraintModelManager_t; \
@@ -42,38 +36,31 @@
     using PhaseDataVector_t = typename PhaseSpec::PhaseDataVector_t;
 
 #define GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec) \
-    using VarScalar = typename PhaseSpec::VarScalar;  \
-    using NumScalar = typename PhaseSpec::NumScalar;  \
-    static constexpr int Options = PhaseSpec::Options;
+    GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(PhaseSpec::BS);
 
-#define GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec) \
-    static constexpr int NX = PhaseSpec::NX;            \
-    static constexpr int NDX = PhaseSpec::NDX;          \
-    static constexpr int NQ = PhaseSpec::NQ;            \
-    static constexpr int NV = PhaseSpec::NV;            \
-    static constexpr int NU = PhaseSpec::NU;            \
-    static constexpr int NOrder = PhaseSpec::NOrder;    \
-    static constexpr int NW = PhaseSpec::NW;            \
-    static constexpr int NStages = PhaseSpec::NStages;  \
-    static constexpr SegmentType SegmentType = PhaseSpec::SegmentType;
+#define GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec)  \
+    GALILEO_BASIC_SPEC_CONSTANTS_TYPEDEF(PhaseSpec::BS); \
+    static constexpr int NU = PhaseSpec::NU;             \
+    static constexpr int NOrder = PhaseSpec::NOrder;     \
+    static constexpr int NW = PhaseSpec::NW;             \
+    static constexpr int NStages = PhaseSpec::NStages;
 
-#define GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec)   \
-    using XAcc_t = typename PhaseSpec::XAcc_t;             \
-    using XAccx_t = typename PhaseSpec::XAccx_t;           \
-    using XAccu_t = typename PhaseSpec::XAccu_t;           \
-    using L_t = typename PhaseSpec::L_t;                   \
-    using Lx_t = typename PhaseSpec::Lx_t;                 \
-    using Lu_t = typename PhaseSpec::Lu_t;                 \
-    using Lxx_t = typename PhaseSpec::Lxx_t;               \
-    using Lxu_t = typename PhaseSpec::Lxu_t;               \
-    using Luu_t = typename PhaseSpec::Luu_t;               \
-    using H_t = typename PhaseSpec::H_t;                   \
-    using Hx_t = typename PhaseSpec::Hx_t;                 \
-    using Hu_t = typename PhaseSpec::Hu_t;                 \
-    using H_Equality_t = typename PhaseSpec::H_Equality_t; \
-    using G_t = typename PhaseSpec::G_t;                   \
-    using Gx_t = typename PhaseSpec::Gx_t;                 \
-    using Gu_t = typename PhaseSpec::Gu_t;                 \
+#define GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec) \
+    using XAcc_t = typename PhaseSpec::XAcc_t;           \
+    using XAccx_t = typename PhaseSpec::XAccx_t;         \
+    using XAccu_t = typename PhaseSpec::XAccu_t;         \
+    using L_t = typename PhaseSpec::L_t;                 \
+    using Lx_t = typename PhaseSpec::Lx_t;               \
+    using Lu_t = typename PhaseSpec::Lu_t;               \
+    using Lxx_t = typename PhaseSpec::Lxx_t;             \
+    using Lxu_t = typename PhaseSpec::Lxu_t;             \
+    using Luu_t = typename PhaseSpec::Luu_t;             \
+    using H_t = typename PhaseSpec::H_t;                 \
+    using Hx_t = typename PhaseSpec::Hx_t;               \
+    using Hu_t = typename PhaseSpec::Hu_t;               \
+    using G_t = typename PhaseSpec::G_t;                 \
+    using Gx_t = typename PhaseSpec::Gx_t;               \
+    using Gu_t = typename PhaseSpec::Gu_t;               \
     using G_Bound_t = typename PhaseSpec::G_Bound_t;
 
 #define GALILEO_PHASE_SPEC_CONTROL_PARAM_TYPES_TYPEDEF(PhaseSpec) \
@@ -86,8 +73,8 @@
     using Quadrature_t = typename PhaseSpec::Quadrature_t;               \
     using StageCoefficients_t = typename PhaseSpec::StageCoefficients_t; \
     using XNext_t = typename PhaseSpec::XNext_t;                         \
-    using Fx_t = typename PhaseSpec::Fx_t;                               \
-    using Fw_t = typename PhaseSpec::Fw_t;                               \
+    using XNextx_t = typename PhaseSpec::XNextx_t;                       \
+    using XNextw_t = typename PhaseSpec::XNextw_t;                       \
     using Lw_t = typename PhaseSpec::Lw_t;                               \
     using Lxw_t = typename PhaseSpec::Lxw_t;                             \
     using Lww_t = typename PhaseSpec::Lww_t;                             \
@@ -95,19 +82,21 @@
     using Gw_t = typename PhaseSpec::Gw_t;
 
 #define GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec)    \
-    using VectorNx_t = typename PhaseSpec::VectorNx_t;       \
+    GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec::BS);   \
     using VectorNu_t = typename PhaseSpec::VectorNu_t;       \
-    using VectorNdx_t = typename PhaseSpec::VectorNdx_t;     \
-    using VectorNq_t = typename PhaseSpec::VectorNq_t;       \
-    using VectorNv_t = typename PhaseSpec::VectorNv_t;       \
-    using MatrixNx_t = typename PhaseSpec::MatrixNx_t;       \
+    using VectorNw_t = typename PhaseSpec::VectorNw_t;       \
     using MatrixNu_t = typename PhaseSpec::MatrixNu_t;       \
-    using MatrixNdx_t = typename PhaseSpec::MatrixNdx_t;     \
-    using MatrixNv_t = typename PhaseSpec::MatrixNv_t;       \
+    using MatrixNw_t = typename PhaseSpec::MatrixNw_t;       \
     using MatrixNvNw_t = typename PhaseSpec::MatrixNvNw_t;   \
-    using MatrixNvNdx_t = typename PhaseSpec::MatrixNvNdx_t; \
     using MatrixNvNu_t = typename PhaseSpec::MatrixNvNu_t;   \
-    using MatrixNuNv_t = typename PhaseSpec::MatrixNuNv_t;
+    using MatrixNvNua_t = typename PhaseSpec::MatrixNvNua_t; \
+    using MatrixNvNdx_t = typename PhaseSpec::MatrixNvNdx_t; \
+    using MatrixNuNv_t = typename PhaseSpec::MatrixNuNv_t;   \
+    using MatrixNuNw_t = typename PhaseSpec::MatrixNuNw_t;   \
+    using MatrixNuaNu_t = typename PhaseSpec::MatrixNuaNu_t; \
+    using MatrixNuaNv_t = typename PhaseSpec::MatrixNuaNv_t; \
+    using MatrixNdxNw_t = typename PhaseSpec::MatrixNdxNw_t; \
+    using MatrixNdxNua_t = typename PhaseSpec::MatrixNdxNua_t;
 
 #define GALILEO_PHASE_SPEC_ARRAY_TYPES_TYPEDEF(PhaseSpec)              \
     using VarScalarArray_t = typename PhaseSpec::VarScalarArray_t;     \
@@ -138,22 +127,6 @@ namespace galileo
     namespace predictive
     {
 
-        // // Declared elsewhere:
-        // enum class NodeType
-        // {
-        //     FreeFwd = 0,    // Free forward dynamics node
-        //     FreeInv = 1,    // Free inverse dynamics node
-        //     ContactFwd = 2, // Contact forward dynamics node
-        //     ContactInv = 3  // Contact inverse dynamics node
-        // };
-
-        // enum class SegmentType
-        // {
-        //     ERK = 0, // Explicit Runge-Kutta
-        //     IRK = 1, // Implicit Runge-Kutta
-        //     LIRK = 2 // Lifted Implicit Runge-Kutta
-        // };
-
         /* ---------------------------------------------------------------- */
         /* Fully specifies the types and constants used in a phase. */
         /* ---------------------------------------------------------------- */
@@ -169,19 +142,12 @@ namespace galileo
             using BS = BasicSpec;
             using PS = PhaseSpecTpl<BS, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
 
+            // Import the basic spec types and constants
+            GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+
             /* ---------------------------------------------------------------- */
             /* Meta template types */
             /* ---------------------------------------------------------------- */
-            using RobotMeta_t = typename BS::RobotMeta_t;
-            using RobotModel_t = typename BS::RobotModel_t;
-            using RobotData_t = typename BS::RobotData_t;
-
-            using State_t = typename BS::State_t;
-
-            using ActuationMeta_t = typename BS::ActuationMeta_t;
-            using ActuationModel_t = typename BS::ActuationModel_t;
-            using ActuationData_t = typename BS::ActuationData_t;
-
             using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
             using ConstraintCollection_t = typename ConstraintManagerMeta_t::Collection;
             using ConstraintModelManager_t = typename ConstraintManagerMeta_t::Model;
@@ -213,35 +179,12 @@ namespace galileo
             using PhaseDataVector_t = std::vector<PhaseData_t>;
 
             /* ---------------------------------------------------------------- */
-            /* Scalar types and Eigen Matrix storage order */
-            /* ---------------------------------------------------------------- */
-            using VarScalar = typename BS::VarScalar;   // Scalar type for variables (for AD)
-            using NumScalar = typename BS::NumScalar;   // Scalar type for numerics (i.e., bounds, times, etc.)
-            static constexpr int Options = BS::Options; // Eigen storage order
-
-            /* ---------------------------------------------------------------- */
-            /* Compile-time constants */
-            /* ---------------------------------------------------------------- */
-            static constexpr int NQb = BS::NQb;         // Dimension of floating base generalized coordinates
-            static constexpr int NQj = BS::NQj;         // Dimension of joint generalized coordinates
-            static constexpr int NVb = BS::NVb;         // Dimension of floating base generalized velocities
-            static constexpr int NVj = BS::NVj;         // Dimension of joint generalized velocities
-            static constexpr int NRotors = BS::NRotors; // Number of rotors attached to the floating base
-            static constexpr int NQ = BS::NQ;           // Dimension of generalized coordinates
-            static constexpr int NV = BS::NV;           // Dimension of generalized velocities
-            static constexpr int NX = BS::NX;           // State dimension
-            static constexpr int NDX = BS::NDX;         // State tangent space dimension
-            static constexpr int NUa = BS::NUa;         // Dimension of actuated torque inputs
-
-            /* ---------------------------------------------------------------- */
             /* Dependent compile-time constants */
             /* ---------------------------------------------------------------- */
-            static constexpr int NU = traits<NodeMeta_t>::NU;                              // Control dimension
-            static constexpr NodeType NodeType = traits<NodeMeta_t>::NodeType;             // Type of node: FreeFwd, FreeInv, ContactFwd, ContactInv
-            static constexpr int NOrder = traits<ControlParamMeta_t>::NOrder;              // Order of the control parameterization per segment
-            static constexpr int NW = traits<ControlParamMeta_t>::NW;                      // Number of control parameters
-            static constexpr int NStages = traits<SegmentMeta_t>::NStages;                 // Number of Runge-Kutta stages per segment
-            static constexpr SegmentType SegmentType = traits<SegmentMeta_t>::SegmentType; // Type of segment: ERK, IRK, LIRK
+            static constexpr int NU = traits<NodeMeta_t>::NU;                 // Control dimension
+            static constexpr int NOrder = traits<ControlParamMeta_t>::NOrder; // Order of the control parameterization per segment
+            static constexpr int NW = traits<ControlParamMeta_t>::NW;         // Number of control parameters
+            static constexpr int NStages = traits<SegmentMeta_t>::NStages;    // Number of Runge-Kutta stages per segment
 
             /*NOTE: NU is calculated differently depending on the node type*/
             // FreeFwd: NU = NUa
@@ -251,26 +194,60 @@ namespace galileo
             // We do this calculation in the traits specialization for each derived node type.
 
             /* ---------------------------------------------------------------- */
+            /* An assortment of Eigen types (primarily for use in Segments) */
+            /* ---------------------------------------------------------------- */
+            using VectorNu_t = Eigen::Matrix<VarScalar, NU, 1, Options>;
+            using VectorNw_t = Eigen::Matrix<VarScalar, NW, 1, Options>;
+            using MatrixNu_t = Eigen::Matrix<VarScalar, NU, NU, Options>;
+            using MatrixNw_t = Eigen::Matrix<VarScalar, NW, NW, Options>;
+
+            using MatrixNvNw_t = Eigen::Matrix<VarScalar, NV, NW, Options>;
+            using MatrixNvNu_t = Eigen::Matrix<VarScalar, NV, NU, Options>;
+            using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
+            using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
+
+            using MatrixNuNv_t = Eigen::Matrix<VarScalar, NU, NV, Options>;
+            using MatrixNuNw_t = Eigen::Matrix<VarScalar, NU, NW, Options>;
+
+            using MatrixNuaNu_t = Eigen::Matrix<VarScalar, NUa, NU, Options>;
+            using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
+
+            using MatrixNdxNw_t = Eigen::Matrix<VarScalar, NDX, NW, Options>;
+            using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
+
+            using VarScalarArray_t = std::array<VarScalar, NStages>;
+
+            using VectorNdxArray_t = std::array<VectorNdx_t, NStages>;
+            using VectorNxArray_t = std::array<VectorNx_t, NStages>;
+            using VectorNuArray_t = std::array<VectorNu_t, NStages>;
+            using MatrixNdxArray_t = std::array<MatrixNdx_t, NStages>;
+            using MatrixNdxNwArray_t = std::array<MatrixNdxNw_t, NStages>;
+            using VectorNwArray_t = std::array<VectorNw_t, NStages>;
+            using MatrixNuArray_t = std::array<MatrixNu_t, NStages>;
+            using MatrixNdxNuArray_t = std::array<MatrixNdxNu_t, NStages>;
+            using MatrixNuNwArray_t = std::array<MatrixNuNw_t, NStages>;
+            using MatrixNwArray_t = std::array<MatrixNw_t, NStages>;
+
+            /* ---------------------------------------------------------------- */
             /* Node type definitions */
             /* ---------------------------------------------------------------- */
             // Dynamics
-            using XAcc_t = typename BS::VectorNv_t;     // System acceleration
-            using XAccx_t = typename BS::MatrixNvNdx_t; // Jacobian of system acceleration w.r.t. state
-            using XAccu_t = typename BS::MatrixNvNu_t;  // Jacobian of system acceleration w.r.t. control
+            using XAcc_t = VectorNv_t;     // System acceleration
+            using XAccx_t = MatrixNvNdx_t; // Jacobian of system acceleration w.r.t. state
+            using XAccu_t = MatrixNvNu_t;  // Jacobian of system acceleration w.r.t. control
 
             // Cost (CostManager holds an Eigen map to these, which are stored in NodeData)
-            using L_t = VarScalar;                    // Cost scalar
-            using Lx_t = typename BS::VectorNdx_t;    // Jacobian of cost w.r.t. state
-            using Lu_t = typename BS::VectorNu_t;     // Jacobian of cost w.r.t. control
-            using Lxx_t = typename BS::MatrixNdx_t;   // Hessian of cost w.r.t. state
-            using Lxu_t = typename BS::MatrixNdxNu_t; // Hessian of cost w.r.t. state and control
-            using Luu_t = typename BS::MatrixNu_t;    // Hessian of cost w.r.t. control
+            using L_t = VarScalar;       // Cost scalar
+            using Lx_t = VectorNdx_t;    // Jacobian of cost w.r.t. state
+            using Lu_t = VectorNu_t;     // Jacobian of cost w.r.t. control
+            using Lxx_t = MatrixNdx_t;   // Hessian of cost w.r.t. state
+            using Lxu_t = MatrixNdxNu_t; // Hessian of cost w.r.t. state and control
+            using Luu_t = MatrixNu_t;    // Hessian of cost w.r.t. control
 
             // Equality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
-            using H_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;          // Equality constraint vector
-            using Hx_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>;       // Jacobian of equality constraints w.r.t. state
-            using Hu_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;        // Jacobian of equality constraints w.r.t. control
-            using H_Equality_t = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1, Options>; // Equality constraint vector
+            using H_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;    // Equality constraint vector
+            using Hx_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>; // Jacobian of equality constraints w.r.t. state
+            using Hu_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;  // Jacobian of equality constraints w.r.t. control
 
             // Inequality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
             using G_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;       // Inequality constraint vector
@@ -281,9 +258,9 @@ namespace galileo
             /* ---------------------------------------------------------------- */
             /* Control parameter type definitions */
             /* ---------------------------------------------------------------- */
-            using U_t = typename BS::VectorNu_t;                    // Control vector
-            using W_t = Eigen::Matrix<VarScalar, NW, 1, Options>;   // Control parameter vector
-            using Uw_t = Eigen::Matrix<VarScalar, NU, NW, Options>; // Jacobian of control w.r.t. control parameters
+            using U_t = VectorNu_t;    // Control vector
+            using W_t = VectorNw_t;    // Control parameter vector
+            using Uw_t = MatrixNuNw_t; // Jacobian of control w.r.t. control parameters
 
             /* ---------------------------------------------------------------- */
             /* Segment type definitions */
@@ -293,52 +270,20 @@ namespace galileo
             using StageCoefficients_t = Eigen::Matrix<NumScalar, NStages, NStages, Options>;
 
             // Dynamics
-            using XNext_t = typename BS::VectorNx_t;                 // Evolution state
-            using Fx_t = typename BS::MatrixNdx_t;                   // Jacobian of dynamics w.r.t. state
-            using Fw_t = Eigen::Matrix<VarScalar, NDX, NW, Options>; // Jacobian of dynamics w.r.t. control parameters
+            using XNext_t = VectorNx_t;     // Evolution state
+            using XNextx_t = MatrixNdx_t;   // Jacobian of dynamics w.r.t. state
+            using XNextw_t = MatrixNdxNw_t; // Jacobian of dynamics w.r.t. control parameters
 
             // Cost derivatives
-            using Lw_t = Eigen::Matrix<VarScalar, NW, 1, Options>;    // Jacobian of cost w.r.t. control parameters
-            using Lxw_t = Eigen::Matrix<VarScalar, NDX, NW, Options>; // Hessian of cost w.r.t. state and control parameters
-            using Lww_t = Eigen::Matrix<VarScalar, NW, NW, Options>;  // Hessian of cost w.r.t. control parameters
+            using Lw_t = VectorNw_t;     // Jacobian of cost w.r.t. control parameters
+            using Lxw_t = MatrixNdxNw_t; // Hessian of cost w.r.t. state and control parameters
+            using Lww_t = MatrixNw_t;    // Hessian of cost w.r.t. control parameters
 
             // Segment equality constraint derivatives
             using Hw_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of equality constraints w.r.t. the control parameters
 
             // Segment inequality constraint derivatives
             using Gw_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
-
-            /* ---------------------------------------------------------------- */
-            /* An assortment of Eigen types (primarily for use in Segments) */
-            /* ---------------------------------------------------------------- */
-            using VectorNx_t = typename BS::VectorNx_t;
-            using VectorNu_t = typename BS::VectorNu_t;
-            using VectorNdx_t = typename BS::VectorNdx_t;
-            using VectorNq_t = typename BS::VectorNq_t;
-            using VectorNv_t = typename BS::VectorNv_t;
-
-            using MatrixNx_t = typename BS::MatrixNx_t;
-            using MatrixNu_t = typename BS::MatrixNu_t;
-            using MatrixNdx_t = typename BS::MatrixNdx_t;
-            using MatrixNv_t = typename BS::MatrixNv_t;
-            using MatrixNvNw_t = Eigen::Matrix<VarScalar, NV, NW, Options>;
-            using MatrixNvNdx_t = typename BS::MatrixNvNdx_t;
-            using MatrixNvNu_t = typename BS::MatrixNvNu_t;
-            using MatrixNuNv_t = typename BS::MatrixNuNv_t;
-            using MatrixNuaNu_t = Eigen::Matrix<VarScalar, NUa, NU, Options>;
-
-            using VarScalarArray_t = std::array<VarScalar, NStages>;
-
-            using VectorNdxArray_t = std::array<typename BS::VectorNdx_t, NStages>;
-            using VectorNxArray_t = std::array<typename BS::VectorNx_t, NStages>;
-            using VectorNuArray_t = std::array<typename BS::VectorNu_t, NStages>;
-            using MatrixNdxArray_t = std::array<typename BS::MatrixNdx_t, NStages>;
-            using MatrixNdxNwArray_t = std::array<Eigen::Matrix<VarScalar, NDX, NW, Options>, NStages>;
-            using VectorNwArray_t = std::array<Eigen::Matrix<VarScalar, NW, 1, Options>, NStages>;
-            using MatrixNuArray_t = std::array<typename BS::MatrixNu_t, NStages>;
-            using MatrixNdxNuArray_t = std::array<typename BS::MatrixNdxNu_t, NStages>;
-            using MatrixNuNwArray_t = std::array<Eigen::Matrix<VarScalar, NU, NW, Options>, NStages>;
-            using MatrixNwArray_t = std::array<Eigen::Matrix<VarScalar, NW, NW, Options>, NStages>;
         };
 
     } // namespace predictive

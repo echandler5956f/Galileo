@@ -10,7 +10,7 @@ namespace galileo
     {
 
         template <typename BasicSpec>
-        class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<BasicSpec>>
+        class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<BasicSpec>, BasicSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW

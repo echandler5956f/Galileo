@@ -37,7 +37,7 @@ namespace galileo
         };
 
         template <typename PhaseSpec>
-        struct ContactData1dTpl : ContactDataBase<ContactData1dTpl<PhaseSpec>>
+        struct ContactData1dTpl : public ContactDataBase<ContactData1dTpl<PhaseSpec>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -83,7 +83,7 @@ namespace galileo
         };
 
         template <typename PhaseSpec>
-        struct ContactModel1dTpl : ContactDataBase<ContactModel1dTpl<PhaseSpec>>
+        struct ContactModel1dTpl : public ContactModelBase<ContactModel1dTpl<PhaseSpec>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW

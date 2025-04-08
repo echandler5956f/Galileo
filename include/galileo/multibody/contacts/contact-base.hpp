@@ -94,7 +94,7 @@ namespace galileo
         }; // struct ContactDataBaseTpl
 
         template <typename Derived, typename PhaseSpec>
-        struct ContactModelBaseTpl : internal::CRTP<Derived>
+        struct ContactModelBaseTpl : internal::CRTP<ContactModelBaseTpl<Derived, PhaseSpec>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW

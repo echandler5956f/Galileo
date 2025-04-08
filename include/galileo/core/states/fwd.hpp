@@ -12,7 +12,7 @@ namespace galileo
         template <typename BasicSpec>
         class StateEuclideanTpl;
 
-        template <typename BasicSpec, int _NFbq>
+        template <typename BasicSpec>
         class StateMultibodyTpl;
 
     } // namespace core

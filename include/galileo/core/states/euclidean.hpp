@@ -9,22 +9,24 @@ namespace galileo
     namespace core
     {
 
-        template <typename PhaseSpec>
-        class StateEuclideanTpl : public StateBase<StateEuclideanTpl<PhaseSpec>>
+        template <typename BasicSpec>
+        class StateEuclideanTpl : public StateBase<StateEuclideanTpl<BasicSpec>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            using PS = PhaseSpec;
+            using BS = BasicSpec;
 
-            typename PS::VectorNx_t zero() const
+            GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+
+            VectorNx_t zero() const
             {
-                return typename PS::VectorNx_t::Zero();
+                return VectorNx_t::Zero();
             }
 
-            typename PS::VectorNx_t rand() const
+            VectorNx_t rand() const
             {
-                return typename PS::VectorNx_t::Random();
+                return VectorNx_t::Random();
             }
 
             template <typename StateVector1, typename StateVector2, typename StateTangentVector>
@@ -52,12 +54,12 @@ namespace galileo
                 if (firstsecond == first || firstsecond == both)
                 {
                     Jfirst.setZero();
-                    Jfirst.diagonal() = typename PS::VectorNdx_t::Constant(PS::NDX, -1.);
+                    Jfirst.diagonal() = VectorNdx_t::Constant(PS::NDX, -1.);
                 }
                 if (firstsecond == second || firstsecond == both)
                 {
                     Jsecond.setZero();
-                    Jsecond.diagonal() = typename PS::VectorNdx_t::Constant(PS::NDX, 1.);
+                    Jsecond.diagonal() = VectorNdx_t::Constant(PS::NDX, 1.);
                 }
             }
 
@@ -74,13 +76,13 @@ namespace galileo
                     switch (op)
                     {
                     case setto:
-                        Jfirst.diagonal().array() = typename PS::VarScalar(1.);
+                        Jfirst.diagonal().array() = VarScalar(1.);
                         break;
                     case addto:
-                        Jfirst.diagonal().array() += typename PS::VarScalar(1.);
+                        Jfirst.diagonal().array() += VarScalar(1.);
                         break;
                     case rmfrom:
-                        Jfirst.diagonal().array() -= typename PS::VarScalar(1.);
+                        Jfirst.diagonal().array() -= VarScalar(1.);
                         break;
                     default:
                         break;
@@ -91,13 +93,13 @@ namespace galileo
                     switch (op)
                     {
                     case setto:
-                        Jsecond.diagonal().array() = typename PS::VarScalar(1.);
+                        Jsecond.diagonal().array() = VarScalar(1.);
                         break;
                     case addto:
-                        Jsecond.diagonal().array() += typename PS::VarScalar(1.);
+                        Jsecond.diagonal().array() += VarScalar(1.);
                         break;
                     case rmfrom:
-                        Jsecond.diagonal().array() -= typename PS::VarScalar(1.);
+                        Jsecond.diagonal().array() -= VarScalar(1.);
                         break;
                     default:
                         break;

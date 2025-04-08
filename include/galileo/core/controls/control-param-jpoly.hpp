@@ -10,7 +10,7 @@ namespace galileo
     {
 
         template <typename PhaseSpec>
-        struct ControlParamDataJacobiPolynomialTpl : public ControlParamDataBase<ControlParamDataJacobiPolynomialTpl<PhaseSpec>>
+        struct ControlParamDataJacobiPolynomialTpl : public ControlParamDataBase<ControlParamDataJacobiPolynomialTpl<PhaseSpec>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -24,7 +24,7 @@ namespace galileo
         }; // struct ControlParamDataJacobiPolynomialTpl
 
         template <typename PhaseSpec>
-        class ControlParamModelJacobiPolynomialTpl : public ControlParamModelBase<ControlParamModelJacobiPolynomialTpl<PhaseSpec>>
+        class ControlParamModelJacobiPolynomialTpl : public ControlParamModelBase<ControlParamModelJacobiPolynomialTpl<PhaseSpec>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW

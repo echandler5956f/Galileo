@@ -10,7 +10,7 @@ namespace galileo
     {
 
         template <typename Derived>
-        struct ResidualDataBase : internal::CRTP<Derived>
+        struct ResidualDataBase : internal::CRTP<ResidualDataBase<Derived>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW

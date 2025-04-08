@@ -9,7 +9,7 @@ namespace galileo
     {
 
         template <typename Derived, typename PhaseSpec>
-        class ActivationModelBase : internal::CRTP<Derived>
+        class ActivationModelBase : internal::CRTP<ActivationModelBase<Derived, PhaseSpec>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -30,7 +30,7 @@ namespace galileo
     {
 
         template <typename Derived>
-        class ResidualModelBase : internal::CRTP<Derived>
+        class ResidualModelBase : internal::CRTP<ResidualModelBase<Derived>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
