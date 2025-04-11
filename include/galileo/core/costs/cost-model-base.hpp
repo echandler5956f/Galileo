@@ -25,14 +25,14 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calc(data, x.derived(), u.derived());
+                this->derived().calc(data, x.derived(), u.derived());
             }
 
             template <typename StateVectorType>
             void calc(CostDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calc(data, x.derived());
+                this->derived().calc(data, x.derived());
             }
 
             template <typename StateVectorType, typename ControlVectorType>
@@ -40,20 +40,20 @@ namespace galileo
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calcDiff(data, x.derived(), u.derived());
+                this->derived().calcDiff(data, x.derived(), u.derived());
             }
 
             template <typename StateVectorType>
             void calcDiff(CostDataDerived &data,
                           const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calcDiff(data, x.derived());
+                this->derived().calcDiff(data, x.derived());
             }
 
             template <typename DataCollector>
             auto createData(DataCollector *const collector)
             {
-                return derived().createData(collector);
+                return this->derived().createData(collector);
             }
 
         protected:

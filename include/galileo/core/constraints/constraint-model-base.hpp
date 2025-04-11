@@ -27,14 +27,14 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calc(data, x.derived(), u.derived());
+                this->derived().calc(data, x.derived(), u.derived());
             }
 
             template <typename StateVectorType>
             void calc(ConstraintDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calc(data, x.derived());
+                this->derived().calc(data, x.derived());
             }
 
             template <typename StateVectorType, typename ControlVectorType>
@@ -42,47 +42,47 @@ namespace galileo
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calcDiff(data, x.derived(), u.derived());
+                this->derived().calcDiff(data, x.derived(), u.derived());
             }
 
             template <typename StateVectorType>
             void calcDiff(ConstraintDataDerived &data,
                           const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calcDiff(data, x.derived());
+                this->derived().calcDiff(data, x.derived());
             }
 
             template <typename DataCollector>
             ConstraintDataDerived createData(DataCollector *const collector)
             {
-                return derived().createData(collector);
+                return this->derived().createData(collector);
             }
 
             template <typename LowerBoundType, typename UpperBoundType>
             void updateBounds(const Eigen::MatrixBase<LowerBoundType> &lb,
                               const Eigen::MatrixBase<UpperBoundType> &ub)
             {
-                derived().updateBounds(lb.derived(), ub.derived());
+                this->derived().updateBounds(lb.derived(), ub.derived());
             }
 
             const BoundVector_t &lb() const
             {
-                return derived().lb_impl();
+                return this->derived().lb_impl();
             }
 
             const BoundVector_t &ub() const
             {
-                return derived().ub_impl();
+                return this->derived().ub_impl();
             }
 
             int ng() const
             {
-                return derived().ng_impl();
+                return this->derived().ng_impl();
             }
 
             int nh() const
             {
-                return derived().nh_impl();
+                return this->derived().nh_impl();
             }
 
             int ng_impl() const

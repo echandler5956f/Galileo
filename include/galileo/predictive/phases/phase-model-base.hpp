@@ -26,7 +26,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateMatrixType> &xs,
                       const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
             {
-                derived().calc(data, xs.derived(), ws.derived());
+                this->derived().calc(data, xs.derived(), ws.derived());
             }
 
             template <typename StateMatrixType, typename ControlParamMatrixType>
@@ -34,7 +34,7 @@ namespace galileo
                           const Eigen::MatrixBase<StateMatrixType> &xs,
                           const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
             {
-                derived().calcDiff(data, xs.derived(), ws.derived());
+                this->derived().calcDiff(data, xs.derived(), ws.derived());
             }
 
             template <typename StateMatrixType, typename ControlParamMatrixType>
@@ -42,22 +42,22 @@ namespace galileo
                              Eigen::MatrixBase<ControlParamMatrixType> &ws,
                              const std::size_t maxiter, const typename PS::NumScalar &tol) const
             {
-                derived().quasiStatic(data, xs.derived(), ws.derived(), maxiter, tol);
+                this->derived().quasiStatic(data, xs.derived(), ws.derived(), maxiter, tol);
             }
 
             const typename PS::SegmentModel_t &segment() const
             {
-                return derived().segment();
+                return this->derived().segment();
             }
 
             const typename PS::NumScalar &period() const
             {
-                return derived().period();
+                return this->derived().period();
             }
 
             int NQb() const
             {
-                return derived().NQb_impl();
+                return this->derived().NQb_impl();
             }
 
             int NQb_impl() const
@@ -67,7 +67,7 @@ namespace galileo
 
             int NQj() const
             {
-                return derived().NQj_impl();
+                return this->derived().NQj_impl();
             }
 
             int NQj_impl() const
@@ -77,7 +77,7 @@ namespace galileo
 
             int NVb() const
             {
-                return derived().NVb_impl();
+                return this->derived().NVb_impl();
             }
 
             int NVb_impl() const
@@ -87,7 +87,7 @@ namespace galileo
 
             int NVj() const
             {
-                return derived().NVj_impl();
+                return this->derived().NVj_impl();
             }
 
             int NVj_impl() const
@@ -97,7 +97,7 @@ namespace galileo
 
             int NRotors() const
             {
-                return derived().NRotors_impl();
+                return this->derived().NRotors_impl();
             }
 
             int NRotors_impl() const
@@ -107,7 +107,7 @@ namespace galileo
 
             int NQ() const
             {
-                return derived().NQ_impl();
+                return this->derived().NQ_impl();
             }
 
             int NQ_impl() const
@@ -117,7 +117,7 @@ namespace galileo
 
             int NV() const
             {
-                return derived().NV_impl();
+                return this->derived().NV_impl();
             }
 
             int NV_impl() const
@@ -127,7 +127,7 @@ namespace galileo
 
             int NX() const
             {
-                return derived().NX_impl();
+                return this->derived().NX_impl();
             }
 
             int NX_impl() const
@@ -137,7 +137,7 @@ namespace galileo
 
             int NDX() const
             {
-                return derived().NDX_impl();
+                return this->derived().NDX_impl();
             }
 
             int NDX_impl() const
@@ -147,7 +147,7 @@ namespace galileo
 
             int NUa() const
             {
-                return derived().NUa_impl();
+                return this->derived().NUa_impl();
             }
 
             int NUa_impl() const
@@ -157,7 +157,7 @@ namespace galileo
 
             int NU() const
             {
-                return derived().NU_impl();
+                return this->derived().NU_impl();
             }
 
             int NU_impl() const
@@ -167,7 +167,7 @@ namespace galileo
 
             int NOrder() const
             {
-                return derived().NOrder_impl();
+                return this->derived().NOrder_impl();
             }
 
             int NOrder_impl() const
@@ -177,7 +177,7 @@ namespace galileo
 
             int NW() const
             {
-                return derived().NW_impl();
+                return this->derived().NW_impl();
             }
 
             int NW_impl() const
@@ -187,7 +187,7 @@ namespace galileo
 
             int NStages() const
             {
-                return derived().NStages_impl();
+                return this->derived().NStages_impl();
             }
 
             int NStages_impl() const

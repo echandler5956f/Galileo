@@ -13,12 +13,12 @@
     /* lvalue-qualified overload */                  \
     ReturnType &accessor_name()                      \
     {                                                \
-        return derived().accessor_name##_accessor(); \
+        return this->derived().accessor_name##_accessor(); \
     }                                                \
     /* const-lvalue-qualified overload */            \
     const ReturnType &accessor_name() const          \
     {                                                \
-        return derived().accessor_name##_accessor(); \
+        return this->derived().accessor_name##_accessor(); \
     }
 
 #define DEFAULT_ACCESSOR(ReturnType, accessor_name)    \

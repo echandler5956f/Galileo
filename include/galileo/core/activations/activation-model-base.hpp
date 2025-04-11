@@ -24,25 +24,25 @@ namespace galileo
             void calc(ActivationDataDerived &data,
                       const Eigen::MatrixBase<ResidualVectorType> &r) const
             {
-                derived().calc(data, r.derived());
+                this->derived().calc(data, r.derived());
             }
 
             template <typename ResidualVectorType>
             void calcDiff(ActivationDataDerived &data,
                           const Eigen::MatrixBase<ResidualVectorType> &r) const
             {
-                derived().calcDiff(data, r.derived());
+                this->derived().calcDiff(data, r.derived());
             }
 
             template <typename DataCollector>
             ActivationDataDerived createData(DataCollector *const collector)
             {
-                return derived().createData(collector);
+                return this->derived().createData(collector);
             }
 
             int nr() const
             {
-                return derived().nr_impl();
+                return this->derived().nr_impl();
             }
 
             int nr_impl() const

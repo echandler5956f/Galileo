@@ -32,7 +32,7 @@ namespace galileo
         }; // enum FeasibilityNormOptions
 
         template <typename Derived>
-        class SolverBase : internal::CRTP<Derived>
+        class SolverBase : internal::CRTP<SolverBase<Derived>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -47,7 +47,7 @@ namespace galileo
                        const bool is_feasible = false,
                        const NumScalar init_reg = NAN)
             {
-                return derived().solve(init_xs, init_us, maxiter, is_feasible, init_reg);
+                return this->derived().solve(init_xs, init_us, maxiter, is_feasible, init_reg);
             }
 
         protected:

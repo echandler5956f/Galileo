@@ -15,7 +15,6 @@
 
 #include <iostream>
 
-
 using namespace galileo::core;
 // using namespace galileo::predictive;
 

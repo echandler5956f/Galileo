@@ -26,14 +26,14 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
-                derived().calc(data, x.derived(), w.derived());
+                this->derived().calc(data, x.derived(), w.derived());
             }
 
             template <typename StateVectorType>
             void calc(SegmentERKDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calc(data, x.derived());
+                this->derived().calc(data, x.derived());
             }
 
             template <typename StateVectorType, typename ControlParamVectorType>
@@ -41,14 +41,14 @@ namespace galileo
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
-                derived().calcDiff(data, x.derived(), w.derived());
+                this->derived().calcDiff(data, x.derived(), w.derived());
             }
 
             template <typename StateVectorType>
             void calcDiff(SegmentERKDataDerived &data,
                           const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calcDiff(data, x.derived());
+                this->derived().calcDiff(data, x.derived());
             }
 
             template <typename StateVectorType, typename ControlParamVectorType>
@@ -58,7 +58,7 @@ namespace galileo
                              const std::size_t maxiter,
                              const typename PS::NumScalar &tol) const
             {
-                derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);
+                this->derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);
             }
 
         protected:

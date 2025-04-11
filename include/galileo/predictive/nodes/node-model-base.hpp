@@ -26,14 +26,14 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calc(data, x.derived(), u.derived());
+                this->derived().calc(data, x.derived(), u.derived());
             }
 
             template <typename StateVectorType>
             void calc(NodeDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calc(data, x.derived());
+                this->derived().calc(data, x.derived());
             }
 
             template <typename StateVectorType, typename ControlVectorType>
@@ -41,14 +41,14 @@ namespace galileo
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calcDiff(data, x.derived(), u.derived());
+                this->derived().calcDiff(data, x.derived(), u.derived());
             }
 
             template <typename StateVectorType>
             void calcDiff(NodeDataDerived &data,
                           const Eigen::MatrixBase<StateVectorType> &x) const
             {
-                derived().calcDiff(data, x.derived());
+                this->derived().calcDiff(data, x.derived());
             }
 
             template <typename StateVectorType, typename ControlVectorType>
@@ -57,12 +57,12 @@ namespace galileo
                              Eigen::MatrixBase<ControlVectorType> &u,
                              const std::size_t maxiter, const typename PS::NumScalar tol) const
             {
-                derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
+                this->derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
             }
 
             int nu() const
             {
-                return derived().nu_impl();
+                return this->derived().nu_impl();
             }
 
             int nu_impl() const

@@ -20,21 +20,21 @@ namespace galileo
             void calc(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
-                derived().calc(data, t, w.derived());
+                this->derived().calc(data, t, w.derived());
             }
 
             template <typename ControlParamVectorType>
             void calcDiff(typename PS::ControlParamData_t &data,
                           const Eigen::MatrixBase<ControlParamVectorType> &w) const
             {
-                derived().calcDiff(data, w.derived());
+                this->derived().calcDiff(data, w.derived());
             }
 
             template <typename ControlVectorType>
             void params(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
                         const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().params(data, t, u.derived());
+                this->derived().params(data, t, u.derived());
             }
 
             template <typename ControlBoundVectorType, typename ControlParamBoundVectorType>
@@ -43,7 +43,7 @@ namespace galileo
                                const Eigen::MatrixBase<ControlParamBoundVectorType> &w_lb,
                                const Eigen::MatrixBase<ControlParamBoundVectorType> &w_ub) const
             {
-                derived().convertBounds(u_lb.derived(), u_ub.derived(), w_lb.derived(), w_ub.derived());
+                this->derived().convertBounds(u_lb.derived(), u_ub.derived(), w_lb.derived(), w_ub.derived());
             }
 
             template <typename InputMatrixType, typename OutputMatrixType>
@@ -53,7 +53,7 @@ namespace galileo
                 Eigen::MatrixBase<OutputMatrixType> &out,
                 const AssignmentOp op = setto) const
             {
-                derived().multiplyByJacobian(data, A.derived(), out.derived(), op);
+                this->derived().multiplyByJacobian(data, A.derived(), out.derived(), op);
             }
 
             template <typename InputMatrixType, typename OutputMatrixType>
@@ -63,7 +63,7 @@ namespace galileo
                 Eigen::MatrixBase<OutputMatrixType> &out,
                 const AssignmentOp op = setto) const
             {
-                derived().multiplyJacobianTransposeBy(data, A.derived(), out.derived(), op);
+                this->derived().multiplyJacobianTransposeBy(data, A.derived(), out.derived(), op);
             }
 
         protected:

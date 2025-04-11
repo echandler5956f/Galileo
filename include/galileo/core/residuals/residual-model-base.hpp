@@ -45,7 +45,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calc(data, x.derived(), u.derived());
+                this->derived().calc(data, x.derived(), u.derived());
             }
 
             template <typename StateVectorType, typename ControlVectorType>
@@ -53,7 +53,7 @@ namespace galileo
                           const Eigen::MatrixBase<StateVectorType> &x,
                           const Eigen::MatrixBase<ControlVectorType> &u) const
             {
-                derived().calcDiff(data, x.derived(), u.derived());
+                this->derived().calcDiff(data, x.derived(), u.derived());
             }
 
             void calcCostDiff(CostDataDerived &cdata,
@@ -61,7 +61,7 @@ namespace galileo
                               const ActivationDataDerived &adata,
                               const bool update_u) const
             {
-                derived().calcCostDiff(cdata, rdata, adata, update_u);
+                this->derived().calcCostDiff(cdata, rdata, adata, update_u);
             }
 
         protected:

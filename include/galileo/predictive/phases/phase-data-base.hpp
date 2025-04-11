@@ -30,12 +30,12 @@ namespace galileo
 
             const SegmentDataVector_t &segments() const
             {
-                return derived().segments();
+                return this->derived().segments();
             }
 
             SegmentDataVector_t &segments()
             {
-                return derived().segments();
+                return this->derived().segments();
             }
 
             // The fully expanded contents of each PhaseData derived class should be

@@ -110,21 +110,21 @@ namespace galileo
             void calc(ContactDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x)
             {
-                derived().calc(data, x.derived());
+                this->derived().calc(data, x.derived());
             }
 
             template <typename StateVectorType>
             void calcDiff(ContactDataDerived &data,
                           const Eigen::MatrixBase<StateVectorType> &x)
             {
-                derived().calcDiff(data, x.derived());
+                this->derived().calcDiff(data, x.derived());
             }
 
             template <typename ForceVectorType>
             void updateForce(ContactDataDerived &data,
                              const Eigen::MatrixBase<ForceVectorType> &force)
             {
-                derived().updateForce(data, force.derived());
+                this->derived().updateForce(data, force.derived());
             }
 
             template <typename MatrixNcNdxType, typename MatrixNcNuType>
@@ -132,22 +132,22 @@ namespace galileo
                                  const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
                                  const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
             {
-                derived().updateForceDiff(data, df_dx.derived(), df_du.derived());
+                this->derived().updateForceDiff(data, df_dx.derived(), df_du.derived());
             }
 
             void setZeroForce(ContactDataDerived &data) const
             {
-                derived().setZeroForce(data);
+                this->derived().setZeroForce(data);
             }
 
             void setZeroForceDiff(ContactDataDerived &data) const
             {
-                derived().setZeroForceDiff(data);
+                this->derived().setZeroForceDiff(data);
             }
 
             int nc() const
             {
-                return derived().nc_impl();
+                return this->derived().nc_impl();
             }
 
             int nc_impl() const
@@ -157,12 +157,12 @@ namespace galileo
 
             Index_t id() const
             {
-                return derived().id_impl();
+                return this->derived().id_impl();
             }
 
             void set_id(const Index_t &id)
             {
-                derived().set_id_impl(id);
+                this->derived().set_id_impl(id);
             }
 
         protected:
