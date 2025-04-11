@@ -1,6 +1,8 @@
 #ifndef __galileo_multibody_contacts_contact_generic_hpp__
 #define __galileo_multibody_contacts_contact_generic_hpp__
 
+#include "galileo/multibody/contacts/fwd.hpp"
+#include "galileo/multibody/contacts/contact-base.hpp"
 #include "galileo/multibody/contacts/contact-collection.hpp"
 #include "galileo/multibody/contacts/contact-basic-visitors.hxx"
 

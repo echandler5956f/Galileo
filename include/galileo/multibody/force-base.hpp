@@ -1,6 +1,9 @@
 #ifndef __galileo_multibody_force_base_hpp__
 #define __galileo_multibody_force_base_hpp__
 
+#include <pinocchio/multibody/data.hpp>
+#include <pinocchio/spatial/force.hpp>
+
 #include "galileo/multibody/fwd.hpp"
 
 #define GALILEO_FORCE_DATA_TYPEDEF(Force)                                  \

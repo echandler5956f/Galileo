@@ -14,11 +14,11 @@ namespace galileo
         template <typename PhaseSpec>
         struct CostCollectionDefaultTpl
         {
-            using PhaseSpec = PhaseSpec;
+            using PS = PhaseSpec;
 
-            using CostModelVariant = boost::variant<>; // TODO: add cost models
+            using CostModelVariant = boost::variant<CostModelVoid>; // TODO: add cost models
 
-            using CostDataVariant = boost::variant<>; // TODO: add cost data
+            using CostDataVariant = boost::variant<CostDataVoid>; // TODO: add cost data
 
         }; // struct CostCollectionDefaultTpl
 

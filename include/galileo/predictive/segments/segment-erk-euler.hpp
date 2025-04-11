@@ -17,6 +17,10 @@ namespace galileo
         struct traits<SegmentERKEulerTpl<PhaseSpec>>
         {
             using PS = PhaseSpec;
+
+            using SegmentERKDerived = SegmentERKEulerTpl<PS>;
+            using SegmentERKDataDerived = SegmentERKDataEulerTpl<PS>;
+            using SegmentERKModelDerived = SegmentERKModelEulerTpl<PS>;
         };
 
         template <
@@ -53,12 +57,12 @@ namespace galileo
             using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
             using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
 
-            using NodeData_t = typename PS::NodeData_t;
-            using ControlParamData_t = typename PS::ControlParamData_t;
+            // using NodeData_t = typename PS::NodeData_t;
+            // using ControlParamData_t = typename PS::ControlParamData_t;
 
             DEFAULT_ACCESSOR(XNext_t, XNext);
-            DEFAULT_ACCESSOR(Fx_t, Fx);
-            DEFAULT_ACCESSOR(Fw_t, Fw);
+            DEFAULT_ACCESSOR(XNextx_t, XNextx);
+            DEFAULT_ACCESSOR(XNextw_t, XNextw);
 
             DEFAULT_ACCESSOR(L_t, L);
             DEFAULT_ACCESSOR(Lx_t, Lx);
@@ -69,10 +73,10 @@ namespace galileo
 
             DEFAULT_ACCESSOR(H_t, H);
             DEFAULT_ACCESSOR(Hx_t, Hx);
-            DEFAULT_ACCESSOR(Hu_t, Hu);
+            DEFAULT_ACCESSOR(Hw_t, Hw);
             DEFAULT_ACCESSOR(G_t, G);
             DEFAULT_ACCESSOR(Gx_t, Gx);
-            DEFAULT_ACCESSOR(Gu_t, Gu);
+            DEFAULT_ACCESSOR(Gw_t, Gw);
 
             NodeData_t node;
             ControlParamData_t control;
@@ -80,8 +84,8 @@ namespace galileo
             MatrixNvNw_t da_dw;
 
             XNext_t XNext;
-            Fx_t Fx;
-            Fw_t Fw;
+            XNextx_t XNextx;
+            XNextw_t XNextw;
 
             L_t L;
             Lx_t Lx;
@@ -162,14 +166,14 @@ namespace galileo
                 const MatrixNvNdx_t &da_dx = data.node.Fx;
                 const MatrixNvNw_t &da_dw = data.node.Fu;
                 control_.multiplyByJacobian(data.control, da_dw, data.da_dw);
-                data.Fx.topRows(NV).noalias() = da_dx * period_squared_;
-                data.Fx.bottomRows(NV).noalias() = da_dx * period_;
-                data.Fx.topRightCorner(NV, NV).diagonal().array() += NumScalar(period_);
-                data.Fw.topRows(NV).noalias() = period_squared_ * data.da_dw;
-                data.Fw.bottomRows(NV).noalias() = period_ * data.da_dw;
-                state_.JintegrateTransport(x, data.dx, data.Fx, second);
-                state_.Jintegrate(x, data.dx, data.Fx, data.Fx, first, addto);
-                state_.JintegrateTransport(x, data.dx, data.Fw, second);
+                data.XNextx.topRows(NV).noalias() = da_dx * period_squared_;
+                data.XNextx.bottomRows(NV).noalias() = da_dx * period_;
+                data.XNextx.topRightCorner(NV, NV).diagonal().array() += NumScalar(period_);
+                data.XNextw.topRows(NV).noalias() = period_squared_ * data.da_dw;
+                data.XNextw.bottomRows(NV).noalias() = period_ * data.da_dw;
+                state_.JintegrateTransport(x, data.dx, data.XNextx, second);
+                state_.Jintegrate(x, data.dx, data.XNextx, data.XNextx, first, addto);
+                state_.JintegrateTransport(x, data.dx, data.XNextw, second);
 
                 data.Lx.noalias() = period_ * data.node.Lx;
                 control_.multiplyJacobianTransposeBy(data.control, data.node.Lu, data.Lw);
@@ -193,7 +197,7 @@ namespace galileo
                           const Eigen::MatrixBase<StateVectorType> &x) const
             {
                 node_.calcDiff(data.node, x);
-                state_.Jintegrate(x, data.dx, data.Fx, data.Fx);
+                state_.Jintegrate(x, data.dx, data.XNextx, data.XNextx);
                 data.Lx = data.node.Lx;
                 data.Lxx = data.node.Lxx;
                 data.Gx = data.node.Gx;
@@ -219,6 +223,8 @@ namespace galileo
 
             NumScalar period_;
             NumScalar period_squared_;
+
+            bool with_cost_residual_;
 
         }; // class SegmentERKModelEulerTpl
 

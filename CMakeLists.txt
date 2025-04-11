@@ -78,7 +78,7 @@ test_escape_string_as_regex()
 install(
     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/galileo/"
     DESTINATION "${INCLUDE_INSTALL_DIR}" 
-    FILES_MATCHING PATTERN "*.hpp" PATTERN ".*" EXCLUDE
+    FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx" PATTERN ".*" EXCLUDE
 )
 
 add_subdirectory(examples EXCLUDE_FROM_ALL)

@@ -16,9 +16,9 @@ namespace galileo
         {
             using PS = PhaseSpec;
 
-            using ContactModelVariant = boost::variant<>; // TODO: add contact models
+            using ContactModelVariant = boost::variant<ContactModelVoid>; // TODO: add contact models
 
-            using ContactDataVariant = boost::variant<>; // TODO: add contact data
+            using ContactDataVariant = boost::variant<ContactDataVoid>; // TODO: add contact data
 
         }; // struct ContactCollectionDefaultTpl
 

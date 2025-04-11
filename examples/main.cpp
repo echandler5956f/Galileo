@@ -13,6 +13,13 @@
 
 #include <galileo/predictive/phases/phase-spec.hpp>
 
+#include <galileo/core/constraints/constraint-manager.hpp>
+#include <galileo/core/costs/cost-manager.hpp>
+#include <galileo/multibody/contacts/contact-manager.hpp>
+
+#include <galileo/predictive/nodes/node-contact-fwddyn.hpp>
+#include <galileo/predictive/segments/segment-erk-euler.hpp>
+
 #include <iostream>
 
 using namespace galileo::core;
@@ -37,37 +44,37 @@ constexpr int Options = Eigen::ColMajor;
 // These template classes basically create a code generator for the optimal control problem by means of mixins
 using BasicSpec = BasicSpecTpl<VarScalar, NumScalar, Options, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
 
-// using ConstraintManagerTpl = ConstraintManagerDefaultTpl;
-// using CostManagerTpl = CostManagerDefaultTpl;
-// using ContactManagerTpl = ContactManagerDefaultTpl;
+using ConstraintManagerTpl = ConstraintManagerDefaultTpl;
+using CostManagerTpl = CostManagerDefaultTpl;
+using ContactManagerTpl = ContactManagerDefaultTpl;
 
-// template <typename PS>
-// using NodeTpl = NodeContactFwdDynTpl<PS, ContactManagerTpl>;
+template <typename PS>
+using NodeTpl = NodeContactFwdDynTpl<PS, ContactManagerTpl>;
 
-// static constexpr int NOrder = 2;
-// template <typename PS>
-// using ControlParamTpl = ControlParamJacobiPolynomialTpl<PS, NOrder>;
+static constexpr int NOrder = 2;
+template <typename PS>
+using ControlParamTpl = ControlParamJacobiPolynomialTpl<PS, NOrder>;
 
-// template <typename PS>
-// using SegmentTpl = SegmentERKEulerTpl<PS>;
+template <typename PS>
+using SegmentTpl = SegmentERKEulerTpl<PS>;
 
-// using ImpulseManagerTpl = ImpulseManagerDefaultTpl;
+using ImpulseManagerTpl = ImpulseManagerDefaultTpl;
 
-// template <typename PS>
-// using PhaseTpl = PhaseWithImpulsePolicyTpl<PS, ImpulseManagerTpl>;
+template <typename PS>
+using PhaseTpl = PhaseWithImpulsePolicyTpl<PS, ImpulseManagerTpl>;
 
-// using PhaseSpec = PhaseSpecTpl<BasicSpec, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
+using PhaseSpec = PhaseSpecTpl<BasicSpec, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
 
-// using Phase1 = PhaseTpl<PhaseSpec>;
-// using Phase2 = PhaseTpl<PhaseSpec>;
+using Phase1 = PhaseTpl<PhaseSpec>;
+using Phase2 = PhaseTpl<PhaseSpec>;
 
-// using PhaseCollection_t = PhaseCollectionTpl<Phase1, Phase2>;
+using PhaseCollection_t = PhaseCollectionTpl<Phase1, Phase2>;
 
-// using Trajectory_t = TrajectoryTpl<PhaseCollection_t>;
+using Trajectory_t = TrajectoryTpl<PhaseCollection_t>;
 
-// using OCP_t = OCPTpl<Trajectory_t>;
+using OCP_t = OCPTpl<Trajectory_t>;
 
-// using Solver_t = SolverDDPTpl<OCP_t>;
+using Solver_t = SolverDDPTpl<OCP_t>;
 
 int main(int argc, char *argv[])
 {

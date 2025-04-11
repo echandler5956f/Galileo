@@ -9,6 +9,14 @@ namespace galileo
     namespace multibody
     {
 
+        struct ContactModelVoid
+        {
+        }; // struct ContactModelVoid
+
+        struct ContactDataVoid
+        {
+        }; // struct ContactDataVoid
+        
         template <typename PhaseSpec,
                   template <typename PS> class ContactCollectionTpl>
         struct ContactModelTpl;

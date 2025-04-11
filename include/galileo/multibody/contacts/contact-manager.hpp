@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <set>
 
 #include "galileo/multibody/contacts/fwd.hpp"
 
@@ -68,7 +69,7 @@ namespace galileo
             Eigen::Matrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options> ddv_dx;
 
             ContactDataContainer contacts;
-            // using fext = GALILEO_ALIGNED_STD_VECTOR(Force_t);
+            using fext = GALILEO_ALIGNED_STD_VECTOR(Force_t);
 
         }; // class ContactDataManagerTpl
 
@@ -94,6 +95,8 @@ namespace galileo
             using ContactDataManager = ContactDataManagerTpl<PS, ContactCollectionTpl>;
 
             using RobotData = typename PS::RobotData_t;
+
+            using ForceIterator = typename galileo::container::aligned_vector<typename PS::Force_t>::iterator
 
             ContactModelManagerTpl() {}
 
@@ -271,11 +274,11 @@ namespace galileo
             }
 
             template <typename ForceVectorType>
-            void updateForce(ContactDataManager &data, const Eigen::MatrixBase<ForceVectorType> &f)
+            void updateForce(ContactDataManager &data, const Eigen::MatrixBase<ForceVectorType> &force)
             {
                 for (ForceIterator it = data.fext.begin(); it != data.fext.end(); ++it)
                 {
-                    *it = pinocchio::ForceTpl<Scalar>::Zero();
+                    *it = typename PS::Force_t::Zero();
                 }
 
                 std::size_t nc = 0;
@@ -356,9 +359,9 @@ namespace galileo
                         const int nc_i = m_i.contact.nc();
                         if (m_i.active)
                         {
-                            const Eigen::Block<const MatrixXs> df_dx_i =
+                            const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
                                 df_dx.block(nc, 0, nc_i, PS::NDX);
-                            const Eigen::Block<const MatrixXs> df_du_i =
+                            const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
                                 df_du.block(nc, 0, nc_i, PS::NU);
                             m_i.contact.updateForceDiff(d_i, df_dx_i, df_du_i);
                         }
@@ -380,9 +383,9 @@ namespace galileo
                         if (m_i.active)
                         {
                             const int nc_i = m_i.contact.nc();
-                            const Eigen::Block<const MatrixXs> df_dx_i =
+                            const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
                                 df_dx.block(nc, 0, nc_i, PS::NDX);
-                            const Eigen::Block<const MatrixXs> df_du_i =
+                            const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
                                 df_du.block(nc, 0, nc_i, PS::NU);
                             m_i.contact.updateForceDiff(d_i, df_dx_i, df_du_i);
                             nc += nc_i;
@@ -431,6 +434,8 @@ namespace galileo
             }
 
         protected:
+            using State = typename PS::State_t;
+            State *state_;
             ContactModelContainer contacts_;
 
             int nc_;

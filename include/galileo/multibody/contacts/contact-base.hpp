@@ -33,7 +33,7 @@ namespace galileo
         };
 
         template <typename Derived, typename PhaseSpec>
-        struct traits<ContactDataBaseTpl<Derived, PhaseSpec>>
+        struct traits<ContactDataBase<Derived, PhaseSpec>>
         {
             using PS = PhaseSpec;
             using ContactBase = ContactBaseTpl<Derived, PS>;
@@ -41,7 +41,7 @@ namespace galileo
         };
 
         template <typename Derived, typename PhaseSpec>
-        struct traits<ContactModelBaseTpl<Derived, PhaseSpec>>
+        struct traits<ContactModelBase<Derived, PhaseSpec>>
         {
             using PS = PhaseSpec;
             using ContactBase = ContactBaseTpl<Derived, PS>;
@@ -49,7 +49,7 @@ namespace galileo
         };
 
         template <typename Derived, typename PhaseSpec>
-        struct ContactDataBaseTpl : public ForceDataBase<ContactDataBaseTpl<Derived, PhaseSpec>, PhaseSpec>
+        struct ContactDataBase : public ForceDataBase<ContactDataBase<Derived, PhaseSpec>, PhaseSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -77,24 +77,24 @@ namespace galileo
             FORWARD_ACCESSOR(MatrixNv_t, dtau_dq);
 
         protected:
-            inline ContactDataBaseTpl()
+            inline ContactDataBase()
             {
             }
 
-            inline ContactDataBaseTpl(const ContactDataBaseTpl &clone)
+            inline ContactDataBase(const ContactDataBase &clone)
             {
                 *this = clone;
             }
 
-            inline ContactDataBaseTpl &operator=(const ContactDataBaseTpl &clone)
+            inline ContactDataBase &operator=(const ContactDataBase &clone)
             {
                 return *this;
             }
 
-        }; // struct ContactDataBaseTpl
+        }; // struct ContactDataBase
 
         template <typename Derived, typename PhaseSpec>
-        struct ContactModelBaseTpl : internal::CRTP<ContactModelBaseTpl<Derived, PhaseSpec>>
+        struct ContactModelBase : internal::CRTP<ContactModelBase<Derived, PhaseSpec>>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -166,21 +166,21 @@ namespace galileo
             }
 
         protected:
-            inline ContactModelBaseTpl()
+            inline ContactModelBase()
             {
             }
 
-            inline ContactModelBaseTpl(const ContactModelBaseTpl &clone)
+            inline ContactModelBase(const ContactModelBase &clone)
             {
                 *this = clone;
             }
 
-            inline ContactModelBaseTpl &operator=(const ContactModelBaseTpl &clone)
+            inline ContactModelBase &operator=(const ContactModelBase &clone)
             {
                 return *this;
             }
 
-        }; // struct ContactModelBaseTpl
+        }; // struct ContactModelBase
     }
 }
 

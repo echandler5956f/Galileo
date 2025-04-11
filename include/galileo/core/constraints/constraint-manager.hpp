@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <set>
 
 #include "galileo/core/constraints/fwd.hpp"
 #include "galileo/core/constraints/constraint-generic.hpp"

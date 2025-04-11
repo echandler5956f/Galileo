@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <set>
 
 #include "galileo/core/costs/fwd.hpp"
 #include "galileo/core/costs/cost-generic.hpp"

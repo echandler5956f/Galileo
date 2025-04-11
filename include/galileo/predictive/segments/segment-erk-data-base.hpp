@@ -24,8 +24,8 @@ namespace galileo
             using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
 
             FORWARD_ACCESSOR(XNext_t, XNext);
-            FORWARD_ACCESSOR(Fx_t, Fx);
-            FORWARD_ACCESSOR(Fw_t, Fw);
+            FORWARD_ACCESSOR(XNextx_t, XNextx);
+            FORWARD_ACCESSOR(XNextw_t, XNextw);
 
             FORWARD_ACCESSOR(L_t, L);
             FORWARD_ACCESSOR(Lx_t, Lx);
@@ -36,10 +36,10 @@ namespace galileo
 
             FORWARD_ACCESSOR(H_t, H);
             FORWARD_ACCESSOR(Hx_t, Hx);
-            FORWARD_ACCESSOR(Hu_t, Hu);
+            FORWARD_ACCESSOR(Hw_t, Hw);
             FORWARD_ACCESSOR(G_t, G);
             FORWARD_ACCESSOR(Gx_t, Gx);
-            FORWARD_ACCESSOR(Gu_t, Gu);
+            FORWARD_ACCESSOR(Gw_t, Gw);
 
         protected:
             inline SegmentERKDataBase()
