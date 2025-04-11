@@ -149,33 +149,33 @@ namespace galileo
             /* Meta template types */
             /* ---------------------------------------------------------------- */
             using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
-            using ConstraintCollection_t = typename ConstraintManagerMeta_t::Collection;
-            using ConstraintModelManager_t = typename ConstraintManagerMeta_t::Model;
-            using ConstraintDataManager_t = typename ConstraintManagerMeta_t::Data;
+            using ConstraintCollection_t = typename ConstraintManagerMeta_t::Collection_t;
+            using ConstraintModelManager_t = typename ConstraintManagerMeta_t::Model_t;
+            using ConstraintDataManager_t = typename ConstraintManagerMeta_t::Data_t;
 
             using CostManagerMeta_t = CostManagerTpl<PS>;
-            using CostCollection_t = typename CostManagerMeta_t::Collection;
-            using CostModelManager_t = typename CostManagerMeta_t::Model;
-            using CostDataManager_t = typename CostManagerMeta_t::Data;
+            using CostCollection_t = typename CostManagerMeta_t::Collection_t;
+            using CostModelManager_t = typename CostManagerMeta_t::Model_t;
+            using CostDataManager_t = typename CostManagerMeta_t::Data_t;
 
             using NodeMeta_t = NodeTpl<PS>;
-            using NodeModel_t = typename NodeMeta_t::Model;
-            using NodeData_t = typename NodeMeta_t::Data;
+            using NodeModel_t = typename NodeMeta_t::Model_t;
+            using NodeData_t = typename NodeMeta_t::Data_t;
             using NodeDataVector_t = std::vector<NodeData_t>;
 
             using ControlParamMeta_t = ControlParamTpl<PS>;
-            using ControlParamModel_t = typename ControlParamMeta_t::Model;
-            using ControlParamData_t = typename ControlParamMeta_t::Data;
+            using ControlParamModel_t = typename ControlParamMeta_t::Model_t;
+            using ControlParamData_t = typename ControlParamMeta_t::Data_t;
             using ControlParamDataVector_t = std::vector<ControlParamData_t>;
 
             using SegmentMeta_t = SegmentTpl<PS>;
-            using SegmentModel_t = typename SegmentMeta_t::Model;
-            using SegmentData_t = typename SegmentMeta_t::Data;
+            using SegmentModel_t = typename SegmentMeta_t::Model_t;
+            using SegmentData_t = typename SegmentMeta_t::Data_t;
             using SegmentDataVector_t = std::vector<SegmentData_t>;
 
             using PhaseMeta_t = PhaseTpl<PS>;
-            using PhaseModel_t = typename PhaseMeta_t::Model;
-            using PhaseData_t = typename PhaseMeta_t::Data;
+            using PhaseModel_t = typename PhaseMeta_t::Model_t;
+            using PhaseData_t = typename PhaseMeta_t::Data_t;
             using PhaseDataVector_t = std::vector<PhaseData_t>;
 
             /* ---------------------------------------------------------------- */
@@ -212,6 +212,7 @@ namespace galileo
             using MatrixNuaNu_t = Eigen::Matrix<VarScalar, NUa, NU, Options>;
             using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
 
+            using MatrixNdxNu_t = Eigen::Matrix<VarScalar, NDX, NU, Options>;
             using MatrixNdxNw_t = Eigen::Matrix<VarScalar, NDX, NW, Options>;
             using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
 

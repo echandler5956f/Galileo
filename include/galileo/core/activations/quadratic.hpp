@@ -72,7 +72,7 @@ namespace galileo
             DEFAULT_ACCESSOR(Ar_t, Ar);
             DEFAULT_ACCESSOR(Arr_t, Arr);
 
-            ActivationDataQuadraticTpl() : A(typename PS::VarScalar(0.)), Ar(Ar_t::Zero()), Arr(Arr_diag_t())
+            ActivationDataQuadraticTpl() : A(A_t(0.)), Ar(Ar_t::Zero()), Arr(Arr_diag_t())
             {
                 Arr.setZero();
             }

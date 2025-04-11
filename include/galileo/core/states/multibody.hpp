@@ -4,6 +4,7 @@
 #include "galileo/core/states/state-base.hpp"
 
 #include <pinocchio/multibody/model.hpp>
+#include <pinocchio/algorithm/joint-configuration.hpp>
 
 namespace galileo
 {
@@ -12,7 +13,7 @@ namespace galileo
     {
 
         template <typename BasicSpec>
-        class StateMultibodyTpl : public StateBase<StateMultibodyTpl<BasicSpec>>
+        class StateMultibodyTpl : public StateBase<StateMultibodyTpl<BasicSpec>, BasicSpec>
         {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -29,12 +30,12 @@ namespace galileo
                 x0_.head(NQ) = pinocchio::neutral(*model_);
 
                 lb_.head(NQb) =
-                    -std::numeric_limits<NumScalar>::infinity() * VectorNQb_t::Ones(NQb);
-                ub_.head(NQb) = std::numeric_limits<NumScalar>::infinity() * VectorNQb_t::Ones(NQb);
-                lb_.segment(NQb, NQ - NQb) = pinocchio_->lowerPositionLimit.tail(NQ - NQb);
-                ub_.segment(NQb, NQ - NQb) = pinocchio_->upperPositionLimit.tail(NQ - NQb);
-                lb_.tail(NV) = -pinocchio_->velocityLimit;
-                ub_.tail(NV) = pinocchio_->velocityLimit;
+                    -std::numeric_limits<NumScalar>::infinity() * VectorNqb_t::Ones(NQb);
+                ub_.head(NQb) = std::numeric_limits<NumScalar>::infinity() * VectorNqb_t::Ones(NQb);
+                lb_.segment(NQb, NQ - NQb) = model_->lowerPositionLimit.tail(NQ - NQb);
+                ub_.segment(NQb, NQ - NQb) = model_->upperPositionLimit.tail(NQ - NQb);
+                lb_.tail(NV) = -model_->velocityLimit;
+                ub_.tail(NV) = model_->velocityLimit;
             }
 
             StateMultibodyTpl()
@@ -84,7 +85,7 @@ namespace galileo
                 {
                     pinocchio::dDifference(*model_, x0.head(NQ), x1.head(NQ),
                                            Jfirst.topLeftCorner(NV, NV), pinocchio::ARG0);
-                    Jfirst.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar) - 1;
+                    Jfirst.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)-1;
                 }
                 else if (firstsecond == second)
                 {
@@ -98,7 +99,7 @@ namespace galileo
                                            Jfirst.topLeftCorner(NV, NV), pinocchio::ARG0);
                     pinocchio::dDifference(*model_, x0.head(NQ), x1.head(NQ),
                                            Jsecond.topLeftCorner(NV, NV), pinocchio::ARG1);
-                    Jfirst.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar) - 1;
+                    Jfirst.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)-1;
                     Jsecond.bottomRightCorner(NV, NV).diagonal().array() = (VarScalar)1;
                 }
             }
@@ -193,9 +194,50 @@ namespace galileo
                 return model_;
             }
 
+            const VectorNx_t &get_x0() const
+            {
+                return x0_;
+            }
+
+            /**
+             * @brief Return the state lower bound
+             */
+            const VectorNx_t &get_lb() const
+            {
+                return lb_;
+            }
+
+            /**
+             * @brief Return the state upper bound
+             */
+            const VectorNx_t &get_ub() const
+            {
+                return ub_;
+            }
+
+            /**
+             * @brief Modify the state lower bound
+             */
+            template <typename StateVector>
+            void set_lb(const Eigen::MatrixBase<StateVector> &lb)
+            {
+                lb_ = lb.derived();
+            }
+
+            /**
+             * @brief Modify the state upper bound
+             */
+            template <typename StateVector>
+            void set_ub(const Eigen::MatrixBase<StateVector> &ub)
+            {
+                ub_ = ub.derived();
+            }
+
         protected:
             RobotModel_t *model_;
             VectorNx_t x0_;
+            VectorNx_t lb_;
+            VectorNx_t ub_;
 
         }; // class StateMultibodyTpl
 

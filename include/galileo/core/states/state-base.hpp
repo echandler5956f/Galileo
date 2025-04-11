@@ -2,6 +2,7 @@
 #define __galileo_core_states_state_base_hpp__
 
 #include "galileo/core/fwd.hpp"
+#include "galileo/core/basic-spec.hpp"
 
 namespace galileo
 {
@@ -24,7 +25,7 @@ namespace galileo
              */
             VectorNx_t zero() const
             {
-                return derived().zero();
+                return this->derived().zero();
             }
 
             /**
@@ -32,7 +33,7 @@ namespace galileo
              */
             VectorNx_t rand() const
             {
-                return derived().rand();
+                return this->derived().rand();
             }
 
             /**
@@ -57,7 +58,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVector2> &x1,
                       Eigen::MatrixBase<StateTangentVector> &dxout) const
             {
-                derived().diff(x0.derived(), x1.derived(), dxout.derived());
+                this->derived().diff(x0.derived(), x1.derived(), dxout.derived());
             }
 
             /**
@@ -81,7 +82,7 @@ namespace galileo
                            const Eigen::MatrixBase<StateTangentVector> &dx,
                            Eigen::MatrixBase<StateVector2> &xout) const
             {
-                derived().integrate(x.derived(), dx.derived(), xout.derived());
+                this->derived().integrate(x.derived(), dx.derived(), xout.derived());
             }
 
             /**
@@ -131,7 +132,7 @@ namespace galileo
                        Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond,
                        const Jcomponent firstsecond = both) const
             {
-                derived().Jdiff(x0.derived(), x1.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond);
+                this->derived().Jdiff(x0.derived(), x1.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond);
             }
 
             /**
@@ -181,7 +182,7 @@ namespace galileo
                             const Jcomponent firstsecond = both,
                             const AssignmentOp op = setto) const
             {
-                derived().Jintegrate(x.derived(), dx.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond, op);
+                this->derived().Jintegrate(x.derived(), dx.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond, op);
             }
 
             /**
@@ -204,7 +205,7 @@ namespace galileo
                                      Eigen::MatrixBase<JMatrix> &Jin,
                                      const Jcomponent firstsecond) const
             {
-                derived().JintegrateTransport(x.derived(), dx.derived(), Jin.derived(), firstsecond);
+                this->derived().JintegrateTransport(x.derived(), dx.derived(), Jin.derived(), firstsecond);
             }
 
             /**
@@ -217,9 +218,9 @@ namespace galileo
              */
             template <typename StateVector1, typename StateVector2>
             VectorNdx_t diff_dx(const Eigen::MatrixBase<StateVector1> &x0,
-                                             const Eigen::MatrixBase<StateVector2> &x1)
+                                const Eigen::MatrixBase<StateVector2> &x1)
             {
-                return derived().diff_dx(x0.derived(), x1.derived());
+                return this->derived().diff_dx(x0.derived(), x1.derived());
             }
 
             /**
@@ -231,9 +232,9 @@ namespace galileo
              */
             template <typename StateVector, typename StateTangentVector>
             VectorNx_t integrate_x(const Eigen::MatrixBase<StateVector> &x,
-                                                const Eigen::MatrixBase<StateTangentVector> &dx)
+                                   const Eigen::MatrixBase<StateTangentVector> &dx)
             {
-                return derived().integrate_x(x.derived(), dx.derived());
+                return this->derived().integrate_x(x.derived(), dx.derived());
             }
 
             /**
@@ -245,10 +246,10 @@ namespace galileo
              */
             template <typename StateVector1, typename StateVector2>
             std::vector<MatrixNdx_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
-                                                           const Eigen::MatrixBase<StateVector2> &x1,
-                                                           const Jcomponent firstsecond = both)
+                                              const Eigen::MatrixBase<StateVector2> &x1,
+                                              const Jcomponent firstsecond = both)
             {
-                return derived().Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
+                return this->derived().Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
             }
 
             /**
@@ -260,34 +261,62 @@ namespace galileo
              */
             template <typename StateVector, typename StateTangentVector>
             std::vector<MatrixNdx_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
-                                                                const Eigen::MatrixBase<StateTangentVector> &dx,
-                                                                const Jcomponent firstsecond = both)
+                                                   const Eigen::MatrixBase<StateTangentVector> &dx,
+                                                   const Jcomponent firstsecond = both)
             {
-                return derived().Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
+                return this->derived().Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
             }
 
             /**
-             * @brief Return the dimension of the state tuple
+             * @brief Return the dimension of the state
              */
-            std::size_t get_nx() const
+            int get_nx() const
             {
-                return derived().get_nx();
+                return this->derived().get_nx_impl();
             }
 
-            /**
-             * @brief Return the dimension of the control tuple
-             */
-            std::size_t get_nu() const
+            int get_nx_impl() const
             {
-                return derived().get_nu();
+                return BS::NX;
             }
 
             /**
              * @brief Return the dimension of the tangent space of the state manifold
              */
-            std::size_t get_ndx() const
+            int get_ndx() const
             {
-                return derived().get_ndx();
+                return this->derived().get_ndx_impl();
+            }
+
+            int get_ndx_impl() const
+            {
+                return BS::NDX;
+            }
+
+            /**
+             * @brief Return the dimension of the configuration space of the state
+             */
+            int get_nq() const
+            {
+                return this->derived().get_nq_impl();
+            }
+
+            int get_nq_impl() const
+            {
+                return BS::NQ;
+            }
+
+            /**
+             * @brief Return the dimension of the velocity space of the state
+             */
+            int get_nv() const
+            {
+                return this->derived().get_nv_impl();
+            }
+
+            int get_nv_impl() const
+            {
+                return BS::NV;
             }
 
             /**
@@ -295,7 +324,7 @@ namespace galileo
              */
             const VectorNx_t &get_lb() const
             {
-                return derived().get_lb();
+                return this->derived().get_lb();
             }
 
             /**
@@ -303,7 +332,7 @@ namespace galileo
              */
             const VectorNx_t &get_ub() const
             {
-                return derived().get_ub();
+                return this->derived().get_ub();
             }
 
             /**
@@ -312,7 +341,7 @@ namespace galileo
             template <typename StateVector>
             void set_lb(const Eigen::MatrixBase<StateVector> &lb)
             {
-                derived().set_lb(lb.derived());
+                this->derived().set_lb(lb.derived());
             }
 
             /**
@@ -321,7 +350,7 @@ namespace galileo
             template <typename StateVector>
             void set_ub(const Eigen::MatrixBase<StateVector> &ub)
             {
-                derived().set_ub(ub.derived());
+                this->derived().set_ub(ub.derived());
             }
 
         protected:

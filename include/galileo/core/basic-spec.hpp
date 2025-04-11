@@ -4,13 +4,13 @@
 #include "galileo/core/fwd.hpp"
 
 // Macros to import the types and constants from a basic spec
-#define GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec)               \
-    using RobotModel_t = typename BasicSpec::RobotModel_t;       \
-    using RobotData_t = typename BasicSpec::RobotData_t;         \
-    using State_t = typename BasicSpec::State_t;                 \
-    using ActuationMeta_t = typename BasicSpec::ActuationMeta_t; \
-    using ActuationModel_t = typename ActuationMeta_t::Model;    \
-    using ActuationData_t = typename ActuationMeta_t::Data;
+#define GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec)                 \
+    using RobotModel_t = typename BasicSpec::RobotModel_t;         \
+    using RobotData_t = typename BasicSpec::RobotData_t;           \
+    using State_t = typename BasicSpec::State_t;                   \
+    using ActuationMeta_t = typename BasicSpec::ActuationMeta_t;   \
+    using ActuationModel_t = typename BasicSpec::ActuationModel_t; \
+    using ActuationData_t = typename BasicSpec::ActuationData_t;
 
 #define GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec) \
     using VarScalar = typename BasicSpec::VarScalar;  \
@@ -30,20 +30,20 @@
     static constexpr int NUa = BasicSpec::NUa;
 
 #define GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(BasicSpec) \
-    using VectorNqb_t = BasicSpec::VectorNqb_t;           \
-    using VectorNqj_t = BasicSpec::VectorNqj_t;           \
-    using VectorNvb_t = BasicSpec::VectorNvb_t;           \
-    using VectorNvj_t = BasicSpec::VectorNvj_t;           \
-    using VectorNx_t = BasicSpec::VectorNx_t;             \
-    using VectorNua_t = BasicSpec::VectorNua_t;           \
-    using VectorNdx_t = BasicSpec::VectorNdx_t;           \
-    using VectorNq_t = BasicSpec::VectorNq_t;             \
-    using VectorNv_t = BasicSpec::VectorNv_t;             \
-    using MatrixNx_t = BasicSpec::MatrixNx_t;             \
-    using MatrixNua_t = BasicSpec::MatrixNua_t;           \
-    using MatrixNdx_t = BasicSpec::MatrixNdx_t;           \
-    using MatrixNq_t = BasicSpec::MatrixNq_t;             \
-    using MatrixNv_t = BasicSpec::MatrixNv_t;
+    using VectorNqb_t = typename BasicSpec::VectorNqb_t;  \
+    using VectorNqj_t = typename BasicSpec::VectorNqj_t;  \
+    using VectorNvb_t = typename BasicSpec::VectorNvb_t;  \
+    using VectorNvj_t = typename BasicSpec::VectorNvj_t;  \
+    using VectorNx_t = typename BasicSpec::VectorNx_t;    \
+    using VectorNua_t = typename BasicSpec::VectorNua_t;  \
+    using VectorNdx_t = typename BasicSpec::VectorNdx_t;  \
+    using VectorNq_t = typename BasicSpec::VectorNq_t;    \
+    using VectorNv_t = typename BasicSpec::VectorNv_t;    \
+    using MatrixNx_t = typename BasicSpec::MatrixNx_t;    \
+    using MatrixNua_t = typename BasicSpec::MatrixNua_t;  \
+    using MatrixNdx_t = typename BasicSpec::MatrixNdx_t;  \
+    using MatrixNq_t = typename BasicSpec::MatrixNq_t;    \
+    using MatrixNv_t = typename BasicSpec::MatrixNv_t;
 
 #define GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BasicSpec) \
     GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec);      \
@@ -127,8 +127,8 @@ namespace galileo
             using State_t = StateTpl<BasicSpec>;
 
             using ActuationMeta_t = ActuationTpl<BasicSpec>;
-            using ActuationModel_t = typename ActuationMeta_t::Model;
-            using ActuationData_t = typename ActuationMeta_t::Data;
+            using ActuationModel_t = typename traits<ActuationMeta_t>::Model_t;
+            using ActuationData_t = typename traits<ActuationMeta_t>::Data_t;
         };
 
     } // namespace core

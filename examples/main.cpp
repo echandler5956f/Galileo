@@ -1,49 +1,87 @@
-// #include <galileo/galileo.h>
+#include <pinocchio/fwd.hpp>
+#include <pinocchio/multibody/model.hpp>
+#include <pinocchio/parsers/urdf.hpp>
 
 #include <galileo/fwd.hpp>
-#include <galileo/core/states/multibody.hpp>
-#include <galileo/core/actuations/floating-base.hpp>
 #include <galileo/core/basic-spec.hpp>
+
+#include <galileo/core/states/state-base.hpp>
+#include <galileo/core/states/multibody.hpp>
+
+#include <galileo/core/actuations/actuation-base.hpp>
+#include <galileo/core/actuations/floating-base.hpp>
+
 #include <galileo/predictive/phases/phase-spec.hpp>
 
-#include <pinocchio/multibody/model.hpp>
+#include <iostream>
+
 
 using namespace galileo::core;
-using namespace galileo::predictive;
+// using namespace galileo::predictive;
+
+template <typename BS>
+using StateTpl = StateMultibodyTpl<BS>;
+
+template <typename BS>
+using ActuationTpl = ActuationFloatingBaseTpl<BS>;
+
+constexpr int NQb = 7;
+constexpr int NQj = 12;
+constexpr int NVb = 6;
+constexpr int NVj = 12;
+constexpr int NRotors = 0;
+
+using VarScalar = double;
+using NumScalar = double;
+constexpr int Options = Eigen::ColMajor;
 
 // These template classes basically create a code generator for the optimal control problem by means of mixins
-using BasicSpec = BasicSpecTpl<double, double, Eigen::RowMajor, 7, 12, 6, 12, 0, StateMultibodyTpl, ActuationFloatingBaseTpl>;
+using BasicSpec = BasicSpecTpl<VarScalar, NumScalar, Options, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
 
-using ConstraintManagerTpl = ConstraintManagerDefaultTpl;
-using CostManagerTpl = CostManagerDefaultTpl;
-using ContactManagerTpl = ContactManagerDefaultTpl;
+// using ConstraintManagerTpl = ConstraintManagerDefaultTpl;
+// using CostManagerTpl = CostManagerDefaultTpl;
+// using ContactManagerTpl = ContactManagerDefaultTpl;
 
-using NodeTpl = NodeContactFwdDynTpl<ContactManagerTpl>;
+// template <typename PS>
+// using NodeTpl = NodeContactFwdDynTpl<PS, ContactManagerTpl>;
 
-static constexpr int NOrder = 2;
-using ControlParamTpl = ControlParamJacobiPolynomialTpl<NOrder>;
+// static constexpr int NOrder = 2;
+// template <typename PS>
+// using ControlParamTpl = ControlParamJacobiPolynomialTpl<PS, NOrder>;
 
-using SegmentTpl = SegmentERKEulerTpl;
+// template <typename PS>
+// using SegmentTpl = SegmentERKEulerTpl<PS>;
 
-using ImpulseManagerTpl = ImpulseManagerDefaultTpl;
+// using ImpulseManagerTpl = ImpulseManagerDefaultTpl;
 
-using PhaseTpl = PhaseWithImpulsePolicyTpl<ImpulseManagerTpl>;
+// template <typename PS>
+// using PhaseTpl = PhaseWithImpulsePolicyTpl<PS, ImpulseManagerTpl>;
 
-using PhaseSpec = PhaseSpecTpl<BasicSpec, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
+// using PhaseSpec = PhaseSpecTpl<BasicSpec, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
 
-using Phase1 = PhaseTpl<PhaseSpec>;
-using Phase2 = PhaseTpl<PhaseSpec>;
+// using Phase1 = PhaseTpl<PhaseSpec>;
+// using Phase2 = PhaseTpl<PhaseSpec>;
 
-using PhaseCollection_t = PhaseCollectionTpl<Phase1, Phase2>;
+// using PhaseCollection_t = PhaseCollectionTpl<Phase1, Phase2>;
 
-using Trajectory_t = TrajectoryTpl<PhaseCollection_t>;
+// using Trajectory_t = TrajectoryTpl<PhaseCollection_t>;
 
-using OCP_t = OCPTpl<Trajectory_t>;
+// using OCP_t = OCPTpl<Trajectory_t>;
 
-using Solver_t = SolverDDPTpl<OCP_t>;
+// using Solver_t = SolverDDPTpl<OCP_t>;
 
 int main(int argc, char *argv[])
 {
+    std::string urdf_path = "/home/quant/Galileo/resources/go1/urdf/go1.urdf";
+    pinocchio::ModelTpl<VarScalar, Options> model = pinocchio::ModelTpl<VarScalar, Options> ();
+    pinocchio::urdf::buildModel(urdf_path, pinocchio::JointModelFreeFlyerTpl<VarScalar, Options>(), model);
+
+    StateTpl<BasicSpec> state(&model);
+
+    // Test the state
+    std::cout << "state.zero() = " << state.zero() << std::endl;
+    std::cout << "state.rand() = " << state.rand() << std::endl;
+
     // Create a quadruped walking problem
     // 1. Define the phase specs
     // 2. Define the phase collection

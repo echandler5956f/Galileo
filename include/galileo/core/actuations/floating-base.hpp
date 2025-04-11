@@ -1,10 +1,36 @@
-#ifndef __galileo_core_actuations_floating - base_hpp__
-#define __galileo_core_actuations_floating -base_hpp__
+#ifndef __galileo_core_actuations_floating_base_hpp__
+#define __galileo_core_actuations_floating_base_hpp__
 
-#include "galileo/core/actuations/actuation-model-base.hpp"
+#include "galileo/core/actuations/actuation-base.hpp"
 
 namespace galileo
 {
+
+    namespace core
+    {
+        template <typename BasicSpec>
+        class ActuationFloatingBaseTpl;
+    }
+
+    template <typename BasicSpec>
+    struct traits<core::ActuationFloatingBaseTpl<BasicSpec>>
+    {
+        using BS = BasicSpec;
+
+        using Meta_t = core::ActuationFloatingBaseTpl<BS>;
+        using Data_t = core::ActuationDataTpl<BS>;
+        using Model_t = core::ActuationModelFloatingBaseTpl<BS>;
+    };
+
+    template <typename BasicSpec>
+    struct traits<core::ActuationModelFloatingBaseTpl<BasicSpec>>
+    {
+        using BS = BasicSpec;
+
+        using Meta_t = core::ActuationFloatingBaseTpl<BS>;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+    };
 
     namespace core
     {
@@ -55,4 +81,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_actuations_floating-base_hpp__
+#endif // __galileo_core_actuations_floating_base_hpp__
