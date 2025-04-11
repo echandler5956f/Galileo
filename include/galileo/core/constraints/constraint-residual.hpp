@@ -112,7 +112,9 @@ namespace galileo
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             using PS = PhaseSpec;
+
             static constexpr ConstraintType EqualityInequality = EqualityInequality_;
+            
             using ConstraintMeta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
             using ConstraintData_t = typename traits<ConstraintMeta_t>::ConstraintDataDerived;
             using ConstraintModel_t = typename traits<ConstraintMeta_t>::ConstraintModelDerived;

@@ -18,6 +18,7 @@ namespace galileo
         struct traits<ActivationQuadraticTpl<PhaseSpec, ResidualTpl>>
         {
             using PS = PhaseSpec;
+
             using ResidualMeta = traits<ResidualTpl<PS>>;
             using ResidualModel_t = typename traits<ResidualMeta>::ResidualModel_t;
             using ResidualData_t = typename traits<ResidualMeta>::ResidualData_t;
@@ -30,6 +31,7 @@ namespace galileo
             using A_t = PS::VarScalar;
             using Ar_t = Eigen::Matrix<typename PS::VarScalar, NR, 1, PS::Options>;
             using Arr_t = Eigen::Matrix<typename PS::VarScalar, NR, NR, PS::Options>;
+            using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, NR>;
         };
 
         template <typename PhaseSpec,
@@ -37,7 +39,10 @@ namespace galileo
         struct traits<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>>
         {
             using PS = PhaseSpec;
+
             using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
+            using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
+            using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
         };
 
         template <typename PhaseSpec,
@@ -45,7 +50,10 @@ namespace galileo
         struct traits<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>>
         {
             using PS = PhaseSpec;
+
             using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
+            using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
+            using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
         };
 
         template <typename PhaseSpec,
@@ -64,6 +72,11 @@ namespace galileo
             DEFAULT_ACCESSOR(Ar_t, Ar);
             DEFAULT_ACCESSOR(Arr_t, Arr);
 
+            ActivationDataQuadraticTpl() : A(typename PS::VarScalar(0.)), Ar(Ar_t::Zero()), Arr(Arr_diag_t())
+            {
+                Arr.setZero();
+            }
+
             A_t A;
             Ar_t Ar;
             Arr_t Arr;
@@ -78,6 +91,7 @@ namespace galileo
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             using PS = PhaseSpec;
+
             using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
             using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
             using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
@@ -93,6 +107,13 @@ namespace galileo
             {
                 data.Ar() = r;
                 // The Hessian has constant values which were set in createData.
+            }
+
+            ActivationDataDerived createData() const
+            {
+                ActivationDataDerived data = ActivationDataDerived();
+                data.Arr.diagonal().setOnes();
+                return data;
             }
 
         }; // class ActivationModelQuadraticTpl

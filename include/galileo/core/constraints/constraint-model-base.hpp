@@ -53,7 +53,7 @@ namespace galileo
             }
 
             template <typename DataCollector>
-            auto createData(DataCollector *const collector)
+            ConstraintDataDerived createData(DataCollector *const collector)
             {
                 return derived().createData(collector);
             }

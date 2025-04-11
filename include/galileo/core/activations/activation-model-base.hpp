@@ -34,6 +34,12 @@ namespace galileo
                 derived().calcDiff(data, r.derived());
             }
 
+            template <typename DataCollector>
+            ActivationDataDerived createData(DataCollector *const collector)
+            {
+                return derived().createData(collector);
+            }
+
             int nr() const
             {
                 return derived().nr_impl();
