@@ -37,8 +37,14 @@ namespace galileo
 
         using BS = BasicSpec;
 
+        using ActuationDerived = ActuationFloatingBaseTpl<BS>;
+        using ActuationDataDerived = typename traits<ActuationDerived>::ActuationDataDerived;
+        using ActuationModelDerived = typename traits<ActuationDerived>::ActuationModelDerived;
+
+        ActuationModelFloatingBaseTpl() {}
+
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(typename BS::ActuationData_t &data,
+        void calc(ActuationDataDerived &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -46,7 +52,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(typename BS::ActuationData_t &data,
+        void calcDiff(ActuationDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -54,7 +60,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename TauVectorType>
-        void commands(typename BS::ActuationData_t &data,
+        void commands(ActuationDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
@@ -62,11 +68,23 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void torqueTransform(typename BS::ActuationData_t &data,
+        void torqueTransform(ActuationDataDerived &data,
                              const Eigen::MatrixBase<StateVectorType> &x,
                              const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             // has constant values which are set in createData
+        }
+
+        ActuationDataDerived createData() const
+        {
+            ActuationDataDerived data = ActuationDataDerived();
+            data.dtau_du.diagonal(-BS::NVb).setOnes();
+            data.Mtau.diagonal(BS::NVb).setOnes();
+            for (std::size_t i = 0; i < BS::NVb; ++i)
+            {
+                data.tau_set[i] = false;
+            }
+            return data;
         }
 
     }; // class ActuationModelFloatingBaseTpl

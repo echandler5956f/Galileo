@@ -1,7 +1,7 @@
 #ifndef __galileo_core_actuations_fwd_hpp__
 #define __galileo_core_actuations_fwd_hpp__
 
-#include "galileo/core/fwd.hpp"
+#include "galileo/fwd.hpp"
 
 namespace galileo
 {

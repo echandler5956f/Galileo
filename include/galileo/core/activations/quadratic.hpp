@@ -93,6 +93,8 @@ namespace galileo
         using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
         using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
 
+        explicit ActivationModelQuadraticTpl(const int nr) : nr_(nr) {}
+
         template <typename ResidualVectorType>
         void calc(ActivationDataDerived &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
@@ -112,6 +114,14 @@ namespace galileo
             data.Arr.diagonal().setOnes();
             return data;
         }
+
+        int nr_impl() const
+        {
+            return nr_;
+        }
+
+    protected:
+        int nr_;
 
     }; // class ActivationModelQuadraticTpl
 

@@ -14,6 +14,10 @@ namespace galileo
 
         using BS = BasicSpec;
 
+        using ActuationDerived = typename traits<Derived>::ActuationDerived;
+        using ActuationDataDerived = typename traits<ActuationDerived>::ActuationDataDerived;
+        using ActuationModelDerived = typename traits<ActuationDerived>::ActuationModelDerived;
+
         template <typename StateVectorType, typename ControlVectorType>
         void calc(typename BS::ActuationData_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -22,12 +26,26 @@ namespace galileo
             this->derived().calc(data, x.derived(), u.derived());
         }
 
+        template <typename StateVectorType>
+        void calc(typename BS::ActuationData_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            // Nothing happens
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calcDiff(typename BS::ActuationData_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             this->derived().calcDiff(data, x.derived(), u.derived());
+        }
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calcDiff(typename BS::ActuationData_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            // Nothing happens
         }
 
         template <typename StateVectorType, typename TauVectorType>
@@ -44,6 +62,22 @@ namespace galileo
                              const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             this->derived().torqueTransform(data, x.derived(), u.derived());
+        }
+
+        template <typename DataCollector>
+        ActuationDataDerived createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
+        }
+
+        int nua() const
+        {
+            return this->derived().nua_impl();
+        }
+
+        int nua_impl() const
+        {
+            return BS::NUa;
         }
 
     protected:
