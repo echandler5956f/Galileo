@@ -7,44 +7,60 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec>
-    struct ControlParamDataJacobiPolynomialTpl : public ControlParamDataBase<ControlParamDataJacobiPolynomialTpl<PhaseSpec>, PhaseSpec>
+    template <typename PhaseSpec, int NOrder_>
+    struct ControlParamJacobiPolynomialTpl;
+
+    template <typename PhaseSpec, int NOrder_>
+    struct traits<ControlParamJacobiPolynomialTpl<PhaseSpec, NOrder_>>
+    {
+        using PS = PhaseSpec;
+
+        using Meta_t = ControlParamJacobiPolynomialTpl<PS, NOrder_>;
+        using Model_t = ControlParamModelJacobiPolynomialTpl<PS, NOrder_>;
+        using Data_t = ControlParamDataTpl<PS>;
+
+        static constexpr int NOrder = NOrder_;
+        static constexpr int NW = PS::NU * NOrder;
+    };
+
+    template <typename PhaseSpec, int NOrder_>
+    struct traits<ControlParamModelJacobiPolynomialTpl<PhaseSpec, NOrder_>>
+    {
+        using PS = PhaseSpec;
+
+        using Meta_t = ControlParamJacobiPolynomialTpl<PS, NOrder_>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+    };
+
+    template <typename PhaseSpec, int NOrder_>
+    class ControlParamModelJacobiPolynomialTpl : public ControlParamModelBase<ControlParamModelJacobiPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        typename PS::U_t u;
-        typename PS::W_t w;
-        typename PS::Uw_t du_dw;
-
-    }; // struct ControlParamDataJacobiPolynomialTpl
-
-    template <typename PhaseSpec>
-    class ControlParamModelJacobiPolynomialTpl : public ControlParamModelBase<ControlParamModelJacobiPolynomialTpl<PhaseSpec>, PhaseSpec>
-    {
-    public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-        using PS = PhaseSpec;
+        using Meta_t = ControlParamJacobiPolynomialTpl<PS, NOrder_>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename ControlParamVectorType>
-        void calc(typename PS::ControlParamData_t &data, const typename PS::NumScalar &t,
+        void calc(Data_t &data, const typename PS::NumScalar &t,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             jacobi_polynomial_.barycentricInterpolation(t, w.reshaped(PS::NU, PS::NOrder), data.u.derived());
         }
 
         template <typename ControlParamVectorType>
-        void calcDiff(typename PS::ControlParamData_t &data, const typename PS::NumScalar &t,
+        void calcDiff(Data_t &data, const typename PS::NumScalar &t,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             jacobi_polynomial_.barycentricInterpolationDiff(t, w.reshaped(PS::NU, PS::NOrder), data.du_dw.derived());
         }
 
         template <typename ControlVectorType>
-        void params(typename PS::ControlParamData_t &data, const typename PS::NumScalar &t,
+        void params(Data_t &data, const typename PS::NumScalar &t,
                     const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             for (std::size_t i = 0; i < PS::NOrder; ++i)
@@ -68,7 +84,7 @@ namespace galileo
 
         template <typename InputMatrixType, typename OutputMatrixType>
         void multiplyByJacobian(
-            typename PS::ControlParamData_t &data,
+            Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const
@@ -100,7 +116,7 @@ namespace galileo
 
         template <typename InputMatrixType, typename OutputMatrixType>
         void multiplyJacobianTransposeBy(
-            typename PS::ControlParamData_t &data,
+            Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const

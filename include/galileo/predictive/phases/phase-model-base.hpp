@@ -15,12 +15,12 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using PhaseDerived = typename traits<Derived>::PhaseDerived;
-        using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
-        using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
-        void calc(PhaseDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateMatrixType> &xs,
                   const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
@@ -28,7 +28,7 @@ namespace galileo
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
-        void calcDiff(PhaseDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateMatrixType> &xs,
                       const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
@@ -36,11 +36,17 @@ namespace galileo
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
-        void quasiStatic(PhaseDataDerived &data, const Eigen::MatrixBase<StateMatrixType> &xs,
+        void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
                          const std::size_t maxiter, const typename PS::NumScalar &tol) const
         {
             this->derived().quasiStatic(data, xs.derived(), ws.derived(), maxiter, tol);
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
         }
 
         const typename PS::SegmentModel_t &segment() const

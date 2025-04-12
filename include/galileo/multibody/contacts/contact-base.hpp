@@ -15,35 +15,46 @@ namespace galileo
     template <typename Derived, typename PhaseSpec>
     struct ContactBaseTpl;
 
+    template <typename Derived, typename PhaseSpec>
+    struct ContactDataBase;
+
+    template <typename Derived, typename PhaseSpec>
+    struct ContactModelBase;
+
     // We are basically forward propogating the responsibility of filling the traits
     // to the derived CRTP class, because ContactDataBase/ContactModelBase are CRTP base classes
     template <typename Derived, typename PhaseSpec>
     struct traits<ContactBaseTpl<Derived, PhaseSpec>>
     {
         using PS = PhaseSpec;
-        using ContactBase = ContactBaseTpl<Derived, PS>;
-        using ForceDerived = ContactBase;
-        using ContactDerived = Derived;
+
+        using Meta_t = ContactBaseTpl<Derived, PS>;
+        using Data_t = ContactDataBase<Derived, PS>;
+        using Model_t = ContactModelBase<Derived, PS>;
 
         // Retrieve the traits of the derived class
-        GALILEO_FORCE_DATA_TYPEDEF(ContactDerived);
-        GALILEO_CONTACT_DATA_TYPEDEF(ContactDerived);
+        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
     };
 
     template <typename Derived, typename PhaseSpec>
     struct traits<ContactDataBase<Derived, PhaseSpec>>
     {
         using PS = PhaseSpec;
-        using ContactBase = ContactBaseTpl<Derived, PS>;
-        using ContactDerived = typename traits<ContactBase>::ContactDerived;
+
+        using Meta_t = ContactBaseTpl<Derived, PS>;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
     };
 
     template <typename Derived, typename PhaseSpec>
     struct traits<ContactModelBase<Derived, PhaseSpec>>
     {
         using PS = PhaseSpec;
-        using ContactBase = ContactBaseTpl<Derived, PS>;
-        using ContactDerived = typename traits<ContactBase>::ContactDerived;
+
+        using Meta_t = ContactBaseTpl<Derived, PS>;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
     };
 
     template <typename Derived, typename PhaseSpec>
@@ -53,11 +64,13 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
-        using ContactBase = typename traits<ContactBaseTpl<Derived, PS>>::ContactBase;
-        using ForceDerived = typename traits<ContactBase>::ForceDerived;
 
-        GALILEO_FORCE_DATA_TYPEDEF(ForceDerived);
-        GALILEO_CONTACT_DATA_TYPEDEF(ContactBase);
+        using Meta_t = ContactBaseTpl<Derived, PS>;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+
+        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
         FORWARD_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
         FORWARD_ACCESSOR(Index_t, frame);
@@ -100,47 +113,47 @@ namespace galileo
         using PS = PhaseSpec;
 
         // ContactModelBase is one level up in the hierarchy from ContactDataBase
-        using ContactDerived = typename traits<Derived>::ContactDerived;
-        using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
-        using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
+        using Meta_t = ContactBaseTpl<Derived, PS>;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
 
-        using Index_t = typename traits<ContactDerived>::Index_t;
+        using Index_t = typename traits<Meta_t>::Index_t;
 
         template <typename StateVectorType>
-        void calc(ContactDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x)
         {
             this->derived().calc(data, x.derived());
         }
 
         template <typename StateVectorType>
-        void calcDiff(ContactDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x)
         {
             this->derived().calcDiff(data, x.derived());
         }
 
         template <typename ForceVectorType>
-        void updateForce(ContactDataDerived &data,
+        void updateForce(Data_t &data,
                          const Eigen::MatrixBase<ForceVectorType> &force)
         {
             this->derived().updateForce(data, force.derived());
         }
 
         template <typename MatrixNcNdxType, typename MatrixNcNuType>
-        void updateForceDiff(ContactDataDerived &data,
+        void updateForceDiff(Data_t &data,
                              const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
                              const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
         {
             this->derived().updateForceDiff(data, df_dx.derived(), df_du.derived());
         }
 
-        void setZeroForce(ContactDataDerived &data) const
+        void setZeroForce(Data_t &data) const
         {
             this->derived().setZeroForce(data);
         }
 
-        void setZeroForceDiff(ContactDataDerived &data) const
+        void setZeroForceDiff(Data_t &data) const
         {
             this->derived().setZeroForceDiff(data);
         }
@@ -152,7 +165,7 @@ namespace galileo
 
         int nc_impl() const
         {
-            return traits<Derived>::NC;
+            return traits<Meta_t>::NC;
         }
 
         Index_t id() const

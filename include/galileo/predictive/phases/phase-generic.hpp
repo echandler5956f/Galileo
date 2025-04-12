@@ -22,14 +22,11 @@ namespace galileo
     struct traits<PhaseTpl<PhaseSpec, PhaseCollectionTpl>>
     {
         using PS = PhaseSpec;
-        using PhaseCollection = PhaseCollectionTpl<PS>;
 
-        using PhaseDataDerived = PhaseDataTpl<PS, PhaseCollectionTpl>;
-        using PhaseModelDerived = PhaseModelTpl<PS, PhaseCollectionTpl>;
-
-        using SegmentData_t = typename PS::SegmentData_t;
-        using SegmentDataVector_t = typename PS::SegmentDataVector_t;
-        using SegmentModel_t = typename PS::SegmentModel_t;
+        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Collection_t = PhaseCollectionTpl<PS>;
+        using Model_t = PhaseModelTpl<PS, PhaseCollectionTpl>;
+        using Data_t = PhaseDataTpl<PS, PhaseCollectionTpl>;
     };
 
     template <typename PhaseSpec,
@@ -37,9 +34,11 @@ namespace galileo
     struct traits<PhaseDataTpl<PhaseSpec, PhaseCollectionTpl>>
     {
         using PS = PhaseSpec;
-        using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
-        using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
-        using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+
+        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
@@ -47,36 +46,38 @@ namespace galileo
     struct traits<PhaseModelTpl<PhaseSpec, PhaseCollectionTpl>>
     {
         using PS = PhaseSpec;
-        using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
-        using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
-        using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+
+        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class PhaseCollectionTpl>
     struct PhaseDataTpl : public PhaseDataBase<PhaseDataTpl<PhaseSpec, PhaseCollectionTpl>, PhaseSpec>,
-                          PhaseCollectionTpl<PhaseSpec>::PhaseDataVariant
+                          PhaseCollectionTpl<PhaseSpec>::DataVariant_t
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
-        using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
-        using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
+        using SegmentDataVector_t = typename PS::SegmentDataVector_t;
 
-        using PhaseCollection = PhaseCollectionTpl<PS>;
-        using PhaseDataVariant = typename PhaseCollection::PhaseDataVariant;
+        using DataVariant_t = typename Collection_t::DataVariant_t;
 
-        PhaseDataVariant &toVariant()
+        DataVariant_t &toVariant()
         {
-            return *static_cast<PhaseDataVariant *>(this);
+            return *static_cast<DataVariant_t *>(this);
         }
-        const PhaseDataVariant &toVariant() const
+        const DataVariant_t &toVariant() const
         {
-            return *static_cast<const PhaseDataVariant *>(this);
+            return *static_cast<const DataVariant_t *>(this);
         }
 
         SegmentDataVector_t &segments()
@@ -85,20 +86,20 @@ namespace galileo
         }
 
         PhaseDataTpl()
-            : PhaseDataVariant()
+            : DataVariant_t()
         {
         }
 
-        PhaseDataTpl(const PhaseDataVariant &phase_data_variant)
-            : PhaseDataVariant(phase_data_variant)
+        PhaseDataTpl(const DataVariant_t &data_variant)
+            : DataVariant_t(data_variant)
         {
         }
 
-        template <typename PhaseDataDerived>
-        PhaseDataTpl(const PhaseDataBase<PhaseDataDerived, PhaseSpec> &phase_data)
-            : PhaseCollection::PhaseDataVariant((PhaseDataVariant)phase_data.derived())
+        template <typename DataDerived>
+        PhaseDataTpl(const PhaseDataBase<DataDerived, PhaseSpec> &data)
+            : Collection_t::DataVariant_t((DataVariant_t)data.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename PhaseDataVariant::types, PhaseDataDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
 
         GENERIC_ACCESSOR(SegmentDataVector_t, segments);
@@ -108,48 +109,48 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class PhaseCollectionTpl>
     struct PhaseModelTpl : public PhaseModelBase<PhaseModelTpl<PhaseSpec, PhaseCollectionTpl>, PhaseSpec>,
-                           PhaseCollectionTpl<PhaseSpec>::PhaseModelVariant
+                           PhaseCollectionTpl<PhaseSpec>::ModelVariant_t
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
-        using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
-        using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
+        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using PhaseCollection = PhaseCollectionTpl<PS>;
-        using PhaseModelVariant = typename PhaseCollection::PhaseModelVariant;
+        using ModelVariant_t = typename Collection_t::ModelVariant_t;
 
         PhaseModelTpl()
             : PhaseModelVariant()
         {
         }
 
-        PhaseModelTpl(const PhaseModelVariant &phase_model_variant)
-            : PhaseModelVariant(phase_model_variant)
+        PhaseModelTpl(const ModelVariant_t &model_variant)
+            : ModelVariant_t(model_variant)
         {
         }
 
         template <typename PhaseModelDerived>
-        PhaseModelTpl(const PhaseModelBase<PhaseModelDerived, PhaseSpec> &phase_model)
-            : PhaseCollection::PhaseModelVariant((PhaseModelVariant)phase_model.derived())
+        PhaseModelTpl(const PhaseModelBase<ModelDerived, PhaseSpec> &model)
+            : Collection_t::ModelVariant_t((ModelVariant_t)model.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename PhaseModelVariant::types, PhaseModelDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
         }
 
-        PhaseModelVariant &toVariant()
+        ModelVariant_t &toVariant()
         {
-            return *static_cast<PhaseModelVariant *>(this);
+            return *static_cast<ModelVariant_t *>(this);
         }
 
-        const PhaseModelVariant &toVariant() const
+        const ModelVariant_t &toVariant() const
         {
-            return *static_cast<const PhaseModelVariant *>(this);
+            return *static_cast<const ModelVariant_t *>(this);
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
-        void calc(PhaseDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateMatrixType> &xs,
                   const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
@@ -157,7 +158,7 @@ namespace galileo
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
-        void calcDiff(PhaseDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateMatrixType> &xs,
                       const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
@@ -165,7 +166,7 @@ namespace galileo
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
-        void quasiStatic(PhaseDataDerived &data,
+        void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
                          const std::size_t maxiter,
@@ -175,7 +176,7 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        auto createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector)
         {
             return galileo::phase_create_data(*this, collector);
         }

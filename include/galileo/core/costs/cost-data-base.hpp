@@ -3,6 +3,8 @@
 
 #include "galileo/core/costs/cost-base.hpp"
 
+// We use traits rather than PhaseSpec,
+// because each cost model has its own residual
 #define GALILEO_COST_DATA_TYPEDEF(Cost)         \
     using L_t = typename traits<Cost>::L_t;     \
     using Lx_t = typename traits<Cost>::Lx_t;   \
@@ -22,11 +24,11 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using CostDerived = typename traits<Derived>::CostDerived;
-        using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
-        using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_COST_DATA_TYPEDEF(CostDerived);
+        GALILEO_COST_DATA_TYPEDEF(Meta_t);
 
         FORWARD_ACCESSOR(L_t, L);
         FORWARD_ACCESSOR(Lx_t, Lx);

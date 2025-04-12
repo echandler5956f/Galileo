@@ -13,17 +13,16 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ContactModelVariant = boost::variant<ContactModelVoid>; // TODO: add contact models
-
-        using ContactDataVariant = boost::variant<ContactDataVoid>; // TODO: add contact data
+        using ModelVariant_t = boost::variant<ContactModelVoid>; // TODO: add contact models
+        using DataVariant_t = boost::variant<ContactDataVoid>; // TODO: add contact data
 
     }; // struct ContactCollectionDefaultTpl
 
     template <typename PhaseSpec>
-    using ContactModelVariantTpl = ContactCollectionDefaultTpl<PhaseSpec>::ContactModelVariant;
+    using ContactModelVariantTpl = ContactCollectionDefaultTpl<PhaseSpec>::ModelVariant_t;
 
     template <typename PhaseSpec>
-    using ContactDataVariantTpl = ContactCollectionDefaultTpl<PhaseSpec>::ContactDataVariant;
+    using ContactDataVariantTpl = ContactCollectionDefaultTpl<PhaseSpec>::DataVariant_t;
 
 } // namespace galileo
 

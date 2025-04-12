@@ -15,8 +15,8 @@ namespace galileo
         using BS = BasicSpec;
 
         using Meta_t = ActuationFloatingBaseTpl<BS>;
-        using Data_t = ActuationDataTpl<BS>;
         using Model_t = ActuationModelFloatingBaseTpl<BS>;
+        using Data_t = ActuationDataTpl<BS>;
     };
 
     template <typename BasicSpec>
@@ -25,8 +25,8 @@ namespace galileo
         using BS = BasicSpec;
 
         using Meta_t = ActuationFloatingBaseTpl<BS>;
-        using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename BasicSpec>
@@ -37,14 +37,14 @@ namespace galileo
 
         using BS = BasicSpec;
 
-        using ActuationDerived = ActuationFloatingBaseTpl<BS>;
-        using ActuationDataDerived = typename traits<ActuationDerived>::ActuationDataDerived;
-        using ActuationModelDerived = typename traits<ActuationDerived>::ActuationModelDerived;
+        using Meta_t = typename BS::ActuationMeta_t;
+        using Model_t = typename BS::ActuationModel_t;
+        using Data_t = typename BS::ActuationData_t;
 
         ActuationModelFloatingBaseTpl() {}
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(ActuationDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -52,7 +52,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(ActuationDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -60,7 +60,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename TauVectorType>
-        void commands(ActuationDataDerived &data,
+        void commands(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
@@ -68,16 +68,16 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void torqueTransform(ActuationDataDerived &data,
+        void torqueTransform(Data_t &data,
                              const Eigen::MatrixBase<StateVectorType> &x,
                              const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             // has constant values which are set in createData
         }
 
-        ActuationDataDerived createData() const
+        Data_t createData() const
         {
-            ActuationDataDerived data = ActuationDataDerived();
+            Data_t data = Data_t();
             data.dtau_du.diagonal(-BS::NVb).setOnes();
             data.Mtau.diagonal(BS::NVb).setOnes();
             for (std::size_t i = 0; i < BS::NVb; ++i)

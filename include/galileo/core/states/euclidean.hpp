@@ -110,7 +110,7 @@ namespace galileo
                                  Eigen::MatrixBase<JMatrix> &Jin,
                                  const Jcomponent firstsecond) const
         {
-            // todo: not implemented
+            // Nothing to do
         }
 
     }; // class StateEuclideanTpl

@@ -39,6 +39,14 @@ namespace galileo
             template <typename PS> class CostCollectionTpl>
         struct CostDataTpl;
 
+    template <typename PhaseSpec,
+              template <typename PS> class CostCollectionTpl>
+    class CostModelManagerTpl;
+
+    template <typename PhaseSpec,
+              template <typename PS> class CostCollectionTpl>
+    class CostDataManagerTpl;
+
 } // namespace galileo
 
 #endif // __galileo_core_costs_fwd_hpp__

@@ -14,26 +14,26 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ActivationDerived = typename traits<Derived>::ActivationDerived;
-        using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
-        using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename ResidualVectorType>
-        void calc(ActivationDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
             this->derived().calc(data, r.derived());
         }
 
         template <typename ResidualVectorType>
-        void calcDiff(ActivationDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
             this->derived().calcDiff(data, r.derived());
         }
 
         template <typename DataCollector>
-        ActivationDataDerived createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector)
         {
             return this->derived().createData(collector);
         }
@@ -45,7 +45,7 @@ namespace galileo
 
         int nr_impl() const
         {
-            return traits<ActivationDerived>::NR;
+            return traits<Meta_t>::NR;
         }
 
     protected:

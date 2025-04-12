@@ -14,12 +14,12 @@ namespace galileo
 
         using BS = BasicSpec;
 
-        using ActuationDerived = typename traits<Derived>::ActuationDerived;
-        using ActuationDataDerived = typename traits<ActuationDerived>::ActuationDataDerived;
-        using ActuationModelDerived = typename traits<ActuationDerived>::ActuationModelDerived;
+        using Meta_t = typename BS::ActuationMeta_t;
+        using Model_t = typename BS::ActuationModel_t;
+        using Data_t = typename BS::ActuationData_t;
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(typename BS::ActuationData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -27,14 +27,14 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(typename BS::ActuationData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             // Nothing happens
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(typename BS::ActuationData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -42,14 +42,14 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(typename BS::ActuationData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             // Nothing happens
         }
 
         template <typename StateVectorType, typename TauVectorType>
-        void commands(typename BS::ActuationData_t &data,
+        void commands(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
@@ -57,7 +57,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void torqueTransform(typename BS::ActuationData_t &data,
+        void torqueTransform(Data_t &data,
                              const Eigen::MatrixBase<StateVectorType> &x,
                              const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -65,7 +65,7 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        ActuationDataDerived createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector)
         {
             return this->derived().createData(collector);
         }

@@ -13,17 +13,16 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using CostModelVariant = boost::variant<CostModelVoid>; // TODO: add cost models
-
-        using CostDataVariant = boost::variant<CostDataVoid>; // TODO: add cost data
+        using ModelVariant_t = boost::variant<CostModelVoid>; // TODO: add cost models
+        using DataVariant_t = boost::variant<CostDataVoid>; // TODO: add cost data
 
     }; // struct CostCollectionDefaultTpl
 
     template <typename PhaseSpec>
-    using CostModelVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::CostModelVariant;
+    using CostModelVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::ModelVariant_t;
 
     template <typename PhaseSpec>
-    using CostDataVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::CostDataVariant;
+    using CostDataVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::DataVariant_t;
 
 } // namespace galileo
 

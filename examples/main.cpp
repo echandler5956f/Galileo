@@ -44,33 +44,42 @@ using NumScalar = double;
 constexpr int Options = Eigen::ColMajor;
 
 // These template classes basically create a code generator for the optimal control problem by means of mixins
-using BasicSpec = BasicSpecTpl<VarScalar, NumScalar, Options, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
+using BasicSpec_t = BasicSpecTpl<VarScalar, NumScalar, Options, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
 
-using ConstraintManagerTpl = ConstraintManagerDefaultTpl;
-using CostManagerTpl = CostManagerDefaultTpl;
-using ContactManagerTpl = ContactManagerDefaultTpl;
+template <typename PS_>
+using ConstraintManagerDefaultTpl = ConstraintManagerTpl<PS_, ConstraintCollectionDefaultTpl>;
 
-template <typename PS>
-using NodeTpl = NodeContactFwdDynTpl<PS, ContactManagerTpl>;
+template <typename PS_>
+using CostManagerDefaultTpl = CostManagerTpl<PS_, CostCollectionDefaultTpl>;
+
+template <typename PS_>
+using ContactManagerDefaultTpl = ContactManagerTpl<PS_, ContactCollectionDefaultTpl>;
+
+template <typename PS_>
+using NodeTpl = NodeContactFwdDynTpl<PS_, ContactManagerDefaultTpl>;
 
 static constexpr int NOrder = 2;
-template <typename PS>
-using ControlParamTpl = ControlParamJacobiPolynomialTpl<PS, NOrder>;
+template <typename PS_>
+using ControlParamTpl = ControlParamJacobiPolynomialTpl<PS_, NOrder>;
 
-template <typename PS>
-using SegmentTpl = SegmentERKEulerTpl<PS>;
+template <typename PS_>
+using SegmentTpl = SegmentERKEulerTpl<PS_>;
 
-using ImpulseManagerTpl = ImpulseManagerDefaultTpl;
+// template <typename PS_>
+// using ImpulseManagerTpl = ImpulseManagerTpl<PS_>;
 
-template <typename PS>
-using PhaseTpl = PhaseWithImpulsePolicyTpl<PS, ImpulseManagerTpl>;
+// template <typename PS_>
+// using PhaseTpl = PhaseWithImpulsePolicyTpl<PS_, ImpulseManagerTpl>;
 
-using PhaseSpec = PhaseSpecTpl<BasicSpec, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
+template <typename PS_>
+struct DummyPhaseTpl;
 
-using Phase1 = PhaseTpl<PhaseSpec>;
-using Phase2 = PhaseTpl<PhaseSpec>;
+using PhaseSpec_t = PhaseSpecTpl<BasicSpec_t, ConstraintManagerDefaultTpl, CostManagerDefaultTpl, NodeTpl, ControlParamTpl, SegmentTpl, DummyPhaseTpl>;
 
-using PhaseCollection_t = PhaseCollectionTpl<Phase1, Phase2>;
+using Phase1_t = DummyPhaseTpl<PhaseSpec_t>;
+using Phase2_t = DummyPhaseTpl<PhaseSpec_t>;
+
+using PhaseCollection_t = PhaseCollectionTpl<Phase1_t, Phase2_t>;
 
 using Trajectory_t = TrajectoryTpl<PhaseCollection_t>;
 
@@ -84,7 +93,7 @@ int main(int argc, char *argv[])
     pinocchio::ModelTpl<VarScalar, Options> model = pinocchio::ModelTpl<VarScalar, Options> ();
     pinocchio::urdf::buildModel(urdf_path, pinocchio::JointModelFreeFlyerTpl<VarScalar, Options>(), model);
 
-    StateTpl<BasicSpec> state(&model);
+    StateTpl<BasicSpec_t> state(&model);
 
     // Test the state
     std::cout << "state.zero() = " << state.zero() << std::endl;

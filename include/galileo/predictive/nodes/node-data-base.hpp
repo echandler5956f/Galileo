@@ -17,9 +17,9 @@ namespace galileo
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using NodeDerived = typename traits<Derived>::NodeDerived;
-        using NodeDataDerived = typename traits<NodeDerived>::NodeDataDerived;
-        using NodeModelDerived = typename traits<NodeDerived>::NodeModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         FORWARD_ACCESSOR(ActuationData_t, actuation);
         FORWARD_ACCESSOR(ConstraintDataManager_t, constraints);

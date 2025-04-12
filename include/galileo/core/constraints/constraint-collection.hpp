@@ -13,17 +13,16 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ConstraintModelVariant = boost::variant<ConstraintModelVoid>; // TODO: add constraint models
-
-        using ConstraintDataVariant = boost::variant<ConstraintDataVoid>; // TODO: add constraint data
+        using ModelVariant_t = boost::variant<ConstraintModelVoid>; // TODO: add constraint models
+        using DataVariant_t = boost::variant<ConstraintDataVoid>; // TODO: add constraint data
 
     }; // struct ConstraintCollectionDefaultTpl
 
     template <typename PhaseSpec>
-    using ConstraintModelVariantTpl = ConstraintCollectionDefaultTpl<PhaseSpec>::ConstraintModelVariant;
+    using ConstraintModelVariantTpl = ConstraintCollectionDefaultTpl<PhaseSpec>::ModelVariant_t;
 
     template <typename PhaseSpec>
-    using ConstraintDataVariantTpl = ConstraintCollectionDefaultTpl<PhaseSpec>::ConstraintDataVariant;
+    using ConstraintDataVariantTpl = ConstraintCollectionDefaultTpl<PhaseSpec>::DataVariant_t;
 
 } // namespace galileo
 

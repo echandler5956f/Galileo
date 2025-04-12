@@ -26,9 +26,11 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
-        using ForceDerived = typename traits<Derived>::ForceDerived;
+        
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_FORCE_DATA_TYPEDEF(ForceDerived);
+        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
 
         FORWARD_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
         FORWARD_ACCESSOR(Index_t, frame);

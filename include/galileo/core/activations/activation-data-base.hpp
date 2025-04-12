@@ -23,22 +23,22 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ActivationDerived = typename traits<Derived>::ActivationDerived;
-        using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
-        using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_ACTIVATION_DATA_TYPEDEF(ActivationDerived);
+        GALILEO_ACTIVATION_DATA_TYPEDEF(Meta_t);
 
         FORWARD_ACCESSOR(A_t, A);
         FORWARD_ACCESSOR(Ar_t, Ar);
         FORWARD_ACCESSOR(Arr_t, Arr);
 
-        static Arr_diag_t getHessianMatrix(const ActivationDataDerived &data)
+        static Arr_diag_t getHessianMatrix(const Data_t &data)
         {
             return data.Arr.diagonal().asDiagonal();
         }
 
-        static void setHessianMatrix(ActivationDataDerived &data, const Arr_t &Arr)
+        static void setHessianMatrix(Data_t &data, const Arr_t &Arr)
         {
             data.Arr.diagonal() = Arr.diagonal();
         }

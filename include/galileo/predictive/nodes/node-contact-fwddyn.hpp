@@ -27,28 +27,18 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ContactDataManager_t = ContactDataManagerTpl<PS, ContactCollectionTpl>;
-        using ContactModelManager_t = ContactModelManagerTpl<PS, ContactCollectionTpl>;
+        using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
+        using Model_t = NodeModelContactFwdDynTpl<PS, ContactCollectionTpl>;
+        using Data_t = NodeDataContactFwdDynTpl<PS, ContactCollectionTpl>;
 
-        static constexpr int NU = PS::NUa;
+        using ContactManagerMeta_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using ContactModelManager_t = typename traits<ContactManagerMeta_t>::ModelManager_t;
+        using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
 
         // TODO: Refactor to also be able to handle when NC is known at compile time
         // static constexpr int NC = ContactDataManager_t::NC;
         static constexpr int NC = -1;
-
-        using NodeDataDerived = NodeDataContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using NodeModelDerived = NodeModelContactFwdDynTpl<PS, ContactCollectionTpl>;
-    };
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    struct traits<NodeDataContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>>
-    {
-        using PS = PhaseSpec;
-
-        using NodeDerived = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using NodeDataDerived = typename traits<NodeDerived>::NodeDataDerived;
-        using NodeModelDerived = typename traits<NodeDerived>::NodeModelDerived;
+        static constexpr int NU = PS::NUa;
 
         // using NC = traits<NodeDerived>::NC;
         // using Kinv_t = Eigen::Matrix<VarScalar, PS::NV + NC, PS::NV + NC>;
@@ -57,6 +47,21 @@ namespace galileo
         using MatrixNcNdx_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>;
         using MatrixNcNu_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>;
         using Jstatic_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
+
+        using MatrixNvNc_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
+        using MatrixNcNv_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV>;
+        using MatrixNc_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
+    };
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    struct traits<NodeDataContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+
+        using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
@@ -65,13 +70,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using NodeDerived = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using NodeDataDerived = typename traits<NodeDerived>::NodeDataDerived;
-        using NodeModelDerived = typename traits<NodeDerived>::NodeModelDerived;
-
-        using MatrixNvNc_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
-        using MatrixNcNv_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV>;
-        using MatrixNc_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
+        using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
+        using NodeData_t = typename traits<Meta_t>::NodeData_t;
+        using NodeModel_t = typename traits<Meta_t>::NodeModel_t;
     };
 
     template <typename PhaseSpec,
@@ -83,15 +84,20 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
+        using ContactManagerMeta_t = typename traits<Meta_t>::ContactManagerMeta_t;
+        using ContactModelManager_t = typename traits<Meta_t>::ContactModelManager_t;
+        using ContactDataManager_t = typename traits<Meta_t>::ContactDataManager_t;
+
+        using Kinv_t = typename traits<Meta_t>::Kinv_t;
+        using MatrixNcNdx_t = typename traits<Meta_t>::MatrixNcNdx_t;
+        using MatrixNcNu_t = typename traits<Meta_t>::MatrixNcNu_t;
+        using Jstatic_t = typename traits<Meta_t>::Jstatic_t;
+
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
-
-        using NodeDerived = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using ContactDataManager_t = typename traits<NodeDerived>::ContactDataManager_t;
-
-        using Kinv_t = typename traits<NodeDerived>::Kinv_t;
-        using MatrixNcNdx_t = typename traits<NodeDerived>::MatrixNcNdx_t;
-        using MatrixNcNu_t = typename traits<NodeDerived>::MatrixNcNu_t;
-        using Jstatic_t = typename traits<NodeDerived>::Jstatic_t;
 
         DEFAULT_ACCESSOR(ActuationData_t, actuation);
         DEFAULT_ACCESSOR(ConstraintDataManager_t, constraints);
@@ -160,17 +166,20 @@ namespace galileo
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using NodeMeta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using NodeData_t = typename traits<NodeMeta_t>::NodeDataDerived;
-        using NodeModel_t = typename traits<NodeMeta_t>::NodeModelDerived;
+        using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using ContactModelManager_t = typename traits<NodeMeta_t>::ContactModelManager_t;
-        using MatrixNvNc_t = typename traits<NodeMeta_t>::MatrixNvNc_t;
-        using MatrixNcNv_t = typename traits<NodeMeta_t>::MatrixNcNv_t;
-        using MatrixNc_t = typename traits<NodeMeta_t>::MatrixNc_t;
+        using ContactManagerMeta_t = typename traits<Meta_t>::ContactManagerMeta_t;
+        using ContactModelManager_t = typename traits<Meta_t>::ContactModelManager_t;
+        using ContactDataManager_t = typename traits<Meta_t>::ContactDataManager_t;
+
+        using MatrixNvNc_t = typename traits<Meta_t>::MatrixNvNc_t;
+        using MatrixNcNv_t = typename traits<Meta_t>::MatrixNcNv_t;
+        using MatrixNc_t = typename traits<Meta_t>::MatrixNc_t;
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(NodeData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -212,7 +221,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(NodeData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, NQ> q =
@@ -232,7 +241,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(NodeData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -295,7 +304,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(NodeData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             costs_.calcDiff(data.costs, x);
@@ -306,7 +315,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void quasiStatic(NodeData_t &data, const Eigen::MatrixBase<StateVectorType> &x,
+        void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlVectorType> &u,
                          const std::size_t maxiter, const NumScalar tol) const
         {

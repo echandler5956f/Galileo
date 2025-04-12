@@ -18,12 +18,13 @@ namespace galileo
     struct traits<ContactTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
-        using ContactCollection = ContactCollectionTpl<PS>;
+
+        using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
+        using Collection_t = ContactCollectionTpl<PS>;
+        using Model_t = ContactModelTpl<PS, ContactCollectionTpl>;
+        using Data_t = ContactDataTpl<PS, ContactCollectionTpl>;
 
         static constexpr int NC = Eigen::Dynamic;
-
-        using ContactDataDerived = ContactDataTpl<PS, ContactCollectionTpl>;
-        using ContactModelDerived = ContactModelTpl<PS, ContactCollectionTpl>;
 
         // Traits required by ForceDataBase
         using RobotDataPointer_t = typename PS::RobotData_t*;
@@ -46,7 +47,11 @@ namespace galileo
     struct traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
-        using ContactDerived = ContactTpl<PS, ContactCollectionTpl>;
+
+        using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
@@ -54,37 +59,40 @@ namespace galileo
     struct traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
-        using ContactDerived = ContactTpl<PS, ContactCollectionTpl>;
-        using Index_t = typename traits<ContactDerived>::Index_t;
+
+        using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct ContactDataTpl : public ContactDataBase<ContactDataTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                            ContactCollectionTpl<PhaseSpec>::ContactDataVariant
+                            ContactCollectionTpl<PhaseSpec>::DataVariant_t
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using ContactDerived = ContactTpl<PS, ContactCollectionTpl>;
-        using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
-        using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
+        using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_FORCE_DATA_TYPEDEF(ContactDerived);
-        GALILEO_CONTACT_DATA_TYPEDEF(ContactDerived);
+        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        using ContactCollection = ContactCollectionTpl<PS>;
-        using ContactDataVariant = typename ContactCollection::ContactDataVariant;
+        using DataVariant_t = typename Collection_t::DataVariant_t;
 
-        ContactDataVariant &toVariant()
+        DataVariant_t &toVariant()
         {
-            return *static_cast<ContactDataVariant *>(this);
+            return *static_cast<DataVariant_t *>(this);
         }
-        const ContactDataVariant &toVariant() const
+        const DataVariant_t &toVariant() const
         {
-            return *static_cast<const ContactDataVariant *>(this);
+            return *static_cast<const DataVariant_t *>(this);
         }
 
         RobotDataPointer_t robot_data_pointer() const
@@ -153,20 +161,20 @@ namespace galileo
         }
 
         ContactDataTpl()
-            : ContactDataVariant()
+            : DataVariant_t()
         {
         }
 
-        ContactDataTpl(const ContactDataVariant &contact_data_variant)
-            : ContactDataVariant(contact_data_variant)
+        ContactDataTpl(const DataVariant_t &data_variant)
+            : DataVariant_t(data_variant)
         {
         }
 
-        template <typename ContactDataDerived>
-        ContactDataTpl(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data)
-            : ContactCollection::ContactDataVariant((ContactDataVariant)contact_data.derived())
+        template <typename DataDerived>
+        ContactDataTpl(const ContactDataBase<DataDerived, PhaseSpec> &data)
+            : Collection_t::DataVariant_t((DataVariant_t)data.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename ContactDataVariant::types, ContactDataDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
 
         GENERIC_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
@@ -188,84 +196,84 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct ContactModelTpl : public ContactModelBase<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                             ContactCollectionTpl<PhaseSpec>::ContactModelVariant
+                             ContactCollectionTpl<PhaseSpec>::ModelVariant_t
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using ContactDerived = ContactTpl<PS, ContactCollectionTpl>;
-        using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
-        using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
+        using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<Meta_t>::Collection_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using ContactCollection = ContactCollectionTpl<PS>;
-        using ContactModelVariant = typename ContactCollection::ContactModelVariant;
+        using ModelVariant_t = typename Collection_t::ModelVariant_t;
 
-        using Index_t = typename traits<ContactDerived>::Index_t;
+        using Index_t = typename traits<Meta_t>::Index_t;
 
         ContactModelTpl()
-            : ContactModelVariant()
+            : ModelVariant_t()
         {
         }
 
-        ContactModelTpl(const ContactModelVariant &contact_model_variant)
-            : ContactModelVariant(contact_model_variant)
+        ContactModelTpl(const ModelVariant_t &model_variant)
+            : ModelVariant_t(model_variant)
         {
         }
 
-        template <typename ContactModelDerived>
-        ContactModelTpl(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model)
-            : ContactCollection::ContactModelVariant((ContactModelVariant)contact_model.derived())
+        template <typename ModelDerived>
+        ContactModelTpl(const ContactModelBase<ModelDerived, PhaseSpec> &model)
+            : Collection_t::ModelVariant_t((ModelVariant_t)model.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename ContactModelVariant::types, ContactModelDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
         }
 
-        ConstraintModelVariant &toVariant()
+        ModelVariant_t &toVariant()
         {
-            return *static_cast<ContactModelVariant *>(this);
+            return *static_cast<ModelVariant_t *>(this);
         }
 
-        const ConstraintModelVariant &toVariant() const
+        const ModelVariant_t &toVariant() const
         {
-            return *static_cast<const ContactModelVariant *>(this);
+            return *static_cast<const ModelVariant_t *>(this);
         }
 
         template <typename StateVectorType>
-        void calc(ContactDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x)
         {
             galileo::contact_calc_zeroth_order(*this, data, x);
         }
 
         template <typename StateVectorType>
-        void calcDiff(ContactDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x)
         {
             galileo::contact_calc_first_order(*this, data, x);
         }
 
         template <typename ForceVectorType>
-        void updateForce(ContactDataDerived &data,
+        void updateForce(Data_t &data,
                          const Eigen::MatrixBase<ForceVectorType> &force)
         {
             galileo::contact_update_force(*this, data, force.derived());
         }
 
         template <typename MatrixNcNdxType, typename MatrixNcNuType>
-        void updateForceDiff(ContactDataDerived &data,
+        void updateForceDiff(Data_t &data,
                              const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
                              const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
         {
             galileo::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
         }
 
-        void setZeroForce(ContactDataDerived &data) const
+        void setZeroForce(Data_t &data) const
         {
             galileo::contact_set_zero_force(*this, data);
         }
 
-        void setZeroForceDiff(ContactDataDerived &data) const
+        void setZeroForceDiff(Data_t &data) const
         {
             galileo::contact_set_zero_force_diff(*this, data);
         }

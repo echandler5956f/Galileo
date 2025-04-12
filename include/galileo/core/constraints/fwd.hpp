@@ -45,6 +45,14 @@ namespace galileo
         template <typename PS> class ConstraintCollectionTpl>
     struct ConstraintDataTpl;
 
+    template <typename PhaseSpec,
+              template <typename PS> class ConstraintCollectionTpl>
+    class ConstraintModelManagerTpl;
+
+    template <typename PhaseSpec,
+              template <typename PS> class ConstraintCollectionTpl>
+    class ConstraintDataManagerTpl;
+
 } // namespace galileo
 
 #endif // __galileo_core_constraints_fwd_hpp__

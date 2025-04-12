@@ -15,11 +15,11 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using SegmentERKDerived = typename traits<Derived>::SegmentERKDerived;
-        using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
-        using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         FORWARD_ACCESSOR(XNext_t, XNext);
         FORWARD_ACCESSOR(XNextx_t, XNextx);

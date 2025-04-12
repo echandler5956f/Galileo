@@ -29,21 +29,25 @@
     static constexpr int NDX = BasicSpec::NDX;          \
     static constexpr int NUa = BasicSpec::NUa;
 
-#define GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(BasicSpec) \
-    using VectorNqb_t = typename BasicSpec::VectorNqb_t;  \
-    using VectorNqj_t = typename BasicSpec::VectorNqj_t;  \
-    using VectorNvb_t = typename BasicSpec::VectorNvb_t;  \
-    using VectorNvj_t = typename BasicSpec::VectorNvj_t;  \
-    using VectorNx_t = typename BasicSpec::VectorNx_t;    \
-    using VectorNua_t = typename BasicSpec::VectorNua_t;  \
-    using VectorNdx_t = typename BasicSpec::VectorNdx_t;  \
-    using VectorNq_t = typename BasicSpec::VectorNq_t;    \
-    using VectorNv_t = typename BasicSpec::VectorNv_t;    \
-    using MatrixNx_t = typename BasicSpec::MatrixNx_t;    \
-    using MatrixNua_t = typename BasicSpec::MatrixNua_t;  \
-    using MatrixNdx_t = typename BasicSpec::MatrixNdx_t;  \
-    using MatrixNq_t = typename BasicSpec::MatrixNq_t;    \
-    using MatrixNv_t = typename BasicSpec::MatrixNv_t;
+#define GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(BasicSpec)    \
+    using VectorNqb_t = typename BasicSpec::VectorNqb_t;     \
+    using VectorNqj_t = typename BasicSpec::VectorNqj_t;     \
+    using VectorNvb_t = typename BasicSpec::VectorNvb_t;     \
+    using VectorNvj_t = typename BasicSpec::VectorNvj_t;     \
+    using VectorNx_t = typename BasicSpec::VectorNx_t;       \
+    using VectorNua_t = typename BasicSpec::VectorNua_t;     \
+    using VectorNdx_t = typename BasicSpec::VectorNdx_t;     \
+    using VectorNq_t = typename BasicSpec::VectorNq_t;       \
+    using VectorNv_t = typename BasicSpec::VectorNv_t;       \
+    using MatrixNx_t = typename BasicSpec::MatrixNx_t;       \
+    using MatrixNua_t = typename BasicSpec::MatrixNua_t;     \
+    using MatrixNdx_t = typename BasicSpec::MatrixNdx_t;     \
+    using MatrixNq_t = typename BasicSpec::MatrixNq_t;       \
+    using MatrixNv_t = typename BasicSpec::MatrixNv_t;       \
+    using MatrixNvNdx_t = typename BasicSpec::MatrixNvNdx_t; \
+    using MatrixNvNua_t = typename BasicSpec::MatrixNvNua_t; \
+    using MatrixNuaNv_t = typename BasicSpec::MatrixNuaNv_t; \
+    using MatrixNdxNua_t = typename BasicSpec::MatrixNdxNua_t;
 
 #define GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BasicSpec) \
     GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec);      \
@@ -114,6 +118,11 @@ namespace galileo
         using MatrixNdx_t = Eigen::Matrix<VarScalar, NDX, NDX, Options>;
         using MatrixNq_t = Eigen::Matrix<VarScalar, NQ, NQ, Options>;
         using MatrixNv_t = Eigen::Matrix<VarScalar, NV, NV, Options>;
+
+        using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
+        using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
+        using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
+        using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
 
         /* ---------------------------------------------------------------- */
         /* Template types */

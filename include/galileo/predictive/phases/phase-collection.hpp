@@ -15,16 +15,15 @@ namespace galileo
     public:
         using PS = PhaseSpec;
 
-        using PhaseModelVariant = boost::variant<>; // TODO: Add phase models
-
-        using PhaseDataVariant = boost::variant<>; // TODO: Add phase data
+        using ModelVariant_t = boost::variant<PhaseModelVoid>; // TODO: Add phase models
+        using DataVariant_t = boost::variant<PhaseDataVoid>; // TODO: Add phase data
     };
 
     template <typename PhaseSpec>
-    using PhaseModelVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseModelVariant;
+    using PhaseModelVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::ModelVariant_t;
 
     template <typename PhaseSpec>
-    using PhaseDataVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseDataVariant;
+    using PhaseDataVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::DataVariant_t;
 
 } // namespace galileo
 

@@ -16,9 +16,11 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using SegmentERKDerived = SegmentERKEulerTpl<PS>;
-        using SegmentERKDataDerived = SegmentERKDataEulerTpl<PS>;
-        using SegmentERKModelDerived = SegmentERKModelEulerTpl<PS>;
+        using Meta_t = SegmentERKEulerTpl<PS>;
+        using Model_t = SegmentERKDataEulerTpl<PS>;
+        using Data_t = SegmentERKModelEulerTpl<PS>;
+
+        static constexpr int NStages = 1;
     };
 
     template <
@@ -26,9 +28,10 @@ namespace galileo
     struct traits<SegmentERKDataEulerTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
-        using SegmentERKDerived = SegmentERKEulerTpl<PS>;
-        using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
-        using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
+
+        using Meta_t = SegmentERKEulerTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <
@@ -36,9 +39,10 @@ namespace galileo
     struct traits<SegmentERKModelEulerTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
-        using SegmentERKDerived = SegmentERKEulerTpl<PS>;
-        using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
-        using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
+
+        using Meta_t = SegmentERKEulerTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec>
@@ -49,14 +53,11 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        using Meta_t = SegmentERKEulerTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
-
-        using SegmentERKDerived = SegmentERKEulerTpl<PS>;
-        using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
-        using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
-
-        // using NodeData_t = typename PS::NodeData_t;
-        // using ControlParamData_t = typename PS::ControlParamData_t;
 
         DEFAULT_ACCESSOR(XNext_t, XNext);
         DEFAULT_ACCESSOR(XNextx_t, XNextx);
@@ -109,14 +110,14 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        using Meta_t = SegmentERKEulerTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using SegmentERK_t = SegmentERKEulerTpl<PS>;
-        using SegmentERKData_t = typename traits<SegmentERK_t>::SegmentERKDataDerived;
-        using SegmentERKModel_t = typename traits<SegmentERK_t>::SegmentERKModelDerived;
-
         template <typename StateVectorType, typename ControlParamVectorType>
-        void calc(SegmentERKData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
@@ -139,7 +140,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(SegmentERKData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             node_.calc(data.node, x);
@@ -155,7 +156,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlParamVectorType>
-        void calcDiff(SegmentERKData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
@@ -191,7 +192,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(SegmentERKData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             node_.calcDiff(data.node, x);
@@ -203,7 +204,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlParamVectorType>
-        void quasiStatic(SegmentERKData_t &data,
+        void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlParamVectorType> &w,
                          const std::size_t maxiter, const NumScalar tol) const

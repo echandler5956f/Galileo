@@ -16,14 +16,15 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ResidualMeta = traits<ResidualTpl<PS>>;
-        using ResidualModel_t = typename traits<ResidualMeta>::ResidualModel_t;
-        using ResidualData_t = typename traits<ResidualMeta>::ResidualData_t;
+        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Model_t = ActivationModelQuadraticTpl<PS, ResidualTpl>;
+        using Data_t = ActivationDataQuadraticTpl<PS, ResidualTpl>;
 
-        static constexpr int NR = traits<ResidualMeta>::NR;
+        using ResidualMeta_t = typename traits<ResidualTpl<PS>>::Meta_t;
+        using ResidualModel_t = typename traits<ResidualMeta_t>::Model_t;
+        using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
-        using ActivationDataDerived = ActivationDataQuadraticTpl<PS, ResidualTpl>;
-        using ActivationModelDerived = ActivationModelQuadraticTpl<PS, ResidualTpl>;
+        static constexpr int NR = traits<ResidualMeta_t>::NR;
 
         using A_t = PS::VarScalar;
         using Ar_t = Eigen::Matrix<typename PS::VarScalar, NR, 1, PS::Options>;
@@ -37,9 +38,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
-        using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
-        using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
@@ -48,9 +49,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
-        using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
-        using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
@@ -62,8 +63,11 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
-        GALILEO_ACTIVATION_DATA_TYPEDEF(ActivationDerived);
+        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
+        GALILEO_ACTIVATION_DATA_TYPEDEF(Meta_t);
 
         DEFAULT_ACCESSOR(A_t, A);
         DEFAULT_ACCESSOR(Ar_t, Ar);
@@ -89,28 +93,28 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ActivationDerived = ActivationQuadraticTpl<PS, ResidualTpl>;
-        using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
-        using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         explicit ActivationModelQuadraticTpl(const int nr) : nr_(nr) {}
 
         template <typename ResidualVectorType>
-        void calc(ActivationDataDerived &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
+        void calc(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
             data.A() = typename PS::VarScalar(0.5) * r.dot(r);
         }
 
         template <typename ResidualVectorType>
-        void calcDiff(ActivationDataDerived &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
             data.Ar() = r;
             // The Hessian has constant values which were set in createData.
         }
 
-        ActivationDataDerived createData() const
+        Data_t createData() const
         {
-            ActivationDataDerived data = ActivationDataDerived();
+            Data_t data = Data_t();
             data.Arr.diagonal().setOnes();
             return data;
         }

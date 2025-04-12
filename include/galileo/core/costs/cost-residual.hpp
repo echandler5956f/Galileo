@@ -20,18 +20,19 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ResidualMeta = traits<ResidualTpl<PS>>;
-        using ResidualModel_t = typename traits<ResidualMeta>::ResidualModel_t;
-        using ResidualData_t = typename traits<ResidualMeta>::ResidualData_t;
+        using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
+        using Model_t = CostModelResidualTpl<PS, ResidualTpl, ActivationTpl>;
+        using Data_t = CostDataResidualTpl<PS, ResidualTpl, ActivationTpl>;
 
-        using ActivationMeta = traits<ActivationTpl<PS>>;
-        using ActivationModel_t = typename traits<ActivationMeta>::ActivationModel_t;
-        using ActivationData_t = typename traits<ActivationMeta>::ActivationData_t;
+        using ResidualMeta_t = typename traits<ResidualTpl<PS>>::Meta_t;
+        using ResidualModel_t = typename traits<ResidualMeta_t>::Model_t;
+        using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
-        static constexpr int NR = traits<ResidualMeta>::NR;
+        using ActivationMeta_t = typename traits<ActivationTpl<PS>>::Meta_t;
+        using ActivationModel_t = typename traits<ActivationMeta_t>::Model_t;
+        using ActivationData_t = typename traits<ActivationMeta_t>::Data_t;
 
-        using CostDataDerived = CostDataResidualTpl<PS, ResidualTpl, ActivationTpl>;
-        using CostModelDerived = CostModelResidualTpl<PS, ResidualTpl, ActivationTpl>;
+        static constexpr int NR = traits<ResidualMeta_t>::NR;
 
         using L_t = typename PS::VarScalar;
         using Lx_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
@@ -48,9 +49,10 @@ namespace galileo
     struct traits<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using PS = PhaseSpec;
-        using CostDerived = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
-        using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
-        using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+
+        using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <
@@ -60,9 +62,10 @@ namespace galileo
     struct traits<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using PS = PhaseSpec;
-        using CostDerived = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
-        using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
-        using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+
+        using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <
@@ -76,11 +79,19 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using CostDerived = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
-        GALILEO_COST_DATA_TYPEDEF(CostDerived);
+        using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using ResidualData_t = traits<ResidualTpl<PS>>::ResidualData_t;
-        using ActivationData_t = traits<ActivationTpl<PS>>::ActivationData_t;
+        GALILEO_COST_DATA_TYPEDEF(Meta_t);
+
+        using ResidualMeta_t = typename traits<Meta_t>::ResidualMeta_t;
+        using ResidualModel_t = typename traits<Meta_t>::ResidualModel_t;
+        using ResidualData_t = typename traits<Meta_t>::ResidualData_t;
+
+        using ActivationMeta_t = typename traits<Meta_t>::ActivationMeta_t;
+        using ActivationModel_t = typename traits<Meta_t>::ActivationModel_t;
+        using ActivationData_t = typename traits<Meta_t>::ActivationData_t;
 
         DEFAULT_ACCESSOR(L_t, L);
         DEFAULT_ACCESSOR(Lx_t, Lx);
@@ -110,9 +121,18 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
-        using Cost_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
-        using CostData_t = typename traits<Cost_t>::CostDataDerived;
-        using CostModel_t = typename traits<Cost_t>::CostModelDerived;
+
+        using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
+        using ResidualMeta_t = typename traits<Meta_t>::ResidualMeta_t;
+        using ResidualModel_t = typename traits<Meta_t>::ResidualModel_t;
+        using ResidualData_t = typename traits<Meta_t>::ResidualData_t;
+
+        using ActivationMeta_t = typename traits<Meta_t>::ActivationMeta_t;
+        using ActivationModel_t = typename traits<Meta_t>::ActivationModel_t;
+        using ActivationData_t = typename traits<Meta_t>::ActivationData_t;
 
         CostModelResidualTpl(const ResidualModel_t &residual,
                              const ActivationModel_t &activation)
@@ -122,7 +142,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(CostData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -133,7 +153,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(CostData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             residual_.calc(data.residual, x.derived());
@@ -143,7 +163,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(CostData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -154,7 +174,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(CostData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             residual_.calcDiff(data.residual, x.derived());

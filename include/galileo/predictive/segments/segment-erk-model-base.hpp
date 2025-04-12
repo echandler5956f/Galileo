@@ -15,12 +15,12 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using SegmentERKDerived = typename traits<Derived>::SegmentERKDerived;
-        using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
-        using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename StateVectorType, typename ControlParamVectorType>
-        void calc(SegmentERKDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
@@ -28,14 +28,14 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(SegmentERKDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x.derived());
         }
 
         template <typename StateVectorType, typename ControlParamVectorType>
-        void calcDiff(SegmentERKDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
@@ -43,20 +43,26 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(SegmentERKDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x.derived());
         }
 
         template <typename StateVectorType, typename ControlParamVectorType>
-        void quasiStatic(SegmentERKDataDerived &data,
+        void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlParamVectorType> &w,
                          const std::size_t maxiter,
                          const typename PS::NumScalar &tol) const
         {
             this->derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
         }
 
     protected:

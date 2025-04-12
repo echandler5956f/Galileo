@@ -25,11 +25,11 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ConstraintDerived = typename traits<Derived>::ConstraintDerived;
-        using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
-        using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
+        GALILEO_CONSTRAINT_DATA_TYPEDEF(Meta_t);
 
         FORWARD_ACCESSOR(H_t, H);
         FORWARD_ACCESSOR(Hx_t, Hx);

@@ -14,12 +14,12 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using CostDerived = typename traits<Derived>::CostDerived;
-        using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
-        using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(CostDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -27,14 +27,14 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(CostDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x.derived());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(CostDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -42,14 +42,14 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(CostDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x.derived());
         }
 
         template <typename DataCollector>
-        auto createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector)
         {
             return this->derived().createData(collector);
         }

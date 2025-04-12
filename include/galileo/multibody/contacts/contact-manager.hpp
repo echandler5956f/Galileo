@@ -20,24 +20,81 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
+    struct ContactManagerTpl;
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
     struct ContactItemTpl
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using ContactCollection = ContactCollectionTpl<PS>;
-
-        using ContactModel = ContactModelTpl<PS, ContactCollectionTpl>;
-        using ContactData = ContactDataTpl<PS, ContactCollectionTpl>;
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using Model_t = typename traits<MetaManager_t>::Model_t;
+        using Data_t = typename traits<MetaManager_t>::Data_t;
 
         ContactItemTpl() {}
-        ContactItemTpl(const std::string &name, const ContactModel &contact, bool active = true)
-            : name(name), contact(contact), active(active) {}
+        ContactItemTpl(const std::string &_name, const Model_t &_model, bool _active = true)
+            : name(_name), model(_model), active(_active) {}
 
         std::string name;
-        ContactModel contact;
+        Model_t model;
         bool active;
+    };
+
+        template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    struct traits<ContactManagerTpl<PhaseSpec, ContactCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using Collection_t = ContactCollectionTpl<PS>;
+        using ModelManager_t = ContactModelManagerTpl<PS, ContactCollectionTpl>;
+        using DataManager_t = ContactDataManagerTpl<PS, ContactCollectionTpl>;
+
+        using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
+        using Item_t = ContactItemTpl<PS, ContactCollectionTpl>;
+
+        using ModelContainer_t = std::map<std::string, Item_t>;
+        using DataContainer_t = std::map<std::string, Data_t>;
+
+        using Jc_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>;
+        using a0_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1, PS::Options>;
+        using da0_dx_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX, PS::Options>;
+        using dv_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, 1, PS::Options>;
+        using ddv_dx_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options>;
+
+        using Force_t = typename PS::Force_t;
+        using ForceVector_t = GALILEO_ALIGNED_STD_VECTOR(Force_t);
+    };
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    struct traits<ContactDataManagerTpl<PhaseSpec, ContactCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
+    };
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    struct traits<ContactModelManagerTpl<PhaseSpec, ContactCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
     };
 
     template <typename PhaseSpec,
@@ -49,24 +106,32 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ContactCollection = ContactCollectionTpl<PS>;
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
 
-        using ContactData = ContactDataTpl<PS, ContactCollectionTpl>;
-        using ContactDataContainer = std::map<std::string, ContactData>;
+        using Meta_t = typename traits<MetaManager_t>::Meta_t;
+        using Model_t = typename traits<MetaManager_t>::Model_t;
+        using Data_t = typename traits<MetaManager_t>::Data_t;
 
-        using ContactDerived = typename traits<ContactData>::ContactDerived;
+        using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
-        GALILEO_FORCE_DATA_TYPEDEF(ContactDerived);
-        GALILEO_CONTACT_DATA_TYPEDEF(ContactDerived);
+        using Jc_t = typename traits<MetaManager_t>::Jc_t;
+        using a0_t = typename traits<MetaManager_t>::a0_t;
+        using da0_dx_t = typename traits<MetaManager_t>::da0_dx_t;
+        using dv_t = typename traits<MetaManager_t>::dv_t;
+        using ddv_dx_t = typename traits<MetaManager_t>::ddv_dx_t;
+        using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
 
-        Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options> Jc;
-        Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1, PS::Options> a0;
-        Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX, PS::Options> da0_dx;
-        Eigen::Matrix<typename PS::VarScalar, PS::NV, 1, PS::Options> dv;
-        Eigen::Matrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options> ddv_dx;
+        Jc_t Jc;
+        a0_t a0;
+        da0_dx_t da0_dx;
+        dv_t dv;
+        ddv_dx_t ddv_dx;
 
-        ContactDataContainer contacts;
-        using fext = GALILEO_ALIGNED_STD_VECTOR(Force_t);
+        DataContainer_t contacts;
+        ForceVector_t fext;
 
     }; // class ContactDataManagerTpl
 
@@ -79,29 +144,31 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ContactCollection = ContactCollectionTpl<PS>;
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
 
-        using ContactData = ContactDataTpl<PS, ContactCollectionTpl>;
-        using ContactModel = ContactModelTpl<PS, ContactCollectionTpl>;
+        using Meta_t = typename traits<MetaManager_t>::Meta_t;
+        using Model_t = typename traits<MetaManager_t>::Model_t;
+        using Data_t = typename traits<MetaManager_t>::Data_t;
 
-        using ContactItem = ContactItemTpl<PS, ContactCollectionTpl>;
+        using Item_t = typename traits<MetaManager_t>::Item_t;
 
-        using ContactModelContainer = std::map<std::string, ContactItem>;
-        using ContactDataContainer = std::map<std::string, ContactData>;
+        using ModelContainer_t = typename traits<MetaManager_t>::ModelContainer_t;
+        using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
-        using ContactDataManager = ContactDataManagerTpl<PS, ContactCollectionTpl>;
-
-        using RobotData = typename PS::RobotData_t;
-
-        using ForceIterator = typename galileo::container::aligned_vector<typename PS::Force_t>::iterator;
+        using RobotData_t = typename traits<MetaManager_t>::RobotData_t;
+        using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
+        using ForceIterator_t = typename ForceVector_t::iterator;
 
         ContactModelManagerTpl() {}
 
-        void addContact(const std::string &name, const ContactModel &contact, bool active = true)
+        void addContact(const std::string &name, const Model_t &model, bool active = true)
         {
-            std::pair<typename ContactModelContainer::iterator, bool> ret =
+            std::pair<typename ModelContainer_t::iterator, bool> ret =
                 contacts_.insert(std::make_pair(
-                    name, ContactItem(name, contact, active)));
+                    name, Item_t(name, model, active)));
             if (ret.second == false)
             {
                 std::cout << "Warning: we couldn't add the " << name
@@ -109,24 +176,24 @@ namespace galileo
             }
             else if (active)
             {
-                nc_ += contact.nc();
-                nc_total_ += contact.nc();
+                nc_ += model.nc();
+                nc_total_ += model.nc();
                 active_set_.insert(name);
             }
             else if (!active)
             {
-                nc_total_ += contact.nc();
+                nc_total_ += model.nc();
                 inactive_set_.insert(name);
             }
         }
 
         void removeContact(const std::string &name)
         {
-            typename ContactModelContainer::iterator it = contacts_.find(name);
+            typename ModelContainer_t::iterator it = contacts_.find(name);
             if (it != contacts_.end())
             {
-                nc_ -= it->second.contact.nc();
-                nc_total_ -= it->second.contact.nc();
+                nc_ -= it->second.model.nc();
+                nc_total_ -= it->second.model.nc();
                 contacts_.erase(it);
                 inactive_set_.erase(name);
             }
@@ -139,19 +206,19 @@ namespace galileo
 
         void changeContactStatus(const std::string &name, bool active)
         {
-            typename ContactModelContainer::iterator it = contacts_.find(name);
+            typename ModelContainer_t::iterator it = contacts_.find(name);
             if (it != contacts_.end())
             {
                 if (active && !it->second.active)
                 {
-                    nc_ += it->second.contact.nc();
+                    nc_ += it->second.model.nc();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    nc_ -= it->second.contact.nc();
+                    nc_ -= it->second.model.nc();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -166,31 +233,31 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(ContactDataManager &data, const Eigen::MatrixBase<StateVectorType> &x)
+        void calc(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x)
         {
             int nc = 0;
-            typename ContactModelContainer::iterator it_m, end_m;
-            typename ContactDataContainer::iterator it_d, end_d;
+            typename ModelContainer_t::iterator it_m, end_m;
+            typename DataContainer_t::iterator it_d, end_d;
             if (compute_all_contacts_)
             {
                 for (it_m = contacts_.begin(), end_m = contacts_.end(),
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
-                    const int nc_i = m_i.contact.nc();
+                    Item_t &m_i = it_m->second;
+                    const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
-                        ContactData &d_i = it_d->second;
+                        Data_t &d_i = it_d->second;
 
-                        m_i.contact.calc(d_i, x.derived());
-                        data.a0().segment(nc, nc_i) = d_i.a0();
-                        data.Jc().block(nc, 0, nc_i, PS::NV) = d_i.Jc();
+                        m_i.model.calc(d_i, x.derived());
+                        data.a0.segment(nc, nc_i) = d_i.a0();
+                        data.Jc.block(nc, 0, nc_i, PS::NV) = d_i.Jc();
                     }
                     else
                     {
-                        data.a0().segment(nc, nc_i).setZero();
-                        data.Jc().block(nc, 0, nc_i, PS::NV).setZero();
+                        data.a0.segment(nc, nc_i).setZero();
+                        data.Jc.block(nc, 0, nc_i, PS::NV).setZero();
                     }
                     nc += nc_i;
                 }
@@ -201,15 +268,15 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
+                    Item_t &m_i = it_m->second;
                     if (m_i.active)
                     {
-                        ContactData &d_i = it_d->second;
+                        Data_t &d_i = it_d->second;
 
-                        m_i.contact.calc(d_i, x.derived());
-                        const int nc_i = m_i.contact.nc();
-                        data.a0().segment(nc, nc_i) = d_i.a0();
-                        data.Jc().block(nc, 0, nc_i, PS::NV) = d_i.Jc();
+                        m_i.model.calc(d_i, x.derived());
+                        const int nc_i = m_i.model.nc();
+                        data.a0.segment(nc, nc_i) = d_i.a0();
+                        data.Jc.block(nc, 0, nc_i, PS::NV) = d_i.Jc();
                         nc += nc_i;
                     }
                 }
@@ -217,29 +284,29 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(ContactDataManager &data, const Eigen::MatrixBase<StateVectorType> &x)
+        void calcDiff(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x)
         {
             int nc = 0;
-            typename ContactModelContainer::iterator it_m, end_m;
-            typename ContactDataContainer::iterator it_d, end_d;
+            typename ModelContainer_t::iterator it_m, end_m;
+            typename DataContainer_t::iterator it_d, end_d;
             if (compute_all_contacts_)
             {
                 for (it_m = contacts_.begin(), end_m = contacts_.end(),
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
-                    const int nc_i = m_i.contact.nc();
+                    Item_t &m_i = it_m->second;
+                    const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
-                        ContactData &d_i = it_d->second;
+                        Data_t &d_i = it_d->second;
 
-                        m_i.contact.calcDiff(d_i, x.derived());
-                        data.da0_dx().block(nc, 0, nc_i, PS::NDX) = d_i.da0_dx();
+                        m_i.model.calcDiff(d_i, x.derived());
+                        data.da0_dx.block(nc, 0, nc_i, PS::NDX) = d_i.da0_dx();
                     }
                     else
                     {
-                        data.da0_dx().block(nc, 0, nc_i, PS::NDX).setZero();
+                        data.da0_dx.block(nc, 0, nc_i, PS::NDX).setZero();
                     }
                     nc += nc_i;
                 }
@@ -250,14 +317,14 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
+                    Item_t &m_i = it_m->second;
                     if (m_i.active)
                     {
-                        ContactData &d_i = it_d->second;
+                        Data_t &d_i = it_d->second;
 
-                        m_i.contact.calcDiff(d_i, x.derived());
-                        const int nc_i = m_i.contact.nc();
-                        data.da0_dx().block(nc, 0, nc_i, PS::NDX) = d_i.da0_dx();
+                        m_i.model.calcDiff(d_i, x.derived());
+                        const int nc_i = m_i.model.nc();
+                        data.da0_dx.block(nc, 0, nc_i, PS::NDX) = d_i.da0_dx();
                         nc += nc_i;
                     }
                 }
@@ -265,43 +332,43 @@ namespace galileo
         }
 
         template <typename VectorNvType>
-        void updateAcceleration(ContactDataManager &data, const Eigen::MatrixBase<VectorNvType> &dv) const
+        void updateAcceleration(DataManager_t &data, const Eigen::MatrixBase<VectorNvType> &dv) const
         {
-            data.dv() = dv.derived();
+            data.dv = dv.derived();
         }
 
         template <typename ForceVectorType>
-        void updateForce(ContactDataManager &data, const Eigen::MatrixBase<ForceVectorType> &force)
+        void updateForce(DataManager_t &data, const Eigen::MatrixBase<ForceVectorType> &force)
         {
-            for (ForceIterator it = data.fext.begin(); it != data.fext.end(); ++it)
+            for (ForceIterator_t it = data.fext.begin(); it != data.fext.end(); ++it)
             {
                 *it = typename PS::Force_t::Zero();
             }
 
             std::size_t nc = 0;
-            typename ContactModelContainer::iterator it_m, end_m;
-            typename ContactDataContainer::iterator it_d, end_d;
+            typename ModelContainer_t::iterator it_m, end_m;
+            typename DataContainer_t::iterator it_d, end_d;
             if (compute_all_contacts_)
             {
                 for (it_m = contacts_.begin(), end_m = contacts_.end(),
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
-                    ContactData &d_i = it_d->second;
-                    const int nc_i = m_i.contact.nc();
+                    Item_t &m_i = it_m->second;
+                    Data_t &d_i = it_d->second;
+                    const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
                         const Eigen::VectorBlock<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
                             force.segment(nc, nc_i);
-                        m_i.contact.updateForce(d_i, force_i);
+                        m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
                             state_->get_pinocchio()->frames[d_i.frame].parent;
                         data.fext[joint] = d_i.fext;
                     }
                     else
                     {
-                        m_i.contact.setZeroForce(d_i);
+                        m_i.model.setZeroForce(d_i);
                     }
                     nc += nc_i;
                 }
@@ -312,14 +379,14 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
-                    ContactData &d_i = it_d->second;
+                    Item_t &m_i = it_m->second;
+                    Data_t &d_i = it_d->second;
                     if (m_i.active)
                     {
-                        const int nc_i = m_i.contact.nc();
+                        const int nc_i = m_i.model.nc();
                         const Eigen::VectorBlock<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
                             force.segment(nc, nc_i);
-                        m_i.contact.updateForce(d_i, force_i);
+                        m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
                             state_->get_pinocchio()->frames[d_i.frame].parent;
                         data.fext[joint] = d_i.fext;
@@ -327,44 +394,44 @@ namespace galileo
                     }
                     else
                     {
-                        m_i.contact.setZeroForce(d_i);
+                        m_i.model.setZeroForce(d_i);
                     }
                 }
             }
         }
 
         template <typename MatrixNvNdxType>
-        void updateAccelerationDiff(ContactDataManager &data, const Eigen::MatrixBase<MatrixNvNdxType> &ddv_dx) const
+        void updateAccelerationDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNvNdxType> &ddv_dx) const
         {
-            data.ddv_dx() = ddv_dx.derived();
+            data.ddv_dx = ddv_dx.derived();
         }
 
         template <typename MatrixNcNdxType, typename MatrixNcNduType>
-        void updateForceDiff(ContactDataManager &data, const Eigen::MatrixBase<MatrixNcNdxType> &df_dx, const Eigen::MatrixBase<MatrixNcNduType> &df_du) const
+        void updateForceDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNcNdxType> &df_dx, const Eigen::MatrixBase<MatrixNcNduType> &df_du) const
         {
             int nc = 0;
-            typename ContactModelContainer::const_iterator it_m, end_m;
-            typename ContactDataContainer::const_iterator it_d, end_d;
+            typename ModelContainer_t::const_iterator it_m, end_m;
+            typename DataContainer_t::const_iterator it_d, end_d;
             if (compute_all_contacts_)
             {
                 for (it_m = contacts_.begin(), end_m = contacts_.end(),
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
-                    ContactData &d_i = it_d->second;
-                    const int nc_i = m_i.contact.nc();
+                    Item_t &m_i = it_m->second;
+                    Data_t &d_i = it_d->second;
+                    const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
                         const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
                             df_dx.block(nc, 0, nc_i, PS::NDX);
                         const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
                             df_du.block(nc, 0, nc_i, PS::NU);
-                        m_i.contact.updateForceDiff(d_i, df_dx_i, df_du_i);
+                        m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
                     }
                     else
                     {
-                        m_i.contact.setZeroForceDiff(d_i);
+                        m_i.model.setZeroForceDiff(d_i);
                     }
                     nc += nc_i;
                 }
@@ -375,45 +442,45 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    ContactItem &m_i = it_m->second;
-                    ContactData &d_i = it_d->second;
+                    Item_t &m_i = it_m->second;
+                    Data_t &d_i = it_d->second;
                     if (m_i.active)
                     {
-                        const int nc_i = m_i.contact.nc();
+                        const int nc_i = m_i.model.nc();
                         const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
                             df_dx.block(nc, 0, nc_i, PS::NDX);
                         const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
                             df_du.block(nc, 0, nc_i, PS::NU);
-                        m_i.contact.updateForceDiff(d_i, df_dx_i, df_du_i);
+                        m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
                         nc += nc_i;
                     }
                     else
                     {
-                        m_i.contact.setZeroForceDiff(d_i);
+                        m_i.model.setZeroForceDiff(d_i);
                     }
                 }
             }
         }
 
-        void updateRneaDiff(ContactDataManager &data, RobotData &robot_data) const
+        void updateRneaDiff(DataManager_t &data, RobotData_t &robot_data) const
         {
-            typename ContactModelContainer::const_iterator it_m, end_m;
-            typename ContactDataContainer::const_iterator it_d, end_d;
+            typename ModelContainer_t::const_iterator it_m, end_m;
+            typename DataContainer_t::const_iterator it_d, end_d;
             for (it_m = contacts_.begin(), end_m = contacts_.end(),
                 it_d = data.contacts.begin(), end_d = data.contacts.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
-                ContactItem &m_i = it_m->second;
-                ContactData &d_i = it_d->second;
+                Item_t &m_i = it_m->second;
+                Data_t &d_i = it_d->second;
                 if (m_i.active)
                 {
-                    switch (m_i.contact.type())
+                    switch (m_i.model.type())
                     {
                     case pinocchio::ReferenceFrame::LOCAL:
                         break;
                     case pinocchio::ReferenceFrame::WORLD:
                     case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                        data.dtau_dq() += d_i.dtau_dq();
+                        data.dtau_dq += d_i.dtau_dq();
                         break;
                     }
                 }
@@ -431,9 +498,8 @@ namespace galileo
         }
 
     protected:
-        using State = typename PS::State_t;
-        State *state_;
-        ContactModelContainer contacts_;
+        typename PS::State_t *state_;
+        ModelContainer_t contacts_;
 
         int nc_;
         int nc_total_;

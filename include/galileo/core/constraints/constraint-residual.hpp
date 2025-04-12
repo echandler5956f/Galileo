@@ -20,16 +20,17 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ResidualMeta_t = traits<ResidualTpl<PS>>;
-        using ResidualModel_t = typename traits<ResidualMeta_t>::ResidualModel_t;
-        using ResidualData_t = typename traits<ResidualMeta_t>::ResidualData_t;
+        using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality_>;
+        using Model_t = ConstraintModelResidualTpl<PS, ResidualTpl, EqualityInequality_>;
+        using Data_t = ConstraintDataResidualTpl<PS, ResidualTpl, EqualityInequality_>;
 
-        using EqualityInequality = EqualityInequality_;
-        static constexpr int NH = constexpr(EqualityInequality == typename ConstraintType::Equality) ? traits<ResidualMeta_t>::NR : 0;
-        static constexpr int NG = constexpr(EqualityInequality == typename ConstraintType::Inequality) ? traits<ResidualMeta_t>::NR : 0;
+        using ResidualMeta_t = typename traits<ResidualTpl<PS>>::Meta_t;
+        using ResidualModel_t = typename traits<ResidualMeta_t>::Model_t;
+        using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
-        using ConstraintDataDerived = ConstraintDataResidualTpl<PS, ResidualTpl, EqualityInequality>;
-        using ConstraintModelDerived = ConstraintModelResidualTpl<PS, ResidualTpl, EqualityInequality>;
+        static constexpr ConstraintType EqualityInequality = EqualityInequality_;
+        static constexpr int NH = constexpr(EqualityInequality == ConstraintType::Equality) ? traits<ResidualMeta_t>::NH : 0;
+        static constexpr int NG = constexpr(EqualityInequality == ConstraintType::Inequality) ? traits<ResidualMeta_t>::NG : 0;
 
         using H_t = Eigen::Matrix<typename PS::VarScalar, NH, 1, PS::Options>;
         using Hx_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
@@ -49,9 +50,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
-        using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
-        using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+        using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <
@@ -62,9 +63,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
-        using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
-        using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+        using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <
@@ -78,10 +79,15 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ConstraintDerived = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
-        GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
+        using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using ResidualData_t = traits<ResidualTpl<PS>>::ResidualData_t;
+        GALILEO_CONSTRAINT_DATA_TYPEDEF(Meta_t);
+
+        using ResidualMeta_t = typename traits<Meta_t>::ResidualMeta_t;
+        using ResidualModel_t = typename traits<Meta_t>::ResidualModel_t;
+        using ResidualData_t = typename traits<Meta_t>::ResidualData_t;
 
         DEFAULT_ACCESSOR(H_t, H);
         DEFAULT_ACCESSOR(Hx_t, Hx);
@@ -111,13 +117,16 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        static constexpr ConstraintType EqualityInequality = EqualityInequality_;
+        using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality_>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using ConstraintMeta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
-        using ConstraintData_t = typename traits<ConstraintMeta_t>::ConstraintDataDerived;
-        using ConstraintModel_t = typename traits<ConstraintMeta_t>::ConstraintModelDerived;
+        using ResidualMeta_t = typename traits<Meta_t>::ResidualMeta_t;
+        using ResidualModel_t = typename traits<Meta_t>::ResidualModel_t;
+        using ResidualData_t = typename traits<Meta_t>::ResidualData_t;
 
-        using BoundVector_t = typename traits<ConstraintMeta_t>::BoundVector_t;
+        static constexpr ConstraintType EqualityInequality = traits<Meta_t>::EqualityInequality;
+        using BoundVector_t = typename traits<Meta_t>::BoundVector_t;
 
         ConstraintModelResidualTpl(const ResidualModel_t &residual)
             : residual_(residual)
@@ -125,7 +134,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(ConstraintData_t &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -138,7 +147,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(ConstraintData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -169,23 +178,23 @@ namespace galileo
         }
 
     protected:
-        void updateEqualityCalc(ConstraintData_t &data) const
+        void updateEqualityCalc(Data_t &data) const
         {
             data.H = data.residual.r;
         }
 
-        void updateInequalityCalc(ConstraintData_t &data) const
+        void updateInequalityCalc(Data_t &data) const
         {
             data.G = data.residual.r;
         }
 
-        void updateEqualityCalcDiff(ConstraintData_t &data) const
+        void updateEqualityCalcDiff(Data_t &data) const
         {
             data.Hx = data.residual.rx;
             data.Hu = data.residual.ru;
         }
 
-        void updateInequalityCalcDiff(ConstraintData_t &data) const
+        void updateInequalityCalcDiff(Data_t &data) const
         {
             data.Gx = data.residual.rx;
             data.Gu = data.residual.ru;

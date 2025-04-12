@@ -89,14 +89,10 @@
     using MatrixNw_t = typename PhaseSpec::MatrixNw_t;       \
     using MatrixNvNw_t = typename PhaseSpec::MatrixNvNw_t;   \
     using MatrixNvNu_t = typename PhaseSpec::MatrixNvNu_t;   \
-    using MatrixNvNua_t = typename PhaseSpec::MatrixNvNua_t; \
-    using MatrixNvNdx_t = typename PhaseSpec::MatrixNvNdx_t; \
     using MatrixNuNv_t = typename PhaseSpec::MatrixNuNv_t;   \
     using MatrixNuNw_t = typename PhaseSpec::MatrixNuNw_t;   \
     using MatrixNuaNu_t = typename PhaseSpec::MatrixNuaNu_t; \
-    using MatrixNuaNv_t = typename PhaseSpec::MatrixNuaNv_t; \
-    using MatrixNdxNw_t = typename PhaseSpec::MatrixNdxNw_t; \
-    using MatrixNdxNua_t = typename PhaseSpec::MatrixNdxNua_t;
+    using MatrixNdxNw_t = typename PhaseSpec::MatrixNdxNw_t;
 
 #define GALILEO_PHASE_SPEC_ARRAY_TYPES_TYPEDEF(PhaseSpec)              \
     using VarScalarArray_t = typename PhaseSpec::VarScalarArray_t;     \
@@ -146,33 +142,33 @@ namespace galileo
         /* Meta template types */
         /* ---------------------------------------------------------------- */
         using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
-        using ConstraintCollection_t = typename ConstraintManagerMeta_t::Collection_t;
-        using ConstraintModelManager_t = typename ConstraintManagerMeta_t::Model_t;
-        using ConstraintDataManager_t = typename ConstraintManagerMeta_t::Data_t;
+        using ConstraintCollection_t = typename traits<ConstraintManagerMeta_t>::Collection_t;
+        using ConstraintModelManager_t = typename traits<ConstraintManagerMeta_t>::Model_t;
+        using ConstraintDataManager_t = typename traits<ConstraintManagerMeta_t>::Data_t;
 
         using CostManagerMeta_t = CostManagerTpl<PS>;
-        using CostCollection_t = typename CostManagerMeta_t::Collection_t;
-        using CostModelManager_t = typename CostManagerMeta_t::Model_t;
-        using CostDataManager_t = typename CostManagerMeta_t::Data_t;
+        using CostCollection_t = typename traits<CostManagerMeta_t>::Collection_t;
+        using CostModelManager_t = typename traits<CostManagerMeta_t>::Model_t;
+        using CostDataManager_t = typename traits<CostManagerMeta_t>::Data_t;
 
         using NodeMeta_t = NodeTpl<PS>;
-        using NodeModel_t = typename NodeMeta_t::Model_t;
-        using NodeData_t = typename NodeMeta_t::Data_t;
+        using NodeModel_t = typename traits<NodeMeta_t>::Model_t;
+        using NodeData_t = typename traits<NodeMeta_t>::Data_t;
         using NodeDataVector_t = std::vector<NodeData_t>;
 
         using ControlParamMeta_t = ControlParamTpl<PS>;
-        using ControlParamModel_t = typename ControlParamMeta_t::Model_t;
-        using ControlParamData_t = typename ControlParamMeta_t::Data_t;
+        using ControlParamModel_t = typename traits<ControlParamMeta_t>::Model_t;
+        using ControlParamData_t = typename traits<ControlParamMeta_t>::Data_t;
         using ControlParamDataVector_t = std::vector<ControlParamData_t>;
 
         using SegmentMeta_t = SegmentTpl<PS>;
-        using SegmentModel_t = typename SegmentMeta_t::Model_t;
-        using SegmentData_t = typename SegmentMeta_t::Data_t;
+        using SegmentModel_t = typename traits<SegmentMeta_t>::Model_t;
+        using SegmentData_t = typename traits<SegmentMeta_t>::Data_t;
         using SegmentDataVector_t = std::vector<SegmentData_t>;
 
         using PhaseMeta_t = PhaseTpl<PS>;
-        using PhaseModel_t = typename PhaseMeta_t::Model_t;
-        using PhaseData_t = typename PhaseMeta_t::Data_t;
+        using PhaseModel_t = typename traits<PhaseMeta_t>::Model_t;
+        using PhaseData_t = typename traits<PhaseMeta_t>::Data_t;
         using PhaseDataVector_t = std::vector<PhaseData_t>;
 
         /* ---------------------------------------------------------------- */
@@ -200,18 +196,14 @@ namespace galileo
 
         using MatrixNvNw_t = Eigen::Matrix<VarScalar, NV, NW, Options>;
         using MatrixNvNu_t = Eigen::Matrix<VarScalar, NV, NU, Options>;
-        using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
-        using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
 
         using MatrixNuNv_t = Eigen::Matrix<VarScalar, NU, NV, Options>;
         using MatrixNuNw_t = Eigen::Matrix<VarScalar, NU, NW, Options>;
 
         using MatrixNuaNu_t = Eigen::Matrix<VarScalar, NUa, NU, Options>;
-        using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
 
         using MatrixNdxNu_t = Eigen::Matrix<VarScalar, NDX, NU, Options>;
         using MatrixNdxNw_t = Eigen::Matrix<VarScalar, NDX, NW, Options>;
-        using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
 
         using VarScalarArray_t = std::array<VarScalar, NStages>;
 

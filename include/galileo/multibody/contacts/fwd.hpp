@@ -22,6 +22,14 @@ namespace galileo
               template <typename PS> class ContactCollectionTpl>
     struct ContactDataTpl;
 
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    class ContactModelManagerTpl;
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    class ContactDataManagerTpl;
+
 } // namespace galileo
 
 #endif // __galileo_multibody_contacts_fwd_hpp__

@@ -14,14 +14,14 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ConstraintDerived = typename traits<Derived>::ConstraintDerived;
-        using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
-        using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using BoundVector_t = typename traits<ConstraintDerived>::BoundVector_t;
+        using BoundVector_t = typename traits<Meta_t>::BoundVector_t;
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(ConstraintDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -29,14 +29,14 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(ConstraintDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x.derived());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(ConstraintDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -44,14 +44,14 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(ConstraintDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x.derived());
         }
 
         template <typename DataCollector>
-        ConstraintDataDerived createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector)
         {
             return this->derived().createData(collector);
         }
@@ -85,12 +85,12 @@ namespace galileo
 
         int ng_impl() const
         {
-            return traits<ConstraintDerived>::NG;
+            return traits<Meta_t>::NG;
         }
 
         int nh_impl() const
         {
-            return traits<ConstraintDerived>::NH;
+            return traits<Meta_t>::NH;
         }
 
     protected:

@@ -4,10 +4,6 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/phases/phase-model-base.hpp"
 
-#define GALILEO_PHASE_DATA_TYPEDEF(Phase)                                    \
-    using SegmentDataVector_t = typename traits<Phase>::SegmentDataVector_t; \
-    using SegmentData_t = typename traits<Phase>::SegmentData_t;
-
 namespace galileo
 {
 
@@ -19,21 +15,13 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
-        using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
-        using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
+        using SegmentDataVector_t = typename PS::SegmentDataVector_t;
 
-        const SegmentDataVector_t &segments() const
-        {
-            return this->derived().segments();
-        }
-
-        SegmentDataVector_t &segments()
-        {
-            return this->derived().segments();
-        }
+        FORWARD_ACCESSOR(SegmentDataVector_t, segments);
 
         // The fully expanded contents of each PhaseData derived class should be
         // SegmentDataVector segments;

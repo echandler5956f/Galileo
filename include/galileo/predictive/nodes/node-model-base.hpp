@@ -15,12 +15,12 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using NodeDerived = typename traits<Derived>::NodeDerived;
-        using NodeDataDerived = typename traits<NodeDerived>::NodeDataDerived;
-        using NodeModelDerived = typename traits<NodeDerived>::NodeModelDerived;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(NodeDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -28,14 +28,14 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(NodeDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x.derived());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(NodeDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
@@ -43,19 +43,25 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(NodeDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x.derived());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void quasiStatic(NodeDataDerived &data,
+        void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlVectorType> &u,
                          const std::size_t maxiter, const typename PS::NumScalar tol) const
         {
             this->derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
         }
 
         int nu() const
@@ -65,7 +71,7 @@ namespace galileo
 
         int nu_impl() const
         {
-            return traits<NodeDerived>::NU;
+            return traits<Meta_t>::NU;
         }
 
     protected:

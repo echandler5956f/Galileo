@@ -17,10 +17,14 @@ namespace galileo
 
         using BS = BasicSpec;
 
+        using Meta_t = typename BS::ActuationMeta_t;
+        using Model_t = typename BS::ActuationModel_t;
+        using Data_t = typename BS::ActuationData_t;
+
         typename BS::VectorNv_t tau;
         typename BS::VectorNua_t u;
         typename BS::MatrixNvNdx_t dtau_dx;
-        typename BS::MatrixNu_t dtau_du;
+        typename BS::MatrixNvNua_t dtau_du;
         typename BS::MatrixNuaNv_t Mtau;
         std::array<bool, BS::NV> tau_set;
 

@@ -14,22 +14,26 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        using Meta_t = typename PS::ControlParamMeta_t;
+        using Model_t = typename PS::ControlParamModel_t;
+        using Data_t = typename PS::ControlParamData_t;
+
         template <typename ControlParamVectorType>
-        void calc(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
+        void calc(Data_t &data, const typename PS::NumScalar t,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             this->derived().calc(data, t, w.derived());
         }
 
         template <typename ControlParamVectorType>
-        void calcDiff(typename PS::ControlParamData_t &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             this->derived().calcDiff(data, w.derived());
         }
 
         template <typename ControlVectorType>
-        void params(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
+        void params(Data_t &data, const typename PS::NumScalar t,
                     const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             this->derived().params(data, t, u.derived());
@@ -46,7 +50,7 @@ namespace galileo
 
         template <typename InputMatrixType, typename OutputMatrixType>
         void multiplyByJacobian(
-            typename PS::ControlParamData_t &data,
+            Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const
@@ -56,7 +60,7 @@ namespace galileo
 
         template <typename InputMatrixType, typename OutputMatrixType>
         void multiplyJacobianTransposeBy(
-            typename PS::ControlParamData_t &data,
+            Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const
