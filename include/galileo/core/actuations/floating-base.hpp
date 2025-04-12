@@ -48,7 +48,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data->tau.tail(BS::NUa) = u;
+            data.tau.tail(BS::NUa) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -64,7 +64,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data->u = tau.tail(BS::NUa);
+            data.u = tau.tail(BS::NUa);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
