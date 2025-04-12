@@ -6,26 +6,21 @@
 namespace galileo
 {
 
-    namespace multibody
+    struct ContactModelVoid
     {
+    }; // struct ContactModelVoid
 
-        struct ContactModelVoid
-        {
-        }; // struct ContactModelVoid
+    struct ContactDataVoid
+    {
+    }; // struct ContactDataVoid
 
-        struct ContactDataVoid
-        {
-        }; // struct ContactDataVoid
-        
-        template <typename PhaseSpec,
-                  template <typename PS> class ContactCollectionTpl>
-        struct ContactModelTpl;
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    struct ContactModelTpl;
 
-        template <typename PhaseSpec,
-                  template <typename PS> class ContactCollectionTpl>
-        struct ContactDataTpl;
-
-    } // namespace multibody
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    struct ContactDataTpl;
 
 } // namespace galileo
 

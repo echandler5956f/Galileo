@@ -11,146 +11,141 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <typename Derived, typename PhaseSpec>
+    struct PhaseDataBase : internal::CRTP<PhaseDataBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        struct PhaseDataBase : internal::CRTP<PhaseDataBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
+        using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
+        using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+
+        GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
+
+        const SegmentDataVector_t &segments() const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            return this->derived().segments();
+        }
 
-            using PS = PhaseSpec;
+        SegmentDataVector_t &segments()
+        {
+            return this->derived().segments();
+        }
 
-            using PhaseDerived = PhaseTpl<PS, PhaseCollectionTpl>;
-            using PhaseDataDerived = typename traits<PhaseDerived>::PhaseDataDerived;
-            using PhaseModelDerived = typename traits<PhaseDerived>::PhaseModelDerived;
+        // The fully expanded contents of each PhaseData derived class should be
+        // SegmentDataVector segments;
+        // ---For each segment data, we have---
+        // | - C_t C;
+        // | - Ck_t Ck;
+        // | - Cw_t Cw;
+        // | - ControlParamData_t control;
+        // |   | - W_t W;
+        // |   | - U_t U;
+        // |   | - Wu_t Wu;
+        // | - ConstraintDataCollection_t constraints;
+        // |   | - ResidualData_t residual;
+        // |   |   | - R_t R;
+        // |   |   | - Rx_t Rx;
+        // |   |   | - Ru_t Ru;
+        // |   |   | - Arr_Rx_t Arr_Rx;
+        // |   |   | - Arr_Ru_t Arr_Ru;
+        // |   | - Seg_H_t H;
+        // |   | - Seg_Hx_t Hx;
+        // |   | - Seg_Hu_t Hu;
+        // |   | - Seg_G_t G;
+        // |   | - Seg_Gx_t Gx;
+        // |   | - Seg_Gu_t Gu;
+        // | - CostDataCollection_t costs;
+        // |   | - ResidualData_t residual;
+        // |   |   | - R_t R;
+        // |   |   | - Rx_t Rx;
+        // |   |   | - Ru_t Ru;
+        // |   |   | - Arr_Rx_t Arr_Rx;
+        // |   |   | - Arr_Ru_t Arr_Ru;
+        // |   | - ActivationData_t activation;
+        // |   |   | - A_t A;
+        // |   |   | - Ar_t Ar;
+        // |   |   | - Arr_t Arr;
+        // |   | - L_t L;
+        // |   | - Lx_t Lx;
+        // |   | - Lu_t Lu;
+        // |   | - Lxx_t Lxx;
+        // |   | - Lxu_t Lxu;
+        // |   | - Luu_t Luu;
+        // | - NodeDataVector nodes;
+        // | ---For each node data, we have---
+        // |   | - ActuationData_t actuation;
+        // |   | - ConstraintDataCollection_t constraints;
+        // |   |   | - ResidualData_t residual;
+        // |   |   |   | - R_t R;
+        // |   |   |   | - Rx_t Rx;
+        // |   |   |   | - Ru_t Ru;
+        // |   |   |   | - Arr_Rx_t Arr_Rx;
+        // |   |   |   | - Arr_Ru_t Arr_Ru;
+        // |   |   | - H_t H;
+        // |   |   | - Hx_t Hx;
+        // |   |   | - Hu_t Hu;
+        // |   |   | - G_t G;
+        // |   |   | - Gx_t Gx;
+        // |   |   | - Gu_t Gu;
+        // |   | - CostDataCollection_t costs;
+        // |   |   | - ResidualData_t residual;
+        // |   |   |   | - R_t R;
+        // |   |   |   | - Rx_t Rx;
+        // |   |   |   | - Ru_t Ru;
+        // |   |   |   | - Arr_Rx_t Arr_Rx;
+        // |   |   |   | - Arr_Ru_t Arr_Ru;
+        // |   |   | - ActivationData_t activation;
+        // |   |   |   | - A_t A;
+        // |   |   |   | - Ar_t Ar;
+        // |   |   |   | - Arr_t Arr;
+        // |   |   | - L_t L;
+        // |   |   | - Lx_t Lx;
+        // |   |   | - Lu_t Lu;
+        // |   |   | - Lxx_t Lxx;
+        // |   |   | - Lxu_t Lxu;
+        // |   |   | - Luu_t Luu;
+        // |   | - DynamicsData_t dynamics;
+        // |   |   | - F_t F;
+        // |   |   | - Fx_t Fx;
+        // |   |   | - Fu_t Fu;
 
-            GALILEO_PHASE_DATA_TYPEDEF(PhaseDerived);
+        // Thus, we need generic accessors for each of the above.
 
-            const SegmentDataVector_t &segments() const
-            {
-                return this->derived().segments();
-            }
+        // C_t segment_C(const std::size_t &segment_index) const
+        // {
+        //     return derived().segment_C(segment_index);
+        // }
 
-            SegmentDataVector_t &segments()
-            {
-                return this->derived().segments();
-            }
+        // Ck_t segment_Ck(const std::size_t &segment_index) const
+        // {
+        //     return derived().segment_Ck(segment_index);
+        // }
 
-            // The fully expanded contents of each PhaseData derived class should be
-            // SegmentDataVector segments;
-            // ---For each segment data, we have---
-            // | - C_t C;
-            // | - Ck_t Ck;
-            // | - Cw_t Cw;
-            // | - ControlParamData_t control;
-            // |   | - W_t W;
-            // |   | - U_t U;
-            // |   | - Wu_t Wu;
-            // | - ConstraintDataCollection_t constraints;
-            // |   | - ResidualData_t residual;
-            // |   |   | - R_t R;
-            // |   |   | - Rx_t Rx;
-            // |   |   | - Ru_t Ru;
-            // |   |   | - Arr_Rx_t Arr_Rx;
-            // |   |   | - Arr_Ru_t Arr_Ru;
-            // |   | - Seg_H_t H;
-            // |   | - Seg_Hx_t Hx;
-            // |   | - Seg_Hu_t Hu;
-            // |   | - Seg_G_t G;
-            // |   | - Seg_Gx_t Gx;
-            // |   | - Seg_Gu_t Gu;
-            // | - CostDataCollection_t costs;
-            // |   | - ResidualData_t residual;
-            // |   |   | - R_t R;
-            // |   |   | - Rx_t Rx;
-            // |   |   | - Ru_t Ru;
-            // |   |   | - Arr_Rx_t Arr_Rx;
-            // |   |   | - Arr_Ru_t Arr_Ru;
-            // |   | - ActivationData_t activation;
-            // |   |   | - A_t A;
-            // |   |   | - Ar_t Ar;
-            // |   |   | - Arr_t Arr;
-            // |   | - L_t L;
-            // |   | - Lx_t Lx;
-            // |   | - Lu_t Lu;
-            // |   | - Lxx_t Lxx;
-            // |   | - Lxu_t Lxu;
-            // |   | - Luu_t Luu;
-            // | - NodeDataVector nodes;
-            // | ---For each node data, we have---
-            // |   | - ActuationData_t actuation;
-            // |   | - ConstraintDataCollection_t constraints;
-            // |   |   | - ResidualData_t residual;
-            // |   |   |   | - R_t R;
-            // |   |   |   | - Rx_t Rx;
-            // |   |   |   | - Ru_t Ru;
-            // |   |   |   | - Arr_Rx_t Arr_Rx;
-            // |   |   |   | - Arr_Ru_t Arr_Ru;
-            // |   |   | - H_t H;
-            // |   |   | - Hx_t Hx;
-            // |   |   | - Hu_t Hu;
-            // |   |   | - G_t G;
-            // |   |   | - Gx_t Gx;
-            // |   |   | - Gu_t Gu;
-            // |   | - CostDataCollection_t costs;
-            // |   |   | - ResidualData_t residual;
-            // |   |   |   | - R_t R;
-            // |   |   |   | - Rx_t Rx;
-            // |   |   |   | - Ru_t Ru;
-            // |   |   |   | - Arr_Rx_t Arr_Rx;
-            // |   |   |   | - Arr_Ru_t Arr_Ru;
-            // |   |   | - ActivationData_t activation;
-            // |   |   |   | - A_t A;
-            // |   |   |   | - Ar_t Ar;
-            // |   |   |   | - Arr_t Arr;
-            // |   |   | - L_t L;
-            // |   |   | - Lx_t Lx;
-            // |   |   | - Lu_t Lu;
-            // |   |   | - Lxx_t Lxx;
-            // |   |   | - Lxu_t Lxu;
-            // |   |   | - Luu_t Luu;
-            // |   | - DynamicsData_t dynamics;
-            // |   |   | - F_t F;
-            // |   |   | - Fx_t Fx;
-            // |   |   | - Fu_t Fu;
+        // Cw_t segment_Cw(const std::size_t &segment_index) const
+        // {
+        //     return derived().segment_Cw(segment_index);
+        // }
 
-            // Thus, we need generic accessors for each of the above.
+    protected:
+        inline PhaseDataBase()
+        {
+        }
 
-            // C_t segment_C(const std::size_t &segment_index) const
-            // {
-            //     return derived().segment_C(segment_index);
-            // }
+        inline PhaseDataBase(const PhaseDataBase &clone)
+        {
+            *this = clone;
+        }
 
-            // Ck_t segment_Ck(const std::size_t &segment_index) const
-            // {
-            //     return derived().segment_Ck(segment_index);
-            // }
+        inline PhaseDataBase &operator=(const PhaseDataBase &clone)
+        {
+            return *this;
+        }
 
-            // Cw_t segment_Cw(const std::size_t &segment_index) const
-            // {
-            //     return derived().segment_Cw(segment_index);
-            // }
-
-        protected:
-            inline PhaseDataBase()
-            {
-            }
-
-            inline PhaseDataBase(const PhaseDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline PhaseDataBase &operator=(const PhaseDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct PhaseDataBase
-
-    } // namespace predictive
+    }; // struct PhaseDataBase
 
 } // namespace galileo
 

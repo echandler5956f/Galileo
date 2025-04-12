@@ -11,8 +11,6 @@
 
 namespace galileo
 {
-    namespace core
-    {
 
         template <typename PhaseSpec,
                   template <typename PS> class ConstraintCollectionTpl>
@@ -339,8 +337,6 @@ namespace galileo
             std::set<std::string> inactive_set_;
 
         }; // class ConstraintModelManagerTpl
-
-    } // namespace core
 
 } // namespace galileo
 

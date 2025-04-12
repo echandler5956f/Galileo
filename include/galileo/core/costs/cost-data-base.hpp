@@ -13,48 +13,44 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename PhaseSpec>
+    struct CostDataBase : internal::CRTP<CostDataBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        struct CostDataBase : internal::CRTP<CostDataBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using CostDerived = typename traits<Derived>::CostDerived;
+        using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
+        using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+
+        GALILEO_COST_DATA_TYPEDEF(CostDerived);
+
+        FORWARD_ACCESSOR(L_t, L);
+        FORWARD_ACCESSOR(Lx_t, Lx);
+        FORWARD_ACCESSOR(Lu_t, Lu);
+        FORWARD_ACCESSOR(Lxx_t, Lxx);
+        FORWARD_ACCESSOR(Lxu_t, Lxu);
+        FORWARD_ACCESSOR(Luu_t, Luu);
+
+    protected:
+        inline CostDataBase()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-            using PS = PhaseSpec;
+        inline CostDataBase(const CostDataBase &clone)
+        {
+            *this = clone;
+        }
 
-            using CostDerived = typename traits<Derived>::CostDerived;
-            using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
-            using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+        inline CostDataBase &operator=(const CostDataBase &clone)
+        {
+            return *this;
+        }
 
-            GALILEO_COST_DATA_TYPEDEF(CostDerived);
-
-            FORWARD_ACCESSOR(L_t, L);
-            FORWARD_ACCESSOR(Lx_t, Lx);
-            FORWARD_ACCESSOR(Lu_t, Lu);
-            FORWARD_ACCESSOR(Lxx_t, Lxx);
-            FORWARD_ACCESSOR(Lxu_t, Lxu);
-            FORWARD_ACCESSOR(Luu_t, Luu);
-
-        protected:
-            inline CostDataBase()
-            {
-            }
-
-            inline CostDataBase(const CostDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline CostDataBase &operator=(const CostDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct CostDataBase
-
-    } // namespace core
+    }; // struct CostDataBase
 
 } // namespace galileo
 

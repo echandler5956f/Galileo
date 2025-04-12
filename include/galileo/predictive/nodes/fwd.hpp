@@ -6,20 +6,15 @@
 namespace galileo
 {
 
-    namespace predictive
-    {
+    template <
+        typename PhaseSpec,
+        template <typename PS> class ContactCollectionTpl>
+    struct NodeDataContactFwdDynTpl;
 
-        template <
-            typename PhaseSpec,
-            template <typename PS> class ContactCollectionTpl>
-        struct NodeDataContactFwdDynTpl;
-
-        template <
-            typename PhaseSpec,
-            template <typename PS> class ContactCollectionTpl>
-        struct NodeModelContactFwdDynTpl;
-
-    } // namespace predictive
+    template <
+        typename PhaseSpec,
+        template <typename PS> class ContactCollectionTpl>
+    struct NodeModelContactFwdDynTpl;
 
 } // namespace galileo
 

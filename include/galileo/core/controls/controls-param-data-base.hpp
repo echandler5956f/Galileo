@@ -6,35 +6,31 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename PhaseSpec>
+    struct ControlParamDataBase : internal::CRTP<ControlParamDataBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        struct ControlParamDataBase : internal::CRTP<ControlParamDataBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+    protected:
+        inline ControlParamDataBase()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-            using PS = PhaseSpec;
+        inline ControlParamDataBase(const ControlParamDataBase &clone)
+        {
+            *this = clone;
+        }
 
-        protected:
-            inline ControlParamDataBase()
-            {
-            }
+        inline ControlParamDataBase &operator=(const ControlParamDataBase &clone)
+        {
+            return *this;
+        }
 
-            inline ControlParamDataBase(const ControlParamDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline ControlParamDataBase &operator=(const ControlParamDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct ControlParamDataBase
-
-    } // namespace core
+    }; // struct ControlParamDataBase
 
 } // namespace galileo
 

@@ -11,177 +11,175 @@
 
 namespace galileo
 {
-    namespace multibody
+
+    template <typename Derived, typename PhaseSpec>
+    struct ContactBaseTpl;
+
+    // We are basically forward propogating the responsibility of filling the traits
+    // to the derived CRTP class, because ContactDataBaseTpl/ContactModelBaseTpl are CRTP base classes
+    template <typename Derived, typename PhaseSpec>
+    struct traits<ContactBaseTpl<Derived, PhaseSpec>>
     {
+        using PS = PhaseSpec;
+        using ContactBase = ContactDataBaseTpl<Derived, PS>;
+        using ForceDerived = ContactBase;
+        using ContactDerived = Derived;
 
-        template <typename Derived, typename PhaseSpec>
-        struct ContactBaseTpl;
+        // Retrieve the traits of the derived class
+        GALILEO_FORCE_DATA_TYPEDEF(ContactDerived);
+        GALILEO_CONTACT_DATA_TYPEDEF(ContactDerived);
+    };
 
-        // We are basically forward propogating the responsibility of filling the traits
-        // to the derived CRTP class, because ContactDataBaseTpl/ContactModelBaseTpl are CRTP base classes
-        template <typename Derived, typename PhaseSpec>
-        struct traits<ContactBaseTpl<Derived, PhaseSpec>>
+    template <typename Derived, typename PhaseSpec>
+    struct traits<ContactDataBase<Derived, PhaseSpec>>
+    {
+        using PS = PhaseSpec;
+        using ContactBase = ContactBaseTpl<Derived, PS>;
+        using ContactDerived = typename traits<ContactBase>::ContactDerived;
+    };
+
+    template <typename Derived, typename PhaseSpec>
+    struct traits<ContactModelBase<Derived, PhaseSpec>>
+    {
+        using PS = PhaseSpec;
+        using ContactBase = ContactBaseTpl<Derived, PS>;
+        using ContactDerived = typename traits<ContactBase>::ContactDerived;
+    };
+
+    template <typename Derived, typename PhaseSpec>
+    struct ContactDataBase : public ForceDataBase<ContactDataBase<Derived, PhaseSpec>, PhaseSpec>
+    {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using PS = PhaseSpec;
+        using ContactBase = typename traits<ContactBaseTpl<Derived, PS>>::ContactBase;
+        using ForceDerived = typename traits<ContactBase>::ForceDerived;
+
+        GALILEO_FORCE_DATA_TYPEDEF(ForceDerived);
+        GALILEO_CONTACT_DATA_TYPEDEF(ContactBase);
+
+        FORWARD_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
+        FORWARD_ACCESSOR(Index_t, frame);
+        FORWARD_ACCESSOR(ReferenceFrame_t, type);
+        FORWARD_ACCESSOR(SE3_t, jMf);
+        FORWARD_ACCESSOR(MatrixNcNv_t, Jc);
+        FORWARD_ACCESSOR(Force_t, f);
+        FORWARD_ACCESSOR(Force_t, fext);
+        FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
+        FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
+
+        FORWARD_ACCESSOR(ActionMatrix_t, fXj);
+        FORWARD_ACCESSOR(VectorNc_t, a0);
+        FORWARD_ACCESSOR(MatrixNcNdx_t, da0_dx);
+        FORWARD_ACCESSOR(MatrixNv_t, dtau_dq);
+
+    protected:
+        inline ContactDataBase()
         {
-            using PS = PhaseSpec;
-            using ContactBase = ContactDataBaseTpl<Derived, PS>;
-            using ForceDerived = ContactBase;
-            using ContactDerived = Derived;
+        }
 
-            // Retrieve the traits of the derived class
-            GALILEO_FORCE_DATA_TYPEDEF(ContactDerived);
-            GALILEO_CONTACT_DATA_TYPEDEF(ContactDerived);
-        };
-
-        template <typename Derived, typename PhaseSpec>
-        struct traits<ContactDataBase<Derived, PhaseSpec>>
+        inline ContactDataBase(const ContactDataBase &clone)
         {
-            using PS = PhaseSpec;
-            using ContactBase = ContactBaseTpl<Derived, PS>;
-            using ContactDerived = typename traits<ContactBase>::ContactDerived;
-        };
+            *this = clone;
+        }
 
-        template <typename Derived, typename PhaseSpec>
-        struct traits<ContactModelBase<Derived, PhaseSpec>>
+        inline ContactDataBase &operator=(const ContactDataBase &clone)
         {
-            using PS = PhaseSpec;
-            using ContactBase = ContactBaseTpl<Derived, PS>;
-            using ContactDerived = typename traits<ContactBase>::ContactDerived;
-        };
+            return *this;
+        }
 
-        template <typename Derived, typename PhaseSpec>
-        struct ContactDataBase : public ForceDataBase<ContactDataBase<Derived, PhaseSpec>, PhaseSpec>
+    }; // struct ContactDataBase
+
+    template <typename Derived, typename PhaseSpec>
+    struct ContactModelBase : internal::CRTP<ContactModelBase<Derived, PhaseSpec>>
+    {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using PS = PhaseSpec;
+
+        // ContactModelBase is one level up in the hierarchy from ContactDataBase
+        using ContactDerived = typename traits<Derived>::ContactDerived;
+        using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
+        using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
+
+        template <typename StateVectorType>
+        void calc(ContactDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x)
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, x.derived());
+        }
 
-            using PS = PhaseSpec;
-            using ContactBase = typename traits<ContactBaseTpl<Derived, PS>>::ContactBase;
-            using ForceDerived = typename traits<ContactBase>::ForceDerived;
-
-            GALILEO_FORCE_DATA_TYPEDEF(ForceDerived);
-            GALILEO_CONTACT_DATA_TYPEDEF(ContactBase);
-
-            FORWARD_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
-            FORWARD_ACCESSOR(Index_t, frame);
-            FORWARD_ACCESSOR(ReferenceFrame_t, type);
-            FORWARD_ACCESSOR(SE3_t, jMf);
-            FORWARD_ACCESSOR(MatrixNcNv_t, Jc);
-            FORWARD_ACCESSOR(Force_t, f);
-            FORWARD_ACCESSOR(Force_t, fext);
-            FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
-            FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
-
-            FORWARD_ACCESSOR(ActionMatrix_t, fXj);
-            FORWARD_ACCESSOR(VectorNc_t, a0);
-            FORWARD_ACCESSOR(MatrixNcNdx_t, da0_dx);
-            FORWARD_ACCESSOR(MatrixNv_t, dtau_dq);
-
-        protected:
-            inline ContactDataBase()
-            {
-            }
-
-            inline ContactDataBase(const ContactDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline ContactDataBase &operator=(const ContactDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct ContactDataBase
-
-        template <typename Derived, typename PhaseSpec>
-        struct ContactModelBase : internal::CRTP<ContactModelBase<Derived, PhaseSpec>>
-        {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-            using PS = PhaseSpec;
-
-            // ContactModelBase is one level up in the hierarchy from ContactDataBase
-            using ContactDerived = typename traits<Derived>::ContactDerived;
-            using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
-            using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
-
-            template <typename StateVectorType>
-            void calc(ContactDataDerived &data,
+        template <typename StateVectorType>
+        void calcDiff(ContactDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x)
-            {
-                this->derived().calc(data, x.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived());
+        }
 
-            template <typename StateVectorType>
-            void calcDiff(ContactDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x)
-            {
-                this->derived().calcDiff(data, x.derived());
-            }
+        template <typename ForceVectorType>
+        void updateForce(ContactDataDerived &data,
+                         const Eigen::MatrixBase<ForceVectorType> &force)
+        {
+            this->derived().updateForce(data, force.derived());
+        }
 
-            template <typename ForceVectorType>
-            void updateForce(ContactDataDerived &data,
-                             const Eigen::MatrixBase<ForceVectorType> &force)
-            {
-                this->derived().updateForce(data, force.derived());
-            }
+        template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        void updateForceDiff(ContactDataDerived &data,
+                             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                             const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+        {
+            this->derived().updateForceDiff(data, df_dx.derived(), df_du.derived());
+        }
 
-            template <typename MatrixNcNdxType, typename MatrixNcNuType>
-            void updateForceDiff(ContactDataDerived &data,
-                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
-            {
-                this->derived().updateForceDiff(data, df_dx.derived(), df_du.derived());
-            }
+        void setZeroForce(ContactDataDerived &data) const
+        {
+            this->derived().setZeroForce(data);
+        }
 
-            void setZeroForce(ContactDataDerived &data) const
-            {
-                this->derived().setZeroForce(data);
-            }
+        void setZeroForceDiff(ContactDataDerived &data) const
+        {
+            this->derived().setZeroForceDiff(data);
+        }
 
-            void setZeroForceDiff(ContactDataDerived &data) const
-            {
-                this->derived().setZeroForceDiff(data);
-            }
+        int nc() const
+        {
+            return this->derived().nc_impl();
+        }
 
-            int nc() const
-            {
-                return this->derived().nc_impl();
-            }
+        int nc_impl() const
+        {
+            return traits<Derived>::NC;
+        }
 
-            int nc_impl() const
-            {
-                return traits<Derived>::NC;
-            }
+        Index_t id() const
+        {
+            return this->derived().id_impl();
+        }
 
-            Index_t id() const
-            {
-                return this->derived().id_impl();
-            }
+        void set_id(const Index_t &id)
+        {
+            this->derived().set_id_impl(id);
+        }
 
-            void set_id(const Index_t &id)
-            {
-                this->derived().set_id_impl(id);
-            }
+    protected:
+        inline ContactModelBase()
+        {
+        }
 
-        protected:
-            inline ContactModelBase()
-            {
-            }
+        inline ContactModelBase(const ContactModelBase &clone)
+        {
+            *this = clone;
+        }
 
-            inline ContactModelBase(const ContactModelBase &clone)
-            {
-                *this = clone;
-            }
+        inline ContactModelBase &operator=(const ContactModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline ContactModelBase &operator=(const ContactModelBase &clone)
-            {
-                return *this;
-            }
+    }; // struct ContactModelBase
 
-        }; // struct ContactModelBase
-    }
-}
+} // namespace galileo
 
 #endif // __galileo_multibody_contacts_contact_base_hpp__

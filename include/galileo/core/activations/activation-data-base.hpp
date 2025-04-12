@@ -4,65 +4,61 @@
 #include "galileo/core/activations/activation-base.hpp"
 #include "galileo/core/activations/activation-model-base.hpp"
 
-// We use traits rather than PhaseSpec, 
+// We use traits rather than PhaseSpec,
 // because each activation model has its own NR
-#define GALILEO_ACTIVATION_DATA_TYPEDEF(Activation) \
-    using A_t = typename traits<Activation>::A_t;   \
-    using Ar_t = typename traits<Activation>::Ar_t; \
+#define GALILEO_ACTIVATION_DATA_TYPEDEF(Activation)   \
+    using A_t = typename traits<Activation>::A_t;     \
+    using Ar_t = typename traits<Activation>::Ar_t;   \
     using Arr_t = typename traits<Activation>::Arr_t; \
     using Arr_diag_t = typename traits<Activation>::Arr_diag_t;
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename PhaseSpec>
+    struct ActivationDataBase : internal::CRTP<ActivationDataBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        struct ActivationDataBase : internal::CRTP<ActivationDataBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using ActivationDerived = typename traits<Derived>::ActivationDerived;
+        using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
+        using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+
+        GALILEO_ACTIVATION_DATA_TYPEDEF(ActivationDerived);
+
+        FORWARD_ACCESSOR(A_t, A);
+        FORWARD_ACCESSOR(Ar_t, Ar);
+        FORWARD_ACCESSOR(Arr_t, Arr);
+
+        static Arr_diag_t getHessianMatrix(const ActivationDataDerived &data)
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            return data.Arr.diagonal().asDiagonal();
+        }
 
-            using PS = PhaseSpec;
+        static void setHessianMatrix(ActivationDataDerived &data, const Arr_t &Arr)
+        {
+            data.Arr.diagonal() = Arr.diagonal();
+        }
 
-            using ActivationDerived = typename traits<Derived>::ActivationDerived;
-            using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
-            using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+    protected:
+        inline ActivationDataBase()
+        {
+        }
 
-            GALILEO_ACTIVATION_DATA_TYPEDEF(ActivationDerived);
+        inline ActivationDataBase(const ActivationDataBase &clone)
+        {
+            *this = clone;
+        }
 
-            FORWARD_ACCESSOR(A_t, A);
-            FORWARD_ACCESSOR(Ar_t, Ar);
-            FORWARD_ACCESSOR(Arr_t, Arr);
+        inline ActivationDataBase &operator=(const ActivationDataBase &clone)
+        {
+            return *this;
+        }
 
-            static Arr_diag_t getHessianMatrix(const ActivationDataDerived &data)
-            {
-                return data.Arr.diagonal().asDiagonal();
-            }
-
-            static void setHessianMatrix(ActivationDataDerived &data, const Arr_t &Arr)
-            {
-                data.Arr.diagonal() = Arr.diagonal();
-            }
-
-        protected:
-            inline ActivationDataBase()
-            {
-            }
-
-            inline ActivationDataBase(const ActivationDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline ActivationDataBase &operator=(const ActivationDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct ActivationDataBase
-
-    } // namespace core
+    }; // struct ActivationDataBase
 
 } // namespace galileo
 

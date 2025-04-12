@@ -5,69 +5,65 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename PhaseSpec>
+    class ActivationModelBase : internal::CRTP<ActivationModelBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        class ActivationModelBase : internal::CRTP<ActivationModelBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using ActivationDerived = typename traits<Derived>::ActivationDerived;
+        using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
+        using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
+
+        template <typename ResidualVectorType>
+        void calc(ActivationDataDerived &data,
+                  const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, r.derived());
+        }
 
-            using PS = PhaseSpec;
-
-            using ActivationDerived = typename traits<Derived>::ActivationDerived;
-            using ActivationDataDerived = typename traits<ActivationDerived>::ActivationDataDerived;
-            using ActivationModelDerived = typename traits<ActivationDerived>::ActivationModelDerived;
-
-            template <typename ResidualVectorType>
-            void calc(ActivationDataDerived &data,
+        template <typename ResidualVectorType>
+        void calcDiff(ActivationDataDerived &data,
                       const Eigen::MatrixBase<ResidualVectorType> &r) const
-            {
-                this->derived().calc(data, r.derived());
-            }
+        {
+            this->derived().calcDiff(data, r.derived());
+        }
 
-            template <typename ResidualVectorType>
-            void calcDiff(ActivationDataDerived &data,
-                          const Eigen::MatrixBase<ResidualVectorType> &r) const
-            {
-                this->derived().calcDiff(data, r.derived());
-            }
+        template <typename DataCollector>
+        ActivationDataDerived createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
+        }
 
-            template <typename DataCollector>
-            ActivationDataDerived createData(DataCollector *const collector)
-            {
-                return this->derived().createData(collector);
-            }
+        int nr() const
+        {
+            return this->derived().nr_impl();
+        }
 
-            int nr() const
-            {
-                return this->derived().nr_impl();
-            }
+        int nr_impl() const
+        {
+            return traits<ActivationDerived>::NR;
+        }
 
-            int nr_impl() const
-            {
-                return traits<ActivationDerived>::NR;
-            }
+    protected:
+        inline ActivationModelBase()
+        {
+        }
 
-        protected:
-            inline ActivationModelBase()
-            {
-            }
+        inline ActivationModelBase(const ActivationModelBase &clone)
+        {
+            *this = clone;
+        }
 
-            inline ActivationModelBase(const ActivationModelBase &clone)
-            {
-                *this = clone;
-            }
+        inline ActivationModelBase &operator=(const ActivationModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline ActivationModelBase &operator=(const ActivationModelBase &clone)
-            {
-                return *this;
-            }
-
-        }; // class ActivationModelBase
-
-    } // namespace core
+    }; // class ActivationModelBase
 
 } // namespace galileo
 

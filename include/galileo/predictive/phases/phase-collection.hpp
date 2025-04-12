@@ -9,27 +9,22 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <typename PhaseSpec>
+    struct PhaseCollectionDefaultTpl
     {
+    public:
+        using PS = PhaseSpec;
 
-        template<typename PhaseSpec>
-        struct PhaseCollectionDefaultTpl
-        {
-        public:
-            using PS = PhaseSpec;
+        using PhaseModelVariant = boost::variant<>; // TODO: Add phase models
 
-            using PhaseModelVariant = boost::variant<>; // TODO: Add phase models
+        using PhaseDataVariant = boost::variant<>; // TODO: Add phase data
+    };
 
-            using PhaseDataVariant = boost::variant<>;   // TODO: Add phase data
-        };
+    template <typename PhaseSpec>
+    using PhaseModelVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseModelVariant;
 
-        template<typename PhaseSpec>
-        using PhaseModelVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseModelVariant;
-
-        template<typename PhaseSpec>
-        using PhaseDataVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseDataVariant;
-
-    } // namespace predictive
+    template <typename PhaseSpec>
+    using PhaseDataVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseDataVariant;
 
 } // namespace galileo
 

@@ -6,59 +6,55 @@
 
 namespace galileo
 {
-    namespace predictive
+
+    template <typename Derived, typename PhaseSpec>
+    struct SegmentERKDataBase : internal::CRTP<SegmentERKDataBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        struct SegmentERKDataBase : internal::CRTP<SegmentERKDataBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
+        using SegmentERKDerived = typename traits<Derived>::SegmentERKDerived;
+        using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
+        using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
+
+        FORWARD_ACCESSOR(XNext_t, XNext);
+        FORWARD_ACCESSOR(XNextx_t, XNextx);
+        FORWARD_ACCESSOR(XNextw_t, XNextw);
+
+        FORWARD_ACCESSOR(L_t, L);
+        FORWARD_ACCESSOR(Lx_t, Lx);
+        FORWARD_ACCESSOR(Lw_t, Lw);
+        FORWARD_ACCESSOR(Lxx_t, Lxx);
+        FORWARD_ACCESSOR(Lxw_t, Lxw);
+        FORWARD_ACCESSOR(Lww_t, Lww);
+
+        FORWARD_ACCESSOR(H_t, H);
+        FORWARD_ACCESSOR(Hx_t, Hx);
+        FORWARD_ACCESSOR(Hw_t, Hw);
+        FORWARD_ACCESSOR(G_t, G);
+        FORWARD_ACCESSOR(Gx_t, Gx);
+        FORWARD_ACCESSOR(Gw_t, Gw);
+
+    protected:
+        inline SegmentERKDataBase()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-            using PS = PhaseSpec;
+        inline SegmentERKDataBase(const SegmentERKDataBase &clone)
+        {
+            *this = clone;
+        }
 
-            GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        inline SegmentERKDataBase &operator=(const SegmentERKDataBase &clone)
+        {
+            return *this;
+        }
 
-            using SegmentERKDerived = typename traits<Derived>::SegmentERKDerived;
-            using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
-            using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
-
-            FORWARD_ACCESSOR(XNext_t, XNext);
-            FORWARD_ACCESSOR(XNextx_t, XNextx);
-            FORWARD_ACCESSOR(XNextw_t, XNextw);
-
-            FORWARD_ACCESSOR(L_t, L);
-            FORWARD_ACCESSOR(Lx_t, Lx);
-            FORWARD_ACCESSOR(Lw_t, Lw);
-            FORWARD_ACCESSOR(Lxx_t, Lxx);
-            FORWARD_ACCESSOR(Lxw_t, Lxw);
-            FORWARD_ACCESSOR(Lww_t, Lww);
-
-            FORWARD_ACCESSOR(H_t, H);
-            FORWARD_ACCESSOR(Hx_t, Hx);
-            FORWARD_ACCESSOR(Hw_t, Hw);
-            FORWARD_ACCESSOR(G_t, G);
-            FORWARD_ACCESSOR(Gx_t, Gx);
-            FORWARD_ACCESSOR(Gw_t, Gw);
-
-        protected:
-            inline SegmentERKDataBase()
-            {
-            }
-
-            inline SegmentERKDataBase(const SegmentERKDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline SegmentERKDataBase &operator=(const SegmentERKDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct SegmentERKDataBase
-
-    } // namespace predictive
+    }; // struct SegmentERKDataBase
 
 } // namespace galileo
 

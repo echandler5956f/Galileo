@@ -13,21 +13,16 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <class Derived>
+    class MRTBase : internal::CRTP<Derived>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <class Derived>
-        class MRTBase : internal::CRTP<Derived>
-        {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        using MRTBaseDerived = typename traits<Derived>::MRTBaseDerived;
+        GALILEO_MRT_BASIC_TYPEDEF(MRTBaseDerived);
 
-            using MRTBaseDerived = typename traits<Derived>::MRTBaseDerived;
-            GALILEO_MRT_BASIC_TYPEDEF(MRTBaseDerived);
-
-        }; // class MRTBase
-
-    } // namespace predictive
+    }; // class MRTBase
 
 } // namespace galileo
 

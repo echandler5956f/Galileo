@@ -5,67 +5,63 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename BasicSpec>
+    class ActuationModelBase : internal::CRTP<ActuationModelBase<Derived, BasicSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename BasicSpec>
-        class ActuationModelBase : internal::CRTP<ActuationModelBase<Derived, BasicSpec>>
+        using BS = BasicSpec;
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calc(typename BS::ActuationData_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x,
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, x.derived(), u.derived());
+        }
 
-            using BS = BasicSpec;
-
-            template <typename StateVectorType, typename ControlVectorType>
-            void calc(typename BS::ActuationData_t &data,
+        template <typename StateVectorType, typename ControlVectorType>
+        void calcDiff(typename BS::ActuationData_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calc(data, x.derived(), u.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived(), u.derived());
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(typename BS::ActuationData_t &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calcDiff(data, x.derived(), u.derived());
-            }
+        template <typename StateVectorType, typename TauVectorType>
+        void commands(typename BS::ActuationData_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x,
+                      const Eigen::MatrixBase<TauVectorType> &tau) const
+        {
+            this->derived().commands(data, x.derived(), tau.derived());
+        }
 
-            template <typename StateVectorType, typename TauVectorType>
-            void commands(typename BS::ActuationData_t &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<TauVectorType> &tau) const
-            {
-                this->derived().commands(data, x.derived(), tau.derived());
-            }
+        template <typename StateVectorType, typename ControlVectorType>
+        void torqueTransform(typename BS::ActuationData_t &data,
+                             const Eigen::MatrixBase<StateVectorType> &x,
+                             const Eigen::MatrixBase<ControlVectorType> &u) const
+        {
+            this->derived().torqueTransform(data, x.derived(), u.derived());
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void torqueTransform(typename BS::ActuationData_t &data,
-                                 const Eigen::MatrixBase<StateVectorType> &x,
-                                 const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().torqueTransform(data, x.derived(), u.derived());
-            }
+    protected:
+        inline ActuationModelBase()
+        {
+        }
 
-        protected:
-            inline ActuationModelBase()
-            {
-            }
+        inline ActuationModelBase(const ActuationModelBase &clone)
+        {
+            *this = clone;
+        }
 
-            inline ActuationModelBase(const ActuationModelBase &clone)
-            {
-                *this = clone;
-            }
+        inline ActuationModelBase &operator=(const ActuationModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline ActuationModelBase &operator=(const ActuationModelBase &clone)
-            {
-                return *this;
-            }
-
-        }; // class ActuationModelBase
-
-    } // namespace core
+    }; // class ActuationModelBase
 
 } // namespace galileo
 

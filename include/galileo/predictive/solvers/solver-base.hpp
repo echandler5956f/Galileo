@@ -22,92 +22,87 @@
 namespace galileo
 {
 
-    namespace predictive
+    enum FeasibilityNormOptions
     {
+        LInf = 0,
+        L1 = 1
+    }; // enum FeasibilityNormOptions
 
-        enum FeasibilityNormOptions
+    template <typename Derived>
+    class SolverBase : internal::CRTP<SolverBase<Derived>>
+    {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using SolverDerived = typename traits<Derived>::SolverDerived;
+        GALILEO_SOLVER_BASIC_TYPEDEF(SolverDerived);
+        GALILEO_SOLVER_TYPEDEF(SolverDerived);
+
+        bool solve(const std::vector<VectorXn> &init_xs,
+                   const std::vector<VectorXn> &init_us,
+                   const std::size_t maxiter = 100,
+                   const bool is_feasible = false,
+                   const NumScalar init_reg = NAN)
         {
-            LInf = 0,
-            L1 = 1
-        }; // enum FeasibilityNormOptions
+            return this->derived().solve(init_xs, init_us, maxiter, is_feasible, init_reg);
+        }
 
-        template <typename Derived>
-        class SolverBase : internal::CRTP<SolverBase<Derived>>
+    protected:
+        inline SolverBase()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-            using SolverDerived = typename traits<Derived>::SolverDerived;
-            GALILEO_SOLVER_BASIC_TYPEDEF(SolverDerived);
-            GALILEO_SOLVER_TYPEDEF(SolverDerived);
+        inline SolverBase(const SolverBase &clone)
+        {
+            *this = clone;
+        }
 
-            bool solve(const std::vector<VectorXn> &init_xs,
-                       const std::vector<VectorXn> &init_us,
-                       const std::size_t maxiter = 100,
-                       const bool is_feasible = false,
-                       const NumScalar init_reg = NAN)
-            {
-                return this->derived().solve(init_xs, init_us, maxiter, is_feasible, init_reg);
-            }
+        inline SolverBase &operator=(const SolverBase &clone)
+        {
+            return *this;
+        }
 
-        protected:
-            inline SolverBase()
-            {
-            }
+        void resizeData();
 
-            inline SolverBase(const SolverBase &clone)
-            {
-                *this = clone;
-            }
+        NumScalar computeDynamicFeasibility();
 
-            inline SolverBase &operator=(const SolverBase &clone)
-            {
-                return *this;
-            }
+        NumScalar computeInequalityFeasibility();
 
-            void resizeData();
+        NumScalar computeEqualityFeasibility();
 
-            NumScalar computeDynamicFeasibility();
+        void setCandidate(const std::vector<VectorXn> &xs_warm, const std::vector<VectorXn> &us_warm, const bool is_feasible = false);
 
-            NumScalar computeInequalityFeasibility();
+        OptimalControlProblem_t ocp_;
 
-            NumScalar computeEqualityFeasibility();
+        std::vector<VectorXn> xs_;
+        std::vector<VectorXn> us_;
+        std::vector<VectorXn> fs_;
 
-            void setCandidate(const std::vector<VectorXn> &xs_warm, const std::vector<VectorXn> &us_warm, const bool is_feasible = false);
+        bool is_feasible_;
+        bool was_feasible_;
+        NumScalar cost_;
 
-            OptimalControlProblem_t ocp_;
+        NumScalar ffeas_;
+        NumScalar gfeas_;
+        NumScalar hfeas_;
 
-            std::vector<VectorXn> xs_;
-            std::vector<VectorXn> us_;
-            std::vector<VectorXn> fs_;
+        NumScalar ffeas_try_;
+        NumScalar gfeas_try_;
+        NumScalar hfeas_try_;
 
-            bool is_feasible_;
-            bool was_feasible_;
-            NumScalar cost_;
+        NumScalar preg_;
+        NumScalar dreg_;
 
-            NumScalar ffeas_;
-            NumScalar gfeas_;
-            NumScalar hfeas_;
+        NumScalar steplength_;
+        NumScalar th_acceptstep_;
+        NumScalar th_stop_;
+        NumScalar th_gaptol_;
 
-            NumScalar ffeas_try_;
-            NumScalar gfeas_try_;
-            NumScalar hfeas_try_;
+        std::size_t iter_;
+        NumScalar tmp_feas_;
+        std::vector<VectorXns> g_adj_;
 
-            NumScalar preg_;
-            NumScalar dreg_;
-
-            NumScalar steplength_;
-            NumScalar th_acceptstep_;
-            NumScalar th_stop_;
-            NumScalar th_gaptol_;
-
-            std::size_t iter_;
-            NumScalar tmp_feas_;
-            std::vector<VectorXns> g_adj_;
-
-        }; // class SolverBase
-
-    } // namespace predictive
+    }; // class SolverBase
 
 } // namespace galileo
 

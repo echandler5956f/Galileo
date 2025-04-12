@@ -5,11 +5,6 @@
 
 namespace galileo
 {
-    
-    namespace predictive
-    {
-
-    } // namespace predictive
 
 } // namespace galileo
 

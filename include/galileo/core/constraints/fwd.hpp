@@ -6,49 +6,44 @@
 namespace galileo
 {
 
-    namespace core
+    struct ConstraintModelVoid
     {
+    }; // struct ConstraintModelVoid`
 
-        struct ConstraintModelVoid
-        {
-        }; // struct ConstraintModelVoid`
+    struct ConstraintDataVoid
+    {
+    }; // struct ConstraintDataVoid
 
-        struct ConstraintDataVoid
-        {
-        }; // struct ConstraintDataVoid
+    enum class ConstraintType
+    {
+        Equality = 0,
+        Inequality = 1
+    };
 
-        enum class ConstraintType
-        {
-            Equality = 0,
-            Inequality = 1
-        };
+    template <
+        typename PhaseSpec,
+        template <typename PS> class ResidualTpl,
+        ConstraintType EqualityInequality>
+    struct ConstraintModelResidualTpl;
 
-        template <
-            typename PhaseSpec,
-            template <typename PS> class ResidualTpl,
-            ConstraintType EqualityInequality>
-        struct ConstraintModelResidualTpl;
+    template <
+        typename PhaseSpec,
+        template <typename PS> class ResidualTpl,
+        ConstraintType EqualityInequality>
+    struct ConstraintDataResidualTpl;
 
-        template <
-            typename PhaseSpec,
-            template <typename PS> class ResidualTpl,
-            ConstraintType EqualityInequality>
-        struct ConstraintDataResidualTpl;
+    template <typename PhaseSpec>
+    struct ConstraintCollectionDefaultTpl;
 
-        template <typename PhaseSpec>
-        struct ConstraintCollectionDefaultTpl;
+    template <
+        typename PhaseSpec,
+        template <typename PS> class ConstraintCollectionTpl>
+    struct ConstraintModelTpl;
 
-        template <
-            typename PhaseSpec,
-            template <typename PS> class ConstraintCollectionTpl>
-        struct ConstraintModelTpl;
-
-        template <
-            typename PhaseSpec,
-            template <typename PS> class ConstraintCollectionTpl>
-        struct ConstraintDataTpl;
-
-    } // namespace core
+    template <
+        typename PhaseSpec,
+        template <typename PS> class ConstraintCollectionTpl>
+    struct ConstraintDataTpl;
 
 } // namespace galileo
 

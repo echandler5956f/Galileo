@@ -6,44 +6,40 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived>
+    struct ResidualDataBase : internal::CRTP<ResidualDataBase<Derived>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived>
-        struct ResidualDataBase : internal::CRTP<ResidualDataBase<Derived>>
+        using ResidualDerived = typename traits<Derived>::ResidualDerived;
+        GALILEO_RESIDUAL_BASIC_TYPEDEF(ResidualDerived);
+        GALILEO_RESIDUAL_CONSTANTS(ResidualDerived);
+        GALILEO_RESIDUAL_DATA_TYPEDEF(ResidualDerived);
+
+        // R_t R;
+        // Rx_t Rx;
+        // Ru_t Ru;
+        // Arr_Rx_t Arr_Rx;
+        // Arr_Ru_t Arr_Ru;
+
+    protected:
+        inline ResidualDataBase()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-            using ResidualDerived = typename traits<Derived>::ResidualDerived;
-            GALILEO_RESIDUAL_BASIC_TYPEDEF(ResidualDerived);
-            GALILEO_RESIDUAL_CONSTANTS(ResidualDerived);
-            GALILEO_RESIDUAL_DATA_TYPEDEF(ResidualDerived);
+        inline ResidualDataBase(const ResidualDataBase &clone)
+        {
+            *this = clone;
+        }
 
-            // R_t R;
-            // Rx_t Rx;
-            // Ru_t Ru;
-            // Arr_Rx_t Arr_Rx;
-            // Arr_Ru_t Arr_Ru;
+        inline ResidualDataBase &operator=(const ResidualDataBase &clone)
+        {
+            return *this;
+        }
 
-        protected:
-            inline ResidualDataBase()
-            {
-            }
-
-            inline ResidualDataBase(const ResidualDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline ResidualDataBase &operator=(const ResidualDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct ResidualDataBase
-
-    } // namespace core
+    }; // struct ResidualDataBase
 
 } // namespace galileo
 

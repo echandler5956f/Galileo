@@ -6,11 +6,11 @@
 #define GALILEO_RESIDUAL_BASIC_TYPEDEF(Residual)                                  \
     using Scalar = typename traits<Residual>::Scalar;                             \
     using VarScalar = typename traits<Residual>::VarScalar;                       \
-    static constexpr int Options = traits<Residual>::Options;                            \
+    static constexpr int Options = traits<Residual>::Options;                     \
     using ResidualModelDerived = typename traits<Residual>::ResidualModelDerived; \
     using ResidualDataDerived = typename traits<Residual>::ResidualDataDerived;
 
-#define GALILEO_RESIDUAL_CONSTANTS(Residual) \
+#define GALILEO_RESIDUAL_CONSTANTS(Residual)        \
     static constexpr int NX = traits<Residual>::NX; \
     static constexpr int NU = traits<Residual>::NU; \
     static constexpr int NR = traits<Residual>::NR;
@@ -26,62 +26,58 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived>
+    class ResidualModelBase : internal::CRTP<ResidualModelBase<Derived>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived>
-        class ResidualModelBase : internal::CRTP<ResidualModelBase<Derived>>
+        using ResidualDerived = typename traits<Derived>::ResidualDerived;
+        GALILEO_RESIDUAL_BASIC_TYPEDEF(ResidualDerived);
+        GALILEO_RESIDUAL_CONSTANTS(ResidualDerived);
+        GALILEO_RESIDUAL_MODEL_TYPEDEF(ResidualDerived);
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calc(ResidualDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x,
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, x.derived(), u.derived());
+        }
 
-            using ResidualDerived = typename traits<Derived>::ResidualDerived;
-            GALILEO_RESIDUAL_BASIC_TYPEDEF(ResidualDerived);
-            GALILEO_RESIDUAL_CONSTANTS(ResidualDerived);
-            GALILEO_RESIDUAL_MODEL_TYPEDEF(ResidualDerived);
-
-            template <typename StateVectorType, typename ControlVectorType>
-            void calc(ResidualDataDerived &data,
+        template <typename StateVectorType, typename ControlVectorType>
+        void calcDiff(ResidualDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calc(data, x.derived(), u.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived(), u.derived());
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(ResidualDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calcDiff(data, x.derived(), u.derived());
-            }
+        void calcCostDiff(CostDataDerived &cdata,
+                          ResidualDataDerived &rdata,
+                          const ActivationDataDerived &adata,
+                          const bool update_u) const
+        {
+            this->derived().calcCostDiff(cdata, rdata, adata, update_u);
+        }
 
-            void calcCostDiff(CostDataDerived &cdata,
-                              ResidualDataDerived &rdata,
-                              const ActivationDataDerived &adata,
-                              const bool update_u) const
-            {
-                this->derived().calcCostDiff(cdata, rdata, adata, update_u);
-            }
+    protected:
+        inline ResidualModelBase()
+        {
+        }
 
-        protected:
-            inline ResidualModelBase()
-            {
-            }
+        inline ResidualModelBase(const ResidualModelBase &clone)
+        {
+            *this = clone;
+        }
 
-            inline ResidualModelBase(const ResidualModelBase &clone)
-            {
-                *this = clone;
-            }
+        inline ResidualModelBase &operator=(const ResidualModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline ResidualModelBase &operator=(const ResidualModelBase &clone)
-            {
-                return *this;
-            }
-
-        }; // class ResidualModelBase
-
-    } // namespace core
+    }; // class ResidualModelBase
 
 } // namespace galileo
 

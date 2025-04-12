@@ -13,32 +13,27 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <class Derived>
+    class MPCBase : internal::CRTP<Derived>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <class Derived>
-        class MPCBase : internal::CRTP<Derived>
+        using MPCDerived = typename traits<Derived>::MPCDerived;
+        GALILEO_MPC_BASIC_TYPEDEF(MPCDerived);
+
+        void reset()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            derived().reset();
+        }
 
-            using MPCDerived = typename traits<Derived>::MPCDerived;
-            GALILEO_MPC_BASIC_TYPEDEF(MPCDerived);
+        template <typename StateVectorType>
+        void run(NumScalar current_time, const Eigen::MatrixBase<StateVectorType> &x0)
+        {
+            derived().run(current_time, x0.derived());
+        }
 
-            void reset()
-            {
-                derived().reset();
-            }
-
-            template <typename StateVectorType>
-            void run(NumScalar current_time, const Eigen::MatrixBase<StateVectorType> &x0)
-            {
-                derived().run(current_time, x0.derived());
-            }
-
-        }; // class MPCBase
-
-    } // namespace predictive
+    }; // class MPCBase
 
 } // namespace galileo
 

@@ -6,16 +6,11 @@
 namespace galileo
 {
 
-    namespace core
-    {
+    template <typename BasicSpec>
+    class StateEuclideanTpl;
 
-        template <typename BasicSpec>
-        class StateEuclideanTpl;
-
-        template <typename BasicSpec>
-        class StateMultibodyTpl;
-
-    } // namespace core
+    template <typename BasicSpec>
+    class StateMultibodyTpl;
 
 } // namespace galileo
 

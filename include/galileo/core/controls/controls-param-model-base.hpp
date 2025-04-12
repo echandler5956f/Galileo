@@ -5,85 +5,81 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename PhaseSpec>
+    class ControlParamModelBase : internal::CRTP<ControlParamModelBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        class ControlParamModelBase : internal::CRTP<ControlParamModelBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        template <typename ControlParamVectorType>
+        void calc(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
+                  const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, t, w.derived());
+        }
 
-            using PS = PhaseSpec;
-
-            template <typename ControlParamVectorType>
-            void calc(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
+        template <typename ControlParamVectorType>
+        void calcDiff(typename PS::ControlParamData_t &data,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
-            {
-                this->derived().calc(data, t, w.derived());
-            }
+        {
+            this->derived().calcDiff(data, w.derived());
+        }
 
-            template <typename ControlParamVectorType>
-            void calcDiff(typename PS::ControlParamData_t &data,
-                          const Eigen::MatrixBase<ControlParamVectorType> &w) const
-            {
-                this->derived().calcDiff(data, w.derived());
-            }
+        template <typename ControlVectorType>
+        void params(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
+                    const Eigen::MatrixBase<ControlVectorType> &u) const
+        {
+            this->derived().params(data, t, u.derived());
+        }
 
-            template <typename ControlVectorType>
-            void params(typename PS::ControlParamData_t &data, const typename PS::NumScalar t,
-                        const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().params(data, t, u.derived());
-            }
+        template <typename ControlBoundVectorType, typename ControlParamBoundVectorType>
+        void convertBounds(const Eigen::MatrixBase<ControlBoundVectorType> &u_lb,
+                           const Eigen::MatrixBase<ControlBoundVectorType> &u_ub,
+                           const Eigen::MatrixBase<ControlParamBoundVectorType> &w_lb,
+                           const Eigen::MatrixBase<ControlParamBoundVectorType> &w_ub) const
+        {
+            this->derived().convertBounds(u_lb.derived(), u_ub.derived(), w_lb.derived(), w_ub.derived());
+        }
 
-            template <typename ControlBoundVectorType, typename ControlParamBoundVectorType>
-            void convertBounds(const Eigen::MatrixBase<ControlBoundVectorType> &u_lb,
-                               const Eigen::MatrixBase<ControlBoundVectorType> &u_ub,
-                               const Eigen::MatrixBase<ControlParamBoundVectorType> &w_lb,
-                               const Eigen::MatrixBase<ControlParamBoundVectorType> &w_ub) const
-            {
-                this->derived().convertBounds(u_lb.derived(), u_ub.derived(), w_lb.derived(), w_ub.derived());
-            }
+        template <typename InputMatrixType, typename OutputMatrixType>
+        void multiplyByJacobian(
+            typename PS::ControlParamData_t &data,
+            const Eigen::MatrixBase<InputMatrixType> &A,
+            Eigen::MatrixBase<OutputMatrixType> &out,
+            const AssignmentOp op = setto) const
+        {
+            this->derived().multiplyByJacobian(data, A.derived(), out.derived(), op);
+        }
 
-            template <typename InputMatrixType, typename OutputMatrixType>
-            void multiplyByJacobian(
-                typename PS::ControlParamData_t &data,
-                const Eigen::MatrixBase<InputMatrixType> &A,
-                Eigen::MatrixBase<OutputMatrixType> &out,
-                const AssignmentOp op = setto) const
-            {
-                this->derived().multiplyByJacobian(data, A.derived(), out.derived(), op);
-            }
+        template <typename InputMatrixType, typename OutputMatrixType>
+        void multiplyJacobianTransposeBy(
+            typename PS::ControlParamData_t &data,
+            const Eigen::MatrixBase<InputMatrixType> &A,
+            Eigen::MatrixBase<OutputMatrixType> &out,
+            const AssignmentOp op = setto) const
+        {
+            this->derived().multiplyJacobianTransposeBy(data, A.derived(), out.derived(), op);
+        }
 
-            template <typename InputMatrixType, typename OutputMatrixType>
-            void multiplyJacobianTransposeBy(
-                typename PS::ControlParamData_t &data,
-                const Eigen::MatrixBase<InputMatrixType> &A,
-                Eigen::MatrixBase<OutputMatrixType> &out,
-                const AssignmentOp op = setto) const
-            {
-                this->derived().multiplyJacobianTransposeBy(data, A.derived(), out.derived(), op);
-            }
+    protected:
+        inline ControlParamModelBase()
+        {
+        }
 
-        protected:
-            inline ControlParamModelBase()
-            {
-            }
+        inline ControlParamModelBase(const ControlParamModelBase &clone)
+        {
+            *this = clone;
+        }
 
-            inline ControlParamModelBase(const ControlParamModelBase &clone)
-            {
-                *this = clone;
-            }
+        inline ControlParamModelBase &operator=(const ControlParamModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline ControlParamModelBase &operator=(const ControlParamModelBase &clone)
-            {
-                return *this;
-            }
-
-        }; // class ControlParamModelBase
-
-    } // namespace core
+    }; // class ControlParamModelBase
 
 } // namespace galileo
 

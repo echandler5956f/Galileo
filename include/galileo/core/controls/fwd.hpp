@@ -6,15 +6,11 @@
 namespace galileo
 {
 
-    namespace core
-    {
-        template <typename PhaseSpec>
-        struct ControlParamModelJacobiPolynomialTpl;
+    template <typename PhaseSpec>
+    struct ControlParamModelJacobiPolynomialTpl;
 
-        template <typename PhaseSpec>
-        struct ControlParamDataJacobiPolynomialTpl;
-
-    } // namespace core
+    template <typename PhaseSpec>
+    struct ControlParamDataJacobiPolynomialTpl;
 
 } // namespace galileo
 

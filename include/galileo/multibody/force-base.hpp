@@ -18,48 +18,44 @@
 
 namespace galileo
 {
-    namespace multibody
+
+    template <typename Derived, typename PhaseSpec>
+    struct ForceDataBase : internal::CRTP<ForceDataBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        struct ForceDataBase : internal::CRTP<ForceDataBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+        using ForceDerived = typename traits<Derived>::ForceDerived;
+
+        GALILEO_FORCE_DATA_TYPEDEF(ForceDerived);
+
+        FORWARD_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
+        FORWARD_ACCESSOR(Index_t, frame);
+        FORWARD_ACCESSOR(ReferenceFrame_t, type);
+        FORWARD_ACCESSOR(SE3_t, jMf);
+        FORWARD_ACCESSOR(MatrixNcNv_t, Jc);
+        FORWARD_ACCESSOR(Force_t, f);
+        FORWARD_ACCESSOR(Force_t, fext);
+        FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
+        FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
+
+    protected:
+        inline ForceDataBase()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-            using PS = PhaseSpec;
-            using ForceDerived = typename traits<Derived>::ForceDerived;
+        inline ForceDataBase(const ForceDataBase &clone)
+        {
+            *this = clone;
+        }
 
-            GALILEO_FORCE_DATA_TYPEDEF(ForceDerived);
+        inline ForceDataBase &operator=(const ForceDataBase &clone)
+        {
+            return *this;
+        }
 
-            FORWARD_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
-            FORWARD_ACCESSOR(Index_t, frame);
-            FORWARD_ACCESSOR(ReferenceFrame_t, type);
-            FORWARD_ACCESSOR(SE3_t, jMf);
-            FORWARD_ACCESSOR(MatrixNcNv_t, Jc);
-            FORWARD_ACCESSOR(Force_t, f);
-            FORWARD_ACCESSOR(Force_t, fext);
-            FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
-            FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
-
-        protected:
-            inline ForceDataBase()
-            {
-            }
-
-            inline ForceDataBase(const ForceDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline ForceDataBase &operator=(const ForceDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct ForceDataBase
-
-    } // namespace multibody
+    }; // struct ForceDataBase
 
 } // namespace galileo
 

@@ -6,9 +6,6 @@
 namespace galileo
 {
 
-    namespace core
-    {
-
         template <typename PhaseSpec,
                   template <typename PS> class ResidualTpl>
         struct ActivationBoundsTpl;
@@ -75,8 +72,6 @@ namespace galileo
         template <typename PhaseSpec,
                   template <typename PS> class ResidualTpl>
         struct ActivationData2NormBarrierTpl;
-
-    } // namespace core
 
 } // namespace galileo
 

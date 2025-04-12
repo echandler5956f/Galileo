@@ -5,17 +5,12 @@
 
 namespace galileo
 {
-    
-    namespace predictive
-    {
 
-        template <typename PhaseSpec>
-        struct SegmentERKDataEulerTpl;
+    template <typename PhaseSpec>
+    struct SegmentERKDataEulerTpl;
 
-        template <typename PhaseSpec>
-        struct SegmentERKModelEulerTpl;
-
-    } // namespace predictive
+    template <typename PhaseSpec>
+    struct SegmentERKModelEulerTpl;
 
 } // namespace galileo
 

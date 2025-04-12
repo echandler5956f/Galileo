@@ -4,7 +4,7 @@
 #include "galileo/core/constraints/constraint-base.hpp"
 #include "galileo/core/constraints/constraint-model-base.hpp"
 
-// We use traits rather than PhaseSpec, 
+// We use traits rather than PhaseSpec,
 // because each constraint model has its own NH and NG
 #define GALILEO_CONSTRAINT_DATA_TYPEDEF(Constraint) \
     using H_t = typename traits<Constraint>::H_t;   \
@@ -16,48 +16,44 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename PhaseSpec>
+    struct ConstraintDataBase : internal::CRTP<ConstraintDataBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        struct ConstraintDataBase : internal::CRTP<ConstraintDataBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using ConstraintDerived = typename traits<Derived>::ConstraintDerived;
+        using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
+        using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+
+        GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
+
+        FORWARD_ACCESSOR(H_t, H);
+        FORWARD_ACCESSOR(Hx_t, Hx);
+        FORWARD_ACCESSOR(Hu_t, Hu);
+        FORWARD_ACCESSOR(G_t, G);
+        FORWARD_ACCESSOR(Gx_t, Gx);
+        FORWARD_ACCESSOR(Gu_t, Gu);
+
+    protected:
+        inline ConstraintDataBase()
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-            using PS = PhaseSpec;
+        inline ConstraintDataBase(const ConstraintDataBase &clone)
+        {
+            *this = clone;
+        }
 
-            using ConstraintDerived = typename traits<Derived>::ConstraintDerived;
-            using ConstraintDataDerived = typename traits<ConstraintDerived>::ConstraintDataDerived;
-            using ConstraintModelDerived = typename traits<ConstraintDerived>::ConstraintModelDerived;
+        inline ConstraintDataBase &operator=(const ConstraintDataBase &clone)
+        {
+            return *this;
+        }
 
-            GALILEO_CONSTRAINT_DATA_TYPEDEF(ConstraintDerived);
-
-            FORWARD_ACCESSOR(H_t, H);
-            FORWARD_ACCESSOR(Hx_t, Hx);
-            FORWARD_ACCESSOR(Hu_t, Hu);
-            FORWARD_ACCESSOR(G_t, G);
-            FORWARD_ACCESSOR(Gx_t, Gx);
-            FORWARD_ACCESSOR(Gu_t, Gu);
-
-        protected:
-            inline ConstraintDataBase()
-            {
-            }
-
-            inline ConstraintDataBase(const ConstraintDataBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline ConstraintDataBase &operator=(const ConstraintDataBase &clone)
-            {
-                return *this;
-            }
-
-        }; // struct ConstraintDataBase
-
-    } // namespace core
+    }; // struct ConstraintDataBase
 
 } // namespace galileo
 

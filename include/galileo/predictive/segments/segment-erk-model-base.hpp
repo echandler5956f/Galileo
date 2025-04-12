@@ -6,79 +6,75 @@
 
 namespace galileo
 {
-    namespace predictive
+
+    template <typename Derived, typename PhaseSpec>
+    class SegmentERKModelBase : internal::CRTP<SegmentERKModelBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        class SegmentERKModelBase : internal::CRTP<SegmentERKModelBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using SegmentERKDerived = typename traits<Derived>::SegmentERKDerived;
+        using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
+        using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
+
+        template <typename StateVectorType, typename ControlParamVectorType>
+        void calc(SegmentERKDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x,
+                  const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, x.derived(), w.derived());
+        }
 
-            using PS = PhaseSpec;
+        template <typename StateVectorType>
+        void calc(SegmentERKDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            this->derived().calc(data, x.derived());
+        }
 
-            using SegmentERKDerived = typename traits<Derived>::SegmentERKDerived;
-            using SegmentERKDataDerived = typename traits<SegmentERKDerived>::SegmentERKDataDerived;
-            using SegmentERKModelDerived = typename traits<SegmentERKDerived>::SegmentERKModelDerived;
-
-            template <typename StateVectorType, typename ControlParamVectorType>
-            void calc(SegmentERKDataDerived &data,
+        template <typename StateVectorType, typename ControlParamVectorType>
+        void calcDiff(SegmentERKDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
-            {
-                this->derived().calc(data, x.derived(), w.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived(), w.derived());
+        }
 
-            template <typename StateVectorType>
-            void calc(SegmentERKDataDerived &data,
+        template <typename StateVectorType>
+        void calcDiff(SegmentERKDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
-            {
-                this->derived().calc(data, x.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived());
+        }
 
-            template <typename StateVectorType, typename ControlParamVectorType>
-            void calcDiff(SegmentERKDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<ControlParamVectorType> &w) const
-            {
-                this->derived().calcDiff(data, x.derived(), w.derived());
-            }
+        template <typename StateVectorType, typename ControlParamVectorType>
+        void quasiStatic(SegmentERKDataDerived &data,
+                         const Eigen::MatrixBase<StateVectorType> &x,
+                         Eigen::MatrixBase<ControlParamVectorType> &w,
+                         const std::size_t maxiter,
+                         const typename PS::NumScalar &tol) const
+        {
+            this->derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);
+        }
 
-            template <typename StateVectorType>
-            void calcDiff(SegmentERKDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x) const
-            {
-                this->derived().calcDiff(data, x.derived());
-            }
+    protected:
+        inline SegmentERKModelBase()
+        {
+        }
 
-            template <typename StateVectorType, typename ControlParamVectorType>
-            void quasiStatic(SegmentERKDataDerived &data,
-                             const Eigen::MatrixBase<StateVectorType> &x,
-                             Eigen::MatrixBase<ControlParamVectorType> &w,
-                             const std::size_t maxiter,
-                             const typename PS::NumScalar &tol) const
-            {
-                this->derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);
-            }
+        inline SegmentERKModelBase(const SegmentERKModelBase &clone)
+        {
+            *this = clone;
+        }
 
-        protected:
-            inline SegmentERKModelBase()
-            {
-            }
+        inline SegmentERKModelBase &operator=(const SegmentERKModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline SegmentERKModelBase(const SegmentERKModelBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline SegmentERKModelBase &operator=(const SegmentERKModelBase &clone)
-            {
-                return *this;
-            }
-
-        }; // class SegmentERKModelBase
-
-    } // namespace predictive
+    }; // class SegmentERKModelBase
 
 } // namespace galileo
 

@@ -7,26 +7,21 @@
 namespace galileo
 {
 
-    namespace core
+    // Actuation data mixin
+    template <typename Derived, typename PhaseSpec>
+    struct ActuationDataMixinTpl
     {
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        // Actuation data mixin
-        template <typename Derived, typename PhaseSpec>
-        struct ActuationDataMixinTpl
-        {
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        using PS = PhaseSpec;
+        using BS = typename PS::BS;
 
-            using PS = PhaseSpec;
-            using BS = typename PS::BS;
+        std::shared_ptr<ActuationDataTpl<BS>> actuation;
 
-            std::shared_ptr<ActuationDataTpl<BS>> actuation;
+        ActuationDataMixinTpl(std::shared_ptr<ActuationDataTpl<BS>> data)
+            : actuation(data) {}
 
-            ActuationDataMixinTpl(std::shared_ptr<ActuationDataTpl<BS>> data)
-                : actuation(data) {}
-
-        }; // struct ActuationDataMixinTpl
-
-    } // namespace core
+    }; // struct ActuationDataMixinTpl
 
 } // namespace galileo
 

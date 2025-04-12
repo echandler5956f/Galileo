@@ -6,31 +6,26 @@
 namespace galileo
 {
 
-    namespace predictive
+    struct PhaseModelVoid
     {
+    }; // struct PhaseModelVoid`
 
-        struct PhaseModelVoid
-        {
-        }; // struct PhaseModelVoid`
+    struct PhaseDataVoid
+    {
+    }; // struct PhaseDataVoid
 
-        struct PhaseDataVoid
-        {
-        }; // struct PhaseDataVoid
+    template <typename PhaseSpec>
+    struct PhaseCollectionDefaultTpl;
 
-        template <typename PhaseSpec>
-        struct PhaseCollectionDefaultTpl;
+    template <
+        typename PhaseSpec,
+        template <typename PS> class PhaseCollectionTpl>
+    struct PhaseModelTpl;
 
-        template <
-            typename PhaseSpec,
-            template <typename PS> class PhaseCollectionTpl>
-        struct PhaseModelTpl;
-
-        template <
-            typename PhaseSpec,
-            template <typename PS> class PhaseCollectionTpl>
-        struct PhaseDataTpl;
-
-    } // namespace predictive
+    template <
+        typename PhaseSpec,
+        template <typename PS> class PhaseCollectionTpl>
+    struct PhaseDataTpl;
 
 } // namespace galileo
 

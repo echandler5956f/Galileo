@@ -124,170 +124,165 @@
 namespace galileo
 {
 
-    namespace predictive
+    /* ---------------------------------------------------------------- */
+    /* Fully specifies the types and constants used in a phase. */
+    /* ---------------------------------------------------------------- */
+    template <typename BasicSpec,
+              template <typename> class ConstraintManagerTpl,
+              template <typename> class CostManagerTpl,
+              template <typename> class NodeTpl,
+              template <typename> class ControlParamTpl,
+              template <typename> class SegmentTpl,
+              template <typename> class PhaseTpl>
+    struct PhaseSpecTpl
     {
+        using BS = BasicSpec;
+        using PS = PhaseSpecTpl<BS, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
+
+        // Import the basic spec types and constants
+        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
 
         /* ---------------------------------------------------------------- */
-        /* Fully specifies the types and constants used in a phase. */
+        /* Meta template types */
         /* ---------------------------------------------------------------- */
-        template <typename BasicSpec,
-                  template <typename> class ConstraintManagerTpl,
-                  template <typename> class CostManagerTpl,
-                  template <typename> class NodeTpl,
-                  template <typename> class ControlParamTpl,
-                  template <typename> class SegmentTpl,
-                  template <typename> class PhaseTpl>
-        struct PhaseSpecTpl
-        {
-            using BS = BasicSpec;
-            using PS = PhaseSpecTpl<BS, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
+        using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
+        using ConstraintCollection_t = typename ConstraintManagerMeta_t::Collection_t;
+        using ConstraintModelManager_t = typename ConstraintManagerMeta_t::Model_t;
+        using ConstraintDataManager_t = typename ConstraintManagerMeta_t::Data_t;
 
-            // Import the basic spec types and constants
-            GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+        using CostManagerMeta_t = CostManagerTpl<PS>;
+        using CostCollection_t = typename CostManagerMeta_t::Collection_t;
+        using CostModelManager_t = typename CostManagerMeta_t::Model_t;
+        using CostDataManager_t = typename CostManagerMeta_t::Data_t;
 
-            /* ---------------------------------------------------------------- */
-            /* Meta template types */
-            /* ---------------------------------------------------------------- */
-            using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
-            using ConstraintCollection_t = typename ConstraintManagerMeta_t::Collection_t;
-            using ConstraintModelManager_t = typename ConstraintManagerMeta_t::Model_t;
-            using ConstraintDataManager_t = typename ConstraintManagerMeta_t::Data_t;
+        using NodeMeta_t = NodeTpl<PS>;
+        using NodeModel_t = typename NodeMeta_t::Model_t;
+        using NodeData_t = typename NodeMeta_t::Data_t;
+        using NodeDataVector_t = std::vector<NodeData_t>;
 
-            using CostManagerMeta_t = CostManagerTpl<PS>;
-            using CostCollection_t = typename CostManagerMeta_t::Collection_t;
-            using CostModelManager_t = typename CostManagerMeta_t::Model_t;
-            using CostDataManager_t = typename CostManagerMeta_t::Data_t;
+        using ControlParamMeta_t = ControlParamTpl<PS>;
+        using ControlParamModel_t = typename ControlParamMeta_t::Model_t;
+        using ControlParamData_t = typename ControlParamMeta_t::Data_t;
+        using ControlParamDataVector_t = std::vector<ControlParamData_t>;
 
-            using NodeMeta_t = NodeTpl<PS>;
-            using NodeModel_t = typename NodeMeta_t::Model_t;
-            using NodeData_t = typename NodeMeta_t::Data_t;
-            using NodeDataVector_t = std::vector<NodeData_t>;
+        using SegmentMeta_t = SegmentTpl<PS>;
+        using SegmentModel_t = typename SegmentMeta_t::Model_t;
+        using SegmentData_t = typename SegmentMeta_t::Data_t;
+        using SegmentDataVector_t = std::vector<SegmentData_t>;
 
-            using ControlParamMeta_t = ControlParamTpl<PS>;
-            using ControlParamModel_t = typename ControlParamMeta_t::Model_t;
-            using ControlParamData_t = typename ControlParamMeta_t::Data_t;
-            using ControlParamDataVector_t = std::vector<ControlParamData_t>;
+        using PhaseMeta_t = PhaseTpl<PS>;
+        using PhaseModel_t = typename PhaseMeta_t::Model_t;
+        using PhaseData_t = typename PhaseMeta_t::Data_t;
+        using PhaseDataVector_t = std::vector<PhaseData_t>;
 
-            using SegmentMeta_t = SegmentTpl<PS>;
-            using SegmentModel_t = typename SegmentMeta_t::Model_t;
-            using SegmentData_t = typename SegmentMeta_t::Data_t;
-            using SegmentDataVector_t = std::vector<SegmentData_t>;
+        /* ---------------------------------------------------------------- */
+        /* Dependent compile-time constants */
+        /* ---------------------------------------------------------------- */
+        static constexpr int NU = traits<NodeMeta_t>::NU;                 // Control dimension
+        static constexpr int NOrder = traits<ControlParamMeta_t>::NOrder; // Order of the control parameterization per segment
+        static constexpr int NW = traits<ControlParamMeta_t>::NW;         // Number of control parameters
+        static constexpr int NStages = traits<SegmentMeta_t>::NStages;    // Number of Runge-Kutta stages per segment
 
-            using PhaseMeta_t = PhaseTpl<PS>;
-            using PhaseModel_t = typename PhaseMeta_t::Model_t;
-            using PhaseData_t = typename PhaseMeta_t::Data_t;
-            using PhaseDataVector_t = std::vector<PhaseData_t>;
+        /*NOTE: NU is calculated differently depending on the node type*/
+        // FreeFwd: NU = NUa
+        // FreeInv: NU = NV
+        // ContactFwd: NU = NUa
+        // ContactInv: NU = NV + NContacts
+        // We do this calculation in the traits specialization for each derived node type.
 
-            /* ---------------------------------------------------------------- */
-            /* Dependent compile-time constants */
-            /* ---------------------------------------------------------------- */
-            static constexpr int NU = traits<NodeMeta_t>::NU;                 // Control dimension
-            static constexpr int NOrder = traits<ControlParamMeta_t>::NOrder; // Order of the control parameterization per segment
-            static constexpr int NW = traits<ControlParamMeta_t>::NW;         // Number of control parameters
-            static constexpr int NStages = traits<SegmentMeta_t>::NStages;    // Number of Runge-Kutta stages per segment
+        /* ---------------------------------------------------------------- */
+        /* An assortment of Eigen types (primarily for use in Segments) */
+        /* ---------------------------------------------------------------- */
+        using VectorNu_t = Eigen::Matrix<VarScalar, NU, 1, Options>;
+        using VectorNw_t = Eigen::Matrix<VarScalar, NW, 1, Options>;
+        using MatrixNu_t = Eigen::Matrix<VarScalar, NU, NU, Options>;
+        using MatrixNw_t = Eigen::Matrix<VarScalar, NW, NW, Options>;
 
-            /*NOTE: NU is calculated differently depending on the node type*/
-            // FreeFwd: NU = NUa
-            // FreeInv: NU = NV
-            // ContactFwd: NU = NUa
-            // ContactInv: NU = NV + NContacts
-            // We do this calculation in the traits specialization for each derived node type.
+        using MatrixNvNw_t = Eigen::Matrix<VarScalar, NV, NW, Options>;
+        using MatrixNvNu_t = Eigen::Matrix<VarScalar, NV, NU, Options>;
+        using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
+        using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
 
-            /* ---------------------------------------------------------------- */
-            /* An assortment of Eigen types (primarily for use in Segments) */
-            /* ---------------------------------------------------------------- */
-            using VectorNu_t = Eigen::Matrix<VarScalar, NU, 1, Options>;
-            using VectorNw_t = Eigen::Matrix<VarScalar, NW, 1, Options>;
-            using MatrixNu_t = Eigen::Matrix<VarScalar, NU, NU, Options>;
-            using MatrixNw_t = Eigen::Matrix<VarScalar, NW, NW, Options>;
+        using MatrixNuNv_t = Eigen::Matrix<VarScalar, NU, NV, Options>;
+        using MatrixNuNw_t = Eigen::Matrix<VarScalar, NU, NW, Options>;
 
-            using MatrixNvNw_t = Eigen::Matrix<VarScalar, NV, NW, Options>;
-            using MatrixNvNu_t = Eigen::Matrix<VarScalar, NV, NU, Options>;
-            using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
-            using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
+        using MatrixNuaNu_t = Eigen::Matrix<VarScalar, NUa, NU, Options>;
+        using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
 
-            using MatrixNuNv_t = Eigen::Matrix<VarScalar, NU, NV, Options>;
-            using MatrixNuNw_t = Eigen::Matrix<VarScalar, NU, NW, Options>;
+        using MatrixNdxNu_t = Eigen::Matrix<VarScalar, NDX, NU, Options>;
+        using MatrixNdxNw_t = Eigen::Matrix<VarScalar, NDX, NW, Options>;
+        using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
 
-            using MatrixNuaNu_t = Eigen::Matrix<VarScalar, NUa, NU, Options>;
-            using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
+        using VarScalarArray_t = std::array<VarScalar, NStages>;
 
-            using MatrixNdxNu_t = Eigen::Matrix<VarScalar, NDX, NU, Options>;
-            using MatrixNdxNw_t = Eigen::Matrix<VarScalar, NDX, NW, Options>;
-            using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
+        using VectorNdxArray_t = std::array<VectorNdx_t, NStages>;
+        using VectorNxArray_t = std::array<VectorNx_t, NStages>;
+        using VectorNuArray_t = std::array<VectorNu_t, NStages>;
+        using MatrixNdxArray_t = std::array<MatrixNdx_t, NStages>;
+        using MatrixNdxNwArray_t = std::array<MatrixNdxNw_t, NStages>;
+        using VectorNwArray_t = std::array<VectorNw_t, NStages>;
+        using MatrixNuArray_t = std::array<MatrixNu_t, NStages>;
+        using MatrixNdxNuArray_t = std::array<MatrixNdxNu_t, NStages>;
+        using MatrixNuNwArray_t = std::array<MatrixNuNw_t, NStages>;
+        using MatrixNwArray_t = std::array<MatrixNw_t, NStages>;
 
-            using VarScalarArray_t = std::array<VarScalar, NStages>;
+        /* ---------------------------------------------------------------- */
+        /* Node type definitions */
+        /* ---------------------------------------------------------------- */
+        // Dynamics
+        using XAcc_t = VectorNv_t;     // System acceleration
+        using XAccx_t = MatrixNvNdx_t; // Jacobian of system acceleration w.r.t. state
+        using XAccu_t = MatrixNvNu_t;  // Jacobian of system acceleration w.r.t. control
 
-            using VectorNdxArray_t = std::array<VectorNdx_t, NStages>;
-            using VectorNxArray_t = std::array<VectorNx_t, NStages>;
-            using VectorNuArray_t = std::array<VectorNu_t, NStages>;
-            using MatrixNdxArray_t = std::array<MatrixNdx_t, NStages>;
-            using MatrixNdxNwArray_t = std::array<MatrixNdxNw_t, NStages>;
-            using VectorNwArray_t = std::array<VectorNw_t, NStages>;
-            using MatrixNuArray_t = std::array<MatrixNu_t, NStages>;
-            using MatrixNdxNuArray_t = std::array<MatrixNdxNu_t, NStages>;
-            using MatrixNuNwArray_t = std::array<MatrixNuNw_t, NStages>;
-            using MatrixNwArray_t = std::array<MatrixNw_t, NStages>;
+        // Cost (CostManager holds an Eigen map to these, which are stored in NodeData)
+        using L_t = VarScalar;       // Cost scalar
+        using Lx_t = VectorNdx_t;    // Jacobian of cost w.r.t. state
+        using Lu_t = VectorNu_t;     // Jacobian of cost w.r.t. control
+        using Lxx_t = MatrixNdx_t;   // Hessian of cost w.r.t. state
+        using Lxu_t = MatrixNdxNu_t; // Hessian of cost w.r.t. state and control
+        using Luu_t = MatrixNu_t;    // Hessian of cost w.r.t. control
 
-            /* ---------------------------------------------------------------- */
-            /* Node type definitions */
-            /* ---------------------------------------------------------------- */
-            // Dynamics
-            using XAcc_t = VectorNv_t;     // System acceleration
-            using XAccx_t = MatrixNvNdx_t; // Jacobian of system acceleration w.r.t. state
-            using XAccu_t = MatrixNvNu_t;  // Jacobian of system acceleration w.r.t. control
+        // Equality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
+        using H_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;    // Equality constraint vector
+        using Hx_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>; // Jacobian of equality constraints w.r.t. state
+        using Hu_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;  // Jacobian of equality constraints w.r.t. control
 
-            // Cost (CostManager holds an Eigen map to these, which are stored in NodeData)
-            using L_t = VarScalar;       // Cost scalar
-            using Lx_t = VectorNdx_t;    // Jacobian of cost w.r.t. state
-            using Lu_t = VectorNu_t;     // Jacobian of cost w.r.t. control
-            using Lxx_t = MatrixNdx_t;   // Hessian of cost w.r.t. state
-            using Lxu_t = MatrixNdxNu_t; // Hessian of cost w.r.t. state and control
-            using Luu_t = MatrixNu_t;    // Hessian of cost w.r.t. control
+        // Inequality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
+        using G_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;       // Inequality constraint vector
+        using Gx_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>;    // Jacobian of inequality constraints w.r.t. state
+        using Gu_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;     // Jacobian of inequality constraints w.r.t. control
+        using G_Bound_t = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1, Options>; // Bounds on inequality constraints
 
-            // Equality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
-            using H_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;    // Equality constraint vector
-            using Hx_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>; // Jacobian of equality constraints w.r.t. state
-            using Hu_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;  // Jacobian of equality constraints w.r.t. control
+        /* ---------------------------------------------------------------- */
+        /* Control parameter type definitions */
+        /* ---------------------------------------------------------------- */
+        using U_t = VectorNu_t;    // Control vector
+        using W_t = VectorNw_t;    // Control parameter vector
+        using Uw_t = MatrixNuNw_t; // Jacobian of control w.r.t. control parameters
 
-            // Inequality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
-            using G_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;       // Inequality constraint vector
-            using Gx_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>;    // Jacobian of inequality constraints w.r.t. state
-            using Gu_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;     // Jacobian of inequality constraints w.r.t. control
-            using G_Bound_t = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1, Options>; // Bounds on inequality constraints
+        /* ---------------------------------------------------------------- */
+        /* Segment type definitions */
+        /* ---------------------------------------------------------------- */
+        using Timings_t = Eigen::Matrix<NumScalar, NStages, 1, Options>;
+        using Quadrature_t = Eigen::Matrix<NumScalar, NStages, 1, Options>;
+        using StageCoefficients_t = Eigen::Matrix<NumScalar, NStages, NStages, Options>;
 
-            /* ---------------------------------------------------------------- */
-            /* Control parameter type definitions */
-            /* ---------------------------------------------------------------- */
-            using U_t = VectorNu_t;    // Control vector
-            using W_t = VectorNw_t;    // Control parameter vector
-            using Uw_t = MatrixNuNw_t; // Jacobian of control w.r.t. control parameters
+        // Dynamics
+        using XNext_t = VectorNx_t;     // Evolution state
+        using XNextx_t = MatrixNdx_t;   // Jacobian of dynamics w.r.t. state
+        using XNextw_t = MatrixNdxNw_t; // Jacobian of dynamics w.r.t. control parameters
 
-            /* ---------------------------------------------------------------- */
-            /* Segment type definitions */
-            /* ---------------------------------------------------------------- */
-            using Timings_t = Eigen::Matrix<NumScalar, NStages, 1, Options>;
-            using Quadrature_t = Eigen::Matrix<NumScalar, NStages, 1, Options>;
-            using StageCoefficients_t = Eigen::Matrix<NumScalar, NStages, NStages, Options>;
+        // Cost derivatives
+        using Lw_t = VectorNw_t;     // Jacobian of cost w.r.t. control parameters
+        using Lxw_t = MatrixNdxNw_t; // Hessian of cost w.r.t. state and control parameters
+        using Lww_t = MatrixNw_t;    // Hessian of cost w.r.t. control parameters
 
-            // Dynamics
-            using XNext_t = VectorNx_t;     // Evolution state
-            using XNextx_t = MatrixNdx_t;   // Jacobian of dynamics w.r.t. state
-            using XNextw_t = MatrixNdxNw_t; // Jacobian of dynamics w.r.t. control parameters
+        // Segment equality constraint derivatives
+        using Hw_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of equality constraints w.r.t. the control parameters
 
-            // Cost derivatives
-            using Lw_t = VectorNw_t;     // Jacobian of cost w.r.t. control parameters
-            using Lxw_t = MatrixNdxNw_t; // Hessian of cost w.r.t. state and control parameters
-            using Lww_t = MatrixNw_t;    // Hessian of cost w.r.t. control parameters
-
-            // Segment equality constraint derivatives
-            using Hw_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of equality constraints w.r.t. the control parameters
-
-            // Segment inequality constraint derivatives
-            using Gw_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
-        };
-
-    } // namespace predictive
+        // Segment inequality constraint derivatives
+        using Gw_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
+    };
 
 } // namespace galileo
 

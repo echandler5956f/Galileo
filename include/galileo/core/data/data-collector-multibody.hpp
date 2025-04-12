@@ -7,21 +7,16 @@
 namespace galileo
 {
 
-    namespace core
+    // Pinocchio multibody data mixin
+    template <typename Scalar, typename Derived>
+    struct MultibodyDataMixin
     {
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        // Pinocchio multibody data mixin
-        template <typename Scalar, typename Derived>
-        struct MultibodyDataMixin
-        {
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        pinocchio::DataTpl<Scalar> *pinocchio;
 
-            pinocchio::DataTpl<Scalar> *pinocchio;
-
-            MultibodyDataMixin(pinocchio::DataTpl<Scalar> *data) : pinocchio(data) {}
-        };
-
-    } // namespace core
+        MultibodyDataMixin(pinocchio::DataTpl<Scalar> *data) : pinocchio(data) {}
+    };
 
 } // namespace galileo
 

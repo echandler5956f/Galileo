@@ -6,88 +6,84 @@
 
 namespace galileo
 {
-    namespace predictive
+
+    template <typename Derived, typename PhaseSpec>
+    class NodeModelBase : internal::CRTP<NodeModelBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        class NodeModelBase : internal::CRTP<NodeModelBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using NodeDerived = typename traits<Derived>::NodeDerived;
+        using NodeDataDerived = typename traits<NodeDerived>::NodeDataDerived;
+        using NodeModelDerived = typename traits<NodeDerived>::NodeModelDerived;
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calc(NodeDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x,
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, x.derived(), u.derived());
+        }
 
-            using PS = PhaseSpec;
+        template <typename StateVectorType>
+        void calc(NodeDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            this->derived().calc(data, x.derived());
+        }
 
-            using NodeDerived = typename traits<Derived>::NodeDerived;
-            using NodeDataDerived = typename traits<NodeDerived>::NodeDataDerived;
-            using NodeModelDerived = typename traits<NodeDerived>::NodeModelDerived;
-
-            template <typename StateVectorType, typename ControlVectorType>
-            void calc(NodeDataDerived &data,
+        template <typename StateVectorType, typename ControlVectorType>
+        void calcDiff(NodeDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calc(data, x.derived(), u.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived(), u.derived());
+        }
 
-            template <typename StateVectorType>
-            void calc(NodeDataDerived &data,
+        template <typename StateVectorType>
+        void calcDiff(NodeDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
-            {
-                this->derived().calc(data, x.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived());
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(NodeDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calcDiff(data, x.derived(), u.derived());
-            }
+        template <typename StateVectorType, typename ControlVectorType>
+        void quasiStatic(NodeDataDerived &data,
+                         const Eigen::MatrixBase<StateVectorType> &x,
+                         Eigen::MatrixBase<ControlVectorType> &u,
+                         const std::size_t maxiter, const typename PS::NumScalar tol) const
+        {
+            this->derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
+        }
 
-            template <typename StateVectorType>
-            void calcDiff(NodeDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x) const
-            {
-                this->derived().calcDiff(data, x.derived());
-            }
+        int nu() const
+        {
+            return this->derived().nu_impl();
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void quasiStatic(NodeDataDerived &data,
-                             const Eigen::MatrixBase<StateVectorType> &x,
-                             Eigen::MatrixBase<ControlVectorType> &u,
-                             const std::size_t maxiter, const typename PS::NumScalar tol) const
-            {
-                this->derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
-            }
+        int nu_impl() const
+        {
+            return traits<NodeDerived>::NU;
+        }
 
-            int nu() const
-            {
-                return this->derived().nu_impl();
-            }
+    protected:
+        inline NodeModelBase()
+        {
+        }
 
-            int nu_impl() const
-            {
-                return traits<NodeDerived>::NU;
-            }
+        inline NodeModelBase(const NodeModelBase &clone)
+        {
+            *this = clone;
+        }
 
-        protected:
-            inline NodeModelBase()
-            {
-            }
+        inline NodeModelBase &operator=(const NodeModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline NodeModelBase(const NodeModelBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline NodeModelBase &operator=(const NodeModelBase &clone)
-            {
-                return *this;
-            }
-
-        }; // class NodeModelBase
-
-    } // namespace predictive
+    }; // class NodeModelBase
 
 } // namespace galileo
 

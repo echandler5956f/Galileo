@@ -5,75 +5,71 @@
 
 namespace galileo
 {
-    namespace core
+
+    template <typename Derived, typename PhaseSpec>
+    class CostModelBase : internal::CRTP<CostModelBase<Derived, PhaseSpec>>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived, typename PhaseSpec>
-        class CostModelBase : internal::CRTP<CostModelBase<Derived, PhaseSpec>>
+        using PS = PhaseSpec;
+
+        using CostDerived = typename traits<Derived>::CostDerived;
+        using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
+        using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calc(CostDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x,
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            this->derived().calc(data, x.derived(), u.derived());
+        }
 
-            using PS = PhaseSpec;
+        template <typename StateVectorType>
+        void calc(CostDataDerived &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            this->derived().calc(data, x.derived());
+        }
 
-            using CostDerived = typename traits<Derived>::CostDerived;
-            using CostDataDerived = typename traits<CostDerived>::CostDataDerived;
-            using CostModelDerived = typename traits<CostDerived>::CostModelDerived;
-
-            template <typename StateVectorType, typename ControlVectorType>
-            void calc(CostDataDerived &data,
+        template <typename StateVectorType, typename ControlVectorType>
+        void calcDiff(CostDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calc(data, x.derived(), u.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived(), u.derived());
+        }
 
-            template <typename StateVectorType>
-            void calc(CostDataDerived &data,
+        template <typename StateVectorType>
+        void calcDiff(CostDataDerived &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
-            {
-                this->derived().calc(data, x.derived());
-            }
+        {
+            this->derived().calcDiff(data, x.derived());
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(CostDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                this->derived().calcDiff(data, x.derived(), u.derived());
-            }
+        template <typename DataCollector>
+        auto createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
+        }
 
-            template <typename StateVectorType>
-            void calcDiff(CostDataDerived &data,
-                          const Eigen::MatrixBase<StateVectorType> &x) const
-            {
-                this->derived().calcDiff(data, x.derived());
-            }
+    protected:
+        inline CostModelBase()
+        {
+        }
 
-            template <typename DataCollector>
-            auto createData(DataCollector *const collector)
-            {
-                return this->derived().createData(collector);
-            }
+        inline CostModelBase(const CostModelBase &clone)
+        {
+            *this = clone;
+        }
 
-        protected:
-            inline CostModelBase()
-            {
-            }
+        inline CostModelBase &operator=(const CostModelBase &clone)
+        {
+            return *this;
+        }
 
-            inline CostModelBase(const CostModelBase &clone)
-            {
-                *this = clone;
-            }
-
-            inline CostModelBase &operator=(const CostModelBase &clone)
-            {
-                return *this;
-            }
-
-        }; // class CostModelBase
-
-    } // namespace core
+    }; // class CostModelBase
 
 } // namespace galileo
 

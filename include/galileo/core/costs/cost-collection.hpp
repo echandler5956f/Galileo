@@ -8,27 +8,22 @@
 namespace galileo
 {
 
-    namespace core
+    template <typename PhaseSpec>
+    struct CostCollectionDefaultTpl
     {
+        using PS = PhaseSpec;
 
-        template <typename PhaseSpec>
-        struct CostCollectionDefaultTpl
-        {
-            using PS = PhaseSpec;
+        using CostModelVariant = boost::variant<CostModelVoid>; // TODO: add cost models
 
-            using CostModelVariant = boost::variant<CostModelVoid>; // TODO: add cost models
+        using CostDataVariant = boost::variant<CostDataVoid>; // TODO: add cost data
 
-            using CostDataVariant = boost::variant<CostDataVoid>; // TODO: add cost data
+    }; // struct CostCollectionDefaultTpl
 
-        }; // struct CostCollectionDefaultTpl
+    template <typename PhaseSpec>
+    using CostModelVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::CostModelVariant;
 
-        template <typename PhaseSpec>
-        using CostModelVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::CostModelVariant;
-
-        template <typename PhaseSpec>
-        using CostDataVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::CostDataVariant;
-
-    } // namespace core
+    template <typename PhaseSpec>
+    using CostDataVariantTpl = CostCollectionDefaultTpl<PhaseSpec>::CostDataVariant;
 
 } // namespace galileo
 

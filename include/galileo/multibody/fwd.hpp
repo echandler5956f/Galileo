@@ -5,10 +5,6 @@
 
 namespace galileo
 {
-    namespace multibody
-    {
-
-    } // namespace multibody
 
 } // namespace galileo
 

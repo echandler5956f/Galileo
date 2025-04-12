@@ -21,63 +21,58 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <typename Derived>
+    class ReferenceManagerBase : internal::CRTP<Derived>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived>
-        class ReferenceManagerBase : internal::CRTP<Derived>
+        using ReferenceManagerDerived = typename traits<Derived>::ReferenceManagerDerived;
+        GALILEO_REFERENCE_MANAGER_BASIC_TYPEDEF(ReferenceManagerDerived);
+        GALILEO_REFERENCE_MANAGER_TYPEDEF(ReferenceManagerDerived);
+
+        template <typename StateVectorType>
+        void preSolverRun(NumScalar init_time, const Eigen::MatrixBase<StateVectorType> &init_state, NumScalar final_time)
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            target_trajectories_.updateFromBuffer();
+            mode_schedule_.updateFromBuffer();
+            modifyReferences(init_time, init_state, final_time, target_trajectories_.get(), mode_schedule_.get());
+        }
 
-            using ReferenceManagerDerived = typename traits<Derived>::ReferenceManagerDerived;
-            GALILEO_REFERENCE_MANAGER_BASIC_TYPEDEF(ReferenceManagerDerived);
-            GALILEO_REFERENCE_MANAGER_TYPEDEF(ReferenceManagerDerived);
+        const ModeSchedule_t &getModeSchedule() const { return mode_schedule_.get(); }
 
-            template <typename StateVectorType>
-            void preSolverRun(NumScalar init_time, const Eigen::MatrixBase<StateVectorType> &init_state, NumScalar final_time)
-            {
-                target_trajectories_.updateFromBuffer();
-                mode_schedule_.updateFromBuffer();
-                modifyReferences(init_time, init_state, final_time, target_trajectories_.get(), mode_schedule_.get());
-            }
+        void setModeSchedule(const ModeSchedule_t &mode_schedule) { mode_schedule_.setBuffer(mode_schedule); }
+        void setModeSchedule(ModeSchedule_t &&mode_schedule) { mode_schedule_.setBuffer(std::move(mode_schedule)); }
 
-            const ModeSchedule_t &getModeSchedule() const { return mode_schedule_.get(); }
+        const TargetTrajectories_t &getTargetTrajectories() const { return target_trajectories_.get(); }
 
-            void setModeSchedule(const ModeSchedule_t &mode_schedule) { mode_schedule_.setBuffer(mode_schedule); }
-            void setModeSchedule(ModeSchedule_t &&mode_schedule) { mode_schedule_.setBuffer(std::move(mode_schedule)); }
+        void setTargetTrajectories(const TargetTrajectories_t &target_trajectories) { target_trajectories_.setBuffer(target_trajectories); }
+        void setTargetTrajectories(TargetTrajectories_t &&target_trajectories) { target_trajectories_.setBuffer(std::move(target_trajectories)); }
 
-            const TargetTrajectories_t &getTargetTrajectories() const { return target_trajectories_.get(); }
+    protected:
+        template <typename StateVectorType>
+        void modifyReferences(NumScalar init_time, const Eigen::MatrixBase<StateVectorType> &init_state, NumScalar final_time, const TargetTrajectories_t &target_trajectories, const ModeSchedule_t &mode_schedule)
+        {
+        }
 
-            void setTargetTrajectories(const TargetTrajectories_t &target_trajectories) { target_trajectories_.setBuffer(target_trajectories); }
-            void setTargetTrajectories(TargetTrajectories_t &&target_trajectories) { target_trajectories_.setBuffer(std::move(target_trajectories)); }
+        inline ReferenceManagerBase()
+        {
+        }
 
-        protected:
-            template <typename StateVectorType>
-            void modifyReferences(NumScalar init_time, const Eigen::MatrixBase<StateVectorType> &init_state, NumScalar final_time, const TargetTrajectories_t &target_trajectories, const ModeSchedule_t &mode_schedule)
-            {
-            }
+        inline ReferenceManagerBase(const ReferenceManagerBase &clone)
+        {
+            *this = clone;
+        }
 
-            inline ReferenceManagerBase()
-            {
-            }
+        inline ReferenceManagerBase &operator=(const ReferenceManagerBase &clone)
+        {
+            return *this;
+        }
 
-            inline ReferenceManagerBase(const ReferenceManagerBase &clone)
-            {
-                *this = clone;
-            }
+        BufferedValue<ModeSchedule_t> mode_schedule_;
+        BufferedValue<TargetTrajectories_t> target_trajectories_;
 
-            inline ReferenceManagerBase &operator=(const ReferenceManagerBase &clone)
-            {
-                return *this;
-            }
-
-            BufferedValue<ModeSchedule_t> mode_schedule_;
-            BufferedValue<TargetTrajectories_t> target_trajectories_;
-
-        }; // class ReferenceManagerBase
-
-    } // namespace predictive
+    }; // class ReferenceManagerBase
 
 } // namespace galileo
 

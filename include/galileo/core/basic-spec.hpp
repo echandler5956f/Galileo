@@ -54,84 +54,79 @@
 namespace galileo
 {
 
-    namespace core
+    /* ---------------------------------------------------------------- */
+    /* Defines the basic types and constants used in the core library. */
+    /* ---------------------------------------------------------------- */
+    template <typename _VarScalar,
+              typename _NumScalar,
+              int _Options,
+              int _NQb,
+              int _NQj,
+              int _NVb,
+              int _NVj,
+              int _NRotors,
+              template <typename> class StateTpl,
+              template <typename> class ActuationTpl>
+    struct BasicSpecTpl
     {
+        using BasicSpec = BasicSpecTpl<_VarScalar, _NumScalar, _Options, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
 
         /* ---------------------------------------------------------------- */
-        /* Defines the basic types and constants used in the core library. */
+        /* Scalar types and Eigen Matrix storage order */
         /* ---------------------------------------------------------------- */
-        template <typename _VarScalar,
-                  typename _NumScalar,
-                  int _Options,
-                  int _NQb,
-                  int _NQj,
-                  int _NVb,
-                  int _NVj,
-                  int _NRotors,
-                  template <typename> class StateTpl,
-                  template <typename> class ActuationTpl>
-        struct BasicSpecTpl
-        {
-            using BasicSpec = BasicSpecTpl<_VarScalar, _NumScalar, _Options, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
+        using VarScalar = _VarScalar;            // Scalar type for variables (for AD)
+        using NumScalar = _NumScalar;            // Scalar type for numerics (i.e., bounds, times, etc.)
+        static constexpr int Options = _Options; // Eigen storage order
 
-            /* ---------------------------------------------------------------- */
-            /* Scalar types and Eigen Matrix storage order */
-            /* ---------------------------------------------------------------- */
-            using VarScalar = _VarScalar;            // Scalar type for variables (for AD)
-            using NumScalar = _NumScalar;            // Scalar type for numerics (i.e., bounds, times, etc.)
-            static constexpr int Options = _Options; // Eigen storage order
+        /* ---------------------------------------------------------------- */
+        /* Compile-time constants */
+        /* ---------------------------------------------------------------- */
+        static constexpr int NQb = _NQb;         // Dimension of floating base generalized coordinates
+        static constexpr int NQj = _NQj;         // Dimension of joint generalized coordinates
+        static constexpr int NVb = _NVb;         // Dimension of floating base generalized velocities
+        static constexpr int NVj = _NVj;         // Dimension of joint generalized velocities
+        static constexpr int NRotors = _NRotors; // Number of rotors attached to the floating base
 
-            /* ---------------------------------------------------------------- */
-            /* Compile-time constants */
-            /* ---------------------------------------------------------------- */
-            static constexpr int NQb = _NQb;         // Dimension of floating base generalized coordinates
-            static constexpr int NQj = _NQj;         // Dimension of joint generalized coordinates
-            static constexpr int NVb = _NVb;         // Dimension of floating base generalized velocities
-            static constexpr int NVj = _NVj;         // Dimension of joint generalized velocities
-            static constexpr int NRotors = _NRotors; // Number of rotors attached to the floating base
+        static constexpr int NQ = NQb + NQj; // Dimension of generalized coordinates
+        static constexpr int NV = NVb + NVj; // Dimension of generalized velocities
 
-            static constexpr int NQ = NQb + NQj; // Dimension of generalized coordinates
-            static constexpr int NV = NVb + NVj; // Dimension of generalized velocities
+        static constexpr int NX = NQ + NV;  // State dimension
+        static constexpr int NDX = NV + NV; // State tangent space dimension
 
-            static constexpr int NX = NQ + NV;  // State dimension
-            static constexpr int NDX = NV + NV; // State tangent space dimension
+        static constexpr int NUa = NV - NVb + NRotors; // Dimension of actuated torque inputs
 
-            static constexpr int NUa = NV - NVb + NRotors; // Dimension of actuated torque inputs
+        /* ---------------------------------------------------------------- */
+        /* Fixed-size Eigen types */
+        /* ---------------------------------------------------------------- */
+        using VectorNqb_t = Eigen::Matrix<VarScalar, NQb, 1, Options>;
+        using VectorNqj_t = Eigen::Matrix<VarScalar, NQj, 1, Options>;
+        using VectorNvb_t = Eigen::Matrix<VarScalar, NVb, 1, Options>;
+        using VectorNvj_t = Eigen::Matrix<VarScalar, NVj, 1, Options>;
 
-            /* ---------------------------------------------------------------- */
-            /* Fixed-size Eigen types */
-            /* ---------------------------------------------------------------- */
-            using VectorNqb_t = Eigen::Matrix<VarScalar, NQb, 1, Options>;
-            using VectorNqj_t = Eigen::Matrix<VarScalar, NQj, 1, Options>;
-            using VectorNvb_t = Eigen::Matrix<VarScalar, NVb, 1, Options>;
-            using VectorNvj_t = Eigen::Matrix<VarScalar, NVj, 1, Options>;
+        using VectorNx_t = Eigen::Matrix<VarScalar, NX, 1, Options>;
+        using VectorNua_t = Eigen::Matrix<VarScalar, NUa, 1, Options>;
+        using VectorNdx_t = Eigen::Matrix<VarScalar, NDX, 1, Options>;
+        using VectorNq_t = Eigen::Matrix<VarScalar, NQ, 1, Options>;
+        using VectorNv_t = Eigen::Matrix<VarScalar, NV, 1, Options>;
 
-            using VectorNx_t = Eigen::Matrix<VarScalar, NX, 1, Options>;
-            using VectorNua_t = Eigen::Matrix<VarScalar, NUa, 1, Options>;
-            using VectorNdx_t = Eigen::Matrix<VarScalar, NDX, 1, Options>;
-            using VectorNq_t = Eigen::Matrix<VarScalar, NQ, 1, Options>;
-            using VectorNv_t = Eigen::Matrix<VarScalar, NV, 1, Options>;
+        using MatrixNx_t = Eigen::Matrix<VarScalar, NX, NX, Options>;
+        using MatrixNua_t = Eigen::Matrix<VarScalar, NUa, NUa, Options>;
+        using MatrixNdx_t = Eigen::Matrix<VarScalar, NDX, NDX, Options>;
+        using MatrixNq_t = Eigen::Matrix<VarScalar, NQ, NQ, Options>;
+        using MatrixNv_t = Eigen::Matrix<VarScalar, NV, NV, Options>;
 
-            using MatrixNx_t = Eigen::Matrix<VarScalar, NX, NX, Options>;
-            using MatrixNua_t = Eigen::Matrix<VarScalar, NUa, NUa, Options>;
-            using MatrixNdx_t = Eigen::Matrix<VarScalar, NDX, NDX, Options>;
-            using MatrixNq_t = Eigen::Matrix<VarScalar, NQ, NQ, Options>;
-            using MatrixNv_t = Eigen::Matrix<VarScalar, NV, NV, Options>;
+        /* ---------------------------------------------------------------- */
+        /* Template types */
+        /* ---------------------------------------------------------------- */
+        using RobotModel_t = pinocchio::ModelTpl<VarScalar, Options>;
+        using RobotData_t = pinocchio::DataTpl<VarScalar, Options>;
 
-            /* ---------------------------------------------------------------- */
-            /* Template types */
-            /* ---------------------------------------------------------------- */
-            using RobotModel_t = pinocchio::ModelTpl<VarScalar, Options>;
-            using RobotData_t = pinocchio::DataTpl<VarScalar, Options>;
+        using State_t = StateTpl<BasicSpec>;
 
-            using State_t = StateTpl<BasicSpec>;
-
-            using ActuationMeta_t = ActuationTpl<BasicSpec>;
-            using ActuationModel_t = typename traits<ActuationMeta_t>::Model_t;
-            using ActuationData_t = typename traits<ActuationMeta_t>::Data_t;
-        };
-
-    } // namespace core
+        using ActuationMeta_t = ActuationTpl<BasicSpec>;
+        using ActuationModel_t = typename traits<ActuationMeta_t>::Model_t;
+        using ActuationData_t = typename traits<ActuationMeta_t>::Data_t;
+    };
 
 } // namespace galileo
 

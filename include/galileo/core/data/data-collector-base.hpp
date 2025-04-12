@@ -6,32 +6,27 @@
 namespace galileo
 {
 
-    namespace core
+    template <typename Derived>
+    struct DataCollectorBase : internal::CRTP<DataCollectorBase<Derived>>
     {
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived>
-        struct DataCollectorBase : internal::CRTP<DataCollectorBase<Derived>>
+    protected:
+        inline DataCollectorBase()
         {
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        }
 
-        protected:
-            inline DataCollectorBase()
-            {
-            }
+        inline DataCollectorBase(const DataCollectorBase &clone)
+        {
+            *this = clone;
+        }
 
-            inline DataCollectorBase(const DataCollectorBase &clone)
-            {
-                *this = clone;
-            }
+        inline DataCollectorBase &operator=(const DataCollectorBase &clone)
+        {
+            return *this;
+        }
 
-            inline DataCollectorBase &operator=(const DataCollectorBase &clone)
-            {
-                return *this;
-            }
-            
-        }; // struct DataCollectorBase
-
-    } // namespace core
+    }; // struct DataCollectorBase
 
 } // namespace galileo
 

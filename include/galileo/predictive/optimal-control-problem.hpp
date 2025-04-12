@@ -8,31 +8,26 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <typename _VarScalar, typename _NumScalar, int _Options, template <typename, typename, int> class PhaseCollectionTpl>
+    class OptimalControlProblem
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename _VarScalar, typename _NumScalar, int _Options, template <typename, typename, int> class PhaseCollectionTpl>
-        class OptimalControlProblem
-        {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        using VarScalar = _VarScalar;
+        using NumScalar = _NumScalar;
+        static constexpr int Options = _Options;
+        using PhaseCollection = PhaseCollectionTpl<VarScalar, NumScalar, Options>;
 
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            static constexpr int Options = _Options;
-            using PhaseCollection = PhaseCollectionTpl<VarScalar, NumScalar, Options>;
-
-            using VectorXv = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
-            using VectorXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
+        using VectorXv = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
+        using VectorXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
 
         // protected:
-            Trajectory<VarScalar, NumScalar, Options, PhaseCollectionTpl> trajectory_;
-            VarScalar cost_;
-            VectorXv x0_;
+        Trajectory<VarScalar, NumScalar, Options, PhaseCollectionTpl> trajectory_;
+        VarScalar cost_;
+        VectorXv x0_;
 
-        }; // class OptimalControlProblem
-
-    } // namespace predictive
+    }; // class OptimalControlProblem
 
 } // namespace galileo
 

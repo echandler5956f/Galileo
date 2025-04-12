@@ -6,9 +6,6 @@
 namespace galileo
 {
 
-    namespace core
-    {
-
         struct CostModelVoid
         {
         }; // struct CostModelVoid
@@ -41,8 +38,6 @@ namespace galileo
             typename PhaseSpec,
             template <typename PS> class CostCollectionTpl>
         struct CostDataTpl;
-
-    } // namespace core
 
 } // namespace galileo
 

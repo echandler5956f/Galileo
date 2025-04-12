@@ -8,41 +8,36 @@
 namespace galileo
 {
 
-    namespace core
+    template <typename PhaseSpec>
+    struct JointDataBaseTpl
     {
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename PhaseSpec>
-        struct JointDataBaseTpl
-        {
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        using PS = PhaseSpec;
 
-            using PS = PhaseSpec;
+        typename PS::VectorNua_t tau;        // Joint torques
+        typename PS::VectorNv_t a;           // Joint accelerations
+        typename PS::MatrixNuaNdx_t dtau_dx; // Torque derivatives w.r.t. state
+        typename PS::MatrixNuaNu_t dtau_du;  // Torque derivatives w.r.t. control
+        typename PS::MatrixNvNdx_t da_dx;    // Acceleration derivatives w.r.t. state
+        typename PS::MatrixNvNu_t da_du;     // Acceleration derivatives w.r.t. control
 
-            typename PS::VectorNua_t tau;        // Joint torques
-            typename PS::VectorNv_t a;           // Joint accelerations
-            typename PS::MatrixNuaNdx_t dtau_dx; // Torque derivatives w.r.t. state
-            typename PS::MatrixNuaNu_t dtau_du;  // Torque derivatives w.r.t. control
-            typename PS::MatrixNvNdx_t da_dx;    // Acceleration derivatives w.r.t. state
-            typename PS::MatrixNvNu_t da_du;     // Acceleration derivatives w.r.t. control
+    }; // struct JointDataBaseTpl
 
-        }; // struct JointDataBaseTpl
+    // Joint data mixin
+    template <typename Derived, typename PhaseSpec>
+    struct JointDataMixinTpl
+    {
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        // Joint data mixin
-        template <typename Derived, typename PhaseSpec>
-        struct JointDataMixinTpl
-        {
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        using PS = PhaseSpec;
 
-            using PS = PhaseSpec;
+        std::shared_ptr<JointDataBaseTpl<PhaseSpec>> joint;
 
-            std::shared_ptr<JointDataBaseTpl<PhaseSpec>> joint;
+        JointDataMixinTpl(std::shared_ptr<JointDataBaseTpl<PhaseSpec>> data)
+            : joint(data) {}
 
-            JointDataMixinTpl(std::shared_ptr<JointDataBaseTpl<PhaseSpec>> data)
-                : joint(data) {}
-
-        }; // struct JointDataMixinTpl
-
-    } // namespace core
+    }; // struct JointDataMixinTpl
 
 } // namespace galileo
 

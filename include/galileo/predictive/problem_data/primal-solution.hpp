@@ -5,7 +5,7 @@
 
 #include "galileo/predictive/references/mode-schedule-base.hpp"
 
-#define GALILEO_PRIMAL_SOLUTION_BASIC_TYPEDEF(PrimalSolution)           \
+#define GALILEO_PRIMAL_SOLUTION_BASIC_TYPEDEF(PrimalSolution)     \
     using VarScalar = typename traits<PrimalSolution>::VarScalar; \
     using NumScalar = typename traits<PrimalSolution>::NumScalar; \
     static constexpr int Options = traits<PrimalSolution>::Options;
@@ -18,30 +18,25 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <typename Derived>
+    struct PrimalSolution : internal::CRTP<Derived>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename Derived>
-        struct PrimalSolution : internal::CRTP<Derived>
-        {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        using PrimalSolutionDerived = typename traits<Derived>::PrimalSolutionDerived;
+        GALILEO_PRIMAL_SOLUTION_BASIC_TYPEDEF(PrimalSolutionDerived);
+        GALILEO_PRIMAL_SOLUTION_TYPEDEF(PrimalSolutionDerived);
 
-            using PrimalSolutionDerived = typename traits<Derived>::PrimalSolutionDerived;
-            GALILEO_PRIMAL_SOLUTION_BASIC_TYPEDEF(PrimalSolutionDerived);
-            GALILEO_PRIMAL_SOLUTION_TYPEDEF(PrimalSolutionDerived);
+        std::vector<NumScalar> time_trajectory_;
+        std::vector<VectorXn> state_trajectory_;
+        std::vector<VectorXn> input_trajectory_;
+        std::vector<size_t> post_event_indices_;
+        ModeScheduleBase_t mode_schedule_;
 
-            std::vector<NumScalar> time_trajectory_;
-            std::vector<VectorXn> state_trajectory_;
-            std::vector<VectorXn> input_trajectory_;
-            std::vector<size_t> post_event_indices_;
-            ModeScheduleBase_t mode_schedule_;
+        // optimized controller
 
-            // optimized controller
-
-        }; // class PrimalSolution
-
-    } // namespace predictive
+    }; // class PrimalSolution
 
 } // namespace galileo
 

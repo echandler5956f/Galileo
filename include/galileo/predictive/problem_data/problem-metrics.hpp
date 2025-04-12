@@ -8,28 +8,23 @@
 namespace galileo
 {
 
-    namespace predictive
+    template <typename _VarScalar, typename _NumScalar, int _Options>
+    struct ProblemMetrics
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename _VarScalar, typename _NumScalar, int _Options>
-        struct ProblemMetrics
-        {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        using VarScalar = _VarScalar;
+        using NumScalar = _NumScalar;
+        static constexpr int Options = _Options;
 
-            using VarScalar = _VarScalar;
-            using NumScalar = _NumScalar;
-            static constexpr int Options = _Options;
+        using Metrics_t = Metrics<VarScalar, NumScalar, Options>;
 
-            using Metrics_t = Metrics<VarScalar, NumScalar, Options>;
+        std::vector<Metrics_t> running_metrics;
+        std::vector<Metrics_t> pre_jump_metrics;
+        Metrics_t terminal_metrics;
 
-            std::vector<Metrics_t> running_metrics;
-            std::vector<Metrics_t> pre_jump_metrics;
-            Metrics_t terminal_metrics;
-
-        }; // class ProblemMetrics
-
-    } // namespace predictive
+    }; // class ProblemMetrics
 
 } // namespace galileo
 

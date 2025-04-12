@@ -6,16 +6,11 @@
 namespace galileo
 {
 
-    namespace core
-    {
+    template <typename BasicSpec>
+    class ActuationModelFullTpl;
 
-        template <typename BasicSpec>
-        class ActuationModelFullTpl;
-
-        template <typename BasicSpec>
-        class ActuationModelFloatingBaseTpl;
-
-    } // namespace core
+    template <typename BasicSpec>
+    class ActuationModelFloatingBaseTpl;
 
 } // namespace galileo
 

@@ -6,78 +6,70 @@
 namespace galileo
 {
 
-    namespace core
-    {
-        template <typename BasicSpec>
-        class ActuationFloatingBaseTpl;
-    }
+    template <typename BasicSpec>
+    class ActuationFloatingBaseTpl;
 
     template <typename BasicSpec>
-    struct traits<core::ActuationFloatingBaseTpl<BasicSpec>>
+    struct traits<ActuationFloatingBaseTpl<BasicSpec>>
     {
         using BS = BasicSpec;
 
-        using Meta_t = core::ActuationFloatingBaseTpl<BS>;
-        using Data_t = core::ActuationDataTpl<BS>;
-        using Model_t = core::ActuationModelFloatingBaseTpl<BS>;
+        using Meta_t = ActuationFloatingBaseTpl<BS>;
+        using Data_t = ActuationDataTpl<BS>;
+        using Model_t = ActuationModelFloatingBaseTpl<BS>;
     };
 
     template <typename BasicSpec>
-    struct traits<core::ActuationModelFloatingBaseTpl<BasicSpec>>
+    struct traits<ActuationModelFloatingBaseTpl<BasicSpec>>
     {
         using BS = BasicSpec;
 
-        using Meta_t = core::ActuationFloatingBaseTpl<BS>;
+        using Meta_t = ActuationFloatingBaseTpl<BS>;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
     };
 
-    namespace core
+    template <typename BasicSpec>
+    class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<BasicSpec>, BasicSpec>
     {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        template <typename BasicSpec>
-        class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<BasicSpec>, BasicSpec>
+        using BS = BasicSpec;
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calc(typename BS::ActuationData_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x,
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            data->tau.tail(BS::NUa) = u;
+        }
 
-            using BS = BasicSpec;
-
-            template <typename StateVectorType, typename ControlVectorType>
-            void calc(typename BS::ActuationData_t &data,
+        template <typename StateVectorType, typename ControlVectorType>
+        void calcDiff(typename BS::ActuationData_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                data->tau.tail(BS::NUa) = u;
-            }
+        {
+            // has constant values which are set in createData
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void calcDiff(typename BS::ActuationData_t &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                // has constant values which are set in createData
-            }
+        template <typename StateVectorType, typename TauVectorType>
+        void commands(typename BS::ActuationData_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x,
+                      const Eigen::MatrixBase<TauVectorType> &tau) const
+        {
+            data->u = tau.tail(BS::NUa);
+        }
 
-            template <typename StateVectorType, typename TauVectorType>
-            void commands(typename BS::ActuationData_t &data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<TauVectorType> &tau) const
-            {
-                data->u = tau.tail(BS::NUa);
-            }
+        template <typename StateVectorType, typename ControlVectorType>
+        void torqueTransform(typename BS::ActuationData_t &data,
+                             const Eigen::MatrixBase<StateVectorType> &x,
+                             const Eigen::MatrixBase<ControlVectorType> &u) const
+        {
+            // has constant values which are set in createData
+        }
 
-            template <typename StateVectorType, typename ControlVectorType>
-            void torqueTransform(typename BS::ActuationData_t &data,
-                                 const Eigen::MatrixBase<StateVectorType> &x,
-                                 const Eigen::MatrixBase<ControlVectorType> &u) const
-            {
-                // has constant values which are set in createData
-            }
-
-        }; // class ActuationModelFloatingBaseTpl
-
-    } // namespace core
+    }; // class ActuationModelFloatingBaseTpl
 
 } // namespace galileo
 
