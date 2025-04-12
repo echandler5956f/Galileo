@@ -23,29 +23,29 @@ namespace galileo
                 template <typename PS> class ContactCollectionTpl,
                 typename ArgsTmp>
             static ReturnType run(
-                const galileo::ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-                galileo::ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data,
+                const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data,
                 ArgsTmp args)
             {
-                InternalVisitorModelAndData<galileo::ContactModelTpl<PhaseSpec, ContactCollectionTpl>, ArgsTmp>
+                InternalVisitorModelAndData<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, ArgsTmp>
                     visitor(contact_data, args);
                 return boost::apply_visitor(visitor, contact_model);
             }
 
             template <typename PhaseSpec, template <typename PS> class ContactCollectionTpl>
             static ReturnType run(
-                const galileo::ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-                galileo::ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data)
+                const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data)
             {
-                InternalVisitorModelAndData<galileo::ContactModelTpl<PhaseSpec, ContactCollectionTpl>, NoArg>
+                InternalVisitorModelAndData<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, NoArg>
                     visitor(contact_data);
                 return boost::apply_visitor(visitor, contact_model);
             }
 
             template <typename ContactModelDerived, typename ArgsTmp>
             static ReturnType run(
-                const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model,
-                typename galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived &contact_data,
+                const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model,
+                typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived &contact_data,
                 ArgsTmp args)
             {
                 InternalVisitorModelAndData<ContactModelDerived, ArgsTmp> visitor(contact_data, args);
@@ -54,8 +54,8 @@ namespace galileo
 
             template <typename ContactModelDerived>
             static ReturnType run(
-                const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model,
-                typename galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived &contact_data)
+                const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model,
+                typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived &contact_data)
             {
                 InternalVisitorModelAndData<ContactModelDerived, NoArg> visitor(contact_data);
                 return visitor(contact_model.derived());
@@ -66,7 +66,7 @@ namespace galileo
                 template <typename PS> class ContactCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const galileo::ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model, ArgsTmp args)
+            run(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, contact_model);
@@ -77,49 +77,49 @@ namespace galileo
                 template <typename, int> class ContactCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
-            run(const galileo::ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data, ArgsTmp args)
+            run(const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return boost::apply_visitor(visitor, contact_data);
             }
 
             template <typename PhaseSpec, template <typename PS> class ContactCollectionTpl>
-            static ReturnType run(const galileo::ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
+            static ReturnType run(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, contact_model);
             }
 
             template <typename PhaseSpec, template <typename PS> class ContactCollectionTpl>
-            static ReturnType run(const galileo::ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data)
+            static ReturnType run(const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return boost::apply_visitor(visitor, contact_data);
             }
 
             template <typename ContactModelDerived, typename ArgsTmp>
-            static ReturnType run(const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model, ArgsTmp args)
+            static ReturnType run(const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(contact_model.derived());
             }
 
             template <typename ContactDataDerived, typename ArgsTmp>
-            static ReturnType run(const galileo::ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data, ArgsTmp args)
+            static ReturnType run(const ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(contact_data.derived());
             }
 
             template <typename ContactModelDerived>
-            static ReturnType run(const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model)
+            static ReturnType run(const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(contact_model.derived());
             }
 
             template <typename ContactDataDerived>
-            static ReturnType run(const galileo::ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data)
+            static ReturnType run(const ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(contact_data.derived());
@@ -137,14 +137,14 @@ namespace galileo
                 }
 
                 template <typename ContactModelDerived>
-                ReturnType operator()(const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
+                ReturnType operator()(const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
                 {
                     return bf::invoke(
                         &ContactVisitorDerived::template algo<ContactModelDerived>,
-                        bf::append(
+                        gf::append(
                             boost::ref(contact_model.derived()),
                             boost::ref(
-                                boost::get<typename galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived>(contact_data)),
+                                boost::get<typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived>(contact_data)),
                             args));
                 }
 
@@ -169,14 +169,14 @@ namespace galileo
                 }
 
                 template <typename ContactModelDerived>
-                ReturnType operator()(const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
+                ReturnType operator()(const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
                 {
                     return bf::invoke(
                         &ContactVisitorDerived::template algo<ContactModelDerived>,
                         bf::make_vector(
                             boost::ref(contact_model.derived()),
                             boost::ref(
-                                boost::get<typename galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived>(contact_data))));
+                                boost::get<typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived>(contact_data))));
                 }
 
                 ContactData &contact_data;
@@ -191,19 +191,19 @@ namespace galileo
                 }
 
                 template <typename ContactModelDerived>
-                ReturnType operator()(const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
+                ReturnType operator()(const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
                 {
                     return bf::invoke(
                         &ContactVisitorDerived::template algo<ContactModelDerived>,
-                        bf::append(boost::ref(contact_model.derived()), args));
+                        gf::append(boost::ref(contact_model.derived()), args));
                 }
 
                 template <typename ContactDataDerived>
-                ReturnType operator()(const galileo::ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data) const
+                ReturnType operator()(const ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data) const
                 {
                     return bf::invoke(
                         &ContactVisitorDerived::template algo<ContactDataDerived>,
-                        bf::append(boost::ref(contact_data.derived()), args));
+                        gf::append(boost::ref(contact_data.derived()), args));
                 }
 
                 ReturnType operator()(const ContactModelVoid)
@@ -222,13 +222,13 @@ namespace galileo
                 }
 
                 template <typename ContactModelDerived>
-                ReturnType operator()(const galileo::ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
+                ReturnType operator()(const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model) const
                 {
                     return ContactVisitorDerived::template algo<ContactModelDerived>(contact_model.derived());
                 }
 
                 template <typename ContactDataDerived>
-                ReturnType operator()(const galileo::ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data) const
+                ReturnType operator()(const ContactDataBase<ContactDataDerived, typename traits<ContactDataDerived>::PS> &contact_data) const
                 {
                     return ContactVisitorDerived::template algo<ContactDataDerived>(contact_data.derived());
                 }

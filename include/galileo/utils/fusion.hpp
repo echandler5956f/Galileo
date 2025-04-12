@@ -11,60 +11,62 @@ namespace galileo
 {
   namespace fusion
   {
+    namespace bf = boost::fusion;
+    namespace gf = galileo::fusion; // preventing clashes with pinocchio
 
     using NoArg = boost::blank;
 
     // Append the element T at the front of boost fusion vector V.
     template <typename T, typename V>
-    typename boost::fusion::result_of::push_front<V const, T>::type append(T const &t, V const &v)
+    typename bf::result_of::push_front<V const, T>::type append(T const &t, V const &v)
     {
-      return boost::fusion::push_front(v, t);
+      return bf::push_front(v, t);
     }
 
     // Append the elements T1 and T2 at the front of boost fusion vector V.
     template <typename T1, typename T2, typename V>
-    typename boost::fusion::result_of::push_front<typename boost::fusion::result_of::push_front<V const, T2>::type const, T1>::
+    typename bf::result_of::push_front<typename bf::result_of::push_front<V const, T2>::type const, T1>::
         type
         append(T1 const &t1, T2 const &t2, V const &v)
     {
-      return boost::fusion::push_front(boost::fusion::push_front(v, t2), t1);
+      return bf::push_front(bf::push_front(v, t2), t1);
     }
 
     // Append the elements T1, T2 and T3 at the front of boost fusion vector V.
     template <typename T1, typename T2, typename T3, typename V>
-    typename boost::fusion::result_of::push_front<
-        typename boost::fusion::result_of::push_front<typename boost::fusion::result_of::push_front<V const, T3>::type const, T2>::
+    typename bf::result_of::push_front<
+        typename bf::result_of::push_front<typename bf::result_of::push_front<V const, T3>::type const, T2>::
             type const,
         T1>::type
     append(T1 const &t1, T2 const &t2, T3 const &t3, V const &v)
     {
-      return boost::fusion::push_front(boost::fusion::push_front(boost::fusion::push_front(v, t3), t2), t1);
+      return bf::push_front(bf::push_front(bf::push_front(v, t3), t2), t1);
     }
 
     // Append the elements T1, T2, T3 and T4 at the front of boost fusion vector V.
     template <typename T1, typename T2, typename T3, typename T4, typename V>
-    typename boost::fusion::result_of::push_front<
-        typename boost::fusion::result_of::push_front<
-            typename boost::fusion::result_of::push_front<typename boost::fusion::result_of::push_front<V const, T4>::type const, T3>::type const,
+    typename bf::result_of::push_front<
+        typename bf::result_of::push_front<
+            typename bf::result_of::push_front<typename bf::result_of::push_front<V const, T4>::type const, T3>::type const,
             T2>::type const,
         T1>::type
     append(T1 const &t1, T2 const &t2, T3 const &t3, T4 const &t4, V const &v)
     {
-      return boost::fusion::push_front(boost::fusion::push_front(boost::fusion::push_front(boost::fusion::push_front(v, t4), t3), t2), t1);
+      return bf::push_front(bf::push_front(bf::push_front(bf::push_front(v, t4), t3), t2), t1);
     }
 
     // Append the elements T1, T2, T3, T4 and T5 at the front of boost fusion vector V.
     template <typename T1, typename T2, typename T3, typename T4, typename T5, typename V>
-    typename boost::fusion::result_of::push_front<
-        typename boost::fusion::result_of::push_front<
-            typename boost::fusion::result_of::push_front<
-                typename boost::fusion::result_of::push_front<typename boost::fusion::result_of::push_front<V const, T5>::type const, T4>::type const,
+    typename bf::result_of::push_front<
+        typename bf::result_of::push_front<
+            typename bf::result_of::push_front<
+                typename bf::result_of::push_front<typename bf::result_of::push_front<V const, T5>::type const, T4>::type const,
                 T3>::type const,
             T2>::type const,
         T1>::type
     append(T1 const &t1, T2 const &t2, T3 const &t3, T4 const &t4, T5 const &t5, V const &v)
     {
-      return boost::fusion::push_front(boost::fusion::push_front(boost::fusion::push_front(boost::fusion::push_front(boost::fusion::push_front(v, t5), t4), t3), t2), t1);
+      return bf::push_front(bf::push_front(bf::push_front(bf::push_front(bf::push_front(v, t5), t4), t3), t2), t1);
     }
 
   } // namespace fusion

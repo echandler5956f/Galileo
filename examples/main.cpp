@@ -22,8 +22,7 @@
 
 #include <iostream>
 
-using namespace galileo::core;
-// using namespace galileo::predictive;
+using namespace galileo;
 
 template <typename BS>
 using StateTpl = StateMultibodyTpl<BS>;
