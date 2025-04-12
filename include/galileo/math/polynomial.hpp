@@ -17,6 +17,8 @@ namespace galileo
             static constexpr int N = _N;
             static constexpr int Options = _Options;
 
+            JacobiPolynomialTpl() : alpha_(0), beta_(0) {}
+
             JacobiPolynomialTpl(const NumScalar &alpha, const NumScalar &beta) : alpha_(alpha), beta_(beta)
             {
                 compute_nodes_and_weights();
@@ -109,7 +111,7 @@ namespace galileo
         protected:
             void compute_nodes_and_weights()
             {
-                NumScalar ab = alpha + beta;
+                NumScalar ab = alpha_ + beta_;
                 NumScalar abi = 2.0 + ab;
 
                 // Define the zero-th moment.
@@ -135,7 +137,7 @@ namespace galileo
 
                 for (int i = 1; i < N; i++)
                 {
-                    NumScalar i_r8 = Scalar(i + 1);
+                    NumScalar i_r8 = NumScalar(i + 1);
                     abi = 2.0 * i_r8 + ab;
                     nodes_(i) = a2b2 / ((abi - 2.0) * abi);
                     abi = abi * abi;
@@ -176,7 +178,7 @@ namespace galileo
                 {
                     R(j, 0) = 1. / (j + 1);
                 }
-                Eigen::Matrix<NumScalar, N, N, Options> R = R.asDiagonal();
+                Eigen::Matrix<NumScalar, N, N, Options> R_diag = R.asDiagonal();
                 Eigen::Matrix<NumScalar, N, N, Options> Vandermonde = Eigen::Matrix<NumScalar, N, N, Options>::Ones();
                 // Vandermonde matrix =
                 //[[1, nodes_1, nodes_1 ^ 2, ..., nodes_1 ^(N - 1)],
@@ -192,7 +194,7 @@ namespace galileo
                 }
 
                 // Only working for nodes \in[0, 1]
-                coeffs_ = nodes_diag * Vandermonde * R * Vandermonde.inverse();
+                coeffs_ = nodes_diag * Vandermonde * R_diag * Vandermonde.inverse();
             }
 
             void compute_barycentric_weights()

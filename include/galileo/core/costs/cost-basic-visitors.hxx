@@ -24,7 +24,7 @@ namespace galileo
         template <typename CostModel>
         static void algo(
             const CostModelBase<CostModel, PhaseSpec> &cost_model,
-            typename CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
+            CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -56,7 +56,7 @@ namespace galileo
         template <typename CostModel>
         static void algo(
             const CostModelBase<CostModel, PhaseSpec> &cost_model,
-            typename CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
+            CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -93,7 +93,6 @@ namespace galileo
             return cost_data.L();
         }
 
-        template <typename PhaseSpec, template <typename> class CostCollectionTpl>
         static ReturnType run(const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data)
         {
             return boost::apply_visitor(CostLVisitor<PhaseSpec, CostCollectionTpl>(), cost_data);
@@ -117,7 +116,6 @@ namespace galileo
             return cost_data.Lx();
         }
 
-        template <typename PhaseSpec, template <typename> class CostCollectionTpl>
         static ReturnType run(const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data)
         {
             return boost::apply_visitor(CostLxVisitor<PhaseSpec, CostCollectionTpl>(), cost_data);
@@ -141,7 +139,6 @@ namespace galileo
             return cost_data.Lu();
         }
 
-        template <typename PhaseSpec, template <typename> class CostCollectionTpl>
         static ReturnType run(const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data)
         {
             return boost::apply_visitor(CostLuVisitor<PhaseSpec, CostCollectionTpl>(), cost_data);
@@ -165,7 +162,6 @@ namespace galileo
             return cost_data.Lxx();
         }
 
-        template <typename PhaseSpec, template <typename> class CostCollectionTpl>
         static ReturnType run(const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data)
         {
             return boost::apply_visitor(CostLxxVisitor<PhaseSpec, CostCollectionTpl>(), cost_data);
@@ -189,7 +185,6 @@ namespace galileo
             return cost_data.Lxu();
         }
 
-        template <typename PhaseSpec, template <typename> class CostCollectionTpl>
         static ReturnType run(const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data)
         {
             return boost::apply_visitor(CostLxuVisitor<PhaseSpec, CostCollectionTpl>(), cost_data);
@@ -213,7 +208,6 @@ namespace galileo
             return cost_data.Luu();
         }
 
-        template <typename PhaseSpec, template <typename> class CostCollectionTpl>
         static ReturnType run(const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data)
         {
             return boost::apply_visitor(CostLuuVisitor<PhaseSpec, CostCollectionTpl>(), cost_data);

@@ -128,9 +128,9 @@ namespace galileo
         CostDataManager_t costs;
         RobotData_t robot;
 
-        XAcc_t Xacc;
-        XAccx_t Xaccx;
-        XAccu_t Xaccu;
+        XAcc_t XAcc;
+        XAccx_t XAccx;
+        XAccu_t XAccu;
 
         L_t L;
         Lx_t Lx;
@@ -197,7 +197,7 @@ namespace galileo
                 robot_, data.robot, data.multibody.actuation.tau,
                 data.multibody.contacts.Jc.topRows(nc), data.multibody.contacts.a0.head(nc),
                 JMinvJt_damping_);
-            data.Xacc = data.robot.ddq;
+            data.XAcc = data.robot.ddq;
             contacts_.updateAcceleration(data.multibody.contacts, data.robot.ddq);
             contacts_.updateForce(data.multibody.contacts, data.robot.lambda_c);
             data.multibody.joint.a = data.robot.ddq;
@@ -247,7 +247,7 @@ namespace galileo
             // recursively: https://eigen.tuxfamily.org/bz/show_bug.cgi?id=408. Therefore,
             // it is not possible to pass data.Kinv.topLeftCorner(nv + nc, nv + nc)
             data.Kinv.resize(PS::NV + nc, PS::NV + nc);
-            pinocchio::computeRNEADerivatives(robot_, data.robot, q, v, data.Xacc,
+            pinocchio::computeRNEADerivatives(robot_, data.robot, q, v, data.XAcc,
                                               data.multibody.contacts.fext);
             contacts_.updateRneaDiff(data.multibody.contacts, data.robot);
             pinocchio::getKKTContactDynamicMatrixInverse(
@@ -261,13 +261,13 @@ namespace galileo
             const Eigen::Block<MatrixNcNv_t> f_partial_dtau = data.Kinv.bottomLeftCorner(nc, PS::NV);
             const Eigen::Block<MatrixNc_t> f_partial_da = data.Kinv.bottomRightCorner(nc, nc);
 
-            data.Xaccx.leftCols(PS::NV).noalias() = -a_partial_dtau * data.robot.dtau_dq;
-            data.Xaccx.rightCols(PS::NV).noalias() = -a_partial_dtau * data.robot.dtau_dv;
-            data.Xaccx.noalias() -= a_partial_da * data.multibody.contacts.da0_dx.topRows(nc);
-            data.Xaccx.noalias() += a_partial_dtau * data.multibody.actuation.dtau_dx;
-            data.Xaccu.noalias() = a_partial_dtau * data.multibody.actuation.dtau_du;
-            data.multibody.joint.da_dx = data.Xaccx;
-            data.multibody.joint.da_du = data.Xaccu;
+            data.XAccx.leftCols(PS::NV).noalias() = -a_partial_dtau * data.robot.dtau_dq;
+            data.XAccx.rightCols(PS::NV).noalias() = -a_partial_dtau * data.robot.dtau_dv;
+            data.XAccx.noalias() -= a_partial_da * data.multibody.contacts.da0_dx.topRows(nc);
+            data.XAccx.noalias() += a_partial_dtau * data.multibody.actuation.dtau_dx;
+            data.XAccu.noalias() = a_partial_dtau * data.multibody.actuation.dtau_du;
+            data.multibody.joint.da_dx = data.XAccx;
+            data.multibody.joint.da_du = data.XAccu;
 
             // Computing the cost derivatives
             if (enable_force_)
@@ -283,7 +283,7 @@ namespace galileo
                 data.df_du.topRows(nc).noalias() =
                     -f_partial_dtau * data.multibody.actuation->dtau_du;
                 contacts_.updateAccelerationDiff(data.multibody.contacts,
-                                                 data.Xaccx.bottomRows(PS::NV));
+                                                 data.XAccx.bottomRows(PS::NV));
                 contacts_.updateForceDiff(data.multibody.contacts, data.df_dx.topRows(nc),
                                           data.df_du.topRows(nc));
             }

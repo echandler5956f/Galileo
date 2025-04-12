@@ -18,6 +18,9 @@
 #include <galileo/multibody/contacts/contact-manager.hpp>
 
 #include <galileo/predictive/nodes/node-contact-fwddyn.hpp>
+
+#include <galileo/core/controls/control-param-jpoly.hpp>
+
 #include <galileo/predictive/segments/segment-erk-euler.hpp>
 
 #include <iostream>

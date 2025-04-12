@@ -16,12 +16,12 @@ namespace galileo
     struct ContactBaseTpl;
 
     // We are basically forward propogating the responsibility of filling the traits
-    // to the derived CRTP class, because ContactDataBaseTpl/ContactModelBaseTpl are CRTP base classes
+    // to the derived CRTP class, because ContactDataBase/ContactModelBase are CRTP base classes
     template <typename Derived, typename PhaseSpec>
     struct traits<ContactBaseTpl<Derived, PhaseSpec>>
     {
         using PS = PhaseSpec;
-        using ContactBase = ContactDataBaseTpl<Derived, PS>;
+        using ContactBase = ContactBaseTpl<Derived, PS>;
         using ForceDerived = ContactBase;
         using ContactDerived = Derived;
 
@@ -103,6 +103,8 @@ namespace galileo
         using ContactDerived = typename traits<Derived>::ContactDerived;
         using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
         using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
+
+        using Index_t = typename traits<ContactDerived>::Index_t;
 
         template <typename StateVectorType>
         void calc(ContactDataDerived &data,

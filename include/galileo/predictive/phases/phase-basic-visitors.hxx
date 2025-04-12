@@ -22,7 +22,7 @@ namespace galileo
         template <typename PhaseModel>
         static void algo(
             const PhaseModelBase<PhaseModel> &phase_model,
-            typename PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
+            PhaseDataBase<typename PhaseModel::PhaseDataDerived> &phase_data,
             const Eigen::MatrixBase<StateMatrixType> &xs,
             const Eigen::MatrixBase<ControlParamMatrixType> &ws)
         {

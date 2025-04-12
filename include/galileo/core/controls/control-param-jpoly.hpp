@@ -37,7 +37,7 @@ namespace galileo
         }
 
         template <typename ControlParamVectorType>
-        void calcDiff(typename PS::ControlParamData_t &data,
+        void calcDiff(typename PS::ControlParamData_t &data, const typename PS::NumScalar &t,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             jacobi_polynomial_.barycentricInterpolationDiff(t, w.reshaped(PS::NU, PS::NOrder), data.du_dw.derived());
@@ -131,7 +131,7 @@ namespace galileo
         }
 
     protected:
-        JacobiPolynomialTpl<typename PS::NumScalar, PS::NOrder, PS::Options> jacobi_polynomial_;
+        math::JacobiPolynomialTpl<typename PS::NumScalar, PS::NOrder, PS::Options> jacobi_polynomial_;
 
     }; // class ControlParamModelJacobiPolynomialTpl
 

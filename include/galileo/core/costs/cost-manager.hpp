@@ -66,7 +66,7 @@ namespace galileo
 
     }; // class CostDataManagerTpl
 
-    template <typename PS,
+    template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
     class CostModelManagerTpl
     {

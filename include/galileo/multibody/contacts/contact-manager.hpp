@@ -292,7 +292,7 @@ namespace galileo
                     const int nc_i = m_i.contact.nc();
                     if (m_i.active)
                     {
-                        const Eigen::VectorBlock<const VectorXs, Eigen::Dynamic> force_i =
+                        const Eigen::VectorBlock<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
                             force.segment(nc, nc_i);
                         m_i.contact.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
@@ -317,7 +317,7 @@ namespace galileo
                     if (m_i.active)
                     {
                         const int nc_i = m_i.contact.nc();
-                        const Eigen::VectorBlock<const VectorXs, Eigen::Dynamic> force_i =
+                        const Eigen::VectorBlock<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
                             force.segment(nc, nc_i);
                         m_i.contact.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =

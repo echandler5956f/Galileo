@@ -62,7 +62,7 @@ namespace galileo
 
         }; // class ConstraintDataManagerTpl
 
-        template <typename PS,
+        template <typename PhaseSpec,
                   template <typename PS> class ConstraintCollectionTpl>
         class ConstraintModelManagerTpl
         {

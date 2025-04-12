@@ -24,7 +24,7 @@ namespace galileo
         template <typename ConstraintModel>
         static void algo(
             const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
-            typename ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -56,7 +56,7 @@ namespace galileo
         template <typename ConstraintModel>
         static void algo(
             const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
-            typename ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -118,7 +118,6 @@ namespace galileo
             return constraint_model.lb();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
         {
             return boost::apply_visitor(ConstraintLbVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
@@ -140,7 +139,6 @@ namespace galileo
             return constraint_model.ub();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
         {
             return boost::apply_visitor(ConstraintUbVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
@@ -162,7 +160,6 @@ namespace galileo
             return constraint_model.ng();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static int run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
         {
             return boost::apply_visitor(ConstraintNgVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
@@ -182,6 +179,11 @@ namespace galileo
         int operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
         {
             return constraint_model.nh();
+        }
+
+        static int run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
+        {
+            return boost::apply_visitor(ConstraintNhVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
         }
     };
 
@@ -205,7 +207,6 @@ namespace galileo
             return constraint_data.H();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static ReturnType run(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
         {
             return boost::apply_visitor(ConstraintHVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_data);
@@ -229,7 +230,6 @@ namespace galileo
             return constraint_data.Hx();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static ReturnType run(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
         {
             return boost::apply_visitor(ConstraintHxVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_data);
@@ -253,7 +253,6 @@ namespace galileo
             return constraint_data.Hu();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static ReturnType run(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
         {
             return boost::apply_visitor(ConstraintHuVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_data);
@@ -277,7 +276,6 @@ namespace galileo
             return constraint_data.G();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static ReturnType run(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
         {
             return boost::apply_visitor(ConstraintGVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_data);
@@ -301,7 +299,6 @@ namespace galileo
             return constraint_data.Gx();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static ReturnType run(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
         {
             return boost::apply_visitor(ConstraintGxVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_data);
@@ -325,7 +322,6 @@ namespace galileo
             return constraint_data.Gu();
         }
 
-        template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
         static ReturnType run(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
         {
             return boost::apply_visitor(ConstraintGuVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_data);

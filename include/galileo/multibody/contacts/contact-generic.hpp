@@ -26,7 +26,7 @@ namespace galileo
         using ContactModelDerived = ContactModelTpl<PS, ContactCollectionTpl>;
 
         // Traits required by ForceDataBase
-        using RobotDataPointer_t = typename(PS::RobotData_t) *;
+        using RobotDataPointer_t = typename PS::RobotData_t*;
         using Index_t = typename PS::Index_t;
         using ReferenceFrame_t = typename PS::ReferenceFrame_t;
         using SE3_t = typename PS::SE3_t;
@@ -195,9 +195,9 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        using ContactDerived = ContactTpl<PhaseSpec>;
-        using ContactModelDerived = traits<ContactDerived>::ContactModelDerived;
-        using ContactDataDerived = traits<ContactDerived>::ContactDataDerived;
+        using ContactDerived = ContactTpl<PS, ContactCollectionTpl>;
+        using ContactModelDerived = typename traits<ContactDerived>::ContactModelDerived;
+        using ContactDataDerived = typename traits<ContactDerived>::ContactDataDerived;
 
         using ContactCollection = ContactCollectionTpl<PS>;
         using ContactModelVariant = typename ContactCollection::ContactModelVariant;

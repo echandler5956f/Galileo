@@ -74,7 +74,7 @@ namespace galileo
 
             template <
                 typename PhaseSpec,
-                template <typename, int> class ContactCollectionTpl,
+                template <typename PS> class ContactCollectionTpl,
                 typename ArgsTmp>
             static ReturnType
             run(const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data, ArgsTmp args)
