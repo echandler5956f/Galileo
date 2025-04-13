@@ -15,6 +15,38 @@ namespace galileo
 
     // Cost model visitors
 
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl,
+              typename DataCollector>
+    struct CostCreateDataVisitor
+        : fusion::CostUnaryVisitorBase<CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector>>
+    {
+        using ArgsType = boost::fusion::vector<DataCollector *const>;
+        using CostCollection_t = CostCollectionTpl<PhaseSpec>;
+        using CostModelVariant_t = CostCollection_t::ModelVariant_t;
+        using CostDataVariant_t = CostDataTpl<PhaseSpec, CostCollectionTpl>;
+
+        template <typename CostModelDerived>
+        static CostDataVariant_t algo(
+            const CostModelBase<CostModelDerived, PhaseSpec> &cost_model,
+            DataCollector *const collector)
+        {
+            return CostDataVariant_t(cost_model.createData(collector));
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl,
+              typename DataCollector>
+    inline CostDataTpl<PhaseSpec, CostCollectionTpl> cost_create_data(
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
+        DataCollector *const collector)
+    {
+        typedef CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector> Algo;
+
+        return Algo::run(cost_model, typename Algo::ArgsType(collector));
+    }
+
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct CostCalcZerothOrderVisitor
         : fusion::CostUnaryVisitorBase<CostCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>

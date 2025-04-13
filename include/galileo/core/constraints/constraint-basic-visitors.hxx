@@ -15,6 +15,38 @@ namespace galileo
 
     // Constraint model visitors
 
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
+              typename DataCollector>
+    struct ConstraintCreateDataVisitor
+        : fusion::ConstraintUnaryVisitorBase<ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector>>
+    {
+        using ArgsType = boost::fusion::vector<DataCollector *const>;
+        using ConstraintCollection_t = ConstraintCollectionTpl<PhaseSpec>;
+        using ConstraintModelVariant_t = ConstraintCollection_t::ModelVariant_t;
+        using ConstraintDataVariant_t = ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>;
+
+        template <typename ConstraintModelDerived>
+        static ConstraintDataVariant_t algo(
+            const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model,
+            DataCollector *const collector)
+        {
+            return ConstraintDataVariant_t(constraint_model.createData(collector));
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
+              typename DataCollector>
+    inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        DataCollector *const collector)
+    {
+        typedef ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector> Algo;
+
+        return Algo::run(constraint_model, typename Algo::ArgsType(collector));
+    }
+
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct ConstraintCalcZerothOrderVisitor
         : fusion::ConstraintUnaryVisitorBase<ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>

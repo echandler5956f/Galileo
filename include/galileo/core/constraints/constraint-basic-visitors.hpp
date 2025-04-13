@@ -12,6 +12,13 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename> class ConstraintCollectionTpl,
+              typename DataCollector>
+    inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        DataCollector *const collector);
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
               typename StateVectorType,
               typename ControlVectorType>
     inline void constraint_calc_zeroth_order(

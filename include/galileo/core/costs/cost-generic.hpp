@@ -185,6 +185,12 @@ namespace galileo
             return *static_cast<const ModelVariant_t *>(this);
         }
 
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return galileo::cost_create_data(*this, collector);
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -213,12 +219,6 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::cost_calc_first_order(*this, data, x.derived());
-        }
-
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
-        {
-            return galileo::cost_create_data(*this, collector);
         }
 
     }; // struct CostModelTpl

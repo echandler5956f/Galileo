@@ -192,6 +192,12 @@ namespace galileo
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
         }
 
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return galileo::constraint_create_data(*this, collector);
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -220,12 +226,6 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::constraint_calc_first_order(*this, data, x.derived());
-        }
-
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
-        {
-            return galileo::constraint_create_data(*this, collector);
         }
 
         template <typename LowerBoundType, typename UpperBoundType>

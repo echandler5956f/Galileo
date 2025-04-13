@@ -13,6 +13,38 @@
 namespace galileo
 {
 
+    template <typename PhaseSpec,
+              template <typename> class PhaseCollectionTpl,
+              typename DataCollector>
+    struct PhaseCreateDataVisitor
+        : fusion::PhaseUnaryVisitorBase<PhaseCreateDataVisitor<PhaseSpec, PhaseCollectionTpl, DataCollector>>
+    {
+        using ArgsType = boost::fusion::vector<DataCollector *const>;
+        using PhaseCollection_t = PhaseCollectionTpl<PhaseSpec>;
+        using PhaseModelVariant_t = PhaseCollection_t::ModelVariant_t;
+        using PhaseDataVariant_t = PhaseDataTpl<PhaseSpec, PhaseCollectionTpl>;
+
+        template <typename PhaseModelDerived>
+        static PhaseDataVariant_t algo(
+            const PhaseModelBase<PhaseModelDerived, PhaseSpec> &phase_model,
+            DataCollector *const collector)
+        {
+            return PhaseDataVariant_t(phase_model.createData(collector));
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class PhaseCollectionTpl,
+              typename DataCollector>
+    inline PhaseDataTpl<PhaseSpec, PhaseCollectionTpl> phase_create_data(
+        const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model,
+        DataCollector *const collector)
+    {
+        typedef PhaseCreateDataVisitor<PhaseSpec, PhaseCollectionTpl, DataCollector> Algo;
+
+        return Algo::run(phase_model, typename Algo::ArgsType(collector));
+    }
+
     template <typename StateMatrixType, typename ControlParamMatrixType>
     struct PhaseCalcZerothOrderVisitor
         : fusion::PhaseUnaryVisitorBase<PhaseCalcZerothOrderVisitor<StateMatrixType, ControlParamMatrixType>>

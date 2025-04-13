@@ -16,6 +16,38 @@ namespace galileo
     // Contact model visitors
 
     template <typename PhaseSpec,
+              template <typename> class ContactCollectionTpl,
+              typename DataCollector>
+    struct ContactCreateDataVisitor
+        : fusion::ContactUnaryVisitorBase<ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl, DataCollector>>
+    {
+        using ArgsType = boost::fusion::vector<DataCollector *const>;
+        using ContactCollection_t = ContactCollectionTpl<PhaseSpec>;
+        using ContactModelVariant_t = ContactCollection_t::ModelVariant_t;
+        using ContactDataVariant_t = ContactDataTpl<PhaseSpec, ContactCollectionTpl>;
+
+        template <typename ContactModelDerived>
+        static ContactDataVariant_t algo(
+            const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model,
+            DataCollector *const collector)
+        {
+            return ContactDataVariant_t(contact_model.createData(collector));
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class ContactCollectionTpl,
+              typename DataCollector>
+    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        DataCollector *const collector)
+    {
+        typedef ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl, DataCollector> Algo;
+
+        return Algo::run(contact_model, typename Algo::ArgsType(collector));
+    }
+
+    template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl,
               typename StateVectorType>
     struct ContactCalcZerothOrderVisitor

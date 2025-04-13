@@ -149,6 +149,12 @@ namespace galileo
             return *static_cast<const ModelVariant_t *>(this);
         }
 
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return galileo::phase_create_data(*this, collector);
+        }
+
         template <typename StateMatrixType, typename ControlParamMatrixType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateMatrixType> &xs,
@@ -173,12 +179,6 @@ namespace galileo
                          const typename PS::NumScalar &tol) const
         {
             galileo::phase_quasi_static(*this, data, xs.derived(), ws.derived(), maxiter, tol);
-        }
-
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
-        {
-            return galileo::phase_create_data(*this, collector);
         }
 
         const typename PS::SegmentModel_t &segment() const

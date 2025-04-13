@@ -11,6 +11,13 @@ namespace galileo
     // Contact model visitors
 
     template <typename PhaseSpec,
+              template <typename> class ContactCollectionTpl,
+              typename DataCollector>
+    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        DataCollector *const collector);
+
+    template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl,
               typename StateVectorType>
     inline void contact_calc_zeroth_order(

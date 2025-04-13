@@ -13,6 +13,13 @@ namespace galileo
     // Phase model visitors
 
     template <typename PhaseSpec,
+              template <typename> class PhaseCollectionTpl,
+              typename DataCollector>
+    inline PhaseDataTpl<PhaseSpec, PhaseCollectionTpl> phase_create_data(
+        const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model,
+        DataCollector *const collector);
+
+    template <typename PhaseSpec,
               template <typename PS> class PhaseCollectionTpl,
               typename StateMatrixType,
               typename ControlParamMatrixType>

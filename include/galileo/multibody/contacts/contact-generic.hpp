@@ -27,7 +27,7 @@ namespace galileo
         static constexpr int NC = Eigen::Dynamic;
 
         // Traits required by ForceDataBase
-        using RobotDataPointer_t = typename PS::RobotData_t*;
+        using RobotDataPointer_t = typename PS::RobotData_t *;
         using Index_t = typename PS::Index_t;
         using ReferenceFrame_t = typename PS::ReferenceFrame_t;
         using SE3_t = typename PS::SE3_t;
@@ -237,6 +237,12 @@ namespace galileo
         const ModelVariant_t &toVariant() const
         {
             return *static_cast<const ModelVariant_t *>(this);
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return galileo::contact_create_data(*this, collector);
         }
 
         template <typename StateVectorType>

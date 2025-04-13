@@ -158,6 +158,12 @@ namespace galileo
             this->derived().setZeroForceDiff(data);
         }
 
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
+        }
+
         int nc() const
         {
             return this->derived().nc_impl();
