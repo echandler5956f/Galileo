@@ -1,8 +1,8 @@
-#ifndef __galileo_core_controls_controls_param_data_base_hpp__
-#define __galileo_core_controls_controls_param_data_base_hpp__
+#ifndef __galileo_core_controls_control_param_data_base_hpp__
+#define __galileo_core_controls_control_param_data_base_hpp__
 
-#include "galileo/core/controls/controls-param-base.hpp"
-#include "galileo/core/controls/controls-param-model-base.hpp"
+#include "galileo/core/controls/control-param-base.hpp"
+#include "galileo/core/controls/control-param-model-base.hpp"
 
 namespace galileo
 {
@@ -27,4 +27,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_controls_controls_param_data_base_hpp__
+#endif // __galileo_core_controls_control_param_data_base_hpp__

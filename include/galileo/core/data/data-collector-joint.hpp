@@ -9,7 +9,7 @@ namespace galileo
 {
 
     template <typename PhaseSpec>
-    struct JointDataBaseTpl
+    struct JointDataTpl
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -22,7 +22,23 @@ namespace galileo
         typename PS::MatrixNvNdx_t da_dx;    // Acceleration derivatives w.r.t. state
         typename PS::MatrixNvNu_t da_du;     // Acceleration derivatives w.r.t. control
 
-    }; // struct JointDataBaseTpl
+        JointDataTpl(int nu)
+            : tau(PS::NUa),
+              a(PS::NV),
+              dtau_dx(PS::NUa, PS::NDX),
+              dtau_du(PS::NUa, nu),
+              da_dx(PS::NV, PS::NDX),
+              da_du(PS::NV, nu)
+        {
+            tau.setZero();
+            a.setZero();
+            dtau_dx.setZero();
+            dtau_du.setZero();
+            da_dx.setZero();
+            da_du.setZero();
+        }
+
+    }; // struct JointDataTpl
 
     // Joint data mixin
     template <typename Derived, typename PhaseSpec>
@@ -32,9 +48,9 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        std::shared_ptr<JointDataBaseTpl<PhaseSpec>> joint;
+        JointDataTpl<PS> *joint;
 
-        JointDataMixinTpl(std::shared_ptr<JointDataBaseTpl<PhaseSpec>> data)
+        JointDataMixinTpl(JointDataTpl<PS> *data)
             : joint(data) {}
 
     }; // struct JointDataMixinTpl

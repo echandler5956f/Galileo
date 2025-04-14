@@ -16,9 +16,9 @@ namespace galileo
         using PS = PhaseSpec;
         using RS = typename PS::RS;
 
-        std::shared_ptr<ActuationDataTpl<RS>> actuation;
+        ActuationDataTpl<RS> *actuation;
 
-        ActuationDataMixinTpl(std::shared_ptr<ActuationDataTpl<RS>> data)
+        ActuationDataMixinTpl(ActuationDataTpl<RS> *data)
             : actuation(data) {}
 
     }; // struct ActuationDataMixinTpl

@@ -1,21 +1,23 @@
 #ifndef __galileo_core_data_data_collector_multibody_hpp__
 #define __galileo_core_data_data_collector_multibody_hpp__
 
-#include <pinocchio/multibody/data.hpp>
 #include "galileo/core/data/fwd.hpp"
 
 namespace galileo
 {
 
     // Pinocchio multibody data mixin
-    template <typename Scalar, typename Derived>
-    struct MultibodyDataMixin
+    template <typename Derived, typename PhaseSpec>
+    struct MultibodyDataMixinTpl
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        pinocchio::DataTpl<Scalar> *pinocchio;
+        using PS = PhaseSpec;
 
-        MultibodyDataMixin(pinocchio::DataTpl<Scalar> *data) : pinocchio(data) {}
+        typename PS::RobotData_t *robot;
+
+        MultibodyDataMixinTpl(typename PS::RobotData_t *data) : robot(data) {}
+        
     };
 
 } // namespace galileo

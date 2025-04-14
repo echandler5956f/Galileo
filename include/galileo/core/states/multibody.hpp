@@ -186,7 +186,7 @@ namespace galileo
             }
         }
 
-        const RobotModel_t *get_model() const
+        const RobotModel_t *get_robot() const
         {
             return model_;
         }

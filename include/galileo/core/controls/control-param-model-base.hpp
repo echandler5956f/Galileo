@@ -1,7 +1,7 @@
 #ifndef __galileo_core_controls_controls_param_model_base_hpp__
 #define __galileo_core_controls_controls_param_model_base_hpp__
 
-#include "galileo/core/controls/controls-param-base.hpp"
+#include "galileo/core/controls/control-param-base.hpp"
 
 namespace galileo
 {
@@ -87,4 +87,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_controls_controls_param_model_base_hpp__
+#endif // __galileo_core_controls_control_param_model_base_hpp__

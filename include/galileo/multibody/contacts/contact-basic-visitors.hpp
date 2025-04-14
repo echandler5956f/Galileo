@@ -65,35 +65,56 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline int contact_nc(
+    inline const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::RobotModel_t *contact_robot(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::Index_t contact_id(
+    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t contact_id(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     inline void contact_set_id(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-        const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::Index_t &id);
+        const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t &id);
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t contact_type(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    inline void contact_set_type(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t &type);
+        
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    inline int contact_nc(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+
+            template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    inline int contact_nu(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     // Contact data visitors
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::RobotDataPointer_t contact_robot_data_pointer(
+    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::RobotDataPointer_t contact_robot_data(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::Index_t contact_frame(
+    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t contact_frame(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t contact_type(
+    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t contact_type_data(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,

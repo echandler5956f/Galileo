@@ -145,16 +145,6 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Meta template types */
         /* ---------------------------------------------------------------- */
-        using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
-        using ConstraintCollection_t = typename traits<ConstraintManagerMeta_t>::Collection_t;
-        using ConstraintModelManager_t = typename traits<ConstraintManagerMeta_t>::Model_t;
-        using ConstraintDataManager_t = typename traits<ConstraintManagerMeta_t>::Data_t;
-
-        using CostManagerMeta_t = CostManagerTpl<PS>;
-        using CostCollection_t = typename traits<CostManagerMeta_t>::Collection_t;
-        using CostModelManager_t = typename traits<CostManagerMeta_t>::Model_t;
-        using CostDataManager_t = typename traits<CostManagerMeta_t>::Data_t;
-
         using NodeMeta_t = NodeTpl<PS>;
         using NodeModel_t = typename traits<NodeMeta_t>::Model_t;
         using NodeData_t = typename traits<NodeMeta_t>::Data_t;
@@ -189,6 +179,17 @@ namespace galileo
         // ContactFwd: NU = NUa
         // ContactInv: NU = NV + NContacts
         // We do this calculation in the traits specialization for each derived node type.
+
+        // THESE MANAGER MUST BE DEFINED AFTER THE DEPENDENT CONSTANTS ARE DEFINED
+        using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
+        using ConstraintCollection_t = typename traits<ConstraintManagerMeta_t>::Collection_t;
+        using ConstraintModelManager_t = typename traits<ConstraintManagerMeta_t>::Model_t;
+        using ConstraintDataManager_t = typename traits<ConstraintManagerMeta_t>::Data_t;
+
+        using CostManagerMeta_t = CostManagerTpl<PS>;
+        using CostCollection_t = typename traits<CostManagerMeta_t>::Collection_t;
+        using CostModelManager_t = typename traits<CostManagerMeta_t>::Model_t;
+        using CostDataManager_t = typename traits<CostManagerMeta_t>::Data_t;
 
         /* ---------------------------------------------------------------- */
         /* An assortment of Eigen types (primarily for use in Segments) */

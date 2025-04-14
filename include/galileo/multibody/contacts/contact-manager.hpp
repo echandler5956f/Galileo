@@ -363,7 +363,7 @@ namespace galileo
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_pinocchio()->frames[d_i.frame].parent;
+                            state_->get_robot()->frames[d_i.frame].parent;
                         data.fext[joint] = d_i.fext;
                     }
                     else
@@ -388,7 +388,7 @@ namespace galileo
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_pinocchio()->frames[d_i.frame].parent;
+                            state_->get_robot()->frames[d_i.frame].parent;
                         data.fext[joint] = d_i.fext;
                         nc += nc_i;
                     }
@@ -480,7 +480,7 @@ namespace galileo
                         break;
                     case pinocchio::ReferenceFrame::WORLD:
                     case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                        data.dtau_dq += d_i.dtau_dq();
+                        robot_data.dtau_dq += d_i.dtau_dq();
                         break;
                     }
                 }

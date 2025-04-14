@@ -23,15 +23,16 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
         
         using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
         GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
 
-        FORWARD_ACCESSOR(RobotData_t *, robot_data_pointer);
-        FORWARD_ACCESSOR(Index_t, frame);
+        // Accessors required by ForceDataBase
+        FORWARD_ACCESSOR(RobotData_t *, robot);
+        FORWARD_ACCESSOR(FrameIndex_t, frame);
         FORWARD_ACCESSOR(ReferenceFrame_t, type);
         FORWARD_ACCESSOR(SE3_t, jMf);
         FORWARD_ACCESSOR(MatrixNcNv_t, Jc);

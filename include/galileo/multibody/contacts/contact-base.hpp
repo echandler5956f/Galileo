@@ -4,10 +4,9 @@
 #include "galileo/multibody/contacts/fwd.hpp"
 #include "galileo/multibody/force-base.hpp"
 
-#define GALILEO_CONTACT_DATA_TYPEDEF(Contact)                        \
-    GALILEO_FORCE_DATA_TYPEDEF(Contact);                             \
-    using VectorNc_t = typename traits<Contact>::VectorNc_t;         \
-    using MatrixNv_t = typename traits<Contact>::MatrixNv_t;
+#define GALILEO_CONTACT_DATA_TYPEDEF(Contact) \
+    GALILEO_FORCE_DATA_TYPEDEF(Contact);      \
+    using VectorNc_t = typename traits<Contact>::VectorNc_t;
 
 namespace galileo
 {
@@ -28,14 +27,14 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
         using Meta_t = ContactBaseTpl<Derived, PS>;
         using Data_t = ContactDataBase<Derived, PS>;
         using Model_t = ContactModelBase<Derived, PS>;
 
-        // Retrieve the traits of the derived class
-        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
+        // Forward propogating the traits of the derived class
+        GALILEO_CONTACT_DATA_TYPEDEF(typename traits<Derived>::Meta_t);
     };
 
     template <typename Derived, typename PhaseSpec>
@@ -66,16 +65,18 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
         using Meta_t = ContactBaseTpl<Derived, PS>;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
 
+        // Now we can access the traits of the derived class
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        FORWARD_ACCESSOR(RobotData_t *, robot_data_pointer);
-        FORWARD_ACCESSOR(Index_t, frame);
+        // Accessors required by ForceDataBase
+        FORWARD_ACCESSOR(RobotData_t *, robot);
+        FORWARD_ACCESSOR(FrameIndex_t, frame);
         FORWARD_ACCESSOR(ReferenceFrame_t, type);
         FORWARD_ACCESSOR(SE3_t, jMf);
         FORWARD_ACCESSOR(MatrixNcNv_t, Jc);
@@ -84,6 +85,7 @@ namespace galileo
         FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
         FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
 
+        // Accessors required by ContactDataBase
         FORWARD_ACCESSOR(ActionMatrix_t, fXj);
         FORWARD_ACCESSOR(VectorNc_t, a0);
         FORWARD_ACCESSOR(MatrixNcNdx_t, da0_dx);
@@ -107,7 +109,7 @@ namespace galileo
     }; // struct ContactDataBase
 
     template <typename Derived, typename PhaseSpec>
-    struct ContactModelBase : internal::CRTP<ContactModelBase<Derived, PhaseSpec>>
+    struct ContactModelBase : internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -119,7 +121,15 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
 
-        using Index_t = typename traits<Meta_t>::Index_t;
+        using RobotModel_t = typename traits<Meta_t>::RobotModel_t;
+        using FrameIndex_t = typename traits<Meta_t>::FrameIndex_t;
+        using ReferenceFrame_t = typename traits<Meta_t>::ReferenceFrame_t;
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector)
+        {
+            return this->derived().createData(collector);
+        }
 
         template <typename StateVectorType>
         void calc(Data_t &data,
@@ -160,10 +170,29 @@ namespace galileo
             this->derived().setZeroForceDiff(data);
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        const RobotModel_t *robot() const
         {
-            return this->derived().createData(collector);
+            return this->derived().robot_impl();
+        }
+
+        FrameIndex_t id() const
+        {
+            return this->derived().id_impl();
+        }
+
+        void set_id(const FrameIndex_t &id)
+        {
+            this->derived().set_id_impl(id);
+        }
+
+        ReferenceFrame_t type() const
+        {
+            return this->derived().type_impl();
+        }
+
+        void set_type(const ReferenceFrame_t &type)
+        {
+            this->derived().set_type_impl(type);
         }
 
         int nc() const
@@ -171,19 +200,9 @@ namespace galileo
             return this->derived().nc_impl();
         }
 
-        int nc_impl() const
+        int nu() const
         {
-            return traits<Meta_t>::NC;
-        }
-
-        Index_t id() const
-        {
-            return this->derived().id_impl();
-        }
-
-        void set_id(const Index_t &id)
-        {
-            this->derived().set_id_impl(id);
+            return this->derived().nu_impl();
         }
 
     protected:

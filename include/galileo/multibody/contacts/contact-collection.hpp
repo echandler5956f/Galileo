@@ -2,6 +2,7 @@
 #define __galileo_multibody_contacts_contact_collection_hpp__
 
 #include "galileo/multibody/contacts/fwd.hpp"
+#include "galileo/multibody/contacts/contact-3d.hpp"
 
 #include <boost/variant.hpp>
 
@@ -13,8 +14,8 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using ModelVariant_t = boost::variant<ContactModelVoid>; // TODO: add contact models
-        using DataVariant_t = boost::variant<ContactDataVoid>; // TODO: add contact data
+        using ModelVariant_t = boost::variant<ContactModel3dTpl<PS>>; // TODO: add contact models
+        using DataVariant_t = boost::variant<ContactData3dTpl<PS>>; // TODO: add contact data
 
     }; // struct ContactCollectionDefaultTpl
 

@@ -14,6 +14,8 @@
 
 #include <galileo/predictive/phases/phase-spec.hpp>
 
+#include <galileo/multibody/contacts/contact-3d.hpp>
+
 #include <galileo/core/constraints/constraint-manager.hpp>
 #include <galileo/core/costs/cost-manager.hpp>
 #include <galileo/multibody/contacts/contact-manager.hpp>
@@ -29,6 +31,8 @@
 // #include <galileo/predictive/optimal-control-problem.hpp>
 
 // #include <galileo/predictive/solvers/ddp.hpp>
+
+#include <galileo/core/data/data-collector-default.hpp>
 
 #include <iostream>
 
@@ -87,6 +91,14 @@ struct DummyPhaseModelTpl;
 template <typename PS_>
 struct DummyPhaseDataTpl;
 
+template <typename PS_>
+struct traits<DummyPhaseTpl<PS_>>
+{
+    using PS = PS_;
+    using Model_t = DummyPhaseModelTpl<PS>;
+    using Data_t = DummyPhaseDataTpl<PS>;
+};
+
 using PhaseSpec_t = PhaseSpecTpl<RobotSpec_t, ConstraintManagerDefaultTpl, CostManagerDefaultTpl, NodeTpl, ControlParamTpl, SegmentTpl, DummyPhaseTpl>;
 
 // template <typename tmpScalar1, typename tmpScalar2, int tmpOptions1>
@@ -119,8 +131,11 @@ using PhaseSpec_t = PhaseSpecTpl<RobotSpec_t, ConstraintManagerDefaultTpl, CostM
 int main(int argc, char *argv[])
 {
     std::string urdf_path = "/home/quant/Galileo/resources/go1/urdf/go1.urdf";
-    pinocchio::ModelTpl<VarScalar, Options> model = pinocchio::ModelTpl<VarScalar, Options> ();
+    using RobotModel_t = typename PhaseSpec_t::RobotModel_t;
+    using RobotData_t = typename PhaseSpec_t::RobotData_t;
+    RobotModel_t model = RobotModel_t();
     pinocchio::urdf::buildModel(urdf_path, pinocchio::JointModelFreeFlyerTpl<VarScalar, Options>(), model);
+    RobotData_t data = RobotData_t(model);
 
     StateTpl<RobotSpec_t> state(&model);
 
@@ -138,8 +153,25 @@ int main(int argc, char *argv[])
     std::cout << "actuation_data.u = " << actuation_data.u << std::endl;
     std::cout << "actuation_data.tau = " << actuation_data.tau << std::endl;
 
-    // Test the constraint manager
-    
+    using JointData_t = JointDataTpl<PhaseSpec_t>;
+    JointData_t joint_data(RobotSpec_t::NV);
+
+    // Create a universal data collector
+    using DataCollectorDefault_t = DataCollectorDefaultTpl<PhaseSpec_t>;
+    DataCollectorDefault_t data_collector(&data, &actuation_data, &joint_data);
+    // Test the contact manager
+    using ContactModel_t = ContactModel3dTpl<PhaseSpec_t>;
+    using ContactData_t = ContactData3dTpl<PhaseSpec_t>;
+    ContactModel_t contact(&state, 0, typename PhaseSpec_t::Vector3_t(0, 0, 0), pinocchio::ReferenceFrame::LOCAL, PhaseSpec_t::NV, typename PhaseSpec_t::Vector2_t(0, 50));
+    ContactData_t contact_data = contact.createData(&data_collector);
+    std::cout << "contact_data.a0_local = " << contact_data.a0_local << std::endl;
+    std::cout << "contact_data.fext = " << contact_data.fext << std::endl;
+
+    // // Test the contact manager
+    // using ContactModelManager_t = ContactModelManagerTpl<PhaseSpec_t, ContactCollectionDefaultTpl>;
+    // ContactModelManager_t contact_model_manager();
+
+
     // Create a quadruped walking problem
     // 1. Define the phase specs
     // 2. Define the phase collection

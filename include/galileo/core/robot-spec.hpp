@@ -18,7 +18,7 @@
 #define GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(RobotSpec)       \
     using RobotModel_t = typename RobotSpec::RobotModel_t;         \
     using RobotData_t = typename RobotSpec::RobotData_t;           \
-    using Index_t = typename RobotSpec::Index_t;                   \
+    using FrameIndex_t = typename RobotSpec::FrameIndex_t;                   \
     using ReferenceFrame_t = typename RobotSpec::ReferenceFrame_t; \
     using SE3_t = typename RobotSpec::SE3_t;                       \
     using Motion_t = typename RobotSpec::Motion_t;                 \
@@ -61,6 +61,7 @@
     using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t; \
     using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t; \
     using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t; \
+    using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t;
 
 #define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
     GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec);           \
@@ -132,6 +133,7 @@ namespace galileo
         using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
         using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
         using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
+        using MatrixNuaNdx_t = Eigen::Matrix<VarScalar, NUa, NDX, Options>;
         using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
 
         /* ---------------------------------------------------------------- */
@@ -148,7 +150,7 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         using RobotModel_t = pinocchio::ModelTpl<VarScalar, Options>;
         using RobotData_t = pinocchio::DataTpl<VarScalar, Options>;
-        using Index_t = pinocchio::Index;
+        using FrameIndex_t = pinocchio::FrameIndex;
         using ReferenceFrame_t = pinocchio::ReferenceFrame;
         using SE3_t = pinocchio::SE3;
         using Motion_t = pinocchio::Motion;

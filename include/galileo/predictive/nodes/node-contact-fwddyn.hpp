@@ -31,21 +31,21 @@ namespace galileo
         using Model_t = NodeModelContactFwdDynTpl<PS, ContactCollectionTpl>;
         using Data_t = NodeDataContactFwdDynTpl<PS, ContactCollectionTpl>;
 
-        using ContactManagerMeta_t = ContactManagerTpl<PS, ContactCollectionTpl>;
-        using ContactModelManager_t = typename traits<ContactManagerMeta_t>::ModelManager_t;
-        using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
-
         // TODO: Refactor to also be able to handle when NC is known at compile time
         // static constexpr int NC = ContactDataManager_t::NC;
         static constexpr int NC = -1;
         static constexpr int NU = PS::NUa;
 
+        using ContactManagerMeta_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using ContactModelManager_t = typename traits<ContactManagerMeta_t>::ModelManager_t;
+        using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
+
         // using NC = traits<NodeDerived>::NC;
         // using Kinv_t = Eigen::Matrix<VarScalar, PS::NV + NC, PS::NV + NC>;
-        // using Jstatic_t = Eigen::Matrix<VarScalar, PS::NV, PS::NU + NC>;
+        // using Jstatic_t = Eigen::Matrix<VarScalar, PS::NV, NU + NC>;
         using Kinv_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
         using MatrixNcNdx_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>;
-        using MatrixNcNu_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>;
+        using MatrixNcNu_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, NU>;
         using Jstatic_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
 
         using MatrixNvNc_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
