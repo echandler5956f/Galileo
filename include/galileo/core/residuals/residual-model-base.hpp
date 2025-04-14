@@ -6,11 +6,13 @@
 namespace galileo
 {
 
-    template <typename Derived>
-    class ResidualModelBase : internal::CRTP<ResidualModelBase<Derived>>
+    template <typename Derived, typename PhaseSpec>
+    class ResidualModelBase : internal::CRTP<ResidualModelBase<Derived, PhaseSpec>>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using PS = PhaseSpec;
 
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -45,6 +47,16 @@ namespace galileo
         Data_t createData(DataCollector *const collector)
         {
             return this->derived().createData(collector);
+        }
+
+        int nr() const
+        {
+            return this->derived().nr_impl();
+        }
+
+        int nr_impl() const
+        {
+            return traits<Meta_t>::NR;
         }
 
     protected:

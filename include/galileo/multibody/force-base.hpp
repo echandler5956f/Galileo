@@ -7,7 +7,7 @@
 #include "galileo/multibody/fwd.hpp"
 
 #define GALILEO_FORCE_DATA_TYPEDEF(Force)                                  \
-    using RobotDataPointer_t = typename traits<Force>::RobotDataPointer_t; \
+    using RobotData_t = typename traits<Force>::RobotData_t; \
     using Index_t = typename traits<Force>::Index_t;                       \
     using ReferenceFrame_t = typename traits<Force>::ReferenceFrame_t;     \
     using SE3_t = typename traits<Force>::SE3_t;                           \

@@ -15,14 +15,14 @@
 
 #define GALILEO_SOLVER_TYPEDEF(Solver)                                                \
     using OptimalControlProblem_t = typename traits<Solver>::OptimalControlProblem_t; \
-    enum FeasibilityNormOptions feasnorm_ = traits<Solver>::feasnorm_;                \
+    static constexpr FeasibilityNormOptions feasnorm_ = traits<Solver>::feasnorm_;                \
     using VectorXv = typename traits<Solver>::VectorXv;                               \
     using VectorXn = typename traits<Solver>::VectorXn;
 
 namespace galileo
 {
 
-    enum FeasibilityNormOptions
+    enum class FeasibilityNormOptions
     {
         LInf = 0,
         L1 = 1

@@ -6,60 +6,67 @@
 namespace galileo
 {
 
-    template <typename BasicSpec>
+    template <typename PhaseSpec>
     struct Contact3dTpl;
 
-    template <typename BasicSpec>
-    struct traits<Contact3dTpl<BasicSpec>>
+    template <typename PhaseSpec>
+    struct traits<Contact3dTpl<PhaseSpec>>
     {
-        using BS = BasicSpec;
+        using PS = PhaseSpec;
 
-        using VarScalar = typename BS::VarScalar;
-        using NumScalar = typename BS::NumScalar;
-        static constexpr int Options = BS::Options;
+        using Meta_t = Contact3dTpl<PS>;
+        using Model_t = ContactModel3dTpl<PS>;
+        using Data_t = ContactData3dTpl<PS>;
 
-        using ContactDataDerived = ContactData3dTpl<BasicSpec>;
-        using ContactModelDerived = ContactModel3dTpl<BasicSpec>;
-
-        static constexpr int NC = 1;
-        // using RobotData_t = // TODO: add robot data
-        using MatrixNcNv_t = Eigen::Matrix<VarScalar, NC, BS::NV, Options>;
-        using MatrixNcNdx_t = Eigen::Matrix<VarScalar, NC, BS::NDX, Options>;
-        using MatrixNcNu_t = Eigen::Matrix<VarScalar, NC, BS::NU, Options>;
+        static constexpr int NC = 3;
+        using MatrixNcNv_t = Eigen::Matrix<VarScalar, NC, PS::NV, Options>;
+        using MatrixNcNdx_t = Eigen::Matrix<VarScalar, NC, PS::NDX, Options>;
+        using MatrixNcNu_t = Eigen::Matrix<VarScalar, NC, PS::NU, Options>;
     };
 
-    template <typename BasicSpec>
-    struct traits<ContactData3dTpl<BasicSpec>>
+    template <typename PhaseSpec>
+    struct traits<ContactData3dTpl<PhaseSpec>>
     {
-        using ContactDerived = Contact3dTpl<BasicSpec>;
-        using VarScalar = traits<ContactDerived>::VarScalar;
-        using NumScalar = traits<ContactDerived>::NumScalar;
+        using PS = PhaseSpec;
+
+        using Meta_t = Contact3dTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename BasicSpec>
-    struct traits<ContactModel3dTpl<BasicSpec>>
+    template <typename PhaseSpec>
+    struct traits<ContactModel3dTpl<PhaseSpec>>
     {
-        using ContactDerived = Contact3dTpl<BasicSpec>;
-        using VarScalar = traits<ContactDerived>::VarScalar;
-        using NumScalar = traits<ContactDerived>::NumScalar;
+        using PS = PhaseSpec;
+
+        using Meta_t = Contact3dTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename BasicSpec>
-    struct ContactData3dTpl : ContactDataBase<ContactData3dTpl<BasicSpec>, BasicSpec>
-    {
-    public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    };
-
-    template <typename BasicSpec>
-    struct ContactModel3dTpl : ContactDataBase<ContactModel3dTpl<BasicSpec>, BasicSpec>
+    template <typename PhaseSpec>
+    struct ContactData3dTpl : ContactDataBase<ContactData3dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using BS = BasicSpec;
+        using PS = PhaseSpec;
 
-        using ContactDerived = Contact3dTpl<BasicSpec>;
+        using Meta_t = Contact3dTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
+    };
+
+    template <typename PhaseSpec>
+    struct ContactModel3dTpl : ContactDataBase<ContactModel3dTpl<PhaseSpec>, PhaseSpec>
+    {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using PS = PhaseSpec;
+
+        using ContactDerived = Contact3dTpl<PhaseSpec>;
         using ContactModelDerived = traits<ContactDerived>::ContactModelDerived;
         using ContactDataDerived = traits<ContactDerived>::ContactDataDerived;
 

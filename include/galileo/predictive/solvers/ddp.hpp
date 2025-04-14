@@ -11,11 +11,11 @@
 namespace galileo
 {
 
-    template <typename _VarScalar, typename _NumScalar, int _Options, typename _FeasibilityNorm,
+    template <typename _VarScalar, typename _NumScalar, int _Options, FeasibilityNormOptions _FeasibilityNorm,
               template <typename V, typename N, int O> class PhaseCollectionTpl>
     class SolverDDP; // forward declaration
 
-    template <typename _VarScalar, typename _NumScalar, int _Options, typename _FeasibilityNorm,
+    template <typename _VarScalar, typename _NumScalar, int _Options, FeasibilityNormOptions _FeasibilityNorm,
               template <typename V, typename N, int O> class PhaseCollectionTpl>
     struct traits<SolverDDP<_VarScalar, _NumScalar, _Options, _FeasibilityNorm, PhaseCollectionTpl>>
     {
@@ -29,7 +29,7 @@ namespace galileo
         using VectorXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
     }; // struct traits
 
-    template <typename _VarScalar, typename _NumScalar, int _Options, typename _FeasibilityNorm,
+    template <typename _VarScalar, typename _NumScalar, int _Options, FeasibilityNormOptions _FeasibilityNorm,
               template <typename, typename, int> class PhaseCollectionTpl>
     class SolverDDP : SolverBase<SolverDDP<_VarScalar, _NumScalar, _Options, _FeasibilityNorm, PhaseCollectionTpl>>
     {

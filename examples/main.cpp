@@ -23,6 +23,12 @@
 
 #include <galileo/predictive/segments/segment-erk-euler.hpp>
 
+// #include <galileo/predictive/trajectory.hpp>
+
+// #include <galileo/predictive/optimal-control-problem.hpp>
+
+// #include <galileo/predictive/solvers/ddp.hpp>
+
 #include <iostream>
 
 using namespace galileo;
@@ -73,19 +79,39 @@ using SegmentTpl = SegmentERKEulerTpl<PS_>;
 
 template <typename PS_>
 struct DummyPhaseTpl;
+template <typename PS_>
+struct DummyPhaseModelTpl;
+template <typename PS_>
+struct DummyPhaseDataTpl;
 
 using PhaseSpec_t = PhaseSpecTpl<BasicSpec_t, ConstraintManagerDefaultTpl, CostManagerDefaultTpl, NodeTpl, ControlParamTpl, SegmentTpl, DummyPhaseTpl>;
 
-using Phase1_t = DummyPhaseTpl<PhaseSpec_t>;
-using Phase2_t = DummyPhaseTpl<PhaseSpec_t>;
+// template <typename tmpScalar1, typename tmpScalar2, int tmpOptions1>
+// using PhaseSpecDummyTpl = PhaseSpec_t;
 
-using PhaseCollection_t = PhaseCollectionTpl<Phase1_t, Phase2_t>;
+// template <typename PhaseSpec1, typename PhaseSpec2>
+// struct PhaseCollectionExample
+// {
+// public:
 
-using Trajectory_t = TrajectoryTpl<PhaseCollection_t>;
+//     using Phase1Model_t = DummyPhaseModelTpl<PhaseSpec1>;
+//     using Phase2Model_t = DummyPhaseModelTpl<PhaseSpec2>;
 
-using OCP_t = OCPTpl<Trajectory_t>;
+//     using Phase1Data_t = DummyPhaseDataTpl<PhaseSpec1>;
+//     using Phase2Data_t = DummyPhaseDataTpl<PhaseSpec2>;
 
-using Solver_t = SolverDDPTpl<OCP_t>;
+//     using ModelVariant_t = boost::variant<Phase1Model_t, Phase2Model_t>;
+//     using DataVariant_t = boost::variant<Phase1Data_t, Phase2Data_t>;
+// };
+
+// template <typename tmpScalar1, typename tmpScalar2, int tmpOptions1>
+// using PhaseCollectionDummyTpl = PhaseCollectionExample<PhaseSpecDummyTpl<tmpScalar1, tmpScalar2, tmpOptions1>, PhaseSpecDummyTpl<tmpScalar1, tmpScalar2, tmpOptions1>>;
+
+// using Trajectory_t = Trajectory<VarScalar, NumScalar, Options, PhaseCollectionDummyTpl>;
+
+// using OCP_t = OptimalControlProblem<VarScalar, NumScalar, Options, PhaseCollectionDummyTpl>;
+
+// using Solver_t = SolverDDP<VarScalar, NumScalar, Options, FeasibilityNormOptions::L1, PhaseCollectionDummyTpl>;
 
 int main(int argc, char *argv[])
 {
@@ -99,6 +125,18 @@ int main(int argc, char *argv[])
     std::cout << "state.zero() = " << state.zero() << std::endl;
     std::cout << "state.rand() = " << state.rand() << std::endl;
 
+    // Test the actuation
+    using ActuationModel_t = BasicSpec_t::ActuationModel_t;
+    using ActuationData_t = BasicSpec_t::ActuationData_t;
+    ActuationModel_t actuation;
+    ActuationData_t actuation_data = actuation.createData();
+    std::cout << "actuation_data.dtau_du = " << actuation_data.dtau_du << std::endl;
+    std::cout << "actuation_data.Mtau = " << actuation_data.Mtau << std::endl;
+    std::cout << "actuation_data.u = " << actuation_data.u << std::endl;
+    std::cout << "actuation_data.tau = " << actuation_data.tau << std::endl;
+
+    // Test the constraint manager
+    
     // Create a quadruped walking problem
     // 1. Define the phase specs
     // 2. Define the phase collection

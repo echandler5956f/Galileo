@@ -1,16 +1,21 @@
 #ifndef __galileo_core_basic_spec_hpp__
 #define __galileo_core_basic_spec_hpp__
 
+#include <pinocchio/multibody/fwd.hpp>
+#include <pinocchio/spatial/fwd.hpp>
+
 #include "galileo/core/fwd.hpp"
 
 // Macros to import the types and constants from a basic spec
 #define GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec)                 \
-    using RobotModel_t = typename BasicSpec::RobotModel_t;         \
-    using RobotData_t = typename BasicSpec::RobotData_t;           \
     using State_t = typename BasicSpec::State_t;                   \
     using ActuationMeta_t = typename BasicSpec::ActuationMeta_t;   \
     using ActuationModel_t = typename BasicSpec::ActuationModel_t; \
     using ActuationData_t = typename BasicSpec::ActuationData_t;
+
+#define GALILEO_BASIC_SPEC_PINOCCIO_TYPES_TYPEDEF(BasicSpec) \
+    using RobotModel_t = typename BasicSpec::RobotModel_t;   \
+    using RobotData_t = typename BasicSpec::RobotData_t;
 
 #define GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec) \
     using VarScalar = typename BasicSpec::VarScalar;  \
@@ -127,14 +132,23 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Template types */
         /* ---------------------------------------------------------------- */
-        using RobotModel_t = pinocchio::ModelTpl<VarScalar, Options>;
-        using RobotData_t = pinocchio::DataTpl<VarScalar, Options>;
-
         using State_t = StateTpl<BasicSpec>;
 
         using ActuationMeta_t = ActuationTpl<BasicSpec>;
         using ActuationModel_t = typename traits<ActuationMeta_t>::Model_t;
         using ActuationData_t = typename traits<ActuationMeta_t>::Data_t;
+
+        /* ---------------------------------------------------------------- */
+        /* Pinocchio types */
+        /* ---------------------------------------------------------------- */
+        using RobotModel_t = pinocchio::ModelTpl<VarScalar, Options>;
+        using RobotData_t = pinocchio::DataTpl<VarScalar, Options>;
+        using Index_t = pinocchio::Index;
+        using ReferenceFrame_t = pinocchio::ReferenceFrame;
+        using SE3_t = pinocchio::SE3;
+        using Motion_t = pinocchio::Motion;
+        using Force_t = pinocchio::Force;
+        using ActionMatrix_t = typename pinocchio::SE3::ActionMatrixType;
     };
 
 } // namespace galileo
