@@ -3,6 +3,7 @@
 #include <pinocchio/parsers/urdf.hpp>
 
 #include <galileo/fwd.hpp>
+#include <galileo/core/basic-spec.hpp>
 #include <galileo/core/robot-spec.hpp>
 
 #include <galileo/core/states/state-base.hpp>
@@ -33,6 +34,12 @@
 
 using namespace galileo;
 
+using VarScalar = double;
+using NumScalar = double;
+constexpr int Options = Eigen::ColMajor;
+
+using BasicSpec_t = BasicSpecTpl<VarScalar, NumScalar, Options>;
+
 template <typename RS>
 using StateTpl = StateMultibodyTpl<RS>;
 
@@ -45,12 +52,8 @@ constexpr int NVb = 6;
 constexpr int NVj = 12;
 constexpr int NRotors = 0;
 
-using VarScalar = double;
-using NumScalar = double;
-constexpr int Options = Eigen::ColMajor;
-
 // These template classes basically create a code generator for the optimal control problem by means of mixins
-using RobotSpec_t = RobotSpecTpl<VarScalar, NumScalar, Options, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
+using RobotSpec_t = RobotSpecTpl<BasicSpec_t, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
 
 template <typename PS_>
 using ConstraintManagerDefaultTpl = ConstraintManagerTpl<PS_, ConstraintCollectionDefaultTpl>;

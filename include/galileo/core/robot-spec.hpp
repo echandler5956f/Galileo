@@ -6,6 +6,8 @@
 
 #include "galileo/core/fwd.hpp"
 
+#include "galileo/core/basic-spec.hpp"
+
 // Macros to import the types and constants from a robot spec
 #define GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec)                 \
     using State_t = typename RobotSpec::State_t;                   \
@@ -24,9 +26,7 @@
     using ActionMatrix_t = typename RobotSpec::ActionMatrix_t;
 
 #define GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec) \
-    using VarScalar = typename RobotSpec::VarScalar;  \
-    using NumScalar = typename RobotSpec::NumScalar;  \
-    static constexpr int Options = RobotSpec::Options;
+    GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(RobotSpec::BS);
 
 #define GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec) \
     static constexpr int NQb = RobotSpec::NQb;          \
@@ -41,6 +41,8 @@
     static constexpr int NUa = RobotSpec::NUa;
 
 #define GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec)    \
+    GALILEO_BASIC_SPEC_FIXED_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS); \
+    GALILEO_BASIC_SPEC_DYNAMIC_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS); \
     using VectorNqb_t = typename RobotSpec::VectorNqb_t;     \
     using VectorNqj_t = typename RobotSpec::VectorNqj_t;     \
     using VectorNvb_t = typename RobotSpec::VectorNvb_t;     \
@@ -58,7 +60,7 @@
     using MatrixNvNdx_t = typename RobotSpec::MatrixNvNdx_t; \
     using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t; \
     using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t; \
-    using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t;
+    using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t; \
 
 #define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
     GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec);           \
@@ -73,9 +75,7 @@ namespace galileo
     /* ---------------------------------------------------------------- */
     /* Defines the robot-specific types and constants used in the core library. */
     /* ---------------------------------------------------------------- */
-    template <typename _VarScalar,
-              typename _NumScalar,
-              int _Options,
+    template <typename BasicSpec,
               int _NQb,
               int _NQj,
               int _NVb,
@@ -85,14 +85,12 @@ namespace galileo
               template <typename> class ActuationTpl>
     struct RobotSpecTpl
     {
-        using RobotSpec = RobotSpecTpl<_VarScalar, _NumScalar, _Options, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
 
-        /* ---------------------------------------------------------------- */
-        /* Scalar types and Eigen Matrix storage order */
-        /* ---------------------------------------------------------------- */
-        using VarScalar = _VarScalar;            // Scalar type for variables (for AD)
-        using NumScalar = _NumScalar;            // Scalar type for numerics (i.e., bounds, times, etc.)
-        static constexpr int Options = _Options; // Eigen storage order
+        using BS = BasicSpec;
+        using RS = RobotSpecTpl<BS, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
+
+        // Import the basic spec types and constants
+        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
 
         /* ---------------------------------------------------------------- */
         /* Compile-time constants */
@@ -139,9 +137,9 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Template types */
         /* ---------------------------------------------------------------- */
-        using State_t = StateTpl<RobotSpec>;
+        using State_t = StateTpl<RS>;
 
-        using ActuationMeta_t = ActuationTpl<RobotSpec>;
+        using ActuationMeta_t = ActuationTpl<RS>;
         using ActuationModel_t = typename traits<ActuationMeta_t>::Model_t;
         using ActuationData_t = typename traits<ActuationMeta_t>::Data_t;
 
