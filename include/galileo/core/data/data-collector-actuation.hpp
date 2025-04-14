@@ -14,11 +14,11 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
-        using BS = typename PS::BS;
+        using RS = typename PS::RS;
 
-        std::shared_ptr<ActuationDataTpl<BS>> actuation;
+        std::shared_ptr<ActuationDataTpl<RS>> actuation;
 
-        ActuationDataMixinTpl(std::shared_ptr<ActuationDataTpl<BS>> data)
+        ActuationDataMixinTpl(std::shared_ptr<ActuationDataTpl<RS>> data)
             : actuation(data) {}
 
     }; // struct ActuationDataMixinTpl

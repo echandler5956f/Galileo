@@ -3,13 +3,13 @@
 
 #include "galileo/predictive/phases/fwd.hpp"
 
-#include "galileo/core/basic-spec.hpp"
+#include "galileo/core/robot-spec.hpp"
 
 #include <vector>
 #include <array>
 
 #define GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec)                                 \
-    GALILEO_BASIC_SPEC_META_TYPEDEF(PhaseSpec::BS);                                \
+    GALILEO_ROBOT_SPEC_META_TYPEDEF(PhaseSpec::RS);                                \
     using ConstraintManagerMeta_t = typename PhaseSpec::ConstraintManagerMeta_t;   \
     using ConstraintCollection_t = typename PhaseSpec::ConstraintCollection_t;     \
     using ConstraintModelManager_t = typename PhaseSpec::ConstraintModelManager_t; \
@@ -35,11 +35,14 @@
     using PhaseData_t = typename PhaseSpec::PhaseData_t;                           \
     using PhaseDataVector_t = typename PhaseSpec::PhaseDataVector_t;
 
+#define GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PhaseSpec) \
+    GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(PhaseSpec::RS);
+
 #define GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec) \
-    GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(PhaseSpec::BS);
+    GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(PhaseSpec::RS);
 
 #define GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec)  \
-    GALILEO_BASIC_SPEC_CONSTANTS_TYPEDEF(PhaseSpec::BS); \
+    GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(PhaseSpec::RS); \
     static constexpr int NU = PhaseSpec::NU;             \
     static constexpr int NOrder = PhaseSpec::NOrder;     \
     static constexpr int NW = PhaseSpec::NW;             \
@@ -82,7 +85,7 @@
     using Gw_t = typename PhaseSpec::Gw_t;
 
 #define GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec)    \
-    GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec::BS);   \
+    GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec::RS);   \
     using VectorNu_t = typename PhaseSpec::VectorNu_t;       \
     using VectorNw_t = typename PhaseSpec::VectorNw_t;       \
     using MatrixNu_t = typename PhaseSpec::MatrixNu_t;       \
@@ -109,6 +112,7 @@
 
 #define GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec)           \
     GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec);                \
+    GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PhaseSpec);      \
     GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec);             \
     GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec);           \
     GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec);          \
@@ -123,7 +127,7 @@ namespace galileo
     /* ---------------------------------------------------------------- */
     /* Fully specifies the types and constants used in a phase. */
     /* ---------------------------------------------------------------- */
-    template <typename BasicSpec,
+    template <typename RobotSpec,
               template <typename> class ConstraintManagerTpl,
               template <typename> class CostManagerTpl,
               template <typename> class NodeTpl,
@@ -132,11 +136,11 @@ namespace galileo
               template <typename> class PhaseTpl>
     struct PhaseSpecTpl
     {
-        using BS = BasicSpec;
-        using PS = PhaseSpecTpl<BS, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
+        using RS = RobotSpec;
+        using PS = PhaseSpecTpl<RS, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
 
-        // Import the basic spec types and constants
-        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+        // Import the robot spec types and constants
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         /* ---------------------------------------------------------------- */
         /* Meta template types */

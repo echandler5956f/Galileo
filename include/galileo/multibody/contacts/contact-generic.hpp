@@ -27,7 +27,7 @@ namespace galileo
         static constexpr int NC = Eigen::Dynamic;
 
         // Traits required by ForceDataBase
-        using RobotDataPointer_t = typename PS::RobotData_t *;
+        using RobotData_t = typename PS::RobotData_t;
         using Index_t = typename PS::Index_t;
         using ReferenceFrame_t = typename PS::ReferenceFrame_t;
         using SE3_t = typename PS::SE3_t;
@@ -95,7 +95,7 @@ namespace galileo
             return *static_cast<const DataVariant_t *>(this);
         }
 
-        RobotDataPointer_t robot_data_pointer() const
+        RobotData_t *robot_data_pointer() const
         {
             return galileo::contact_robot_data_pointer(*this);
         }
@@ -177,7 +177,7 @@ namespace galileo
             BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
 
-        GENERIC_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
+        GENERIC_ACCESSOR(RobotData_t *, robot_data_pointer);
         GENERIC_ACCESSOR(Index_t, frame);
         GENERIC_ACCESSOR(ReferenceFrame_t, type);
         GENERIC_ACCESSOR(SE3_t, jMf);

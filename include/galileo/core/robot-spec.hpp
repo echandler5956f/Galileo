@@ -1,70 +1,77 @@
-#ifndef __galileo_core_basic_spec_hpp__
-#define __galileo_core_basic_spec_hpp__
+#ifndef __galileo_core_robot_spec_hpp__
+#define __galileo_core_robot_spec_hpp__
 
 #include <pinocchio/multibody/fwd.hpp>
 #include <pinocchio/spatial/fwd.hpp>
 
 #include "galileo/core/fwd.hpp"
 
-// Macros to import the types and constants from a basic spec
-#define GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec)                 \
-    using State_t = typename BasicSpec::State_t;                   \
-    using ActuationMeta_t = typename BasicSpec::ActuationMeta_t;   \
-    using ActuationModel_t = typename BasicSpec::ActuationModel_t; \
-    using ActuationData_t = typename BasicSpec::ActuationData_t;
+// Macros to import the types and constants from a robot spec
+#define GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec)                 \
+    using State_t = typename RobotSpec::State_t;                   \
+    using ActuationMeta_t = typename RobotSpec::ActuationMeta_t;   \
+    using ActuationModel_t = typename RobotSpec::ActuationModel_t; \
+    using ActuationData_t = typename RobotSpec::ActuationData_t;
 
-#define GALILEO_BASIC_SPEC_PINOCCIO_TYPES_TYPEDEF(BasicSpec) \
-    using RobotModel_t = typename BasicSpec::RobotModel_t;   \
-    using RobotData_t = typename BasicSpec::RobotData_t;
+#define GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(RobotSpec)       \
+    using RobotModel_t = typename RobotSpec::RobotModel_t;         \
+    using RobotData_t = typename RobotSpec::RobotData_t;           \
+    using Index_t = typename RobotSpec::Index_t;                   \
+    using ReferenceFrame_t = typename RobotSpec::ReferenceFrame_t; \
+    using SE3_t = typename RobotSpec::SE3_t;                       \
+    using Motion_t = typename RobotSpec::Motion_t;                 \
+    using Force_t = typename RobotSpec::Force_t;                   \
+    using ActionMatrix_t = typename RobotSpec::ActionMatrix_t;
 
-#define GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec) \
-    using VarScalar = typename BasicSpec::VarScalar;  \
-    using NumScalar = typename BasicSpec::NumScalar;  \
-    static constexpr int Options = BasicSpec::Options;
+#define GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec) \
+    using VarScalar = typename RobotSpec::VarScalar;  \
+    using NumScalar = typename RobotSpec::NumScalar;  \
+    static constexpr int Options = RobotSpec::Options;
 
-#define GALILEO_BASIC_SPEC_CONSTANTS_TYPEDEF(BasicSpec) \
-    static constexpr int NQb = BasicSpec::NQb;          \
-    static constexpr int NQj = BasicSpec::NQj;          \
-    static constexpr int NVb = BasicSpec::NVb;          \
-    static constexpr int NVj = BasicSpec::NVj;          \
-    static constexpr int NRotors = BasicSpec::NRotors;  \
-    static constexpr int NQ = BasicSpec::NQ;            \
-    static constexpr int NV = BasicSpec::NV;            \
-    static constexpr int NX = BasicSpec::NX;            \
-    static constexpr int NDX = BasicSpec::NDX;          \
-    static constexpr int NUa = BasicSpec::NUa;
+#define GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec) \
+    static constexpr int NQb = RobotSpec::NQb;          \
+    static constexpr int NQj = RobotSpec::NQj;          \
+    static constexpr int NVb = RobotSpec::NVb;          \
+    static constexpr int NVj = RobotSpec::NVj;          \
+    static constexpr int NRotors = RobotSpec::NRotors;  \
+    static constexpr int NQ = RobotSpec::NQ;            \
+    static constexpr int NV = RobotSpec::NV;            \
+    static constexpr int NX = RobotSpec::NX;            \
+    static constexpr int NDX = RobotSpec::NDX;          \
+    static constexpr int NUa = RobotSpec::NUa;
 
-#define GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(BasicSpec)    \
-    using VectorNqb_t = typename BasicSpec::VectorNqb_t;     \
-    using VectorNqj_t = typename BasicSpec::VectorNqj_t;     \
-    using VectorNvb_t = typename BasicSpec::VectorNvb_t;     \
-    using VectorNvj_t = typename BasicSpec::VectorNvj_t;     \
-    using VectorNx_t = typename BasicSpec::VectorNx_t;       \
-    using VectorNua_t = typename BasicSpec::VectorNua_t;     \
-    using VectorNdx_t = typename BasicSpec::VectorNdx_t;     \
-    using VectorNq_t = typename BasicSpec::VectorNq_t;       \
-    using VectorNv_t = typename BasicSpec::VectorNv_t;       \
-    using MatrixNx_t = typename BasicSpec::MatrixNx_t;       \
-    using MatrixNua_t = typename BasicSpec::MatrixNua_t;     \
-    using MatrixNdx_t = typename BasicSpec::MatrixNdx_t;     \
-    using MatrixNq_t = typename BasicSpec::MatrixNq_t;       \
-    using MatrixNv_t = typename BasicSpec::MatrixNv_t;       \
-    using MatrixNvNdx_t = typename BasicSpec::MatrixNvNdx_t; \
-    using MatrixNvNua_t = typename BasicSpec::MatrixNvNua_t; \
-    using MatrixNuaNv_t = typename BasicSpec::MatrixNuaNv_t; \
-    using MatrixNdxNua_t = typename BasicSpec::MatrixNdxNua_t;
+#define GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec)    \
+    using VectorNqb_t = typename RobotSpec::VectorNqb_t;     \
+    using VectorNqj_t = typename RobotSpec::VectorNqj_t;     \
+    using VectorNvb_t = typename RobotSpec::VectorNvb_t;     \
+    using VectorNvj_t = typename RobotSpec::VectorNvj_t;     \
+    using VectorNx_t = typename RobotSpec::VectorNx_t;       \
+    using VectorNua_t = typename RobotSpec::VectorNua_t;     \
+    using VectorNdx_t = typename RobotSpec::VectorNdx_t;     \
+    using VectorNq_t = typename RobotSpec::VectorNq_t;       \
+    using VectorNv_t = typename RobotSpec::VectorNv_t;       \
+    using MatrixNx_t = typename RobotSpec::MatrixNx_t;       \
+    using MatrixNua_t = typename RobotSpec::MatrixNua_t;     \
+    using MatrixNdx_t = typename RobotSpec::MatrixNdx_t;     \
+    using MatrixNq_t = typename RobotSpec::MatrixNq_t;       \
+    using MatrixNv_t = typename RobotSpec::MatrixNv_t;       \
+    using MatrixNvNdx_t = typename RobotSpec::MatrixNvNdx_t; \
+    using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t; \
+    using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t; \
+    using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t;
 
-#define GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BasicSpec) \
-    GALILEO_BASIC_SPEC_META_TYPEDEF(BasicSpec);      \
-    GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec);   \
-    GALILEO_BASIC_SPEC_CONSTANTS_TYPEDEF(BasicSpec); \
-    GALILEO_BASIC_SPEC_EIGEN_TYPES_TYPEDEF(BasicSpec);
+#define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
+    GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec);           \
+    GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(RobotSpec); \
+    GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec);        \
+    GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec);      \
+    GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec);
 
 namespace galileo
 {
 
     /* ---------------------------------------------------------------- */
-    /* Defines the basic types and constants used in the core library. */
+    /* Defines the robot-specific types and constants used in the core library. */
     /* ---------------------------------------------------------------- */
     template <typename _VarScalar,
               typename _NumScalar,
@@ -76,9 +83,9 @@ namespace galileo
               int _NRotors,
               template <typename> class StateTpl,
               template <typename> class ActuationTpl>
-    struct BasicSpecTpl
+    struct RobotSpecTpl
     {
-        using BasicSpec = BasicSpecTpl<_VarScalar, _NumScalar, _Options, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
+        using RobotSpec = RobotSpecTpl<_VarScalar, _NumScalar, _Options, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
 
         /* ---------------------------------------------------------------- */
         /* Scalar types and Eigen Matrix storage order */
@@ -132,9 +139,9 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Template types */
         /* ---------------------------------------------------------------- */
-        using State_t = StateTpl<BasicSpec>;
+        using State_t = StateTpl<RobotSpec>;
 
-        using ActuationMeta_t = ActuationTpl<BasicSpec>;
+        using ActuationMeta_t = ActuationTpl<RobotSpec>;
         using ActuationModel_t = typename traits<ActuationMeta_t>::Model_t;
         using ActuationData_t = typename traits<ActuationMeta_t>::Data_t;
 
@@ -153,4 +160,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_basic_spec_hpp__
+#endif // __galileo_core_robot_spec_hpp__

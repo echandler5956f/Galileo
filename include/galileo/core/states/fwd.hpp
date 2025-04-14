@@ -6,10 +6,10 @@
 namespace galileo
 {
 
-    template <typename BasicSpec>
+    template <typename RobotSpec>
     class StateEuclideanTpl;
 
-    template <typename BasicSpec>
+    template <typename RobotSpec>
     class StateMultibodyTpl;
 
 } // namespace galileo

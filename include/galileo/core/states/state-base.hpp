@@ -2,20 +2,20 @@
 #define __galileo_core_states_state_base_hpp__
 
 #include "galileo/core/fwd.hpp"
-#include "galileo/core/basic-spec.hpp"
+#include "galileo/core/robot-spec.hpp"
 
 namespace galileo
 {
 
-    template <typename Derived, typename BasicSpec>
-    class StateBase : internal::CRTP<StateBase<Derived, BasicSpec>>
+    template <typename Derived, typename RobotSpec>
+    class StateBase : internal::CRTP<StateBase<Derived, RobotSpec>>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         /**
          * @brief Generate a zero state
@@ -274,7 +274,7 @@ namespace galileo
 
         int get_nx_impl() const
         {
-            return BS::NX;
+            return RS::NX;
         }
 
         /**
@@ -287,7 +287,7 @@ namespace galileo
 
         int get_ndx_impl() const
         {
-            return BS::NDX;
+            return RS::NDX;
         }
 
         /**
@@ -300,7 +300,7 @@ namespace galileo
 
         int get_nq_impl() const
         {
-            return BS::NQ;
+            return RS::NQ;
         }
 
         /**
@@ -313,7 +313,7 @@ namespace galileo
 
         int get_nv_impl() const
         {
-            return BS::NV;
+            return RS::NV;
         }
 
         /**

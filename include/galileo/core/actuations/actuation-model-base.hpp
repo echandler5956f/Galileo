@@ -6,17 +6,17 @@
 namespace galileo
 {
 
-    template <typename Derived, typename BasicSpec>
-    class ActuationModelBase : internal::CRTP<ActuationModelBase<Derived, BasicSpec>>
+    template <typename Derived, typename RobotSpec>
+    class ActuationModelBase : internal::CRTP<ActuationModelBase<Derived, RobotSpec>>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        using Meta_t = typename BS::ActuationMeta_t;
-        using Model_t = typename BS::ActuationModel_t;
-        using Data_t = typename BS::ActuationData_t;
+        using Meta_t = typename RS::ActuationMeta_t;
+        using Model_t = typename RS::ActuationModel_t;
+        using Data_t = typename RS::ActuationData_t;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -77,7 +77,7 @@ namespace galileo
 
         int nua_impl() const
         {
-            return BS::NUa;
+            return RS::NUa;
         }
 
     protected:

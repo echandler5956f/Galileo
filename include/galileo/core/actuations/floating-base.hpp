@@ -6,40 +6,40 @@
 namespace galileo
 {
 
-    template <typename BasicSpec>
+    template <typename RobotSpec>
     class ActuationFloatingBaseTpl;
 
-    template <typename BasicSpec>
-    struct traits<ActuationFloatingBaseTpl<BasicSpec>>
+    template <typename RobotSpec>
+    struct traits<ActuationFloatingBaseTpl<RobotSpec>>
     {
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        using Meta_t = ActuationFloatingBaseTpl<BS>;
-        using Model_t = ActuationModelFloatingBaseTpl<BS>;
-        using Data_t = ActuationDataTpl<BS>;
+        using Meta_t = ActuationFloatingBaseTpl<RS>;
+        using Model_t = ActuationModelFloatingBaseTpl<RS>;
+        using Data_t = ActuationDataTpl<RS>;
     };
 
-    template <typename BasicSpec>
-    struct traits<ActuationModelFloatingBaseTpl<BasicSpec>>
+    template <typename RobotSpec>
+    struct traits<ActuationModelFloatingBaseTpl<RobotSpec>>
     {
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        using Meta_t = ActuationFloatingBaseTpl<BS>;
+        using Meta_t = ActuationFloatingBaseTpl<RS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename BasicSpec>
-    class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<BasicSpec>, BasicSpec>
+    template <typename RobotSpec>
+    class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        using Meta_t = typename BS::ActuationMeta_t;
-        using Model_t = typename BS::ActuationModel_t;
-        using Data_t = typename BS::ActuationData_t;
+        using Meta_t = typename RS::ActuationMeta_t;
+        using Model_t = typename RS::ActuationModel_t;
+        using Data_t = typename RS::ActuationData_t;
 
         ActuationModelFloatingBaseTpl() {}
 
@@ -48,7 +48,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data.tau.tail(BS::NUa) = u;
+            data.tau.tail(RS::NUa) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -64,7 +64,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tau.tail(BS::NUa);
+            data.u = tau.tail(RS::NUa);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -78,9 +78,9 @@ namespace galileo
         Data_t createData() const
         {
             Data_t data = Data_t();
-            data.dtau_du.diagonal(-BS::NVb).setOnes();
-            data.Mtau.diagonal(BS::NVb).setOnes();
-            for (std::size_t i = 0; i < BS::NVb; ++i)
+            data.dtau_du.diagonal(-RS::NVb).setOnes();
+            data.Mtau.diagonal(RS::NVb).setOnes();
+            for (std::size_t i = 0; i < RS::NVb; ++i)
             {
                 data.tau_set[i] = false;
             }

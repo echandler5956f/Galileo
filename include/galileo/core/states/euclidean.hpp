@@ -6,15 +6,15 @@
 namespace galileo
 {
 
-    template <typename BasicSpec>
-    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<BasicSpec>>
+    template <typename RobotSpec>
+    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<RobotSpec>>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         VectorNx_t zero() const
         {

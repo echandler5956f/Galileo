@@ -6,60 +6,60 @@
 namespace galileo
 {
 
-    template <typename BasicSpec>
+    template <typename RobotSpec>
     struct Contact2dTpl;
 
-    template <typename BasicSpec>
-    struct traits<Contact2dTpl<BasicSpec>>
+    template <typename RobotSpec>
+    struct traits<Contact2dTpl<RobotSpec>>
     {
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        using VarScalar = typename BS::VarScalar;
-        using NumScalar = typename BS::NumScalar;
-        static constexpr int Options = BS::Options;
+        using VarScalar = typename RS::VarScalar;
+        using NumScalar = typename RS::NumScalar;
+        static constexpr int Options = RS::Options;
 
-        using ContactDataDerived = ContactData2dTpl<BasicSpec>;
-        using ContactModelDerived = ContactModel2dTpl<BasicSpec>;
+        using ContactDataDerived = ContactData2dTpl<RobotSpec>;
+        using ContactModelDerived = ContactModel2dTpl<RobotSpec>;
 
         static constexpr int NC = 1;
         // using RobotData_t = // TODO: add robot data
-        using MatrixNcNv_t = Eigen::Matrix<VarScalar, NC, BS::NV, Options>;
-        using MatrixNcNdx_t = Eigen::Matrix<VarScalar, NC, BS::NDX, Options>;
-        using MatrixNcNu_t = Eigen::Matrix<VarScalar, NC, BS::NU, Options>;
+        using MatrixNcNv_t = Eigen::Matrix<VarScalar, NC, RS::NV, Options>;
+        using MatrixNcNdx_t = Eigen::Matrix<VarScalar, NC, RS::NDX, Options>;
+        using MatrixNcNu_t = Eigen::Matrix<VarScalar, NC, RS::NU, Options>;
     };
 
-    template <typename BasicSpec>
-    struct traits<ContactData2dTpl<BasicSpec>>
+    template <typename RobotSpec>
+    struct traits<ContactData2dTpl<RobotSpec>>
     {
-        using ContactDerived = Contact2dTpl<BasicSpec>;
+        using ContactDerived = Contact2dTpl<RobotSpec>;
         using VarScalar = traits<ContactDerived>::VarScalar;
         using NumScalar = traits<ContactDerived>::NumScalar;
     };
 
-    template <typename BasicSpec>
-    struct traits<ContactModel2dTpl<BasicSpec>>
+    template <typename RobotSpec>
+    struct traits<ContactModel2dTpl<RobotSpec>>
     {
-        using ContactDerived = Contact2dTpl<BasicSpec>;
+        using ContactDerived = Contact2dTpl<RobotSpec>;
         using VarScalar = traits<ContactDerived>::VarScalar;
         using NumScalar = traits<ContactDerived>::NumScalar;
     };
 
-    template <typename BasicSpec>
-    struct ContactData2dTpl : ContactDataBase<ContactData2dTpl<BasicSpec>, BasicSpec>
+    template <typename RobotSpec>
+    struct ContactData2dTpl : ContactDataBase<ContactData2dTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 
-    template <typename BasicSpec>
-    struct ContactModel2dTpl : ContactDataBase<ContactModel2dTpl<BasicSpec>, BasicSpec>
+    template <typename RobotSpec>
+    struct ContactModel2dTpl : ContactDataBase<ContactModel2dTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        using ContactDerived = Contact2dTpl<BasicSpec>;
+        using ContactDerived = Contact2dTpl<RobotSpec>;
         using ContactModelDerived = traits<ContactDerived>::ContactModelDerived;
         using ContactDataDerived = traits<ContactDerived>::ContactDataDerived;
 

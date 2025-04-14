@@ -9,15 +9,15 @@
 namespace galileo
 {
 
-    template <typename BasicSpec>
-    class StateMultibodyTpl : public StateBase<StateMultibodyTpl<BasicSpec>, BasicSpec>
+    template <typename RobotSpec>
+    class StateMultibodyTpl : public StateBase<StateMultibodyTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using BS = BasicSpec;
+        using RS = RobotSpec;
 
-        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         StateMultibodyTpl(
             RobotModel_t *model)

@@ -3,7 +3,7 @@
 #include <pinocchio/parsers/urdf.hpp>
 
 #include <galileo/fwd.hpp>
-#include <galileo/core/basic-spec.hpp>
+#include <galileo/core/robot-spec.hpp>
 
 #include <galileo/core/states/state-base.hpp>
 #include <galileo/core/states/multibody.hpp>
@@ -33,11 +33,11 @@
 
 using namespace galileo;
 
-template <typename BS>
-using StateTpl = StateMultibodyTpl<BS>;
+template <typename RS>
+using StateTpl = StateMultibodyTpl<RS>;
 
-template <typename BS>
-using ActuationTpl = ActuationFloatingBaseTpl<BS>;
+template <typename RS>
+using ActuationTpl = ActuationFloatingBaseTpl<RS>;
 
 constexpr int NQb = 7;
 constexpr int NQj = 12;
@@ -50,7 +50,7 @@ using NumScalar = double;
 constexpr int Options = Eigen::ColMajor;
 
 // These template classes basically create a code generator for the optimal control problem by means of mixins
-using BasicSpec_t = BasicSpecTpl<VarScalar, NumScalar, Options, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
+using RobotSpec_t = RobotSpecTpl<VarScalar, NumScalar, Options, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
 
 template <typename PS_>
 using ConstraintManagerDefaultTpl = ConstraintManagerTpl<PS_, ConstraintCollectionDefaultTpl>;
@@ -84,7 +84,7 @@ struct DummyPhaseModelTpl;
 template <typename PS_>
 struct DummyPhaseDataTpl;
 
-using PhaseSpec_t = PhaseSpecTpl<BasicSpec_t, ConstraintManagerDefaultTpl, CostManagerDefaultTpl, NodeTpl, ControlParamTpl, SegmentTpl, DummyPhaseTpl>;
+using PhaseSpec_t = PhaseSpecTpl<RobotSpec_t, ConstraintManagerDefaultTpl, CostManagerDefaultTpl, NodeTpl, ControlParamTpl, SegmentTpl, DummyPhaseTpl>;
 
 // template <typename tmpScalar1, typename tmpScalar2, int tmpOptions1>
 // using PhaseSpecDummyTpl = PhaseSpec_t;
@@ -119,15 +119,15 @@ int main(int argc, char *argv[])
     pinocchio::ModelTpl<VarScalar, Options> model = pinocchio::ModelTpl<VarScalar, Options> ();
     pinocchio::urdf::buildModel(urdf_path, pinocchio::JointModelFreeFlyerTpl<VarScalar, Options>(), model);
 
-    StateTpl<BasicSpec_t> state(&model);
+    StateTpl<RobotSpec_t> state(&model);
 
     // Test the state
     std::cout << "state.zero() = " << state.zero() << std::endl;
     std::cout << "state.rand() = " << state.rand() << std::endl;
 
     // Test the actuation
-    using ActuationModel_t = BasicSpec_t::ActuationModel_t;
-    using ActuationData_t = BasicSpec_t::ActuationData_t;
+    using ActuationModel_t = RobotSpec_t::ActuationModel_t;
+    using ActuationData_t = RobotSpec_t::ActuationData_t;
     ActuationModel_t actuation;
     ActuationData_t actuation_data = actuation.createData();
     std::cout << "actuation_data.dtau_du = " << actuation_data.dtau_du << std::endl;

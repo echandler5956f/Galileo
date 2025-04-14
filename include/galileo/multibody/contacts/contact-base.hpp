@@ -72,7 +72,7 @@ namespace galileo
         GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        FORWARD_ACCESSOR(RobotDataPointer_t, robot_data_pointer);
+        FORWARD_ACCESSOR(RobotData_t *, robot_data_pointer);
         FORWARD_ACCESSOR(Index_t, frame);
         FORWARD_ACCESSOR(ReferenceFrame_t, type);
         FORWARD_ACCESSOR(SE3_t, jMf);
