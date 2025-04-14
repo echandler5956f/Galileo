@@ -5,7 +5,7 @@
 #include "galileo/multibody/force-base.hpp"
 
 #define GALILEO_CONTACT_DATA_TYPEDEF(Contact)                        \
-    using ActionMatrix_t = typename traits<Contact>::ActionMatrix_t; \
+    GALILEO_FORCE_DATA_TYPEDEF(Contact);                             \
     using VectorNc_t = typename traits<Contact>::VectorNc_t;         \
     using MatrixNv_t = typename traits<Contact>::MatrixNv_t;
 
@@ -28,12 +28,13 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+
         using Meta_t = ContactBaseTpl<Derived, PS>;
         using Data_t = ContactDataBase<Derived, PS>;
         using Model_t = ContactModelBase<Derived, PS>;
 
         // Retrieve the traits of the derived class
-        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
     };
 
@@ -65,11 +66,12 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+
         using Meta_t = ContactBaseTpl<Derived, PS>;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
 
-        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
         FORWARD_ACCESSOR(RobotData_t *, robot_data_pointer);

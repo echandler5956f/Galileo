@@ -14,6 +14,8 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+
         using Meta_t = Contact3dTpl<PS>;
         using Model_t = ContactModel3dTpl<PS>;
         using Data_t = ContactData3dTpl<PS>;
@@ -52,9 +54,43 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+
         using Meta_t = Contact3dTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
+
+        DEFAULT_ACCESSOR(RobotData_t *, robot_data_pointer);
+        DEFAULT_ACCESSOR(Index_t, frame);
+        DEFAULT_ACCESSOR(ReferenceFrame_t, type);
+        DEFAULT_ACCESSOR(SE3_t, jMf);
+        DEFAULT_ACCESSOR(MatrixNcNv_t, Jc);
+        DEFAULT_ACCESSOR(Force_t, f);
+        DEFAULT_ACCESSOR(Force_t, fext);
+        DEFAULT_ACCESSOR(MatrixNcNdx_t, df_dx);
+        DEFAULT_ACCESSOR(MatrixNcNu_t, df_du);
+
+        DEFAULT_ACCESSOR(ActionMatrix_t, fXj);
+        DEFAULT_ACCESSOR(VectorNc_t, a0);
+        DEFAULT_ACCESSOR(MatrixNcNdx_t, da0_dx);
+        DEFAULT_ACCESSOR(MatrixNv_t, dtau_dq);
+
+        RobotData_t *robot_data_pointer;
+        Index_t frame;
+        ReferenceFrame_t type;
+        SE3_t jMf;
+        MatrixNcNv_t Jc;
+        Force_t f;
+        Force_t fext;
+        MatrixNcNdx_t df_dx;
+        MatrixNcNu_t df_du;
+        
+        ActionMatrix_t fXj;
+        VectorNc_t a0;
+        MatrixNcNdx_t da0_dx;
+        MatrixNv_t dtau_dq;
 
     };
 

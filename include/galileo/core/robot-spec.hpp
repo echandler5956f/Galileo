@@ -112,7 +112,7 @@ namespace galileo
         static constexpr int NUa = NV - NVb + NRotors; // Dimension of actuated torque inputs
 
         /* ---------------------------------------------------------------- */
-        /* Fixed-size Eigen types */
+        /* Fixed-size Constant-Dependent Eigen types */
         /* ---------------------------------------------------------------- */
         using VectorNqb_t = Eigen::Matrix<VarScalar, NQb, 1, Options>;
         using VectorNqj_t = Eigen::Matrix<VarScalar, NQj, 1, Options>;

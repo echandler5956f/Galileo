@@ -5,14 +5,10 @@
 #include <pinocchio/spatial/force.hpp>
 
 #include "galileo/multibody/fwd.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
 
 #define GALILEO_FORCE_DATA_TYPEDEF(Force)                                  \
-    using RobotData_t = typename traits<Force>::RobotData_t; \
-    using Index_t = typename traits<Force>::Index_t;                       \
-    using ReferenceFrame_t = typename traits<Force>::ReferenceFrame_t;     \
-    using SE3_t = typename traits<Force>::SE3_t;                           \
     using MatrixNcNv_t = typename traits<Force>::MatrixNcNv_t;             \
-    using Force_t = typename traits<Force>::Force_t;                       \
     using MatrixNcNdx_t = typename traits<Force>::MatrixNcNdx_t;           \
     using MatrixNcNu_t = typename traits<Force>::MatrixNcNu_t;
 
@@ -26,6 +22,8 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
+
+        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
         
         using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;

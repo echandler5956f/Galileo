@@ -19,6 +19,8 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = ContactCollectionTpl<PS>;
         using Model_t = ContactModelTpl<PS, ContactCollectionTpl>;
@@ -27,17 +29,11 @@ namespace galileo
         static constexpr int NC = Eigen::Dynamic;
 
         // Traits required by ForceDataBase
-        using RobotData_t = typename PS::RobotData_t;
-        using Index_t = typename PS::Index_t;
-        using ReferenceFrame_t = typename PS::ReferenceFrame_t;
-        using SE3_t = typename PS::SE3_t;
         using MatrixNcNv_t = Eigen::Matrix<typename PS::VarScalar, NC, PS::NV, PS::Options, 6, PS::NV>;
-        using Force_t = typename PS::Force_t;
         using MatrixNcNdx_t = Eigen::Matrix<typename PS::VarScalar, NC, PS::NDX, PS::Options, 6, PS::NDX>;
         using MatrixNcNu_t = Eigen::Matrix<typename PS::VarScalar, NC, PS::NU, PS::Options, 6, PS::NU>;
 
         // Traits required by ContactDataBase
-        using ActionMatrix_t = typename PS::ActionMatrix_t;
         using VectorNc_t = Eigen::Matrix<typename PS::VarScalar, NC, 1, PS::Options, 6, 1>;
         using MatrixNv_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, PS::NV, PS::Options>;
     };
@@ -76,12 +72,13 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PS);
+
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
         using DataVariant_t = typename Collection_t::DataVariant_t;
