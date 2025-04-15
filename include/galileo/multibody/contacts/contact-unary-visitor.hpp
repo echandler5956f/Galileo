@@ -45,7 +45,7 @@ namespace galileo
             template <typename ContactModelDerived, typename ArgsTmp>
             static ReturnType run(
                 const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model,
-                typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived &contact_data,
+                typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::Data_t &contact_data,
                 ArgsTmp args)
             {
                 InternalVisitorModelAndData<ContactModelDerived, ArgsTmp> visitor(contact_data, args);
@@ -55,7 +55,7 @@ namespace galileo
             template <typename ContactModelDerived>
             static ReturnType run(
                 const ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS> &contact_model,
-                typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived &contact_data)
+                typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::Data_t &contact_data)
             {
                 InternalVisitorModelAndData<ContactModelDerived, NoArg> visitor(contact_data);
                 return visitor(contact_model.derived());
@@ -129,7 +129,7 @@ namespace galileo
             template <typename ContactModel, typename ArgType>
             struct InternalVisitorModelAndData : public boost::static_visitor<ReturnType>
             {
-                using ContactData = typename traits<ContactModel>::ContactDataDerived;
+                using ContactData = typename traits<ContactModel>::Data_t;
 
                 InternalVisitorModelAndData(ContactData &contact_data, ArgType args)
                     : contact_data(contact_data), args(args)
@@ -144,7 +144,7 @@ namespace galileo
                         gf::append(
                             boost::ref(contact_model.derived()),
                             boost::ref(
-                                boost::get<typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived>(contact_data)),
+                                boost::get<typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::Data_t>(contact_data)),
                             args));
                 }
 
@@ -161,7 +161,7 @@ namespace galileo
             struct InternalVisitorModelAndData<ContactModel, NoArg>
                 : public boost::static_visitor<ReturnType>
             {
-                using ContactData = typename traits<ContactModel>::ContactDataDerived;
+                using ContactData = typename traits<ContactModel>::Data_t;
 
                 InternalVisitorModelAndData(ContactData &contact_data)
                     : contact_data(contact_data)
@@ -176,7 +176,7 @@ namespace galileo
                         bf::make_vector(
                             boost::ref(contact_model.derived()),
                             boost::ref(
-                                boost::get<typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::ContactDataDerived>(contact_data))));
+                                boost::get<typename ContactModelBase<ContactModelDerived, typename traits<ContactModelDerived>::PS>::Data_t>(contact_data))));
                 }
 
                 ContactData &contact_data;

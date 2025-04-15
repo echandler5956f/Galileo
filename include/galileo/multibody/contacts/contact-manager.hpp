@@ -145,7 +145,7 @@ namespace galileo
               da0_dx(model_manager.nc_total(), NDX),
               dv(NV),
               ddv_dx(NV, NDX),
-              fext(NQ, Force_t::Zero())
+              fext(model_manager.getState().get_robot()->njoints, Force_t::Zero())
         {
             Jc.setZero();
             a0.setZero();
@@ -269,10 +269,10 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x)
+        void calc(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             int nc = 0;
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             if (compute_all_contacts_)
             {
@@ -280,7 +280,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
@@ -304,7 +304,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     if (m_i.active)
                     {
                         Data_t &d_i = it_d->second;
@@ -320,10 +320,10 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x)
+        void calcDiff(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             int nc = 0;
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             if (compute_all_contacts_)
             {
@@ -331,7 +331,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
@@ -353,7 +353,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     if (m_i.active)
                     {
                         Data_t &d_i = it_d->second;
@@ -374,15 +374,15 @@ namespace galileo
         }
 
         template <typename ForceVectorType>
-        void updateForce(DataManager_t &data, const Eigen::MatrixBase<ForceVectorType> &force)
+        void updateForce(DataManager_t &data, const Eigen::MatrixBase<ForceVectorType> &force) const
         {
             for (ForceIterator_t it = data.fext.begin(); it != data.fext.end(); ++it)
             {
-                *it = typename PS::Force_t::Zero();
+                *it = PS::Force_t::Zero();
             }
 
             std::size_t nc = 0;
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             if (compute_all_contacts_)
             {
@@ -390,7 +390,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     Data_t &d_i = it_d->second;
                     const int nc_i = m_i.model.nc();
                     if (m_i.active)
@@ -399,8 +399,8 @@ namespace galileo
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_robot()->frames[d_i.frame].parent;
-                        data.fext[joint] = d_i.fext;
+                            state_->get_robot()->frames[d_i.frame()].parent;
+                        data.fext[joint] = d_i.fext();
                     }
                     else
                     {
@@ -415,7 +415,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     Data_t &d_i = it_d->second;
                     if (m_i.active)
                     {
@@ -424,8 +424,8 @@ namespace galileo
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_robot()->frames[d_i.frame].parent;
-                        data.fext[joint] = d_i.fext;
+                            state_->get_robot()->frames[d_i.frame()].parent;
+                        data.fext[joint] = d_i.fext();
                         nc += nc_i;
                     }
                     else
@@ -454,7 +454,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     Data_t &d_i = it_d->second;
                     const int nc_i = m_i.model.nc();
                     if (m_i.active)
@@ -478,7 +478,7 @@ namespace galileo
                     it_d = data.contacts.begin(), end_d = data.contacts.end();
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
-                    Item_t &m_i = it_m->second;
+                    const Item_t &m_i = it_m->second;
                     Data_t &d_i = it_d->second;
                     if (m_i.active)
                     {
@@ -506,11 +506,11 @@ namespace galileo
                 it_d = data.contacts.begin(), end_d = data.contacts.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
-                Item_t &m_i = it_m->second;
-                Data_t &d_i = it_d->second;
+                const Item_t &m_i = it_m->second;
+                const Data_t &d_i = it_d->second;
                 if (m_i.active)
                 {
-                    switch (m_i.model.type())
+                    switch (m_i.model.type_impl())
                     {
                     case pinocchio::ReferenceFrame::LOCAL:
                         break;
@@ -526,6 +526,11 @@ namespace galileo
         const ModelContainer_t &getContacts() const
         {
             return contacts_;
+        }
+
+        const State_t &getState() const
+        {
+            return *state_;
         }
 
         int nc() const

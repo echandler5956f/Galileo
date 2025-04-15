@@ -28,6 +28,7 @@ namespace galileo
         using Model_t = ContactModelTpl<PS, ContactCollectionTpl>;
         using Data_t = ContactDataTpl<PS, ContactCollectionTpl>;
 
+        // static constexpr int NC = traits<typename ContactModelBase<Model_t, PhaseSpec>::Meta_t>::NC;
         static constexpr int NC = Eigen::Dynamic;
         static constexpr int NU = traits<typename PS::NodeMeta_t>::NU;
 
@@ -46,10 +47,14 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
+
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
     };
 
     template <typename PhaseSpec,
@@ -57,6 +62,8 @@ namespace galileo
     struct traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
+
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -207,6 +214,11 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
+        using Base_t = ContactModelBase<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>;
+        using Base_t::updateForceDiff;
+        using Base_t::setZeroForce;
+        using Base_t::setZeroForceDiff;
+
         using ModelVariant_t = typename Collection_t::ModelVariant_t;
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
@@ -246,42 +258,42 @@ namespace galileo
 
         template <typename StateVectorType>
         void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x)
+                  const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::contact_calc_zeroth_order(*this, data, x);
         }
 
         template <typename StateVectorType>
         void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x)
+                      const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::contact_calc_first_order(*this, data, x);
         }
 
         template <typename ForceVectorType>
         void updateForce(Data_t &data,
-                         const Eigen::MatrixBase<ForceVectorType> &force)
+                         const Eigen::MatrixBase<ForceVectorType> &force) const
         {
             galileo::contact_update_force(*this, data, force.derived());
         }
 
-        template <typename MatrixNcNdxType, typename MatrixNcNuType>
-        void updateForceDiff(Data_t &data,
-                             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-                             const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
-        {
-            galileo::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
-        }
+        // template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        // void updateForceDiff(Data_t &data,
+        //                      const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+        //                      const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+        // {
+        //     galileo::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
+        // }
 
-        void setZeroForce(Data_t &data) const
-        {
-            galileo::contact_set_zero_force(*this, data);
-        }
+        // void setZeroForce(Data_t &data) const
+        // {
+        //     galileo::contact_set_zero_force(*this, data);
+        // }
 
-        void setZeroForceDiff(Data_t &data) const
-        {
-            galileo::contact_set_zero_force_diff(*this, data);
-        }
+        // void setZeroForceDiff(Data_t &data) const
+        // {
+        //     galileo::contact_set_zero_force_diff(*this, data);
+        // }
 
         const RobotModel_t *robot_impl() const
         {

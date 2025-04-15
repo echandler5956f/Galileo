@@ -91,7 +91,7 @@ namespace galileo
         FORWARD_ACCESSOR(MatrixNcNdx_t, da0_dx);
         FORWARD_ACCESSOR(MatrixNv_t, dtau_dq);
 
-        /**We have to override the CRTP derived() method to return the 
+        /**We have to override the CRTP derived() method to return the
          derived object because ForceDataBase is multi-level CRTP**/
 
         /** Return reference to this as derived object */
@@ -152,21 +152,21 @@ namespace galileo
 
         template <typename StateVectorType>
         void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x)
+                  const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x.derived());
         }
 
         template <typename StateVectorType>
         void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x)
+                      const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x.derived());
         }
 
         template <typename ForceVectorType>
         void updateForce(Data_t &data,
-                         const Eigen::MatrixBase<ForceVectorType> &force)
+                         const Eigen::MatrixBase<ForceVectorType> &force) const
         {
             this->derived().updateForce(data, force.derived());
         }
@@ -176,17 +176,38 @@ namespace galileo
                              const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
                              const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
         {
-            this->derived().updateForceDiff(data, df_dx.derived(), df_du.derived());
+            this->derived().updateForceDiffImpl(data, df_dx.derived(), df_du.derived());
+        }
+
+        template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        void updateForceDiffImpl(Data_t &data,
+                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+        {
+            data.df_dx() = df_dx;
+            data.df_du() = df_du;
         }
 
         void setZeroForce(Data_t &data) const
         {
-            this->derived().setZeroForce(data);
+            this->derived().setZeroForceImpl(data);
+        }
+
+        void setZeroForceImpl(Data_t &data) const
+        {
+            data.f().setZero();
+            data.fext().setZero();
         }
 
         void setZeroForceDiff(Data_t &data) const
         {
-            this->derived().setZeroForceDiff(data);
+            this->derived().setZeroForceDiffImpl(data);
+        }
+
+        void setZeroForceDiffImpl(Data_t &data) const
+        {
+            data.df_dx().setZero();
+            data.df_du().setZero();
         }
 
         const RobotModel_t *robot() const

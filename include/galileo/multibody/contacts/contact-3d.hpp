@@ -114,7 +114,7 @@ namespace galileo
         Vector3_t dp;
         Vector3_t dp_local;
         Force_t f_local;
-        Matrix3_t da0_local_dx;
+        MatrixNcNdx_t da0_local_dx;
         Matrix6X_t fJf;
         Matrix6X_t v_partial_dq;
         Matrix6X_t a_partial_dq;
@@ -137,14 +137,14 @@ namespace galileo
               frame(0),
               type(model.type()),
               jMf(SE3_t::Identity()),
-              Jc(model.nc(), NV),
+              Jc(3, NV),
               f(Force_t::Zero()),
               fext(Force_t::Zero()),
-              df_dx(model.nc(), NDX),
-              df_du(model.nc(), model.nu()),
+              df_dx(3, NDX),
+              df_du(3, model.nu()),
               fXj(jMf.inverse().toActionMatrix()),
-              a0(model.nc()),
-              da0_dx(model.nc(), NDX),
+              a0(3),
+              da0_dx(3, NDX),
               dtau_dq(NV, NV),
               v(Motion_t::Zero()),
               f_local(Force_t::Zero()),
@@ -202,6 +202,11 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
+        using Base_t = ContactModelBase<ContactModel3dTpl<PhaseSpec>, PhaseSpec>;
+        using Base_t::updateForceDiff;
+        using Base_t::setZeroForce;
+        using Base_t::setZeroForceDiff;
+
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
         ContactModel3dTpl(State_t *state, const FrameIndex_t id,
@@ -218,12 +223,15 @@ namespace galileo
 
         template <typename StateVectorType>
         void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x)
+                  const Eigen::MatrixBase<StateVectorType> &x) const
         {
+            auto q = x.template head<PS::NQ>();
+            auto v = x.template tail<PS::NV>();
+
             pinocchio::updateFramePlacement(*robot_, *(data.robot),
                                             id_);
             pinocchio::getFrameJacobian(*robot_, *(data.robot),
-                                        id_, pinocchio::LOCAL, data->fJf);
+                                        id_, pinocchio::LOCAL, data.fJf);
             data.v = pinocchio::getFrameVelocity(*robot_,
                                                  *(data.robot), id_);
             data.a0_local =
@@ -258,7 +266,7 @@ namespace galileo
 
         template <typename StateVectorType>
         void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x)
+                      const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const pinocchio::JointIndex joint =
                 robot_->frames[data.frame].parent;
@@ -331,7 +339,7 @@ namespace galileo
 
         template <typename ForceVectorType>
         void updateForce(Data_t &data,
-                         const Eigen::MatrixBase<ForceVectorType> &force)
+                         const Eigen::MatrixBase<ForceVectorType> &force) const
         {
             data.f.linear() = force;
             data.f.angular().setZero();
