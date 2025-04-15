@@ -43,7 +43,7 @@ namespace galileo
             /** Return reference to this as derived object */
             inline const Derived &derived() const & noexcept
             {
-                return *static_cast<Derived const *>(this);
+                return *static_cast<const Derived *>(this);
             }
             /** Return reference to this as derived object, when this is rvalue */
             inline Derived &&derived() && noexcept

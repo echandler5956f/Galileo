@@ -9,15 +9,15 @@
                                                                          (GALILEO_MAJOR_VERSION > y || (GALILEO_MAJOR_VERSION >= y && \
                                                                                                         GALILEO_MINOR_VERSION >= z))))
 
-#define FORWARD_ACCESSOR(ReturnType, accessor_name)  \
-    /* lvalue-qualified overload */                  \
-    ReturnType &accessor_name()                      \
-    {                                                \
+#define FORWARD_ACCESSOR(ReturnType, accessor_name)        \
+    /* lvalue-qualified overload */                        \
+    ReturnType &accessor_name()                            \
+    {                                                      \
         return this->derived().accessor_name##_accessor(); \
-    }                                                \
-    /* const-lvalue-qualified overload */            \
-    const ReturnType &accessor_name() const          \
-    {                                                \
+    }                                                      \
+    /* const-lvalue-qualified overload */                  \
+    const ReturnType &accessor_name() const                \
+    {                                                      \
         return this->derived().accessor_name##_accessor(); \
     }
 

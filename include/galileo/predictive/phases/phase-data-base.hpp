@@ -8,7 +8,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct PhaseDataBase : internal::CRTP<PhaseDataBase<Derived, PhaseSpec>>
+    struct PhaseDataBase : internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -8,7 +8,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct SegmentERKDataBase : internal::CRTP<SegmentERKDataBase<Derived, PhaseSpec>>
+    struct SegmentERKDataBase : internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

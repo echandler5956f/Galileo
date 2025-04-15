@@ -8,7 +8,7 @@ namespace galileo
 {
 
     template <typename Derived, typename RobotSpec>
-    class StateBase : internal::CRTP<StateBase<Derived, RobotSpec>>
+    class StateBase : internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

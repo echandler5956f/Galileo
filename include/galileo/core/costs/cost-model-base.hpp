@@ -7,7 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class CostModelBase : internal::CRTP<CostModelBase<Derived, PhaseSpec>>
+    class CostModelBase : internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

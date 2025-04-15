@@ -58,7 +58,7 @@ namespace galileo
     };
 
     template <typename Derived, typename PhaseSpec>
-    struct ContactDataBase : public ForceDataBase<ContactDataBase<Derived, PhaseSpec>, PhaseSpec>
+    struct ContactDataBase : public ForceDataBase<Derived, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
