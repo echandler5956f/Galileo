@@ -29,12 +29,12 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
-        // using Meta_t = ContactBaseTpl<Derived, PS>;
-        // using Data_t = ContactDataBase<Derived, PS>;
-        // using Model_t = ContactModelBase<Derived, PS>;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
 
         // Forward propogating the traits of the derived class
-        GALILEO_CONTACT_DATA_TYPEDEF(typename traits<Derived>::Meta_t);
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
     };
 
     template <typename Derived, typename PhaseSpec>
@@ -42,9 +42,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        // using Meta_t = ContactBaseTpl<Derived, PS>;
-        // using Data_t = typename traits<Meta_t>::Data_t;
-        // using Model_t = typename traits<Meta_t>::Model_t;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
     };
 
     template <typename Derived, typename PhaseSpec>
@@ -52,9 +52,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        // using Meta_t = ContactBaseTpl<Derived, PS>;
-        // using Data_t = typename traits<Meta_t>::Data_t;
-        // using Model_t = typename traits<Meta_t>::Model_t;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
     };
 
     template <typename Derived, typename PhaseSpec>
@@ -67,12 +67,12 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
-        // using Meta_t = ContactBaseTpl<Derived, PS>;
-        // using Data_t = typename traits<Meta_t>::Data_t;
-        // using Model_t = typename traits<Meta_t>::Model_t;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
 
         // Now we can access the traits of the derived class
-        GALILEO_CONTACT_DATA_TYPEDEF(Derived);
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
         // Accessors required by ForceDataBase
         FORWARD_ACCESSOR(RobotData_t *, robot);
@@ -90,6 +90,25 @@ namespace galileo
         FORWARD_ACCESSOR(VectorNc_t, a0);
         FORWARD_ACCESSOR(MatrixNcNdx_t, da0_dx);
         FORWARD_ACCESSOR(MatrixNv_t, dtau_dq);
+
+        /**We have to override the CRTP derived() method to return the 
+         derived object because ForceDataBase is multi-level CRTP**/
+
+        /** Return reference to this as derived object */
+        inline Derived &derived() & noexcept
+        {
+            return *static_cast<Derived *>(this);
+        }
+        /** Return reference to this as derived object */
+        inline const Derived &derived() const & noexcept
+        {
+            return *static_cast<Derived const *>(this);
+        }
+        /** Return reference to this as derived object, when this is rvalue */
+        inline Derived &&derived() && noexcept
+        {
+            return std::move(*static_cast<Derived *>(this));
+        }
 
     protected:
         inline ContactDataBase()
@@ -117,7 +136,6 @@ namespace galileo
         using PS = PhaseSpec;
 
         // ContactModelBase is one level up in the hierarchy from ContactDataBase
-        // using Meta_t = ContactBaseTpl<Derived, PS>;
         using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;

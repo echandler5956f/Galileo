@@ -199,8 +199,8 @@ namespace galileo
         using PS = PhaseSpec;
 
         using Meta_t = Contact3dTpl<PhaseSpec>;
-        using Model_t = traits<Meta_t>::Model_t;
-        using Data_t = traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 

@@ -140,7 +140,7 @@ namespace galileo
 
         template <typename DataCollector>
         ContactDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
-            : Jc(model_manager.nc_total(), PS::NV),
+            : Jc(model_manager.nc_total(), NV),
               a0(model_manager.nc_total()),
               da0_dx(model_manager.nc_total(), NDX),
               dv(NV),

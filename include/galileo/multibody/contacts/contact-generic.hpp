@@ -171,7 +171,7 @@ namespace galileo
 
         template <typename DataDerived>
         ContactDataTpl(const ContactDataBase<DataDerived, PhaseSpec> &data)
-            : Collection_t::DataVariant_t((DataVariant_t)data.derived())
+            : DataVariant_t((DataVariant_t)data.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
@@ -223,7 +223,7 @@ namespace galileo
 
         template <typename ModelDerived>
         ContactModelTpl(const ContactModelBase<ModelDerived, PhaseSpec> &model)
-            : Collection_t::ModelVariant_t((ModelVariant_t)model.derived())
+            : ModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
         }

@@ -16,7 +16,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct ForceDataBase : internal::CRTP<<ForceDataBase<Derived, PhaseSpec>>
+    struct ForceDataBase : internal::CRTP<ForceDataBase<Derived, PhaseSpec>>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -24,8 +24,15 @@ namespace galileo
         using PS = PhaseSpec;
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
-        
-        GALILEO_FORCE_DATA_TYPEDEF(Derived);
+
+        // The meta type of the derived class
+        using Meta_t = typename traits<Derived>::Meta_t;
+        // The data type of the meta type of the derived class
+        using Data_t = typename traits<Meta_t>::Data_t;
+        // The model type of the meta type of the derived class
+        using Model_t = typename traits<Meta_t>::Model_t;
+
+        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
 
         // Accessors required by ForceDataBase
         FORWARD_ACCESSOR(RobotData_t *, robot);
@@ -37,6 +44,25 @@ namespace galileo
         FORWARD_ACCESSOR(Force_t, fext);
         FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
         FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
+
+        /**We have to override the CRTP derived() method to return the 
+          derived object because ForceDataBase is multi-level CRTP**/
+
+        /** Return reference to this as derived object */
+        inline Derived &derived() & noexcept
+        {
+            return *static_cast<Derived *>(this);
+        }
+        /** Return reference to this as derived object */
+        inline const Derived &derived() const & noexcept
+        {
+            return *static_cast<Derived const *>(this);
+        }
+        /** Return reference to this as derived object, when this is rvalue */
+        inline Derived &&derived() && noexcept
+        {
+            return std::move(*static_cast<Derived *>(this));
+        }
 
     protected:
         inline ForceDataBase()
