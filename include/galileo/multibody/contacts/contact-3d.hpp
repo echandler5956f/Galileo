@@ -211,7 +211,7 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return Data_t(*this, collector);
         }

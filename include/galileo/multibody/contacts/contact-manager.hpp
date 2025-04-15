@@ -35,7 +35,7 @@ namespace galileo
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
         ContactItemTpl() {}
-        ContactItemTpl(const std::string &_name, const Model_t &_model, bool _active = true)
+        ContactItemTpl(const std::string &_name, const Model_t &_model, const bool _active = true)
             : name(_name), model(_model), active(_active) {}
 
         std::string name;
@@ -43,7 +43,7 @@ namespace galileo
         bool active;
     };
 
-        template <typename PhaseSpec,
+    template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct traits<ContactManagerTpl<PhaseSpec, ContactCollectionTpl>>
     {
@@ -106,6 +106,8 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
+
         using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
         using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
@@ -115,6 +117,9 @@ namespace galileo
         using Model_t = typename traits<MetaManager_t>::Model_t;
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
+        using Item_t = typename traits<MetaManager_t>::Item_t;
+
+        using ModelContainer_t = typename traits<MetaManager_t>::ModelContainer_t;
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
         using Jc_t = typename traits<MetaManager_t>::Jc_t;
@@ -133,6 +138,30 @@ namespace galileo
         DataContainer_t contacts;
         ForceVector_t fext;
 
+        template <typename DataCollector>
+        ContactDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
+            : Jc(model_manager.nc_total(), PS::NV),
+              a0(model_manager.nc_total()),
+              da0_dx(model_manager.nc_total(), NDX),
+              dv(NV),
+              ddv_dx(NV, NDX),
+              fext(NQ, Force_t::Zero())
+        {
+            Jc.setZero();
+            a0.setZero();
+            da0_dx.setZero();
+            dv.setZero();
+            ddv_dx.setZero();
+            for (typename ModelContainer_t::const_iterator
+                     it = model_manager.getContacts().begin();
+                 it != model_manager.getContacts().end(); ++it)
+            {
+                const Item_t &item = it->second;
+                contacts.insert(
+                    std::make_pair(item.name, item.model.createData(collector)));
+            }
+        }
+
     }; // class ContactDataManagerTpl
 
     template <typename PhaseSpec,
@@ -143,6 +172,8 @@ namespace galileo
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
+
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
         using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
@@ -158,11 +189,16 @@ namespace galileo
         using ModelContainer_t = typename traits<MetaManager_t>::ModelContainer_t;
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
-        using RobotData_t = typename traits<MetaManager_t>::RobotData_t;
         using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
         using ForceIterator_t = typename ForceVector_t::iterator;
 
-        ContactModelManagerTpl() {}
+        ContactModelManagerTpl(State_t *state) : state_(state) {}
+
+        template <typename DataCollector>
+        DataManager_t createData(DataCollector *const collector) const
+        {
+            return DataManager_t(*this, collector);
+        }
 
         void addContact(const std::string &name, const Model_t &model, bool active = true)
         {
@@ -487,6 +523,11 @@ namespace galileo
             }
         }
 
+        const ModelContainer_t &getContacts() const
+        {
+            return contacts_;
+        }
+
         int nc() const
         {
             return nc_;
@@ -498,7 +539,7 @@ namespace galileo
         }
 
     protected:
-        typename PS::State_t *state_;
+        State_t *state_;
         ModelContainer_t contacts_;
 
         int nc_;

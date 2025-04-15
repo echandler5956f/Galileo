@@ -15,36 +15,71 @@ namespace galileo
 
     // Contact model visitors
 
+    // template <typename PhaseSpec,
+    //           template <typename> class ContactCollectionTpl,
+    //           typename DataCollector>
+    // struct ContactCreateDataVisitor
+    //     : fusion::ContactUnaryVisitorBase<ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl, DataCollector>, ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
+    // {
+    //     using ContactCollection_t = ContactCollectionTpl<PhaseSpec>;
+    //     using ContactModelVariant_t = ContactCollection_t::ModelVariant_t;
+    //     using ContactDataVariant_t = ContactDataTpl<PhaseSpec, ContactCollectionTpl>;
+    //     using ArgsType = boost::fusion::vector<DataCollector *const>;
+
+    //     template <typename ContactModelDerived>
+    //     static ContactDataVariant_t algo(
+    //         const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model,
+    //         DataCollector *const collector)
+    //     {
+    //         return contact_model.createData(collector);
+    //     }
+    // };
+
+    // template <typename PhaseSpec,
+    //           template <typename> class ContactCollectionTpl,
+    //           typename DataCollector>
+    // inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
+    //     const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+    //     DataCollector *const collector)
+    // {
+    //     typedef ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl, DataCollector> Algo;
+
+    //     return Algo::run(contact_model, typename Algo::ArgsType(collector));
+    // }
+
     template <typename PhaseSpec,
               template <typename> class ContactCollectionTpl,
               typename DataCollector>
-    struct ContactCreateDataVisitor
-        : fusion::ContactUnaryVisitorBase<ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl, DataCollector>>
+    struct CreateContactData : boost::static_visitor<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
     {
-        using ArgsType = boost::fusion::vector<DataCollector *const>;
         using ContactCollection_t = ContactCollectionTpl<PhaseSpec>;
         using ContactModelVariant_t = ContactCollection_t::ModelVariant_t;
         using ContactDataVariant_t = ContactDataTpl<PhaseSpec, ContactCollectionTpl>;
 
+        DataCollector *const collector_;
+        CreateContactData(DataCollector *const collector) : collector_(collector) {}
+
         template <typename ContactModelDerived>
-        static ContactDataVariant_t algo(
-            const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model,
-            DataCollector *const collector)
+        ContactDataVariant_t operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
         {
-            return ContactDataVariant_t(contact_model.createData(collector));
+            return ContactDataVariant_t(contact_model.createData(collector_));
+        }
+
+        static ContactDataVariant_t run(const ContactModelVariant_t &contact_model,
+                                       DataCollector *const collector)
+        {
+            return boost::apply_visitor(CreateContactData<PhaseSpec, ContactCollectionTpl, DataCollector>(collector), contact_model);
         }
     };
 
     template <typename PhaseSpec,
               template <typename> class ContactCollectionTpl,
               typename DataCollector>
-    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
-        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-        DataCollector *const collector)
+    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl>
+    contact_create_data(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+               DataCollector *const collector)
     {
-        typedef ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl, DataCollector> Algo;
-
-        return Algo::run(contact_model, typename Algo::ArgsType(collector));
+        return CreateContactData<PhaseSpec, ContactCollectionTpl, DataCollector>::run(contact_model, collector);
     }
 
     template <typename PhaseSpec,

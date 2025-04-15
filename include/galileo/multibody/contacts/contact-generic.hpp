@@ -239,7 +239,7 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return galileo::contact_create_data(*this, collector);
         }

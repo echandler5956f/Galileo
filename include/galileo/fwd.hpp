@@ -34,10 +34,7 @@ namespace galileo
         template <class Derived>
         struct CRTP
         {
-            // using VarScalar = typename traits<Derived>::VarScalar;
-            // using NumScalar = typename traits<Derived>::NumScalar;
 
-        protected:
             /** Return reference to this as derived object */
             inline Derived &derived() & noexcept
             {

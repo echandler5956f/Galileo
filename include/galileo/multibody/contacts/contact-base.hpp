@@ -29,9 +29,9 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
-        using Meta_t = ContactBaseTpl<Derived, PS>;
-        using Data_t = ContactDataBase<Derived, PS>;
-        using Model_t = ContactModelBase<Derived, PS>;
+        // using Meta_t = ContactBaseTpl<Derived, PS>;
+        // using Data_t = ContactDataBase<Derived, PS>;
+        // using Model_t = ContactModelBase<Derived, PS>;
 
         // Forward propogating the traits of the derived class
         GALILEO_CONTACT_DATA_TYPEDEF(typename traits<Derived>::Meta_t);
@@ -42,9 +42,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ContactBaseTpl<Derived, PS>;
-        using Data_t = typename traits<Meta_t>::Data_t;
-        using Model_t = typename traits<Meta_t>::Model_t;
+        // using Meta_t = ContactBaseTpl<Derived, PS>;
+        // using Data_t = typename traits<Meta_t>::Data_t;
+        // using Model_t = typename traits<Meta_t>::Model_t;
     };
 
     template <typename Derived, typename PhaseSpec>
@@ -52,9 +52,9 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ContactBaseTpl<Derived, PS>;
-        using Data_t = typename traits<Meta_t>::Data_t;
-        using Model_t = typename traits<Meta_t>::Model_t;
+        // using Meta_t = ContactBaseTpl<Derived, PS>;
+        // using Data_t = typename traits<Meta_t>::Data_t;
+        // using Model_t = typename traits<Meta_t>::Model_t;
     };
 
     template <typename Derived, typename PhaseSpec>
@@ -67,12 +67,12 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
-        using Meta_t = ContactBaseTpl<Derived, PS>;
-        using Data_t = typename traits<Meta_t>::Data_t;
-        using Model_t = typename traits<Meta_t>::Model_t;
+        // using Meta_t = ContactBaseTpl<Derived, PS>;
+        // using Data_t = typename traits<Meta_t>::Data_t;
+        // using Model_t = typename traits<Meta_t>::Model_t;
 
         // Now we can access the traits of the derived class
-        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
+        GALILEO_CONTACT_DATA_TYPEDEF(Derived);
 
         // Accessors required by ForceDataBase
         FORWARD_ACCESSOR(RobotData_t *, robot);
@@ -117,7 +117,8 @@ namespace galileo
         using PS = PhaseSpec;
 
         // ContactModelBase is one level up in the hierarchy from ContactDataBase
-        using Meta_t = ContactBaseTpl<Derived, PS>;
+        // using Meta_t = ContactBaseTpl<Derived, PS>;
+        using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
 
@@ -126,7 +127,7 @@ namespace galileo
         using ReferenceFrame_t = typename traits<Meta_t>::ReferenceFrame_t;
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return this->derived().createData(collector);
         }

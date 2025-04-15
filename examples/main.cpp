@@ -162,15 +162,21 @@ int main(int argc, char *argv[])
     // Test the contact manager
     using ContactModel_t = ContactModel3dTpl<PhaseSpec_t>;
     using ContactData_t = ContactData3dTpl<PhaseSpec_t>;
-    ContactModel_t contact(&state, 0, typename PhaseSpec_t::Vector3_t(0, 0, 0), pinocchio::ReferenceFrame::LOCAL, PhaseSpec_t::NV, typename PhaseSpec_t::Vector2_t(0, 50));
+    ContactModel_t contact(&state, 0, typename PhaseSpec_t::Vector3_t(0, 0, 0), pinocchio::ReferenceFrame::LOCAL, PhaseSpec_t::NU, typename PhaseSpec_t::Vector2_t(0, 50));
     ContactData_t contact_data = contact.createData(&data_collector);
     std::cout << "contact_data.a0_local = " << contact_data.a0_local << std::endl;
     std::cout << "contact_data.fext = " << contact_data.fext << std::endl;
 
-    // // Test the contact manager
-    // using ContactModelManager_t = ContactModelManagerTpl<PhaseSpec_t, ContactCollectionDefaultTpl>;
-    // ContactModelManager_t contact_model_manager();
-
+    // Test the contact manager
+    using ContactModelManager_t = ContactModelManagerTpl<PhaseSpec_t, ContactCollectionDefaultTpl>;
+    using ContactDataManager_t = ContactDataManagerTpl<PhaseSpec_t, ContactCollectionDefaultTpl>;
+    ContactModelManager_t contact_model_manager(&state);
+    ContactDataManager_t contact_data_manager = contact_model_manager.createData(&data_collector);
+    std::cout << "contact_data_manager.Jc = " << contact_data_manager.Jc << std::endl;
+    std::cout << "contact_data_manager.a0 = " << contact_data_manager.a0 << std::endl;
+    std::cout << "contact_data_manager.da0_dx = " << contact_data_manager.da0_dx << std::endl;
+    std::cout << "contact_data_manager.dv = " << contact_data_manager.dv << std::endl;
+    std::cout << "contact_data_manager.ddv_dx = " << contact_data_manager.ddv_dx << std::endl;
 
     // Create a quadruped walking problem
     // 1. Define the phase specs

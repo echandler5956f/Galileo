@@ -16,7 +16,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct ForceDataBase : internal::CRTP<ForceDataBase<Derived, PhaseSpec>>
+    struct ForceDataBase : internal::CRTP<<ForceDataBase<Derived, PhaseSpec>>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -25,10 +25,7 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
         
-        using Meta_t = typename traits<Derived>::Meta_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
-
-        GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
+        GALILEO_FORCE_DATA_TYPEDEF(Derived);
 
         // Accessors required by ForceDataBase
         FORWARD_ACCESSOR(RobotData_t *, robot);
