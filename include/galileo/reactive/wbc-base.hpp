@@ -60,7 +60,7 @@ namespace galileo
             {
             }
 
-            WBCBase(Model model, const Info &info, const std::vector<multibody::EndEffector> &ees)
+            WBCBase(Model model, const Info &info, const std::vector<EndEffector> &ees)
                 : model_(model),
                   data_measured_(model_),
                   data_desired_(model_),
@@ -444,7 +444,7 @@ namespace galileo
 
             Info info_;
 
-            std::vector<multibody::EndEffector> ees_;
+            std::vector<EndEffector> ees_;
 
             std::vector<bool> contact_flag_;
 

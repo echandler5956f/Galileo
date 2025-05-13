@@ -33,7 +33,7 @@ namespace galileo
 
         // TODO: Refactor to also be able to handle when NC is known at compile time
         // static constexpr int NC = ContactDataManager_t::NC;
-        static constexpr int NC = -1;
+        static constexpr int NC = Eigen::Dynamic;
         static constexpr int NU = PS::NUa;
 
         using ContactManagerMeta_t = ContactManagerTpl<PS, ContactCollectionTpl>;
@@ -153,6 +153,73 @@ namespace galileo
         Gx_t Gx;
         Gu_t Gu;
 
+        // template <typename DataCollector>
+        // NodeDataContactFwdDynTpl(const Model_t &model, DataCollector *const collector)
+        //     : XAcc(NV),
+        //       XAccx(NV, NDX),
+        //       XAccu(NV, model->get_nu()),
+        //       L(VarScalar(0.)),
+        //       r(model->get_nr()),
+        //       Lx(NDX),
+        //       Lu(model->get_nu()),
+        //       Lxx(NDX, NDX),
+        //       Lxu(NDX, model->get_nu()),
+        //       Luu(model->get_nu(), model->get_nu()),
+        //       H(model->get_nh()),
+        //       Hx(model->get_nh(), NDX),
+        //       Hu(model->get_nh(), model->get_nu()),
+        //       G(model->get_ng()),
+        //       Gx(model->get_ng(), NDX),
+        //       Gu(model->get_ng(), model->get_nu()),
+        //       pinocchio(pinocchio::DataTpl<Scalar>(model->get_pinocchio())),
+        //       multibody(
+        //           &pinocchio, model->get_actuation()->createData(),
+        //           boost::make_shared<JointDataAbstract>(
+        //               model->get_state(), model->get_actuation(), model->get_nu()),
+        //           model->get_contacts()->createData(&pinocchio)),
+        //       costs(model->get_costs()->createData(&multibody)),
+        //       Kinv(NV +
+        //                model->get_contacts()->get_nc_total(),
+        //            NV +
+        //                model->get_contacts()->get_nc_total()),
+        //       df_dx(model->get_contacts()->get_nc_total(),
+        //             NDX),
+        //       df_du(model->get_contacts()->get_nc_total(), model->get_nu()),
+        //       tmp_xstatic(model->get_state()->get_nx()),
+        //       tmp_Jstatic(NV,
+        //                   model->get_nu() + model->get_contacts()->get_nc_total())
+        // {
+        //     XAcc.setZero();
+        //     XAccx.setZero();
+        //     XAccu.setZero();
+        //     r.setZero();
+        //     Lx.setZero();
+        //     Lu.setZero();
+        //     Lxx.setZero();
+        //     Lxu.setZero();
+        //     Luu.setZero();
+        //     H.setZero();
+        //     Hx.setZero();
+        //     Hu.setZero();
+        //     G.setZero();
+        //     Gx.setZero();
+        //     Gu.setZero();
+        //     multibody.joint->dtau_du.diagonal().setOnes();
+        //     costs->shareMemory(this);
+        //     if (model->get_constraints() != nullptr)
+        //     {
+        //         constraints = model->get_constraints()->createData(&multibody);
+        //         constraints->shareMemory(this);
+        //     }
+        //     Kinv.setZero();
+        //     df_dx.setZero();
+        //     df_du.setZero();
+        //     tmp_xstatic.setZero();
+        //     tmp_Jstatic.setZero();
+        //     pinocchio.lambda_c.resize(model->get_contacts()->get_nc_total());
+        //     pinocchio.lambda_c.setZero();
+        // }
+
     }; // class NodeDataFreeFwdTpl
 
     template <typename PhaseSpec,
@@ -183,7 +250,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            const std::size_t nc = contacts_.nc();
+            const std::size_t nc = contacts_->nc();
 
             const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, NQ> q =
                 x.head(PS::NQ);
@@ -192,31 +259,31 @@ namespace galileo
 
             // Computing the forward dynamics with the holonomic constraints defined by
             // the contact model
-            pinocchio::computeAllTerms(robot_, data.robot, q, v);
-            pinocchio::computeCentroidalMomentum(robot_, data.robot);
+            pinocchio::computeAllTerms(*robot_, data.robot, q, v);
+            pinocchio::computeCentroidalMomentum(*robot_, data.robot);
 
             if (!with_armature_)
             {
                 data.robot.M.diagonal() += armature_;
             }
-            actuation_.calc(data.multibody.actuation, x, u);
-            contacts_.calc(data.multibody.contacts, x);
+            actuation_->calc(data.multibody.actuation, x, u);
+            contacts_->calc(data.multibody.contacts, x);
 
             pinocchio::forwardDynamics(
-                robot_, data.robot, data.multibody.actuation.tau,
+                *robot_, data.robot, data.multibody.actuation.tau,
                 data.multibody.contacts.Jc.topRows(nc), data.multibody.contacts.a0.head(nc),
                 JMinvJt_damping_);
             data.XAcc = data.robot.ddq;
-            contacts_.updateAcceleration(data.multibody.contacts, data.robot.ddq);
-            contacts_.updateForce(data.multibody.contacts, data.robot.lambda_c);
+            contacts_->updateAcceleration(data.multibody.contacts, data.robot.ddq);
+            contacts_->updateForce(data.multibody.contacts, data.robot.lambda_c);
             data.multibody.joint.a = data.robot.ddq;
             data.multibody.joint.tau = u;
-            costs_.calc(data.costs, x, u);
+            costs_->calc(data.costs, x, u);
             data.cost = data.costs.cost;
-            if (constraints_.ng() > 0 || constraints_.nh() > 0)
+            if (constraints_->ng() > 0 || constraints_->nh() > 0)
             {
                 data.constraints.resize(this, data);
-                constraints_.calc(data.constraints, x, u);
+                constraints_->calc(data.constraints, x, u);
             }
         }
 
@@ -229,14 +296,14 @@ namespace galileo
             const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, NV> v =
                 x.tail(PS::NV);
 
-            pinocchio::computeAllTerms(robot_, data.robot, q, v);
-            pinocchio::computeCentroidalMomentum(robot_, data.robot);
-            costs_.calc(data.costs, x);
+            pinocchio::computeAllTerms(*robot_, data.robot, q, v);
+            pinocchio::computeCentroidalMomentum(*robot_, data.robot);
+            costs_->calc(data.costs, x);
             data.cost = data.costs.cost;
-            if (constraints_.ng() > 0 || constraints_.nh() > 0)
+            if (constraints_->ng() > 0 || constraints_->nh() > 0)
             {
                 data.constraints.resize(this, data);
-                constraints_.calc(data.constraints, x);
+                constraints_->calc(data.constraints, x);
             }
         }
 
@@ -245,7 +312,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            const std::size_t nc = contacts_.nc();
+            const std::size_t nc = contacts_->nc();
             const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, NQ> q =
                 x.head(PS::NQ);
             const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, NV> v =
@@ -256,14 +323,14 @@ namespace galileo
             // recursively: https://eigen.tuxfamily.org/bz/show_bug.cgi?id=408. Therefore,
             // it is not possible to pass data.Kinv.topLeftCorner(nv + nc, nv + nc)
             data.Kinv.resize(PS::NV + nc, PS::NV + nc);
-            pinocchio::computeRNEADerivatives(robot_, data.robot, q, v, data.XAcc,
+            pinocchio::computeRNEADerivatives(*robot_, data.robot, q, v, data.XAcc,
                                               data.multibody.contacts.fext);
-            contacts_.updateRneaDiff(data.multibody.contacts, data.robot);
+            contacts_->updateRneaDiff(data.multibody.contacts, data.robot);
             pinocchio::getKKTContactDynamicMatrixInverse(
-                robot_, data.robot, data.multibody.contacts.Jc.topRows(nc), data.Kinv);
+                *robot_, data.robot, data.multibody.contacts.Jc.topRows(nc), data.Kinv);
 
-            actuation_.calcDiff(data.multibody.actuation, x, u);
-            contacts_.calcDiff(data.multibody.contacts, x);
+            actuation_->calcDiff(data.multibody.actuation, x, u);
+            contacts_->calcDiff(data.multibody.contacts, x);
 
             const Eigen::Block<MatrixNv_t> a_partial_dtau = data.Kinv.topLeftCorner(PS::NV, PS::NV);
             const Eigen::Block<MatrixNvNc_t> a_partial_da = data.Kinv.topRightCorner(PS::NV, nc);
@@ -291,15 +358,15 @@ namespace galileo
                     f_partial_dtau * data.multibody.actuation->dtau_dx;
                 data.df_du.topRows(nc).noalias() =
                     -f_partial_dtau * data.multibody.actuation->dtau_du;
-                contacts_.updateAccelerationDiff(data.multibody.contacts,
-                                                 data.XAccx.bottomRows(PS::NV));
-                contacts_.updateForceDiff(data.multibody.contacts, data.df_dx.topRows(nc),
-                                          data.df_du.topRows(nc));
+                contacts_->updateAccelerationDiff(data.multibody.contacts,
+                                                  data.XAccx.bottomRows(PS::NV));
+                contacts_->updateForceDiff(data.multibody.contacts, data.df_dx.topRows(nc),
+                                           data.df_du.topRows(nc));
             }
-            costs_.calcDiff(data.costs, x, u);
-            if (constraints_.ng() > 0 || constraints_.nh() > 0)
+            costs_->calcDiff(data.costs, x, u);
+            if (constraints_->ng() > 0 || constraints_->nh() > 0)
             {
-                constraints_.calcDiff(data.constraints, x, u);
+                constraints_->calcDiff(data.constraints, x, u);
             }
         }
 
@@ -307,10 +374,10 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            costs_.calcDiff(data.costs, x);
-            if (constraints_.ng() > 0 || constraints_.nh() > 0)
+            costs_->calcDiff(data.costs, x);
+            if (constraints_->ng() > 0 || constraints_->nh() > 0)
             {
-                constraints_.calcDiff(data.constraints, x);
+                constraints_->calcDiff(data.constraints, x);
             }
         }
 
@@ -327,14 +394,14 @@ namespace galileo
             data.tmp_xstatic.tail(PS::NV).setZero();
             u.setZero();
 
-            pinocchio::computeAllTerms(robot_, data.robot, q,
+            pinocchio::computeAllTerms(*robot_, data.robot, q,
                                        data.tmp_xstatic.tail(PS::NV));
-            pinocchio::computeJointJacobians(robot_, data.robot, q);
-            pinocchio::rnea(robot_, data.robot, q, data.tmp_xstatic.tail(PS::NV),
+            pinocchio::computeJointJacobians(*robot_, data.robot, q);
+            pinocchio::rnea(*robot_, data.robot, q, data.tmp_xstatic.tail(PS::NV),
                             data.tmp_xstatic.tail(PS::NV));
-            actuation_.calc(data.multibody.actuation, data.tmp_xstatic, u);
-            actuation_.calcDiff(data.multibody.actuation, data.tmp_xstatic, u);
-            contacts_.calc(data.multibody.contacts, data.tmp_xstatic);
+            actuation_->calc(data.multibody.actuation, data.tmp_xstatic, u);
+            actuation_->calcDiff(data.multibody.actuation, data.tmp_xstatic, u);
+            contacts_->calc(data.multibody.contacts, data.tmp_xstatic);
 
             // Allocates memory
             data.tmp_Jstatic.conservativeResize(PS::NV, PS::NU + nc);
@@ -346,13 +413,13 @@ namespace galileo
         }
 
     protected:
-        State_t state_;
-        ActuationModel_t actuation_;
-        CostModelManager_t costs_;
-        ConstraintModelManager_t constraints_;
-        ContactModelManager_t contacts_;
+        State_t *state_;
+        ActuationModel_t *actuation_;
+        CostModelManager_t *costs_;
+        ConstraintModelManager_t *constraints_;
+        ContactModelManager_t *contacts_;
 
-        RobotModel_t robot_;
+        RobotModel_t *robot_;
         bool with_armature_;
         VectorNv_t armature_;
         NumScalar JMinvJt_damping_;

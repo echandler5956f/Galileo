@@ -45,25 +45,6 @@ namespace galileo
         FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
         FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
 
-        /**We have to override the CRTP derived() method to return the 
-          derived object because ForceDataBase is multi-level CRTP**/
-
-        /** Return reference to this as derived object */
-        inline Derived &derived() & noexcept
-        {
-            return *static_cast<Derived *>(this);
-        }
-        /** Return reference to this as derived object */
-        inline const Derived &derived() const & noexcept
-        {
-            return *static_cast<Derived const *>(this);
-        }
-        /** Return reference to this as derived object, when this is rvalue */
-        inline Derived &&derived() && noexcept
-        {
-            return std::move(*static_cast<Derived *>(this));
-        }
-
     protected:
         inline ForceDataBase()
         {

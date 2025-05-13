@@ -21,7 +21,7 @@ reactive::WBCBase<double> wbc_base;
 ModelType model;
 DataType data;
 
-std::vector<multibody::EndEffector> ees;
+std::vector<EndEffector> ees;
 Eigen::Vector<double, 12> static_force;
 
 Eigen::VectorXd state_desired;
@@ -56,10 +56,10 @@ int main(int argc, char *argv[])
     info.actuatedDofNum = 12;
     info.numThreeDofContacts = ee_names.size();
 
-    // std::vector<multibody::EndEffector> ees;
+    // std::vector<EndEffector> ees;
     for (int i = 0; i < info.numThreeDofContacts; i++)
     {
-        multibody::EndEffector ee;
+        EndEffector ee;
         ee.frame_name = ee_names[i];
         ee.frame_idx = model.getFrameId(ee.frame_name);
         ees.push_back(ee);
