@@ -58,7 +58,7 @@ namespace galileo
     };
 
     template <typename Derived, typename PhaseSpec>
-    struct ContactDataBase : public ForceDataBase<Derived, PhaseSpec>
+    struct ContactDataBase : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -128,7 +128,7 @@ namespace galileo
     }; // struct ContactDataBase
 
     template <typename Derived, typename PhaseSpec>
-    struct ContactModelBase : internal::CRTP<Derived>
+    struct ContactModelBase : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

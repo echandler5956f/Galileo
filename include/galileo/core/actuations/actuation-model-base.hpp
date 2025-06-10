@@ -7,7 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename RobotSpec>
-    class ActuationModelBase : internal::CRTP<Derived>
+    class ActuationModelBase : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

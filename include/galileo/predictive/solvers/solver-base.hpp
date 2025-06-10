@@ -29,7 +29,7 @@ namespace galileo
     }; // enum FeasibilityNormOptions
 
     template <typename Derived>
-    class SolverBase : internal::CRTP<Derived>
+    class SolverBase : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

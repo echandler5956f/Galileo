@@ -9,26 +9,26 @@
     static constexpr int Options = BasicSpec::Options;
 
 #define GALILEO_BASIC_SPEC_FIXED_SIZE_EIGEN_TYPES_TYPEDEF(BasicSpec) \
-    using Vector2_t = typename BasicSpec::Vector2_t;                   \
-    using Vector3_t = typename BasicSpec::Vector3_t;                   \
-    using Vector4_t = typename BasicSpec::Vector4_t;                   \
-    using Vector6_t = typename BasicSpec::Vector6_t;                   \
-    using Matrix2_t = typename BasicSpec::Matrix2_t;                   \
-    using Matrix3_t = typename BasicSpec::Matrix3_t;                   \
-    using Matrix46_t = typename BasicSpec::Matrix46_t;                 \
-    using Matrix6_t = typename BasicSpec::Matrix6_t;                   \
+    using Vector2_t = typename BasicSpec::Vector2_t;                 \
+    using Vector3_t = typename BasicSpec::Vector3_t;                 \
+    using Vector4_t = typename BasicSpec::Vector4_t;                 \
+    using Vector6_t = typename BasicSpec::Vector6_t;                 \
+    using Matrix2_t = typename BasicSpec::Matrix2_t;                 \
+    using Matrix3_t = typename BasicSpec::Matrix3_t;                 \
+    using Matrix46_t = typename BasicSpec::Matrix46_t;               \
+    using Matrix6_t = typename BasicSpec::Matrix6_t;                 \
     using RowVector2_t = typename BasicSpec::RowVector2_t;
 
 #define GALILEO_BASIC_SPEC_DYNAMIC_SIZE_EIGEN_TYPES_TYPEDEF(BasicSpec) \
-    using MatrixX3_t = typename BasicSpec::MatrixX3_t;                   \
-    using MatrixX6_t = typename BasicSpec::MatrixX6_t;                   \
-    using Matrix3X_t = typename BasicSpec::Matrix3X_t;                   \
-    using Matrix6X_t = typename BasicSpec::Matrix6X_t;                   \
-    using VectorX_t = typename BasicSpec::VectorX_t;                     \
-    using MatrixX_t = typename BasicSpec::MatrixX_t;                     \
-    using MatrixXRowMajor_t = typename BasicSpec::MatrixXRowMajor_t;     \
-    using ArrayX_t = typename BasicSpec::ArrayX_t;                       \
-    using Quaternion_t = typename BasicSpec::Quaternion_t;               \
+    using MatrixX3_t = typename BasicSpec::MatrixX3_t;                 \
+    using MatrixX6_t = typename BasicSpec::MatrixX6_t;                 \
+    using Matrix3X_t = typename BasicSpec::Matrix3X_t;                 \
+    using Matrix6X_t = typename BasicSpec::Matrix6X_t;                 \
+    using VectorX_t = typename BasicSpec::VectorX_t;                   \
+    using MatrixX_t = typename BasicSpec::MatrixX_t;                   \
+    using MatrixXRowMajor_t = typename BasicSpec::MatrixXRowMajor_t;   \
+    using ArrayX_t = typename BasicSpec::ArrayX_t;                     \
+    using Quaternion_t = typename BasicSpec::Quaternion_t;             \
     using DiagonalMatrixX_t = typename BasicSpec::DiagonalMatrixX_t;
 
 #define GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BasicSpec)              \

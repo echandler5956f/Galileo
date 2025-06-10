@@ -54,7 +54,7 @@ namespace galileo
             const typename _EigenDerived::Scalar eps = 1e-8)
         {
             using Scalar = typename _EigenDerived::Scalar;
-            M = Scalar(0.5) * (M + M.transpose());
+            M = (Scalar(0.5) * (M + M.transpose())).eval();
             return isSymmetric(M, eps);
         }
 
@@ -76,7 +76,7 @@ namespace galileo
             if (eigensolver.info() == Eigen::Success)
             {
                 // All eigenvalues must be >= 0:
-                return (eigensolver.eigenvalues().array() >= eps).all();
+                return (eigensolver.eigenvalues().array() + eps >= 0).all();
             }
             return false;
         }
@@ -94,23 +94,20 @@ namespace galileo
             Eigen::MatrixBase<_EigenDerived> &M,
             const typename _EigenDerived::Scalar eps = 1e-8)
         {
+            enforceSymmetric(M, eps);
             Eigen::SelfAdjointEigenSolver<_EigenDerived> eigensolver(M);
 
             if (eigensolver.info() == Eigen::Success)
             {
-                // All eigenvalues must be >= 0:
-                using Scalar = typename _EigenDerived::Scalar;
-                Scalar epsilon = eps;
-                while ((eigensolver.eigenvalues().array() < eps).any())
+                bool modified = false;
+                if ((eigensolver.eigenvalues().array() < eps).any())
                 {
                     M.noalias() = eigensolver.eigenvectors() *
-                                  eigensolver.eigenvalues().cwiseMax(epsilon).asDiagonal() *
+                                  eigensolver.eigenvalues().cwiseMax(eps).asDiagonal() *
                                   eigensolver.eigenvectors().transpose();
-                    eigensolver.compute(M);
-                    epsilon *= Scalar(10);
+                    modified = true;
                 }
-
-                return epsilon != eps;
+                return modified;
             }
 
             return false;

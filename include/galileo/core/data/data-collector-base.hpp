@@ -7,7 +7,7 @@ namespace galileo
 {
 
     template <typename Derived>
-    struct DataCollectorBase : internal::CRTP<Derived>
+    struct DataCollectorBase : public internal::CRTP<Derived>
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

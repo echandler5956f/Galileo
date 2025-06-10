@@ -35,11 +35,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 option(ENABLE_VECTORIZATION_SUOPPORT 
     "Enable vectorization and further processor-related optimizations" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
+option(GALILEO_BUILD_TESTS "Build the tests for galileo" ON)
 
-add_compile_options(-Wall -Wextra -Wcast-align -Wpedantic
-                    -Wdisabled-optimization -Wno-sign-conversion
-                    -Wformat=2 -Winit-self -Wmissing-include-dirs 
-                    -Woverloaded-virtual -Wshadow -Wsign-promo)
+add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization 
+                    -Wno-sign-conversion -Wformat=2 -Winit-self 
+                    -Wmissing-include-dirs -Woverloaded-virtual -Wshadow 
+                    -Wsign-promo)
 
 if(ENABLE_VECTORIZATION_SUOPPORT)
     add_definitions(-march=native)
@@ -93,8 +94,15 @@ add_library(galileo INTERFACE)
 
 target_compile_definitions(galileo INTERFACE ${GALILEO_DEFINITIONS})
 target_include_directories(galileo INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
+)
+
+target_compile_features(galileo INTERFACE cxx_std_20)
+
+target_link_libraries(galileo INTERFACE
+  pinocchio::pinocchio
+  Eigen3::Eigen
 )
 
 set_target_properties(galileo PROPERTIES EXPORT_NAME Galileo)
@@ -128,3 +136,17 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UseGalileo.cmake
 # Add uninstall target
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GalileoUninstall.cmake)
+
+if(GALILEO_BUILD_TESTS)
+  enable_testing()
+
+  include(FetchContent)
+  FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.5.2
+  )
+  FetchContent_MakeAvailable(Catch2)
+
+  add_subdirectory(tests)
+endif()

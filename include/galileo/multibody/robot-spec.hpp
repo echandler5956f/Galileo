@@ -2,7 +2,9 @@
 #define __galileo_multibody_robot_spec_hpp__
 
 #include <pinocchio/multibody/fwd.hpp>
-#include <pinocchio/spatial/fwd.hpp>
+#include <pinocchio/spatial/se3.hpp>
+#include <pinocchio/spatial/motion.hpp>
+#include <pinocchio/spatial/force.hpp>
 
 #include "galileo/core/fwd.hpp"
 
@@ -18,7 +20,7 @@
 #define GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(RobotSpec)       \
     using RobotModel_t = typename RobotSpec::RobotModel_t;         \
     using RobotData_t = typename RobotSpec::RobotData_t;           \
-    using FrameIndex_t = typename RobotSpec::FrameIndex_t;                   \
+    using FrameIndex_t = typename RobotSpec::FrameIndex_t;         \
     using ReferenceFrame_t = typename RobotSpec::ReferenceFrame_t; \
     using SE3_t = typename RobotSpec::SE3_t;                       \
     using Motion_t = typename RobotSpec::Motion_t;                 \
@@ -40,27 +42,27 @@
     static constexpr int NDX = RobotSpec::NDX;          \
     static constexpr int NUa = RobotSpec::NUa;
 
-#define GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec)    \
-    GALILEO_BASIC_SPEC_FIXED_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS); \
-    GALILEO_BASIC_SPEC_DYNAMIC_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS); \
-    using VectorNqb_t = typename RobotSpec::VectorNqb_t;     \
-    using VectorNqj_t = typename RobotSpec::VectorNqj_t;     \
-    using VectorNvb_t = typename RobotSpec::VectorNvb_t;     \
-    using VectorNvj_t = typename RobotSpec::VectorNvj_t;     \
-    using VectorNx_t = typename RobotSpec::VectorNx_t;       \
-    using VectorNua_t = typename RobotSpec::VectorNua_t;     \
-    using VectorNdx_t = typename RobotSpec::VectorNdx_t;     \
-    using VectorNq_t = typename RobotSpec::VectorNq_t;       \
-    using VectorNv_t = typename RobotSpec::VectorNv_t;       \
-    using MatrixNx_t = typename RobotSpec::MatrixNx_t;       \
-    using MatrixNua_t = typename RobotSpec::MatrixNua_t;     \
-    using MatrixNdx_t = typename RobotSpec::MatrixNdx_t;     \
-    using MatrixNq_t = typename RobotSpec::MatrixNq_t;       \
-    using MatrixNv_t = typename RobotSpec::MatrixNv_t;       \
-    using MatrixNvNdx_t = typename RobotSpec::MatrixNvNdx_t; \
-    using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t; \
-    using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t; \
-    using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t; \
+#define GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec)              \
+    GALILEO_BASIC_SPEC_FIXED_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS)   \
+    GALILEO_BASIC_SPEC_DYNAMIC_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS) \
+    using VectorNqb_t = typename RobotSpec::VectorNqb_t;               \
+    using VectorNqj_t = typename RobotSpec::VectorNqj_t;               \
+    using VectorNvb_t = typename RobotSpec::VectorNvb_t;               \
+    using VectorNvj_t = typename RobotSpec::VectorNvj_t;               \
+    using VectorNx_t = typename RobotSpec::VectorNx_t;                 \
+    using VectorNua_t = typename RobotSpec::VectorNua_t;               \
+    using VectorNdx_t = typename RobotSpec::VectorNdx_t;               \
+    using VectorNq_t = typename RobotSpec::VectorNq_t;                 \
+    using VectorNv_t = typename RobotSpec::VectorNv_t;                 \
+    using MatrixNx_t = typename RobotSpec::MatrixNx_t;                 \
+    using MatrixNua_t = typename RobotSpec::MatrixNua_t;               \
+    using MatrixNdx_t = typename RobotSpec::MatrixNdx_t;               \
+    using MatrixNq_t = typename RobotSpec::MatrixNq_t;                 \
+    using MatrixNv_t = typename RobotSpec::MatrixNv_t;                 \
+    using MatrixNvNdx_t = typename RobotSpec::MatrixNvNdx_t;           \
+    using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t;           \
+    using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t;           \
+    using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t;         \
     using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t;
 
 #define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
@@ -133,8 +135,8 @@ namespace galileo
         using MatrixNvNdx_t = Eigen::Matrix<VarScalar, NV, NDX, Options>;
         using MatrixNvNua_t = Eigen::Matrix<VarScalar, NV, NUa, Options>;
         using MatrixNuaNv_t = Eigen::Matrix<VarScalar, NUa, NV, Options>;
-        using MatrixNuaNdx_t = Eigen::Matrix<VarScalar, NUa, NDX, Options>;
         using MatrixNdxNua_t = Eigen::Matrix<VarScalar, NDX, NUa, Options>;
+        using MatrixNuaNdx_t = Eigen::Matrix<VarScalar, NUa, NDX, Options>;
 
         /* ---------------------------------------------------------------- */
         /* Template types */
@@ -152,10 +154,10 @@ namespace galileo
         using RobotData_t = pinocchio::DataTpl<VarScalar, Options>;
         using FrameIndex_t = pinocchio::FrameIndex;
         using ReferenceFrame_t = pinocchio::ReferenceFrame;
-        using SE3_t = pinocchio::SE3;
-        using Motion_t = pinocchio::Motion;
-        using Force_t = pinocchio::Force;
-        using ActionMatrix_t = typename pinocchio::SE3::ActionMatrixType;
+        using SE3_t = pinocchio::SE3Tpl<VarScalar, Options>;
+        using Motion_t = pinocchio::MotionTpl<VarScalar, Options>;
+        using Force_t = pinocchio::ForceTpl<VarScalar, Options>;
+        using ActionMatrix_t = typename SE3_t::ActionMatrixType;
     };
 
 } // namespace galileo
