@@ -10,6 +10,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(Galileo_SOURCE_DIR ${Galileo_SOURCE_DIR})
 set(Galileo_BINARY_DIR ${Galileo_BINARY_DIR})
 
