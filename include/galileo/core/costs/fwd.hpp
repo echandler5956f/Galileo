@@ -1,7 +1,7 @@
 #ifndef __galileo_core_costs_fwd_hpp__
 #define __galileo_core_costs_fwd_hpp__
 
-#include "galileo/fwd.hpp"
+#include "galileo/core/fwd.hpp"
 
 namespace galileo
 {

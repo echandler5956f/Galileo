@@ -101,51 +101,6 @@ namespace galileo
 
     } // namespace compile_time
 
-    enum AssignmentOp
-    {
-        setto,
-        addto,
-        rmfrom
-    }; // enum AssignmentOp
-
-    inline bool is_a_AssignmentOp(AssignmentOp op)
-    {
-        return (op == setto || op == addto || op == rmfrom);
-    }
-
-    enum Jcomponent
-    {
-        both = 0,
-        first = 1,
-        second = 2
-    }; // enum Jcomponent
-
-    inline bool is_a_Jcomponent(Jcomponent firstsecond)
-    {
-        return (firstsecond == first || firstsecond == second || firstsecond == both);
-    }
-
-    // Use an Eigen::Map if the matrix is shared.
-    template <typename MatrixType, bool Share>
-    using SelectMatrix = std::conditional_t<Share, Eigen::Map<MatrixType>, MatrixType>;
-
-    //-----------------------------------------------------------------
-    // Helper: Compute the index of a type T in a tuple.
-    template <typename T, typename Tuple>
-    struct tuple_index;
-
-    template <typename T, typename... Ts>
-    struct tuple_index<T, std::tuple<T, Ts...>>
-    {
-        static constexpr std::size_t value = 0;
-    }; // struct tuple_index
-
-    template <typename T, typename U, typename... Ts>
-    struct tuple_index<T, std::tuple<U, Ts...>>
-    {
-        static constexpr std::size_t value = 1 + tuple_index<T, std::tuple<Ts...>>::value;
-    }; // struct tuple_index
-
 } // namespace galileo
 
 #endif // __galileo_fwd_hpp__

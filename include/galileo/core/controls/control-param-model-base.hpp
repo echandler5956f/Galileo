@@ -1,5 +1,5 @@
-#ifndef __galileo_core_controls_controls_param_model_base_hpp__
-#define __galileo_core_controls_controls_param_model_base_hpp__
+#ifndef __galileo_core_controls_control_param_model_base_hpp__
+#define __galileo_core_controls_control_param_model_base_hpp__
 
 #include "galileo/core/controls/control-param-base.hpp"
 
