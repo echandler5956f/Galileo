@@ -35,8 +35,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 option(ENABLE_VECTORIZATION_SUOPPORT 
     "Enable vectorization and further processor-related optimizations" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
-option(BUILD_WITH_CASADI_SUPPORT "Build the library with CasADi for AD and code generation" OFF)
-option(BUILD_WITH_CPPADCODEGEN_SUPPORT "Build the library with CppADCodeGen for AD and code generation" OFF)
 
 add_compile_options(-Wall -Wextra -Wcast-align -Wpedantic
                     -Wdisabled-optimization -Wno-sign-conversion
@@ -54,12 +52,8 @@ endif()
 
 find_package(Eigen3 REQUIRED)
 find_package(pinocchio REQUIRED)
-find_package(mujoco REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(Threads REQUIRED)
-find_package(qpOASES REQUIRED)
 
-include_directories(${GALILEO3_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${mujoco_INCLUDE_DIRS} ${qpOASES_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${GALILEO_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(INCLUDE_INSTALL_DIR
     "${CMAKE_INSTALL_INCLUDEDIR}/galileo"
@@ -82,8 +76,6 @@ install(
     DESTINATION "${INCLUDE_INSTALL_DIR}" 
     FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx" PATTERN ".*" EXCLUDE
 )
-
-add_subdirectory(examples EXCLUDE_FROM_ALL)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
