@@ -26,35 +26,45 @@ namespace galileo
                 compute_barycentric_weights();
             }
 
+            const Eigen::Matrix<NumScalar, N, 1, Options> &get_nodes() const
+            {
+                return nodes_;
+            }
+
             template <typename InputMatrixType, typename OutputVectorType>
             void barycentricInterpolation(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputVectorType> &u) const
             {
-                typedef typename Eigen::internal::plain_row_type<OutputVectorType>::type RowVectorType;
-
                 assert(w.cols() == N);
-                assert(t >= 0. && t <= 1.);
+                assert(t >= NumScalar(0.) && t <= NumScalar(1.));
 
-                // Compute the interpolated value
-                RowVectorType numerator = RowVectorType::Zero(w.rows());
-                RowVectorType denominator = RowVectorType::Zero(w.rows());
-                NumScalar interpolant;
                 for (std::size_t i = 0; i < N; ++i)
                 {
-                    if (std::abs(t - nodes_[i]) < 1e-8)
+                    if (std::abs(t - nodes_(i)) < 1e-8)
                     {
                         u = w.col(i);
                         return;
                     }
-                    interpolant = barycentric_weights_(i) / (t - nodes_(i));
-                    numerator += interpolant * w.col(i);
-                    denominator += RowVectorType::Constant(w.rows(), interpolant);
                 }
 
-                if ((denominator.array() == 0).any())
+                Eigen::Matrix<NumScalar, N, 1, Options> c;
+                NumScalar sum_c = 0.0;
+                for (std::size_t i = 0; i < N; ++i)
+                {
+                    c(i) = barycentric_weights_(i) / (t - nodes_(i));
+                    sum_c += c(i);
+                }
+
+                if (std::abs(sum_c) < 1e-12)
                 {
                     throw std::runtime_error("Error: Division by zero in BarycentricInterpolation");
                 }
-                u = numerator.array() / denominator.array();
+
+                u.setZero();
+                for (std::size_t i = 0; i < N; ++i)
+                {
+                    u += c(i) * w.col(i);
+                }
+                u /= sum_c;
             }
 
             template <typename InputMatrixType, typename OutputMatrixType>
@@ -74,7 +84,7 @@ namespace galileo
                     if (std::abs(t - nodes_[i]) < 1e-8)
                     {
                         du_dw.setZero();
-                        du_dw.block(0, i * w.rows(), w.rows(), w.rows()) = Eigen::Matrix<NumScalar, w.rows(), w.rows, Options>::Identity();
+                        du_dw.block(0, i * w.rows(), w.rows(), w.rows()).setIdentity();
                         return;
                     }
                 }
@@ -159,7 +169,7 @@ namespace galileo
                 imtqlx(nodes_, bj, weights_);
 
                 // Map nodes_ to [0, 1]
-                nodes_ = (nodes_ + 1.0) / 2.0;
+                nodes_ = (nodes_.array() + 1.0) / 2.0;
 
                 for (int i = 0; i < N; i++)
                 {
@@ -189,7 +199,7 @@ namespace galileo
                 {
                     for (int r = 0; r < N; r++)
                     {
-                        Vandermonde(j, r) = std::pow(nodes_[j + 1], r);
+                        Vandermonde(j, r) = std::pow(nodes_(j), r);
                     }
                 }
 

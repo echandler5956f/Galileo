@@ -30,7 +30,7 @@ namespace galileo
             Scalar g;
             int i;
             int ii;
-            int itn = 30;
+            const int itn = 30;
             int j;
             int k;
             int l;
@@ -50,14 +50,14 @@ namespace galileo
 
             e(n - 1) = 0.0;
 
-            for (l = 1; l <= n; l++)
+            for (l = 1; l <= (int)n; l++)
             {
                 j = 0;
                 for (;;)
                 {
-                    for (m = l; m <= n; m++)
+                    for (m = l; m <= (int)n; m++)
                     {
-                        if (m == n)
+                        if (m == (int)n)
                         {
                             break;
                         }
@@ -72,7 +72,7 @@ namespace galileo
                         break;
                     }
 
-                    assert(itn <= j && "IMTQLX - Fatal error!");
+                    if (j >= itn) assert(false && "IMTQLX - Fatal error!");
                     j = j + 1;
                     g = (d(l) - p) / (2.0 * e(l - 1));
                     r = std::sqrt(g * g + 1.0);
@@ -126,7 +126,7 @@ namespace galileo
                 k = i;
                 p = d(i - 1);
 
-                for (j = ii; j <= n; j++)
+                for (j = ii; j <= (int)n; j++)
                 {
                     if (d(j - 1) < p)
                     {

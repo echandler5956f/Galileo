@@ -4,6 +4,7 @@
 add_executable(test_runner
     # List all test files here
     common/test_linalg.cpp
+    common/test_polynomial.cpp
     multibody/states/test_multibody_state.cpp
     # Add new test files here as they are created
 )
