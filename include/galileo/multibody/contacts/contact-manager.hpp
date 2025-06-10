@@ -13,7 +13,7 @@
 
 #include "galileo/multibody/contacts/contact-generic.hpp"
 
-#include "galileo/utils/aligned-vector.hpp"
+#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {

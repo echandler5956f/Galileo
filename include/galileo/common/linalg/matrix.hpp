@@ -1,7 +1,7 @@
-#ifndef __galileo_math_matrix_hpp__
-#define __galileo_math_matrix_hpp__
+#ifndef __galileo_common_linalg_matrix_hpp__
+#define __galileo_common_linalg_matrix_hpp__
 
-#include "galileo/math/fwd.hpp"
+#include "galileo/common/fwd.hpp"
 #include <Eigen/Dense>
 
 namespace galileo
@@ -180,7 +180,7 @@ namespace galileo
         }
 
     } // namespace math
-
+    
 } // namespace galileo
 
-#endif // __galileo_math_matrix_hpp__
+#endif // __galileo_common_linalg_matrix_hpp__

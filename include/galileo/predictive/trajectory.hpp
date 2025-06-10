@@ -3,7 +3,7 @@
 
 #include "galileo/predictive/fwd.hpp"
 // #include "galileo/predictive/phases/phase-generic.hpp"
-#include "galileo/utils/aligned-vector.hpp"
+#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {

@@ -1,5 +1,5 @@
-#ifndef __galileo_utils_fusion_hpp__
-#define __galileo_utils_fusion_hpp__
+#ifndef __galileo_common_meta_fusion_hpp__
+#define __galileo_common_meta_fusion_hpp__
 
 #define BOOST_FUSION_INVOKE_MAX_ARITY 12
 
@@ -73,4 +73,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_utils_fusion_hpp__
+#endif // __galileo_common_meta_fusion_hpp__

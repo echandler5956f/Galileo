@@ -1,5 +1,5 @@
-#ifndef __galileo_math_fwd_hpp__
-#define __galileo_math_fwd_hpp__
+#ifndef __galileo_common_fwd_hpp__
+#define __galileo_common_fwd_hpp__
 
 #include "galileo/fwd.hpp"
 
@@ -13,4 +13,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_math_fwd_hpp__
+#endif // __galileo_common_fwd_hpp__

@@ -1,7 +1,7 @@
-#ifndef __galileo_math_concat_hpp__
-#define __galileo_math_concat_hpp__
+#ifndef __galileo_common_linalg_concat_hpp__
+#define __galileo_common_linalg_concat_hpp__
 
-#include "galileo/math/fwd.hpp"
+#include "galileo/common/fwd.hpp"
 
 namespace galileo
 {
@@ -100,7 +100,7 @@ namespace galileo
             if constexpr (ReturnType::RowsAtCompileTime != Eigen::Dynamic &&
                           ReturnType::ColsAtCompileTime != Eigen::Dynamic)
             {
-                // Fully fixed-size: let Eigen’s comma initializer fill the result.
+                // Fully fixed-size: let Eigen's comma initializer fill the result.
                 ReturnType res; // (size is fixed at compile time)
                 res << m1, m2;  // fills res in one pass (top rows from m1, bottom from m2)
                 return res;
@@ -136,4 +136,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_math_concat_hpp__
+#endif // __galileo_common_linalg_concat_hpp__

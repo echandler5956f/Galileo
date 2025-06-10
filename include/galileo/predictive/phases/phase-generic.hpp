@@ -5,7 +5,7 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/phases/phase-collection.hpp"
 #include "galileo/predictive/phases/phase-basic-visitors.hxx"
-#include "galileo/utils/aligned-vector.hpp"
+#include "galileo/common/container/aligned-vector.hpp"
 
 #include <boost/mpl/contains.hpp>
 

@@ -1,8 +1,7 @@
-#ifndef __galileo_math_poly_helpers_hpp__
-#define __galileo_math_poly_helpers_hpp__
+#ifndef __galileo_common_polynomial_helpers_hpp__
+#define __galileo_common_polynomial_helpers_hpp__
 
-#include "galileo/math/fwd.hpp"
-
+#include "galileo/common/fwd.hpp"
 
 namespace galileo
 {
@@ -147,7 +146,7 @@ namespace galileo
         }
 
     } // namespace math
-
+    
 } // namespace galileo
 
-#endif // __galileo_math_poly_helpers_hpp__
+#endif // __galileo_common_polynomial_helpers_hpp__

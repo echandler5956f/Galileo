@@ -8,7 +8,7 @@
 
 #include "galileo/multibody/contacts/contact-basic-visitors.hpp"
 
-#include "galileo/utils/aligned-vector.hpp"
+#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {

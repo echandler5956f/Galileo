@@ -4,7 +4,7 @@
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/get.hpp>
 
-#include "galileo/utils/fusion.hpp"
+#include "galileo/common/meta/fusion.hpp"
 #include "galileo/core/constraints/constraint-base.hpp"
 
 namespace galileo

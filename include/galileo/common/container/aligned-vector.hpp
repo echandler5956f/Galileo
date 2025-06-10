@@ -1,5 +1,5 @@
-#ifndef __galileo_utils_aligned_vector_hpp__
-#define __galileo_utils_aligned_vector_hpp__
+#ifndef __galileo_common_container_aligned_vector_hpp__
+#define __galileo_common_container_aligned_vector_hpp__
 
 #include <vector>
 #include <Eigen/StdVector>
@@ -10,12 +10,11 @@ namespace galileo
 {
     namespace container
     {
-
         template <typename T>
         using aligned_vector = std::vector<T, Eigen::aligned_allocator<T>>;
-
+        
     } // namespace container
 
 } // namespace galileo
 
-#endif // __galileo_utils_aligned_vector_hpp__
+#endif // __galileo_common_container_aligned_vector_hpp__
