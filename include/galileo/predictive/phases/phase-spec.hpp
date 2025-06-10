@@ -3,7 +3,7 @@
 
 #include "galileo/predictive/phases/fwd.hpp"
 
-#include "galileo/core/robot-spec.hpp"
+#include "galileo/multibody/robot-spec.hpp"
 
 #include <vector>
 #include <array>

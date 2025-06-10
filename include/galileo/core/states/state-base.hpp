@@ -2,7 +2,7 @@
 #define __galileo_core_states_state_base_hpp__
 
 #include "galileo/core/fwd.hpp"
-#include "galileo/core/robot-spec.hpp"
+#include "galileo/multibody/robot-spec.hpp"
 
 namespace galileo
 {

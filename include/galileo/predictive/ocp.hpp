@@ -1,5 +1,5 @@
-#ifndef __galileo_predictive_optimal_control_problem_hpp__
-#define __galileo_predictive_optimal_control_problem_hpp__
+#ifndef __galileo_predictive_ocp_hpp__
+#define __galileo_predictive_ocp_hpp__
 
 #include "galileo/predictive/fwd.hpp"
 
@@ -31,4 +31,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_predictive_optimal_control_problem_hpp__
+#endif // __galileo_predictive_ocp_hpp__

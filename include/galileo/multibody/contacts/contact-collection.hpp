@@ -2,7 +2,7 @@
 #define __galileo_multibody_contacts_contact_collection_hpp__
 
 #include "galileo/multibody/contacts/fwd.hpp"
-#include "galileo/multibody/contacts/contact-3d.hpp"
+#include "galileo/multibody/contacts/implementations/contact-3d.hpp"
 
 #include <boost/variant.hpp>
 

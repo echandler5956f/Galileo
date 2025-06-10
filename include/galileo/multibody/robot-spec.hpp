@@ -1,5 +1,5 @@
-#ifndef __galileo_core_robot_spec_hpp__
-#define __galileo_core_robot_spec_hpp__
+#ifndef __galileo_multibody_robot_spec_hpp__
+#define __galileo_multibody_robot_spec_hpp__
 
 #include <pinocchio/multibody/fwd.hpp>
 #include <pinocchio/spatial/fwd.hpp>
@@ -160,4 +160,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_robot_spec_hpp__
+#endif // __galileo_multibody_robot_spec_hpp__

@@ -1,5 +1,5 @@
-#ifndef __galileo_core_states_multibody_hpp__
-#define __galileo_core_states_multibody_hpp__
+#ifndef __galileo_multibody_states_multibody_hpp__
+#define __galileo_multibody_states_multibody_hpp__
 
 #include "galileo/core/states/state-base.hpp"
 
@@ -240,4 +240,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_states_multibody_hpp__
+#endif // __galileo_multibody_states_multibody_hpp__
