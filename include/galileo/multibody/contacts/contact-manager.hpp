@@ -35,8 +35,8 @@ namespace galileo
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
         ContactItemTpl() {}
-        ContactItemTpl(const std::string &_name, const Model_t &_model, const bool _active = true)
-            : name(_name), model(_model), active(_active) {}
+        ContactItemTpl(const std::string &name_in, const Model_t &model_in, const bool active_in = true)
+            : name(name_in), model(model_in), active(active_in) {}
 
         std::string name;
         Model_t model;
@@ -192,7 +192,7 @@ namespace galileo
         using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
         using ForceIterator_t = typename ForceVector_t::iterator;
 
-        ContactModelManagerTpl(State_t *state) : state_(state) {}
+        ContactModelManagerTpl(State_t *state) : state_(state), nc_(0), nc_total_(0), compute_all_contacts_(true) {}
 
         template <typename DataCollector>
         DataManager_t createData(DataCollector *const collector) const

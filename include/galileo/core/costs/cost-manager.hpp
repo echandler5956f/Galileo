@@ -32,8 +32,8 @@ namespace galileo
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
         CostItemTpl() {}
-        CostItemTpl(const std::string &name, const Model_t &model, const PS::NumScalar &weight, bool active = true)
-            : name(name), model(model), weight(weight), active(active) {}
+        CostItemTpl(const std::string &name_in, const Model_t &model_in, const typename PS::NumScalar &weight_in, bool active_in = true)
+            : name(name_in), model(model_in), weight(weight_in), active(active_in) {}
 
         std::string name;
         Model_t model;
@@ -148,9 +148,9 @@ namespace galileo
         using ModelContainer_t = typename traits<MetaManager_t>::ModelContainer_t;
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
-        CostModelManagerTpl() {}
+        CostModelManagerTpl() : nr_(0), nr_total_(0) {}
 
-        void addCost(const std::string &name, const Model_t &model, const PS::NumScalar &weight, const bool active = true)
+        void addCost(const std::string &name, const Model_t &model, const typename PS::NumScalar &weight, const bool active = true)
         {
             std::pair<typename ModelContainer_t::iterator, bool> ret =
                 costs_.insert(std::make_pair(

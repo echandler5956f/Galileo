@@ -32,8 +32,8 @@ namespace galileo
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
         ConstraintItemTpl() {}
-        ConstraintItemTpl(const std::string &name, const Model_t &model, bool active = true)
-            : name(name), model(model), active(active) {}
+        ConstraintItemTpl(const std::string &name_in, const Model_t &model_in, bool active_in = true)
+            : name(name_in), model(model_in), active(active_in) {}
 
         std::string name;
         Model_t model;
@@ -154,7 +154,7 @@ namespace galileo
 
         using BoundVector_t = typename traits<MetaManager_t>::BoundVector_t;
 
-        ConstraintModelManagerTpl() {}
+        ConstraintModelManagerTpl() : nh_(0), ng_(0) {}
 
         void addConstraint(const std::string &name, const Model_t &model, const bool active = true)
         {

@@ -78,6 +78,15 @@ namespace galileo
                    Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond,
                    const Jcomponent firstsecond = both) const
         {
+            if (firstsecond == first || firstsecond == both)
+            {
+                Jfirst.setZero();
+            }
+            if (firstsecond == second || firstsecond == both)
+            {
+                Jsecond.setZero();
+            }
+
             if (firstsecond == first)
             {
                 pinocchio::dDifference(*model_, x0.head(NQ), x1.head(NQ),
@@ -109,6 +118,12 @@ namespace galileo
                         const Jcomponent firstsecond = both,
                         const AssignmentOp op = setto) const
         {
+            if (op == setto)
+            {
+                if (firstsecond == first || firstsecond == both) Jfirst.setZero();
+                if (firstsecond == second || firstsecond == both) Jsecond.setZero();
+            }
+
             if (firstsecond == first || firstsecond == both)
             {
                 switch (op)

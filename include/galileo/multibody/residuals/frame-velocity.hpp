@@ -125,7 +125,7 @@ namespace galileo
         {
             data.R = (pinocchio::getFrameVelocity(
                           *robot_model_,
-                          data.pinocchio,
+                          *data.robot,
                           frame_id_,
                           type_) -
                       vref_)
@@ -139,7 +139,7 @@ namespace galileo
         {
             pinocchio::getFrameVelocityDerivatives(
                 *robot_model_,
-                data.robot,
+                *data.robot,
                 frame_id_,
                 type_,
                 data.Rx.leftCols(PS::NV),
@@ -147,9 +147,11 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
-            return Data_t(collector);
+            Data_t data;
+            data.robot = collector->robot;
+            return data;
         }
 
     protected:

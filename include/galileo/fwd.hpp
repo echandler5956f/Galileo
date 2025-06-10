@@ -101,6 +101,17 @@ namespace galileo
 
     } // namespace compile_time
 
+    // Helper alias that automatically corrects the storage order for 1xN or Nx1
+    template <typename Scalar, int Rows, int Cols, int DefaultOptions>
+    struct Matrix
+    {
+        static constexpr int OptionsFixed =
+            (Rows == 1 && Cols != 1) ? (DefaultOptions | Eigen::RowMajor) : (Cols == 1 && Rows != 1) ? (DefaultOptions & ~Eigen::RowMajor)
+                                                                                                        : DefaultOptions;
+
+        using type = Eigen::Matrix<Scalar, Rows, Cols, OptionsFixed>;
+    };
+
 } // namespace galileo
 
 #endif // __galileo_fwd_hpp__
