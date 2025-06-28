@@ -132,11 +132,11 @@ namespace galileo
         using MatrixNq_t = Eigen::Matrix<VarScalar, NQ, NQ, Options>;
         using MatrixNv_t = Eigen::Matrix<VarScalar, NV, NV, Options>;
 
-        using MatrixNvNdx_t = typename Matrix<VarScalar, NV, NDX, Options>::type;
-        using MatrixNvNua_t = typename Matrix<VarScalar, NV, NUa, Options>::type;
-        using MatrixNuaNv_t = typename Matrix<VarScalar, NUa, NV, Options>::type;
-        using MatrixNdxNua_t = typename Matrix<VarScalar, NDX, NUa, Options>::type;
-        using MatrixNuaNdx_t = typename Matrix<VarScalar, NUa, NDX, Options>::type;
+        using MatrixNvNdx_t = galileo::Matrix<VarScalar, NV, NDX, Options>;
+        using MatrixNvNua_t = galileo::Matrix<VarScalar, NV, NUa, Options>;
+        using MatrixNuaNv_t = galileo::Matrix<VarScalar, NUa, NV, Options>;
+        using MatrixNdxNua_t = galileo::Matrix<VarScalar, NDX, NUa, Options>;
+        using MatrixNuaNdx_t = galileo::Matrix<VarScalar, NUa, NDX, Options>;
 
         /* ---------------------------------------------------------------- */
         /* Template types */

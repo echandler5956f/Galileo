@@ -102,8 +102,13 @@ namespace galileo
     } // namespace compile_time
 
     // Helper alias that automatically corrects the storage order for 1xN or Nx1
+    // This is necessary because Eigen column vectors must be stored in column-major order,
+    // while row vectors must be stored in row-major order. If a matrix is fed two constants,
+    // where either the row or column dimensions may or may not have a size of 1,
+    // it is convenient to have the storage order be automatically determined rather than
+    // requiring the user to specify it.
     template <typename Scalar, int Rows, int Cols, int DefaultOptions>
-    struct Matrix
+    struct MatrixTpl
     {
         static constexpr int OptionsFixed =
             (Rows == 1 && Cols != 1) ? (DefaultOptions | Eigen::RowMajor) : (Cols == 1 && Rows != 1) ? (DefaultOptions & ~Eigen::RowMajor)
@@ -111,6 +116,9 @@ namespace galileo
 
         using type = Eigen::Matrix<Scalar, Rows, Cols, OptionsFixed>;
     };
+
+    template <typename Scalar, int Rows, int Cols, int DefaultOptions = 0>
+    using Matrix = typename MatrixTpl<Scalar, Rows, Cols, DefaultOptions>::type;
 
 } // namespace galileo
 

@@ -67,7 +67,7 @@ namespace galileo
         using Matrix3_t = Eigen::Matrix<VarScalar, 3, 3, Options>;
         using Matrix46_t = Eigen::Matrix<VarScalar, 4, 6, Options>;
         using Matrix6_t = Eigen::Matrix<VarScalar, 6, 6, Options>;
-        using RowVector2_t = typename galileo::Matrix<VarScalar, 1, 2, Options>::type;
+        using RowVector2_t = galileo::Matrix<VarScalar, 1, 2, Options>;
 
         using MatrixX3_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 3, Options>;
         using MatrixX6_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 6, Options>;

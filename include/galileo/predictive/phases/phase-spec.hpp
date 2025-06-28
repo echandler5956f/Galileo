@@ -199,16 +199,16 @@ namespace galileo
         using MatrixNu_t = Eigen::Matrix<VarScalar, NU, NU, Options>;
         using MatrixNw_t = Eigen::Matrix<VarScalar, NW, NW, Options>;
 
-        using MatrixNvNw_t = typename Matrix<VarScalar, NV, NW, Options>::type;
-        using MatrixNvNu_t = typename Matrix<VarScalar, NV, NU, Options>::type;
+        using MatrixNvNw_t = galileo::Matrix<VarScalar, NV, NW, Options>;
+        using MatrixNvNu_t = galileo::Matrix<VarScalar, NV, NU, Options>;
 
-        using MatrixNuNv_t = typename Matrix<VarScalar, NU, NV, Options>::type;
-        using MatrixNuNw_t = typename Matrix<VarScalar, NU, NW, Options>::type;
+        using MatrixNuNv_t = galileo::Matrix<VarScalar, NU, NV, Options>;
+        using MatrixNuNw_t = galileo::Matrix<VarScalar, NU, NW, Options>;
 
-        using MatrixNuaNu_t = typename Matrix<VarScalar, NUa, NU, Options>::type;
+        using MatrixNuaNu_t = galileo::Matrix<VarScalar, NUa, NU, Options>;
 
-        using MatrixNdxNu_t = typename Matrix<VarScalar, NDX, NU, Options>::type;
-        using MatrixNdxNw_t = typename Matrix<VarScalar, NDX, NW, Options>::type;
+        using MatrixNdxNu_t = galileo::Matrix<VarScalar, NDX, NU, Options>;
+        using MatrixNdxNw_t = galileo::Matrix<VarScalar, NDX, NW, Options>;
 
         using VarScalarArray_t = std::array<VarScalar, NStages>;
 
@@ -240,15 +240,15 @@ namespace galileo
         using Luu_t = MatrixNu_t;    // Hessian of cost w.r.t. control
 
         // Equality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
-        using H_t = typename Matrix<VarScalar, Eigen::Dynamic, 1, Options>::type;    // Equality constraint vector
-        using Hx_t = typename Matrix<VarScalar, Eigen::Dynamic, NDX, Options>::type; // Jacobian of equality constraints w.r.t. state
-        using Hu_t = typename Matrix<VarScalar, Eigen::Dynamic, NU, Options>::type;  // Jacobian of equality constraints w.r.t. control
+        using H_t = galileo::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;    // Equality constraint vector
+        using Hx_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>; // Jacobian of equality constraints w.r.t. state
+        using Hu_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;  // Jacobian of equality constraints w.r.t. control
 
         // Inequality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
-        using G_t = typename Matrix<VarScalar, Eigen::Dynamic, 1, Options>::type;       // Inequality constraint vector
-        using Gx_t = typename Matrix<VarScalar, Eigen::Dynamic, NDX, Options>::type;    // Jacobian of inequality constraints w.r.t. state
-        using Gu_t = typename Matrix<VarScalar, Eigen::Dynamic, NU, Options>::type;     // Jacobian of inequality constraints w.r.t. control
-        using G_Bound_t = typename Matrix<NumScalar, Eigen::Dynamic, 1, Options>::type; // Bounds on inequality constraints
+        using G_t = galileo::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;       // Inequality constraint vector
+        using Gx_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>;    // Jacobian of inequality constraints w.r.t. state
+        using Gu_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;     // Jacobian of inequality constraints w.r.t. control
+        using G_Bound_t = galileo::Matrix<NumScalar, Eigen::Dynamic, 1, Options>; // Bounds on inequality constraints
 
         /* ---------------------------------------------------------------- */
         /* Control parameter type definitions */
@@ -275,10 +275,10 @@ namespace galileo
         using Lww_t = MatrixNw_t;    // Hessian of cost w.r.t. control parameters
 
         // Segment equality constraint derivatives
-        using Hw_t = typename Matrix<VarScalar, Eigen::Dynamic, NW, Options>::type; // Jacobian of equality constraints w.r.t. the control parameters
+        using Hw_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of equality constraints w.r.t. the control parameters
 
         // Segment inequality constraint derivatives
-        using Gw_t = typename Matrix<VarScalar, Eigen::Dynamic, NW, Options>::type; // Jacobian of inequality constraints w.r.t. the control parameters
+        using Gw_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
     };
 
 } // namespace galileo
