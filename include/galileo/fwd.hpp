@@ -7,8 +7,8 @@ namespace galileo
 } // namespace galileo
 
 #include <cassert>
-#include <type_traits>
 #include <memory>
+#include <type_traits>
 
 #include <galileo/macros.hpp>
 
@@ -110,14 +110,23 @@ namespace galileo
     template <typename Scalar, int Rows, int Cols, int DefaultOptions>
     struct MatrixTpl
     {
+        static constexpr bool isRowVector = (Rows == 1 && Cols != 1);
+        static constexpr bool isColVector = (Cols == 1 && Rows != 1);
+
         static constexpr int OptionsFixed =
-            (Rows == 1 && Cols != 1) ? (DefaultOptions | Eigen::RowMajor) : (Cols == 1 && Rows != 1) ? (DefaultOptions & ~Eigen::RowMajor)
-                                                                                                        : DefaultOptions;
+            isRowVector   ? ((DefaultOptions & ~Eigen::RowMajor) | Eigen::RowMajor)
+            : isColVector ? (DefaultOptions & ~Eigen::RowMajor)
+                          : DefaultOptions;
+
+        static_assert(!(Rows == 1 && Cols != 1 && !(OptionsFixed & Eigen::RowMajor)),
+                      "A 1xN Eigen matrix must be row-major.");
+        static_assert(!(Cols == 1 && Rows != 1 && (OptionsFixed & Eigen::RowMajor)),
+                      "An Nx1 Eigen matrix must be column-major.");
 
         using type = Eigen::Matrix<Scalar, Rows, Cols, OptionsFixed>;
     };
 
-    template <typename Scalar, int Rows, int Cols, int DefaultOptions = 0>
+    template <typename Scalar, int Rows, int Cols, int DefaultOptions = Eigen::ColMajor>
     using Matrix = typename MatrixTpl<Scalar, Rows, Cols, DefaultOptions>::type;
 
 } // namespace galileo
