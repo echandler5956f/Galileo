@@ -1,5 +1,5 @@
-#ifndef __galileo_common_linalg_matrix_hpp__
-#define __galileo_common_linalg_matrix_hpp__
+#ifndef __galileo_common_linalg_helpers_hpp__
+#define __galileo_common_linalg_helpers_hpp__
 
 #include "galileo/common/fwd.hpp"
 #include <Eigen/Dense>
@@ -114,7 +114,7 @@ namespace galileo
         }
 
         /**
-         * @brief Check if the input matrix is a symmetric 
+         * @brief Check if the input matrix is a symmetric
          * positive definite matrix
          *
          * @tparam MatrixType The MatrixType type of the matrix
@@ -134,7 +134,7 @@ namespace galileo
         }
 
         /**
-         * @brief Enforce a matrix to be a symmetric 
+         * @brief Enforce a matrix to be a symmetric
          * positive definite matrix
          *
          * @tparam MatrixType The MatrixType type of the matrix
@@ -177,7 +177,7 @@ namespace galileo
         }
 
     } // namespace math
-    
+
 } // namespace galileo
 
-#endif // __galileo_common_linalg_matrix_hpp__
+#endif // __galileo_common_linalg_helpers_hpp__

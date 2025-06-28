@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "galileo/common/linalg/matrix.hpp"
+#include "galileo/common/linalg/helpers.hpp"
 #include "../helpers/catch_eigen_matchers.hpp"
 
 using namespace galileo;
@@ -30,7 +30,7 @@ SCENARIO("Matrix properties can be checked and enforced", "[common][linalg]") {
                 REQUIRE(math::isSymmetric(M) == false);
             }
         }
-        
+
         WHEN("enforceSymmetric is called") {
             math::enforceSymmetric(M);
             THEN("the matrix becomes symmetric") {
@@ -49,7 +49,7 @@ SCENARIO("Matrix properties can be checked and enforced", "[common][linalg]") {
         Eigen::Matrix2d M;
         M << 2, 1,
              1, 2;
-        
+
         WHEN("isPositiveDefinite is called") {
             THEN("it should return true") {
                 REQUIRE(math::isPositiveDefinite(M) == true);
@@ -61,13 +61,13 @@ SCENARIO("Matrix properties can be checked and enforced", "[common][linalg]") {
         Eigen::Matrix2d M;
         M << 1, 2,
              2, 1;
-        
+
         WHEN("isPositiveDefinite is called") {
             THEN("it should return false") {
                 REQUIRE(math::isPositiveDefinite(M) == false);
             }
         }
-        
+
         WHEN("enforcePositiveDefinite is called") {
             math::enforcePositiveDefinite(M);
             THEN("the matrix becomes positive definite") {
@@ -75,4 +75,4 @@ SCENARIO("Matrix properties can be checked and enforced", "[common][linalg]") {
             }
         }
     }
-} 
+}
