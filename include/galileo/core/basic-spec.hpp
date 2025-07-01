@@ -59,10 +59,10 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Fixed-size Eigen types */
         /* ---------------------------------------------------------------- */
-        using Vector2_t = Eigen::Matrix<VarScalar, 2, 1, Options>;
-        using Vector3_t = Eigen::Matrix<VarScalar, 3, 1, Options>;
-        using Vector4_t = Eigen::Matrix<VarScalar, 4, 1, Options>;
-        using Vector6_t = Eigen::Matrix<VarScalar, 6, 1, Options>;
+        using Vector2_t = galileo::Matrix<VarScalar, 2, 1, Options>;
+        using Vector3_t = galileo::Matrix<VarScalar, 3, 1, Options>;
+        using Vector4_t = galileo::Matrix<VarScalar, 4, 1, Options>;
+        using Vector6_t = galileo::Matrix<VarScalar, 6, 1, Options>;
         using Matrix2_t = Eigen::Matrix<VarScalar, 2, 2, Options>;
         using Matrix3_t = Eigen::Matrix<VarScalar, 3, 3, Options>;
         using Matrix46_t = Eigen::Matrix<VarScalar, 4, 6, Options>;
@@ -74,7 +74,7 @@ namespace galileo
         using Matrix3X_t = Eigen::Matrix<VarScalar, 3, Eigen::Dynamic, Options>;
         using Matrix6X_t = Eigen::Matrix<VarScalar, 6, Eigen::Dynamic, Options>;
 
-        using VectorX_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;
+        using VectorX_t = galileo::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;
         using MatrixX_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Options>;
         using MatrixXRowMajor_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Options | Eigen::RowMajor>;
         using ArrayX_t = Eigen::Array<VarScalar, Eigen::Dynamic, 1>;

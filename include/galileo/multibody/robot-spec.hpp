@@ -115,16 +115,16 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Fixed-size Constant-Dependent Eigen types */
         /* ---------------------------------------------------------------- */
-        using VectorNqb_t = Eigen::Matrix<VarScalar, NQb, 1, Options>;
-        using VectorNqj_t = Eigen::Matrix<VarScalar, NQj, 1, Options>;
-        using VectorNvb_t = Eigen::Matrix<VarScalar, NVb, 1, Options>;
-        using VectorNvj_t = Eigen::Matrix<VarScalar, NVj, 1, Options>;
+        using VectorNqb_t = galileo::Matrix<VarScalar, NQb, 1, Options>;
+        using VectorNqj_t = galileo::Matrix<VarScalar, NQj, 1, Options>;
+        using VectorNvb_t = galileo::Matrix<VarScalar, NVb, 1, Options>;
+        using VectorNvj_t = galileo::Matrix<VarScalar, NVj, 1, Options>;
 
-        using VectorNx_t = Eigen::Matrix<VarScalar, NX, 1, Options>;
-        using VectorNua_t = Eigen::Matrix<VarScalar, NUa, 1, Options>;
-        using VectorNdx_t = Eigen::Matrix<VarScalar, NDX, 1, Options>;
-        using VectorNq_t = Eigen::Matrix<VarScalar, NQ, 1, Options>;
-        using VectorNv_t = Eigen::Matrix<VarScalar, NV, 1, Options>;
+        using VectorNx_t = galileo::Matrix<VarScalar, NX, 1, Options>;
+        using VectorNua_t = galileo::Matrix<VarScalar, NUa, 1, Options>;
+        using VectorNdx_t = galileo::Matrix<VarScalar, NDX, 1, Options>;
+        using VectorNq_t = galileo::Matrix<VarScalar, NQ, 1, Options>;
+        using VectorNv_t = galileo::Matrix<VarScalar, NV, 1, Options>;
 
         using MatrixNx_t = Eigen::Matrix<VarScalar, NX, NX, Options>;
         using MatrixNua_t = Eigen::Matrix<VarScalar, NUa, NUa, Options>;

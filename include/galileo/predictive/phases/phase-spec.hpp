@@ -194,8 +194,8 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* An assortment of Eigen types (primarily for use in Segments) */
         /* ---------------------------------------------------------------- */
-        using VectorNu_t = Eigen::Matrix<VarScalar, NU, 1, Options>;
-        using VectorNw_t = Eigen::Matrix<VarScalar, NW, 1, Options>;
+        using VectorNu_t = galileo::Matrix<VarScalar, NU, 1, Options>;
+        using VectorNw_t = galileo::Matrix<VarScalar, NW, 1, Options>;
         using MatrixNu_t = Eigen::Matrix<VarScalar, NU, NU, Options>;
         using MatrixNw_t = Eigen::Matrix<VarScalar, NW, NW, Options>;
 
@@ -260,8 +260,8 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Segment type definitions */
         /* ---------------------------------------------------------------- */
-        using Timings_t = Eigen::Matrix<NumScalar, NStages, 1, Options>;
-        using Quadrature_t = Eigen::Matrix<NumScalar, NStages, 1, Options>;
+        using Timings_t = galileo::Matrix<NumScalar, NStages, 1, Options>;
+        using Quadrature_t = galileo::Matrix<NumScalar, NStages, 1, Options>;
         using StageCoefficients_t = Eigen::Matrix<NumScalar, NStages, NStages, Options>;
 
         // Dynamics
