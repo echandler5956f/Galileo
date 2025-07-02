@@ -21,41 +21,6 @@ namespace galileo
     template <typename Derived>
     concept EigenMatrix = !EigenVector<Derived>;
 
-    namespace detail
-    {
-
-        template <int R, int C, typename Mat, bool RowFixed, bool ColFixed>
-        struct BlockTypeImpl;
-
-        template <int R, int C, typename Mat>
-        struct BlockTypeImpl<R, C, Mat, true, true>
-        {
-            using type = Eigen::Block<Mat, R, C>;
-        };
-
-        template <int R, int C, typename Mat>
-        struct BlockTypeImpl<R, C, Mat, true, false>
-        {
-            using type = Eigen::Block<Mat, R, Eigen::Dynamic>;
-        };
-
-        template <int R, int C, typename Mat>
-        struct BlockTypeImpl<R, C, Mat, false, true>
-        {
-            using type = Eigen::Block<Mat, Eigen::Dynamic, C>;
-        };
-
-        template <int R, int C, typename Mat>
-        struct BlockTypeImpl<R, C, Mat, false, false>
-        {
-            using type = Eigen::Block<Mat>;
-        };
-
-        template <int R, int C, typename Mat>
-        using BlockType = typename BlockTypeImpl<R, C, Mat, (R != Eigen::Dynamic), (C != Eigen::Dynamic)>::type;
-
-    } // namespace detail
-
     template <int R = Eigen::Dynamic, int C = Eigen::Dynamic>
     struct AccessDispatcher
     {
@@ -179,7 +144,7 @@ namespace galileo
         }
 
         template <typename Mat>
-        using BlockXpr = detail::BlockType<R, C, Mat>;
+        using BlockXpr = Eigen::Block<Mat, R, C>;
     }; // struct AccessDispatcher
 
     template <int N = Eigen::Dynamic>
