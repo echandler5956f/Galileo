@@ -23,9 +23,9 @@ namespace galileo
 
         static constexpr int NC = 1;
         // using RobotData_t = // TODO: add robot data
-        using MatrixNcNv_t = Eigen::Matrix<VarScalar, NC, RS::NV, Options>;
-        using MatrixNcNdx_t = Eigen::Matrix<VarScalar, NC, RS::NDX, Options>;
-        using MatrixNcNu_t = Eigen::Matrix<VarScalar, NC, RS::NU, Options>;
+        using MatrixNcNv_t = Eigen::GMatrix<VarScalar, NC, RS::NV, Options>;
+        using MatrixNcNdx_t = Eigen::GMatrix<VarScalar, NC, RS::NDX, Options>;
+        using MatrixNcNu_t = Eigen::GMatrix<VarScalar, NC, RS::NU, Options>;
     };
 
     template <typename RobotSpec>

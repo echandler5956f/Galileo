@@ -35,11 +35,11 @@ namespace galileo
         static constexpr int NR = traits<ResidualMeta_t>::NR;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::Matrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::Matrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
+        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
+        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
+        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
+        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
     };
 
     template <
@@ -149,7 +149,7 @@ namespace galileo
             residual_.calc(data.residual, x.derived(), u.derived());
             activation_.calc(data.activation, x.derived(), u.derived());
 
-            data.L = data.activation.a;
+            data.L = data.activation.A;
         }
 
         template <typename StateVectorType>
@@ -159,7 +159,7 @@ namespace galileo
             residual_.calc(data.residual, x.derived());
             activation_.calc(data.activation, x.derived());
 
-            data.L = data.activation.a;
+            data.L = data.activation.A;
         }
 
         template <typename StateVectorType, typename ControlVectorType>

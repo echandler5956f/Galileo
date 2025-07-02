@@ -63,11 +63,11 @@ namespace galileo
         using ModelContainer_t = std::map<std::string, Item_t>;
         using DataContainer_t = std::map<std::string, Data_t>;
 
-        using Jc_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>;
-        using a0_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1, PS::Options>;
-        using da0_dx_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX, PS::Options>;
-        using dv_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, 1, PS::Options>;
-        using ddv_dx_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options>;
+        using Jc_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>;
+        using a0_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1, PS::Options>;
+        using da0_dx_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX, PS::Options>;
+        using dv_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, 1, PS::Options>;
+        using ddv_dx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options>;
 
         using Force_t = typename PS::Force_t;
         using ForceVector_t = GALILEO_ALIGNED_STD_VECTOR(Force_t);
@@ -395,7 +395,7 @@ namespace galileo
                     const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
-                        const Eigen::VectorBlock<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
+                        const Eigen::VectorBlock<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
@@ -420,7 +420,7 @@ namespace galileo
                     if (m_i.active)
                     {
                         const int nc_i = m_i.model.nc();
-                        const Eigen::VectorBlock<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
+                        const Eigen::VectorBlock<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
@@ -459,9 +459,9 @@ namespace galileo
                     const int nc_i = m_i.model.nc();
                     if (m_i.active)
                     {
-                        const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
+                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
                             df_dx.block(nc, 0, nc_i, PS::NDX);
-                        const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
+                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
                             df_du.block(nc, 0, nc_i, PS::NU);
                         m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
                     }
@@ -483,9 +483,9 @@ namespace galileo
                     if (m_i.active)
                     {
                         const int nc_i = m_i.model.nc();
-                        const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
+                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>> df_dx_i =
                             df_dx.block(nc, 0, nc_i, PS::NDX);
-                        const Eigen::Block<const Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
+                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NU>> df_du_i =
                             df_du.block(nc, 0, nc_i, PS::NU);
                         m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
                         nc += nc_i;

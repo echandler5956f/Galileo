@@ -94,9 +94,9 @@ namespace galileo
 
         static constexpr int NC = traits<ContactDerived>::NC;
 
-        using MatrixNcNv_t = Eigen::Matrix<typename PS::VarScalar, NC, PS::NV, PS::Options>;
-        using MatrixNcNdx_t = Eigen::Matrix<typename PS::VarScalar, NC, PS::NDX, PS::Options>;
-        using MatrixNcNu_t = Eigen::Matrix<typename PS::VarScalar, NC, PS::NU, PS::Options>;
+        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NV, PS::Options>;
+        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NDX, PS::Options>;
+        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NU, PS::Options>;
 
         template <typename StateVectorType>
         void calc(ContactDataDerived &data,

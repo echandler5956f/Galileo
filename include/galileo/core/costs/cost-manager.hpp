@@ -2,12 +2,12 @@
 #define __galileo_core_costs_cost_manager_hpp__
 
 #include <iostream>
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 
-#include "galileo/core/costs/fwd.hpp"
 #include "galileo/core/costs/cost-generic.hpp"
+#include "galileo/core/costs/fwd.hpp"
 
 // Despite its name, this file only pertains to cost residuals,
 // not just any general costs derived from CostModelBase/CostDataBase
@@ -62,11 +62,11 @@ namespace galileo
         using DataContainer_t = std::map<std::string, Data_t>;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::Matrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::Matrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
+        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
+        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
+        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
+        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
     };
 
     template <typename PhaseSpec,

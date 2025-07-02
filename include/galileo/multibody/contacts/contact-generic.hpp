@@ -33,12 +33,12 @@ namespace galileo
         static constexpr int NU = traits<typename PS::NodeMeta_t>::NU;
 
         // Traits required by ForceDataBase
-        using MatrixNcNv_t = Eigen::Matrix<VarScalar, NC, NV, Options, 6, NV>;
-        using MatrixNcNdx_t = Eigen::Matrix<VarScalar, NC, NDX, Options, 6, NDX>;
-        using MatrixNcNu_t = Eigen::Matrix<VarScalar, NC, NU, Options, 6, NU>;
+        using MatrixNcNv_t = Eigen::GMatrix<VarScalar, NC, NV, Options, 6, NV>;
+        using MatrixNcNdx_t = Eigen::GMatrix<VarScalar, NC, NDX, Options, 6, NDX>;
+        using MatrixNcNu_t = Eigen::GMatrix<VarScalar, NC, NU, Options, 6, NU>;
 
         // Traits required by ContactDataBase
-        using VectorNc_t = Eigen::Matrix<VarScalar, NC, 1, Options, 6, 1>;
+        using VectorNc_t = Eigen::GMatrix<VarScalar, NC, 1, Options, 6, 1>;
     };
 
     template <typename PhaseSpec,
@@ -53,7 +53,7 @@ namespace galileo
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        
+
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
     };
 

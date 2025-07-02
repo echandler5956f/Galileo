@@ -41,16 +41,16 @@ namespace galileo
         using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
 
         // using NC = traits<NodeDerived>::NC;
-        // using Kinv_t = Eigen::Matrix<VarScalar, PS::NV + NC, PS::NV + NC>;
-        // using Jstatic_t = Eigen::Matrix<VarScalar, PS::NV, NU + NC>;
-        using Kinv_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
-        using MatrixNcNdx_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>;
-        using MatrixNcNu_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, NU>;
-        using Jstatic_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
+        // using Kinv_t = Eigen::GMatrix<VarScalar, PS::NV + NC, PS::NV + NC>;
+        // using Jstatic_t = Eigen::GMatrix<VarScalar, PS::NV, NU + NC>;
+        using Kinv_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
+        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX>;
+        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, NU>;
+        using Jstatic_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
 
-        using MatrixNvNc_t = Eigen::Matrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
-        using MatrixNcNv_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV>;
-        using MatrixNc_t = Eigen::Matrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
+        using MatrixNvNc_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, Eigen::Dynamic>;
+        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV>;
+        using MatrixNc_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
     };
 
     template <typename PhaseSpec,

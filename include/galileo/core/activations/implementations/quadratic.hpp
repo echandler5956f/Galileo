@@ -27,8 +27,8 @@ namespace galileo
         static constexpr int NR = traits<ResidualMeta_t>::NR;
 
         using A_t = PS::VarScalar;
-        using Ar_t = Eigen::Matrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Arr_t = Eigen::Matrix<typename PS::VarScalar, NR, NR, PS::Options>;
+        using Ar_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
+        using Arr_t = Eigen::GMatrix<typename PS::VarScalar, NR, NR, PS::Options>;
         using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, NR>;
     };
 

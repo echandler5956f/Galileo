@@ -19,8 +19,8 @@ namespace galileo
         static constexpr int Options = _Options;
         using PhaseCollection = PhaseCollectionTpl<VarScalar, NumScalar, Options>;
 
-        using VectorXv = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
-        using VectorXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
+        using VectorXv = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 1>;
+        using VectorXn = Eigen::GMatrix<NumScalar, Eigen::Dynamic, 1>;
 
         // protected:
         Trajectory<VarScalar, NumScalar, Options, PhaseCollectionTpl> trajectory_;

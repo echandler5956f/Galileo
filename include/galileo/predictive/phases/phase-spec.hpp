@@ -5,8 +5,8 @@
 
 #include "galileo/multibody/robot-spec.hpp"
 
-#include <vector>
 #include <array>
+#include <vector>
 
 #define GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec)                                 \
     GALILEO_ROBOT_SPEC_META_TYPEDEF(PhaseSpec::RS);                                \
@@ -194,21 +194,21 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* An assortment of Eigen types (primarily for use in Segments) */
         /* ---------------------------------------------------------------- */
-        using VectorNu_t = galileo::Matrix<VarScalar, NU, 1, Options>;
-        using VectorNw_t = galileo::Matrix<VarScalar, NW, 1, Options>;
-        using MatrixNu_t = Eigen::Matrix<VarScalar, NU, NU, Options>;
-        using MatrixNw_t = Eigen::Matrix<VarScalar, NW, NW, Options>;
+        using VectorNu_t = Eigen::GMatrix<VarScalar, NU, 1, Options>;
+        using VectorNw_t = Eigen::GMatrix<VarScalar, NW, 1, Options>;
+        using MatrixNu_t = Eigen::GMatrix<VarScalar, NU, NU, Options>;
+        using MatrixNw_t = Eigen::GMatrix<VarScalar, NW, NW, Options>;
 
-        using MatrixNvNw_t = galileo::Matrix<VarScalar, NV, NW, Options>;
-        using MatrixNvNu_t = galileo::Matrix<VarScalar, NV, NU, Options>;
+        using MatrixNvNw_t = Eigen::GMatrix<VarScalar, NV, NW, Options>;
+        using MatrixNvNu_t = Eigen::GMatrix<VarScalar, NV, NU, Options>;
 
-        using MatrixNuNv_t = galileo::Matrix<VarScalar, NU, NV, Options>;
-        using MatrixNuNw_t = galileo::Matrix<VarScalar, NU, NW, Options>;
+        using MatrixNuNv_t = Eigen::GMatrix<VarScalar, NU, NV, Options>;
+        using MatrixNuNw_t = Eigen::GMatrix<VarScalar, NU, NW, Options>;
 
-        using MatrixNuaNu_t = galileo::Matrix<VarScalar, NUa, NU, Options>;
+        using MatrixNuaNu_t = Eigen::GMatrix<VarScalar, NUa, NU, Options>;
 
-        using MatrixNdxNu_t = galileo::Matrix<VarScalar, NDX, NU, Options>;
-        using MatrixNdxNw_t = galileo::Matrix<VarScalar, NDX, NW, Options>;
+        using MatrixNdxNu_t = Eigen::GMatrix<VarScalar, NDX, NU, Options>;
+        using MatrixNdxNw_t = Eigen::GMatrix<VarScalar, NDX, NW, Options>;
 
         using VarScalarArray_t = std::array<VarScalar, NStages>;
 
@@ -240,15 +240,15 @@ namespace galileo
         using Luu_t = MatrixNu_t;    // Hessian of cost w.r.t. control
 
         // Equality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
-        using H_t = galileo::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;    // Equality constraint vector
-        using Hx_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>; // Jacobian of equality constraints w.r.t. state
-        using Hu_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;  // Jacobian of equality constraints w.r.t. control
+        using H_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 1, Options>;    // Equality constraint vector
+        using Hx_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NDX, Options>; // Jacobian of equality constraints w.r.t. state
+        using Hu_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NU, Options>;  // Jacobian of equality constraints w.r.t. control
 
         // Inequality constraints (ConstraintManager holds an Eigen map to these, which are stored in NodeData)
-        using G_t = galileo::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;       // Inequality constraint vector
-        using Gx_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NDX, Options>;    // Jacobian of inequality constraints w.r.t. state
-        using Gu_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NU, Options>;     // Jacobian of inequality constraints w.r.t. control
-        using G_Bound_t = galileo::Matrix<NumScalar, Eigen::Dynamic, 1, Options>; // Bounds on inequality constraints
+        using G_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 1, Options>;       // Inequality constraint vector
+        using Gx_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NDX, Options>;    // Jacobian of inequality constraints w.r.t. state
+        using Gu_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NU, Options>;     // Jacobian of inequality constraints w.r.t. control
+        using G_Bound_t = Eigen::GMatrix<NumScalar, Eigen::Dynamic, 1, Options>; // Bounds on inequality constraints
 
         /* ---------------------------------------------------------------- */
         /* Control parameter type definitions */
@@ -260,9 +260,9 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Segment type definitions */
         /* ---------------------------------------------------------------- */
-        using Timings_t = galileo::Matrix<NumScalar, NStages, 1, Options>;
-        using Quadrature_t = galileo::Matrix<NumScalar, NStages, 1, Options>;
-        using StageCoefficients_t = Eigen::Matrix<NumScalar, NStages, NStages, Options>;
+        using Timings_t = Eigen::GMatrix<NumScalar, NStages, 1, Options>;
+        using Quadrature_t = Eigen::GMatrix<NumScalar, NStages, 1, Options>;
+        using StageCoefficients_t = Eigen::GMatrix<NumScalar, NStages, NStages, Options>;
 
         // Dynamics
         using XNext_t = VectorNx_t;     // Evolution state
@@ -275,10 +275,10 @@ namespace galileo
         using Lww_t = MatrixNw_t;    // Hessian of cost w.r.t. control parameters
 
         // Segment equality constraint derivatives
-        using Hw_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of equality constraints w.r.t. the control parameters
+        using Hw_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of equality constraints w.r.t. the control parameters
 
         // Segment inequality constraint derivatives
-        using Gw_t = galileo::Matrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
+        using Gw_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
     };
 
 } // namespace galileo

@@ -32,10 +32,9 @@ namespace galileo
             this->derived().calcDiff(data, r.derived());
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData()
         {
-            return this->derived().createData(collector);
+            return this->derived().createData();
         }
 
         int nr() const

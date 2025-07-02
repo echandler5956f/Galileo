@@ -1,10 +1,10 @@
 #ifndef __galileo_core_costs_cost_generic_hpp__
 #define __galileo_core_costs_cost_generic_hpp__
 
-#include "galileo/core/costs/fwd.hpp"
 #include "galileo/core/costs/cost-base.hpp"
-#include "galileo/core/costs/cost-collection.hpp"
 #include "galileo/core/costs/cost-basic-visitors.hxx"
+#include "galileo/core/costs/cost-collection.hpp"
+#include "galileo/core/costs/fwd.hpp"
 
 #include <boost/mpl/contains.hpp>
 
@@ -28,11 +28,11 @@ namespace galileo
         using Data_t = CostDataTpl<PS, CostCollectionTpl>;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::Matrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::Matrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::Matrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
+        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
+        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
+        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
+        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
     };
 
     template <typename PhaseSpec,

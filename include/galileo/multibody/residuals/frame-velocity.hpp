@@ -27,11 +27,11 @@ namespace galileo
 
         static constexpr int NR = 6;
 
-        using R_t = Eigen::Matrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Rx_t = Eigen::Matrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Ru_t = Eigen::Matrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
-        using Arr_Rx_t = Eigen::Matrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Arr_Ru_t = Eigen::Matrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
+        using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
+        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
+        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
+        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
+        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
     };
 
     template <typename PhaseSpec>
@@ -113,8 +113,9 @@ namespace galileo
         ResidualModelFrameVelocityTpl(RobotModel_t *robot_model,
                                       const FrameIndex_t frame_id,
                                       const Motion_t &velocity,
-                                      const ReferenceFrame_t type)
-            : robot_model_(robot_model), frame_id_(frame_id), vref_(velocity), type_(type)
+                                      const ReferenceFrame_t type,
+                                      const int nu)
+            : robot_model_(robot_model), frame_id_(frame_id), vref_(velocity), type_(type), nu_(nu)
         {
         }
 
@@ -154,11 +155,32 @@ namespace galileo
             return data;
         }
 
+        bool q_dependent_impl() const
+        {
+            return true;
+        }
+
+        bool v_dependent_impl() const
+        {
+            return true;
+        }
+
+        bool u_dependent_impl() const
+        {
+            return false;
+        }
+
+        int nu_impl() const
+        {
+            return nu_;
+        }
+
     protected:
         RobotModel_t *robot_model_;
         FrameIndex_t frame_id_;
         Motion_t vref_;
         ReferenceFrame_t type_;
+        int nu_;
 
     }; // class ResidualModelFrameVelocityTpl
 

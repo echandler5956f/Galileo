@@ -25,8 +25,8 @@ namespace galileo
         static constexpr int Options = _Options;
         static constexpr FeasibilityNormOptions FeasibilityNorm = _FeasibilityNorm;
         using OptimalControlProblem_t = OptimalControlProblem<VarScalar, NumScalar, Options, PhaseCollectionTpl>;
-        using VectorXv = Eigen::Matrix<VarScalar, Eigen::Dynamic, 1>;
-        using VectorXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, 1>;
+        using VectorXv = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 1>;
+        using VectorXn = Eigen::GMatrix<NumScalar, Eigen::Dynamic, 1>;
     }; // struct traits
 
     template <typename _VarScalar, typename _NumScalar, int _Options, FeasibilityNormOptions _FeasibilityNorm,
@@ -40,11 +40,11 @@ namespace galileo
         GALILEO_SOLVER_BASIC_TYPEDEF(SolverDerived);
         GALILEO_SOLVER_TYPEDEF(SolverDerived);
 
-        using MatrixXv = Eigen::Matrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
-        using MatrixXn = Eigen::Matrix<NumScalar, Eigen::Dynamic, Eigen::Dynamic>;
-        using MatrixXvRowMajor = Eigen::Matrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-        using MatrixXnRowMajor = Eigen::Matrix<NumScalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-        using Vector2n = Eigen::Matrix<NumScalar, 2, 1>;
+        using MatrixXv = Eigen::GMatrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
+        using MatrixXn = Eigen::GMatrix<NumScalar, Eigen::Dynamic, Eigen::Dynamic>;
+        using MatrixXvRowMajor = Eigen::GMatrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+        using MatrixXnRowMajor = Eigen::GMatrix<NumScalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+        using Vector2n = Eigen::GMatrix<NumScalar, 2, 1>;
 
         SolverDDP(OptimalControlProblem_t ocp)
             : ocp_(ocp),

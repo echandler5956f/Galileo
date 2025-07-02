@@ -63,14 +63,14 @@ namespace galileo
         static constexpr int NH = Eigen::Dynamic;
         static constexpr int NG = Eigen::Dynamic;
 
-        using H_t = Eigen::Matrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
-        using Hu_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
-        using G_t = Eigen::Matrix<typename PS::VarScalar, NG, 1, PS::Options>;
-        using Gx_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
-        using Gu_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
+        using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
+        using G_t = Eigen::GMatrix<typename PS::VarScalar, NG, 1, PS::Options>;
+        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
+        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
 
-        using BoundVector_t = Eigen::Matrix<typename PS::NumScalar, NG, 1, PS::Options>;
+        using BoundVector_t = Eigen::GMatrix<typename PS::NumScalar, NG, 1, PS::Options>;
     };
 
     template <typename PhaseSpec,

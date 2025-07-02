@@ -78,14 +78,14 @@ namespace galileo
             return this->derived().ng_impl();
         }
 
-        int nh() const
-        {
-            return this->derived().nh_impl();
-        }
-
         int ng_impl() const
         {
             return traits<Meta_t>::NG;
+        }
+
+        int nh() const
+        {
+            return traits<Meta_t>::NH;
         }
 
         int nh_impl() const

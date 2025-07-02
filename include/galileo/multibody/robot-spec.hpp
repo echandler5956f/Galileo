@@ -2,9 +2,9 @@
 #define __galileo_multibody_robot_spec_hpp__
 
 #include <pinocchio/multibody/fwd.hpp>
-#include <pinocchio/spatial/se3.hpp>
-#include <pinocchio/spatial/motion.hpp>
 #include <pinocchio/spatial/force.hpp>
+#include <pinocchio/spatial/motion.hpp>
+#include <pinocchio/spatial/se3.hpp>
 
 #include "galileo/core/fwd.hpp"
 
@@ -115,28 +115,28 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Fixed-size Constant-Dependent Eigen types */
         /* ---------------------------------------------------------------- */
-        using VectorNqb_t = galileo::Matrix<VarScalar, NQb, 1, Options>;
-        using VectorNqj_t = galileo::Matrix<VarScalar, NQj, 1, Options>;
-        using VectorNvb_t = galileo::Matrix<VarScalar, NVb, 1, Options>;
-        using VectorNvj_t = galileo::Matrix<VarScalar, NVj, 1, Options>;
+        using VectorNqb_t = Eigen::GMatrix<VarScalar, NQb, 1, Options>;
+        using VectorNqj_t = Eigen::GMatrix<VarScalar, NQj, 1, Options>;
+        using VectorNvb_t = Eigen::GMatrix<VarScalar, NVb, 1, Options>;
+        using VectorNvj_t = Eigen::GMatrix<VarScalar, NVj, 1, Options>;
 
-        using VectorNx_t = galileo::Matrix<VarScalar, NX, 1, Options>;
-        using VectorNua_t = galileo::Matrix<VarScalar, NUa, 1, Options>;
-        using VectorNdx_t = galileo::Matrix<VarScalar, NDX, 1, Options>;
-        using VectorNq_t = galileo::Matrix<VarScalar, NQ, 1, Options>;
-        using VectorNv_t = galileo::Matrix<VarScalar, NV, 1, Options>;
+        using VectorNx_t = Eigen::GMatrix<VarScalar, NX, 1, Options>;
+        using VectorNua_t = Eigen::GMatrix<VarScalar, NUa, 1, Options>;
+        using VectorNdx_t = Eigen::GMatrix<VarScalar, NDX, 1, Options>;
+        using VectorNq_t = Eigen::GMatrix<VarScalar, NQ, 1, Options>;
+        using VectorNv_t = Eigen::GMatrix<VarScalar, NV, 1, Options>;
 
-        using MatrixNx_t = Eigen::Matrix<VarScalar, NX, NX, Options>;
-        using MatrixNua_t = Eigen::Matrix<VarScalar, NUa, NUa, Options>;
-        using MatrixNdx_t = Eigen::Matrix<VarScalar, NDX, NDX, Options>;
-        using MatrixNq_t = Eigen::Matrix<VarScalar, NQ, NQ, Options>;
-        using MatrixNv_t = Eigen::Matrix<VarScalar, NV, NV, Options>;
+        using MatrixNx_t = Eigen::GMatrix<VarScalar, NX, NX, Options>;
+        using MatrixNua_t = Eigen::GMatrix<VarScalar, NUa, NUa, Options>;
+        using MatrixNdx_t = Eigen::GMatrix<VarScalar, NDX, NDX, Options>;
+        using MatrixNq_t = Eigen::GMatrix<VarScalar, NQ, NQ, Options>;
+        using MatrixNv_t = Eigen::GMatrix<VarScalar, NV, NV, Options>;
 
-        using MatrixNvNdx_t = galileo::Matrix<VarScalar, NV, NDX, Options>;
-        using MatrixNvNua_t = galileo::Matrix<VarScalar, NV, NUa, Options>;
-        using MatrixNuaNv_t = galileo::Matrix<VarScalar, NUa, NV, Options>;
-        using MatrixNdxNua_t = galileo::Matrix<VarScalar, NDX, NUa, Options>;
-        using MatrixNuaNdx_t = galileo::Matrix<VarScalar, NUa, NDX, Options>;
+        using MatrixNvNdx_t = Eigen::GMatrix<VarScalar, NV, NDX, Options>;
+        using MatrixNvNua_t = Eigen::GMatrix<VarScalar, NV, NUa, Options>;
+        using MatrixNuaNv_t = Eigen::GMatrix<VarScalar, NUa, NV, Options>;
+        using MatrixNdxNua_t = Eigen::GMatrix<VarScalar, NDX, NUa, Options>;
+        using MatrixNuaNdx_t = Eigen::GMatrix<VarScalar, NUa, NDX, Options>;
 
         /* ---------------------------------------------------------------- */
         /* Template types */

@@ -26,7 +26,7 @@ namespace galileo
                 compute_barycentric_weights();
             }
 
-            const Eigen::Matrix<NumScalar, N, 1, Options> &get_nodes() const
+            const Eigen::GMatrix<NumScalar, N, 1, Options> &get_nodes() const
             {
                 return nodes_;
             }
@@ -46,7 +46,7 @@ namespace galileo
                     }
                 }
 
-                Eigen::Matrix<NumScalar, N, 1, Options> c;
+                Eigen::GMatrix<NumScalar, N, 1, Options> c;
                 NumScalar sum_c = 0.0;
                 for (std::size_t i = 0; i < N; ++i)
                 {
@@ -90,7 +90,7 @@ namespace galileo
                 }
 
                 // Compute the barycentric coefficients c_i and their sum.
-                Eigen::Matrix<NumScalar, N, 1, Options> c;
+                Eigen::GMatrix<NumScalar, N, 1, Options> c;
                 c.setZero();
                 NumScalar sum_c = 0.0;
                 for (std::size_t i = 0; i < N; ++i)
@@ -134,7 +134,7 @@ namespace galileo
                     nodes_(i) = 0.0;
                 }
 
-                Eigen::Matrix<NumScalar, N, 1, Options> bj;
+                Eigen::GMatrix<NumScalar, N, 1, Options> bj;
                 bj.setZero();
 
                 bj(0) = 4.0 * (1.0 + alpha_) * (1.0 + beta_) / ((abi + 1.0) * abi * abi);
@@ -180,16 +180,16 @@ namespace galileo
             void compute_coefficients()
             {
                 // Diagonal matrix of nodes_
-                Eigen::Matrix<NumScalar, N, N, Options> nodes_diag = nodes_.asDiagonal();
+                Eigen::GMatrix<NumScalar, N, N, Options> nodes_diag = nodes_.asDiagonal();
 
                 // R is a matrix defined by diag(1. / (1 : N))
-                Eigen::Matrix<NumScalar, N, 1, Options> R;
+                Eigen::GMatrix<NumScalar, N, 1, Options> R;
                 for (int j = 0; j < N; j++)
                 {
                     R(j, 0) = 1. / (j + 1);
                 }
-                Eigen::Matrix<NumScalar, N, N, Options> R_diag = R.asDiagonal();
-                Eigen::Matrix<NumScalar, N, N, Options> Vandermonde = Eigen::Matrix<NumScalar, N, N, Options>::Ones();
+                Eigen::GMatrix<NumScalar, N, N, Options> R_diag = R.asDiagonal();
+                Eigen::GMatrix<NumScalar, N, N, Options> Vandermonde = Eigen::GMatrix<NumScalar, N, N, Options>::Ones();
                 // Vandermonde matrix =
                 //[[1, nodes_1, nodes_1 ^ 2, ..., nodes_1 ^(N - 1)],
                 //[1, nodes_2, nodes_2 ^ 2, ..., nodes_2 ^(N - 1)],
@@ -227,11 +227,11 @@ namespace galileo
                 }
             }
 
-            Eigen::Matrix<NumScalar, N, N, Options> coeffs_;
-            Eigen::Matrix<NumScalar, N, 1, Options> weights_;
-            Eigen::Matrix<NumScalar, N, 1, Options> nodes_;
+            Eigen::GMatrix<NumScalar, N, N, Options> coeffs_;
+            Eigen::GMatrix<NumScalar, N, 1, Options> weights_;
+            Eigen::GMatrix<NumScalar, N, 1, Options> nodes_;
 
-            Eigen::Matrix<NumScalar, N, 1, Options> barycentric_weights_;
+            Eigen::GMatrix<NumScalar, N, 1, Options> barycentric_weights_;
 
             NumScalar alpha_;
             NumScalar beta_;

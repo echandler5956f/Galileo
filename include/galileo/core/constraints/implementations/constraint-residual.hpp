@@ -29,17 +29,17 @@ namespace galileo
         using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
         static constexpr ConstraintType EqualityInequality = EqualityInequality_;
-        static constexpr int NH = constexpr(EqualityInequality == ConstraintType::Equality) ? traits<ResidualMeta_t>::NH : 0;
-        static constexpr int NG = constexpr(EqualityInequality == ConstraintType::Inequality) ? traits<ResidualMeta_t>::NG : 0;
+        static constexpr int NH = constexpr(EqualityInequality == ConstraintType::Equality) ? traits<ResidualMeta_t>::NR : 0;
+        static constexpr int NG = constexpr(EqualityInequality == ConstraintType::Inequality) ? traits<ResidualMeta_t>::NR : 0;
 
-        using H_t = Eigen::Matrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
-        using Hu_t = Eigen::Matrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
-        using G_t = Eigen::Matrix<typename PS::VarScalar, NG, 1, PS::Options>;
-        using Gx_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
-        using Gu_t = Eigen::Matrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
+        using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
+        using G_t = Eigen::GMatrix<typename PS::VarScalar, NG, 1, PS::Options>;
+        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
+        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
 
-        using BoundVector_t = Eigen::Matrix<typename PS::NumScalar, NG, 1, PS::Options>;
+        using BoundVector_t = Eigen::GMatrix<typename PS::NumScalar, NG, 1, PS::Options>;
     };
 
     template <
@@ -180,24 +180,24 @@ namespace galileo
     protected:
         void updateEqualityCalc(Data_t &data) const
         {
-            data.H = data.residual.r;
+            data.H = data.residual.R;
         }
 
         void updateInequalityCalc(Data_t &data) const
         {
-            data.G = data.residual.r;
+            data.G = data.residual.R;
         }
 
         void updateEqualityCalcDiff(Data_t &data) const
         {
-            data.Hx = data.residual.rx;
-            data.Hu = data.residual.ru;
+            data.Hx = data.residual.Rx;
+            data.Hu = data.residual.Ru;
         }
 
         void updateInequalityCalcDiff(Data_t &data) const
         {
-            data.Gx = data.residual.rx;
-            data.Gu = data.residual.ru;
+            data.Gx = data.residual.Rx;
+            data.Gu = data.residual.Ru;
         }
 
         ResidualModel_t residual_;

@@ -8,21 +8,6 @@ namespace galileo
 {
     namespace math
     {
-
-        /**
-         * @brief An alias for square matrix
-         *
-         * @tparam Scalar The scalar type
-         * @tparam N The square dim
-         * @tparam Options See Eigen
-         * @tparam MaxRows See Eigen
-         * @tparam MaxCols See Eigen
-         *
-         * @see Eigen::Matrix
-         */
-        template <typename Scalar, int N, int Options = 0, int MaxRows = N, int MaxCols = N>
-        using SquareMatrix = Eigen::Matrix<Scalar, N, N, Options, MaxRows, MaxCols>;
-
         /**
          * @brief Check if the input (square) matrix is symmetric
          *

@@ -16,8 +16,7 @@
     using Matrix2_t = typename BasicSpec::Matrix2_t;                 \
     using Matrix3_t = typename BasicSpec::Matrix3_t;                 \
     using Matrix46_t = typename BasicSpec::Matrix46_t;               \
-    using Matrix6_t = typename BasicSpec::Matrix6_t;                 \
-    using RowVector2_t = typename BasicSpec::RowVector2_t;
+    using Matrix6_t = typename BasicSpec::Matrix6_t;
 
 #define GALILEO_BASIC_SPEC_DYNAMIC_SIZE_EIGEN_TYPES_TYPEDEF(BasicSpec) \
     using MatrixX3_t = typename BasicSpec::MatrixX3_t;                 \
@@ -25,11 +24,7 @@
     using Matrix3X_t = typename BasicSpec::Matrix3X_t;                 \
     using Matrix6X_t = typename BasicSpec::Matrix6X_t;                 \
     using VectorX_t = typename BasicSpec::VectorX_t;                   \
-    using MatrixX_t = typename BasicSpec::MatrixX_t;                   \
-    using MatrixXRowMajor_t = typename BasicSpec::MatrixXRowMajor_t;   \
-    using ArrayX_t = typename BasicSpec::ArrayX_t;                     \
-    using Quaternion_t = typename BasicSpec::Quaternion_t;             \
-    using DiagonalMatrixX_t = typename BasicSpec::DiagonalMatrixX_t;
+    using MatrixX_t = typename BasicSpec::MatrixX_t;
 
 #define GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BasicSpec)              \
     GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec);                \
@@ -59,27 +54,22 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Fixed-size Eigen types */
         /* ---------------------------------------------------------------- */
-        using Vector2_t = galileo::Matrix<VarScalar, 2, 1, Options>;
-        using Vector3_t = galileo::Matrix<VarScalar, 3, 1, Options>;
-        using Vector4_t = galileo::Matrix<VarScalar, 4, 1, Options>;
-        using Vector6_t = galileo::Matrix<VarScalar, 6, 1, Options>;
-        using Matrix2_t = Eigen::Matrix<VarScalar, 2, 2, Options>;
-        using Matrix3_t = Eigen::Matrix<VarScalar, 3, 3, Options>;
-        using Matrix46_t = Eigen::Matrix<VarScalar, 4, 6, Options>;
-        using Matrix6_t = Eigen::Matrix<VarScalar, 6, 6, Options>;
-        using RowVector2_t = galileo::Matrix<VarScalar, 1, 2, Options>;
+        using Vector2_t = Eigen::GMatrix<VarScalar, 2, 1, Options>;
+        using Vector3_t = Eigen::GMatrix<VarScalar, 3, 1, Options>;
+        using Vector4_t = Eigen::GMatrix<VarScalar, 4, 1, Options>;
+        using Vector6_t = Eigen::GMatrix<VarScalar, 6, 1, Options>;
+        using Matrix2_t = Eigen::GMatrix<VarScalar, 2, 2, Options>;
+        using Matrix3_t = Eigen::GMatrix<VarScalar, 3, 3, Options>;
+        using Matrix46_t = Eigen::GMatrix<VarScalar, 4, 6, Options>;
+        using Matrix6_t = Eigen::GMatrix<VarScalar, 6, 6, Options>;
 
-        using MatrixX3_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 3, Options>;
-        using MatrixX6_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, 6, Options>;
-        using Matrix3X_t = Eigen::Matrix<VarScalar, 3, Eigen::Dynamic, Options>;
-        using Matrix6X_t = Eigen::Matrix<VarScalar, 6, Eigen::Dynamic, Options>;
+        using MatrixX3_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 3, Options>;
+        using MatrixX6_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 6, Options>;
+        using Matrix3X_t = Eigen::GMatrix<VarScalar, 3, Eigen::Dynamic, Options>;
+        using Matrix6X_t = Eigen::GMatrix<VarScalar, 6, Eigen::Dynamic, Options>;
 
-        using VectorX_t = galileo::Matrix<VarScalar, Eigen::Dynamic, 1, Options>;
-        using MatrixX_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Options>;
-        using MatrixXRowMajor_t = Eigen::Matrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Options | Eigen::RowMajor>;
-        using ArrayX_t = Eigen::Array<VarScalar, Eigen::Dynamic, 1>;
-        using Quaternion_t = Eigen::Quaternion<VarScalar>;
-        using DiagonalMatrixX_t = Eigen::DiagonalMatrix<VarScalar, Eigen::Dynamic>;
+        using VectorX_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 1, Options>;
+        using MatrixX_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Options>;
     };
 
 } // namespace galileo
