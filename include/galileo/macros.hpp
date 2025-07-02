@@ -41,10 +41,4 @@
         return accessor_name();                        \
     }
 
-#define GALILEO_DEFAULT_CONSTRUCTOR(X) \
-    X() = default;                     \
-    ~X() = default;                    \
-    X(const X &) = default;            \
-    X(X &&) = default;
-
 #endif // __galileo_macro_hpp_

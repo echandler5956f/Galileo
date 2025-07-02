@@ -10,10 +10,7 @@ namespace galileo
 #include <memory>
 #include <type_traits>
 
-#include <galileo/macros.hpp>
-
-#include <Eigen/Core>
-#include <Eigen/Sparse>
+#include "galileo/macros.hpp"
 
 namespace galileo
 {
@@ -55,80 +52,8 @@ namespace galileo
 
     } // namespace internal
 
-    namespace compile_time
-    {
-
-        // We reserve -1 to represent a dynamic size.
-        constexpr int dynamic_size = -1;
-
-        // A strongly typed helper that encapsulates a compile-time size as a non-type template parameter.
-        // Each operator overload is marked consteval to force compile-time evaluation.
-        template <int N>
-        struct Size
-        {
-            static constexpr int value = N;
-
-            // Addition operator overload.
-            template <int M>
-            consteval auto operator+(Size<M>) const
-            {
-                return Size<(N == dynamic_size || M == dynamic_size ? dynamic_size : N + M)>{};
-            }
-
-            // Subtraction operator overload.
-            template <int M>
-            consteval auto operator-(Size<M>) const
-            {
-                return Size<(N == dynamic_size || M == dynamic_size ? dynamic_size : N - M)>{};
-            }
-
-            // Multiplication operator overload.
-            template <int M>
-            consteval auto operator*(Size<M>) const
-            {
-                return Size<(N == dynamic_size || M == dynamic_size ? dynamic_size : N * M)>{};
-            }
-
-            // Division operator overload.
-            // The static_assert ensures division by zero is caught at compile time.
-            template <int M>
-            consteval auto operator/(Size<M>) const
-            {
-                static_assert(M != 0, "Division by zero is not allowed.");
-                return Size<(N == dynamic_size || M == dynamic_size ? dynamic_size : N / M)>{};
-            }
-        };
-
-    } // namespace compile_time
-
-    // Helper alias that automatically corrects the storage order for 1xN or Nx1
-    // This is necessary because Eigen column vectors must be stored in column-major order,
-    // while row vectors must be stored in row-major order. If a matrix is fed two constants,
-    // where either the row or column dimensions may or may not have a size of 1,
-    // it is convenient to have the storage order be automatically determined rather than
-    // requiring the user to specify it.
-    template <typename Scalar, int Rows, int Cols, int DefaultOptions>
-    struct MatrixTpl
-    {
-        static constexpr bool isRowVector = (Rows == 1 && Cols != 1);
-        static constexpr bool isColVector = (Cols == 1 && Rows != 1);
-
-        static constexpr int OptionsFixed =
-            isRowVector   ? ((DefaultOptions & ~Eigen::RowMajor) | Eigen::RowMajor)
-            : isColVector ? (DefaultOptions & ~Eigen::RowMajor)
-                          : DefaultOptions;
-
-        static_assert(!(Rows == 1 && Cols != 1 && !(OptionsFixed & Eigen::RowMajor)),
-                      "A 1xN Eigen matrix must be row-major.");
-        static_assert(!(Cols == 1 && Rows != 1 && (OptionsFixed & Eigen::RowMajor)),
-                      "An Nx1 Eigen matrix must be column-major.");
-
-        using type = Eigen::Matrix<Scalar, Rows, Cols, OptionsFixed>;
-    };
-
-    template <typename Scalar, int Rows, int Cols, int DefaultOptions = Eigen::ColMajor>
-    using Matrix = typename MatrixTpl<Scalar, Rows, Cols, DefaultOptions>::type;
-
 } // namespace galileo
+
+#include "galileo/eigen.hpp"
 
 #endif // __galileo_fwd_hpp__
