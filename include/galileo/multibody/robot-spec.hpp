@@ -63,7 +63,8 @@
     using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t;           \
     using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t;           \
     using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t;         \
-    using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t;
+    using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t;         \
+    using Matrix6Nv_t = typename RobotSpec::Matrix6Nv_t;
 
 #define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
     GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec);           \
@@ -137,6 +138,8 @@ namespace galileo
         using MatrixNuaNv_t = Eigen::GMatrix<VarScalar, NUa, NV, Options>;
         using MatrixNdxNua_t = Eigen::GMatrix<VarScalar, NDX, NUa, Options>;
         using MatrixNuaNdx_t = Eigen::GMatrix<VarScalar, NUa, NDX, Options>;
+
+        using Matrix6Nv_t = Eigen::GMatrix<VarScalar, 6, NV, Options>;
 
         /* ---------------------------------------------------------------- */
         /* Template types */

@@ -2,7 +2,6 @@
 #define __galileo_predictive_phases_phase_spec_hpp__
 
 #include "galileo/predictive/phases/fwd.hpp"
-
 #include "galileo/multibody/robot-spec.hpp"
 
 #include <array>

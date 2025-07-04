@@ -161,7 +161,7 @@ namespace galileo
         // where either the row or column dimensions may or may not have a size of 1,
         // it is convenient to have the storage order be automatically determined rather than
         // requiring the user to specify it.
-        template <typename Scalar, int Rows, int Cols, int DefaultOptions>
+        template <typename Scalar, int Rows, int Cols, int DefaultOptions, int MaxRows = Rows, int MaxCols = Cols>
         struct MatrixTpl
         {
             using nominal_type = Eigen::Matrix<Scalar, Rows, Cols, DefaultOptions>;
@@ -188,8 +188,8 @@ namespace galileo
     // It is an Eigen::Matrix under the hood; we only correct the storage order automatically when the
     // static shape degenerates into a row- or column-vector. You get the full Eigen API and the right
     // storage order without thinking about it.
-    template <typename Scalar, int Rows, int Cols, int DefaultOptions = Eigen::ColMajor>
-    using Matrix = typename detail::MatrixTpl<Scalar, Rows, Cols, DefaultOptions>::type;
+    template <typename Scalar, int Rows, int Cols, int DefaultOptions = Eigen::ColMajor, int MaxRows = Rows, int MaxCols = Cols>
+    using Matrix = typename detail::MatrixTpl<Scalar, Rows, Cols, DefaultOptions, MaxRows, MaxCols>::type;
 
 } // namespace galileo
 
@@ -197,8 +197,8 @@ namespace Eigen
 {
     // Eigen::GMatrix is just an alias that picks a safe storage-order when R==1 or C==1;
     // otherwise it behaves exactly like Eigen::Matrix.
-    template <typename Scalar, int Rows, int Cols, int DefaultOptions = Eigen::ColMajor>
-    using GMatrix = galileo::Matrix<Scalar, Rows, Cols, DefaultOptions>;
+    template <typename Scalar, int Rows, int Cols, int DefaultOptions = Eigen::ColMajor, int MaxRows = Rows, int MaxCols = Cols>
+    using GMatrix = galileo::Matrix<Scalar, Rows, Cols, DefaultOptions, MaxRows, MaxCols>;
 
 } // namespace Eigen
 

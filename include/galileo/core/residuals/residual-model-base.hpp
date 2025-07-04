@@ -45,7 +45,7 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            this->derived().calcDiff(data, x.derived(), u.derived());
+            this->derived().calcDiff(data, x.derived());
         }
 
         template <typename CostDataType, typename ActivationDataType>

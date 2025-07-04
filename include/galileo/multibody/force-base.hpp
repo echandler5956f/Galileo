@@ -25,11 +25,8 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
-        // The meta type of the derived class
         using Meta_t = typename traits<Derived>::Meta_t;
-        // The data type of the meta type of the derived class
         using Data_t = typename traits<Meta_t>::Data_t;
-        // The model type of the meta type of the derived class
         using Model_t = typename traits<Meta_t>::Model_t;
 
         GALILEO_FORCE_DATA_TYPEDEF(Meta_t);

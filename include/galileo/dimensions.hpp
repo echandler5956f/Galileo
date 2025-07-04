@@ -2,6 +2,7 @@
 #define __galileo_dimensions_hpp__
 
 #include <cassert>
+#include <cmath>
 
 namespace galileo
 {
@@ -118,7 +119,7 @@ namespace galileo
         constexpr operator int() const { return value(); }
 
         // Compile-time value access (for template parameters)
-        static constexpr int static_value()
+        static constexpr int cvalue()
         {
             return CompileTimeValue;
         }
