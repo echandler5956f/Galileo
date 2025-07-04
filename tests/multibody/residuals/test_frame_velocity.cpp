@@ -114,7 +114,8 @@ TEMPLATE_TEST_CASE("Frame Velocity Residual", "[multibody][residual]", PendulumP
     Motion v_ref(Eigen::Vector3d(0, 0, 1.0), Eigen::Vector3d(0, 0, 0));
 
     // Create the residual model
-    ResidualModel residual_model(&model, frame_id, v_ref, pinocchio::LOCAL);
+    ResidualModel residual_model(&model, frame_id, v_ref, pinocchio::LOCAL, PhaseSpec::NU);
+    std::cout << "NU: " << PhaseSpec::NU << std::endl;
 
     using ActuationModel_t = typename RobotSpec::ActuationModel_t;
     using ActuationData_t = typename RobotSpec::ActuationData_t;
