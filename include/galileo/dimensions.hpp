@@ -7,10 +7,6 @@
 namespace galileo
 {
 
-    // Forward declarations
-    template <int CompileTimeValue>
-    class Dimension;
-
     // Compile-time arithmetic helpers
     namespace detail
     {
