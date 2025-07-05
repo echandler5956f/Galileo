@@ -116,9 +116,9 @@ namespace galileo
         using SE3_t = pinocchio::SE3Tpl<typename PS::VarScalar>;
 
         ResidualModelFramePlacementTpl(RobotModel_t *robot_model,
-                                      const FrameIndex_t frame_id,
-                                      const SE3_t &p_ref,
-                                      const int nu)
+                                       const FrameIndex_t frame_id,
+                                       const SE3_t &p_ref,
+                                       const int nu)
             : robot_model_(robot_model), frame_id_(frame_id), p_ref_(p_ref), oMf_inv_(p_ref.inverse()), nu_(nu)
         {
         }

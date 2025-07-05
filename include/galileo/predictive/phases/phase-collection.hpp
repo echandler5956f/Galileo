@@ -16,7 +16,7 @@ namespace galileo
         using PS = PhaseSpec;
 
         using ModelVariant_t = boost::variant<PhaseModelVoid>; // TODO: Add phase models
-        using DataVariant_t = boost::variant<PhaseDataVoid>; // TODO: Add phase data
+        using DataVariant_t = boost::variant<PhaseDataVoid>;   // TODO: Add phase data
     };
 
     template <typename PhaseSpec>

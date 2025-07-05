@@ -89,13 +89,13 @@ namespace galileo
     inline void contact_set_type(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
         const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t &type);
-        
+
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     inline int contact_nc(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
-            template <typename PhaseSpec,
+    template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     inline int contact_nu(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);

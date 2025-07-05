@@ -1,10 +1,6 @@
 #ifndef __galileo_core_data_joint_hpp__
 #define __galileo_core_data_joint_hpp__
 
-#include "galileo/core/data/fwd.hpp"
-#include "galileo/core/data/data-collector-base.hpp"
-#include "galileo/core/data/data-collector-actuation.hpp"
-
 namespace galileo
 {
 

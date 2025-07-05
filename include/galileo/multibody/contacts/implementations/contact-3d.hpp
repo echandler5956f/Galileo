@@ -203,9 +203,9 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
 
         using Base_t = ContactModelBase<ContactModel3dTpl<PhaseSpec>, PhaseSpec>;
-        using Base_t::updateForceDiff;
         using Base_t::setZeroForce;
         using Base_t::setZeroForceDiff;
+        using Base_t::updateForceDiff;
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 

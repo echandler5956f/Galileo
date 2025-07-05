@@ -1,8 +1,6 @@
 #ifndef __galileo_core_data_data_collector_multibody_hpp__
 #define __galileo_core_data_data_collector_multibody_hpp__
 
-#include "galileo/core/data/fwd.hpp"
-
 namespace galileo
 {
 
@@ -17,7 +15,6 @@ namespace galileo
         typename PS::RobotData_t *robot;
 
         MultibodyDataMixinTpl(typename PS::RobotData_t *data) : robot(data) {}
-        
     };
 
 } // namespace galileo

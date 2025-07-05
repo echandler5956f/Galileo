@@ -120,8 +120,10 @@ namespace galileo
         {
             if (op == setto)
             {
-                if (firstsecond == first || firstsecond == both) Jfirst.setZero();
-                if (firstsecond == second || firstsecond == both) Jsecond.setZero();
+                if (firstsecond == first || firstsecond == both)
+                    Jfirst.setZero();
+                if (firstsecond == second || firstsecond == both)
+                    Jsecond.setZero();
             }
 
             if (firstsecond == first || firstsecond == both)

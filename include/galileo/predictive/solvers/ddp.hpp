@@ -4,9 +4,9 @@
 #include "galileo/predictive/solvers/fwd.hpp"
 #include "galileo/predictive/solvers/solver-base.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 
 namespace galileo
 {

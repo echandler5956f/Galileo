@@ -1,11 +1,10 @@
 #ifndef __galileo_core_data_data_collector_default_hpp__
 #define __galileo_core_data_data_collector_default_hpp__
 
-#include "galileo/core/fwd.hpp"
-#include <galileo/core/data/data-collector-base.hpp>
-#include <galileo/core/data/data-collector-actuation.hpp>
-#include <galileo/core/data/data-collector-joint.hpp>
-#include <galileo/core/data/data-collector-multibody.hpp>
+#include "galileo/core/data/data-collector-base.hpp"
+#include "galileo/core/data/data-collector-actuation.hpp"
+#include "galileo/core/data/data-collector-joint.hpp"
+#include "galileo/core/data/data-collector-multibody.hpp"
 
 namespace galileo
 {

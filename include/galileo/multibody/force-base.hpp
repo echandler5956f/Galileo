@@ -7,9 +7,9 @@
 #include "galileo/multibody/fwd.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 
-#define GALILEO_FORCE_DATA_TYPEDEF(Force)                                  \
-    using MatrixNcNv_t = typename traits<Force>::MatrixNcNv_t;             \
-    using MatrixNcNdx_t = typename traits<Force>::MatrixNcNdx_t;           \
+#define GALILEO_FORCE_DATA_TYPEDEF(Force)                        \
+    using MatrixNcNv_t = typename traits<Force>::MatrixNcNv_t;   \
+    using MatrixNcNdx_t = typename traits<Force>::MatrixNcNdx_t; \
     using MatrixNcNu_t = typename traits<Force>::MatrixNcNu_t;
 
 namespace galileo

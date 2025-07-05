@@ -1,7 +1,6 @@
 #ifndef __galileo_core_data_actuation_hpp__
 #define __galileo_core_data_actuation_hpp__
 
-#include "galileo/core/fwd.hpp"
 #include "galileo/core/actuations/actuation-data-base.hpp"
 
 namespace galileo

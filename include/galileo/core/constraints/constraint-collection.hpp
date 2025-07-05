@@ -14,7 +14,7 @@ namespace galileo
         using PS = PhaseSpec;
 
         using ModelVariant_t = boost::variant<ConstraintModelVoid>; // TODO: add constraint models
-        using DataVariant_t = boost::variant<ConstraintDataVoid>; // TODO: add constraint data
+        using DataVariant_t = boost::variant<ConstraintDataVoid>;   // TODO: add constraint data
 
     }; // struct ConstraintCollectionDefaultTpl
 

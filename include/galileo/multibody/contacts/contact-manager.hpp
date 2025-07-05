@@ -2,9 +2,9 @@
 #define __galileo_multibody_contacts_contact_manager_hpp__
 
 #include <iostream>
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 
 #include "galileo/multibody/contacts/fwd.hpp"
 

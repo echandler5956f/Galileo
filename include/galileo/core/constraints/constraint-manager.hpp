@@ -2,9 +2,9 @@
 #define __galileo_core_constraints_constraint_manager_hpp__
 
 #include <iostream>
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 
 #include "galileo/core/constraints/fwd.hpp"
 #include "galileo/core/constraints/constraint-generic.hpp"

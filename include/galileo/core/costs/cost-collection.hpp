@@ -14,7 +14,7 @@ namespace galileo
         using PS = PhaseSpec;
 
         using ModelVariant_t = boost::variant<CostModelVoid>; // TODO: add cost models
-        using DataVariant_t = boost::variant<CostDataVoid>; // TODO: add cost data
+        using DataVariant_t = boost::variant<CostDataVoid>;   // TODO: add cost data
 
     }; // struct CostCollectionDefaultTpl
 

@@ -6,7 +6,7 @@
 
 namespace galileo
 {
-    
+
     enum Jcomponent
     {
         both = 0,

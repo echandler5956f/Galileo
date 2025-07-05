@@ -34,7 +34,7 @@ namespace galileo
         }
 
         static ContactDataVariant_t run(const ContactModelVariant_t &contact_model,
-                                       DataCollector *const collector)
+                                        DataCollector *const collector)
         {
             return boost::apply_visitor(CreateContactData<PhaseSpec, ContactCollectionTpl, DataCollector>(collector), contact_model);
         }
@@ -45,7 +45,7 @@ namespace galileo
               typename DataCollector>
     inline ContactDataTpl<PhaseSpec, ContactCollectionTpl>
     contact_create_data(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-               DataCollector *const collector)
+                        DataCollector *const collector)
     {
         return CreateContactData<PhaseSpec, ContactCollectionTpl, DataCollector>::run(contact_model, collector);
     }

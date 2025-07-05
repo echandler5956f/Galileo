@@ -2,11 +2,11 @@
 #define __galileo_predictive_solvers_solver_base_hpp__
 
 #include "galileo/predictive/solvers/fwd.hpp"
-#include "galileo/predictive/optimal-control-problem.hpp"
+#include "galileo/predictive/ocp.hpp"
 
-#include <vector>
-#include <memory>
 #include <limits>
+#include <memory>
+#include <vector>
 
 #define GALILEO_SOLVER_BASIC_TYPEDEF(Solver)              \
     using VarScalar = typename traits<Solver>::VarScalar; \
@@ -15,7 +15,7 @@
 
 #define GALILEO_SOLVER_TYPEDEF(Solver)                                                \
     using OptimalControlProblem_t = typename traits<Solver>::OptimalControlProblem_t; \
-    static constexpr FeasibilityNormOptions feasnorm_ = traits<Solver>::feasnorm_;                \
+    static constexpr FeasibilityNormOptions feasnorm_ = traits<Solver>::feasnorm_;    \
     using VectorXv = typename traits<Solver>::VectorXv;                               \
     using VectorXn = typename traits<Solver>::VectorXn;
 
