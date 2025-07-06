@@ -1,5 +1,5 @@
-#ifndef __galileo_macro_hpp_
-#define __galileo_macro_hpp_
+#ifndef __galileo_common_meta_macros_hpp__
+#define __galileo_common_meta_macros_hpp__
 
 #define GALILEO_WORLD_VERSION 2
 #define GALILEO_MAJOR_VERSION 0
@@ -41,4 +41,4 @@
         return accessor_name();                        \
     }
 
-#endif // __galileo_macro_hpp_
+#endif // __galileo_common_meta_macros_hpp__

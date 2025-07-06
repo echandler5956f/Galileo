@@ -89,7 +89,6 @@ namespace galileo
               template <typename> class ActuationTpl>
     struct RobotSpecTpl
     {
-
         using BS = BasicSpec;
         using RS = RobotSpecTpl<BS, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
 
@@ -161,6 +160,20 @@ namespace galileo
         using Motion_t = pinocchio::MotionTpl<VarScalar, Options>;
         using Force_t = pinocchio::ForceTpl<VarScalar, Options>;
         using ActionMatrix_t = typename SE3_t::ActionMatrixType;
+
+        /* ---------------------------------------------------------------- */
+        /* Actual storage of Dimension types */
+        /* ---------------------------------------------------------------- */
+        Dimension<NQb> NQb_;
+        Dimension<NQj> NQj_;
+        Dimension<NVb> NVb_;
+        Dimension<NVj> NVj_;
+        Dimension<NRotors> NRotors_;
+        Dimension<NQ> NQ_;
+        Dimension<NV> NV_;
+        Dimension<NX> NX_;
+        Dimension<NDX> NDX_;
+        Dimension<NUa> NUa_;
     };
 
 } // namespace galileo

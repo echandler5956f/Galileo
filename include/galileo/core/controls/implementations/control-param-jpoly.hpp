@@ -1,7 +1,7 @@
 #ifndef __galileo_core_controls_control_param_jpoly_hpp__
 #define __galileo_core_controls_control_param_jpoly_hpp__
 
-#include "galileo/common/polynomial/polynomial.hpp"
+#include "galileo/common/math/polynomial.hpp"
 #include "galileo/core/controls/control-param-base.hpp"
 
 namespace galileo

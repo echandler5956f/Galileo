@@ -7,10 +7,15 @@ namespace galileo
 } // namespace galileo
 
 #include <cassert>
+#include <cmath>
 #include <memory>
 #include <type_traits>
 
-#include "galileo/macros.hpp"
+#include <Eigen/Core>
+
+#include "galileo/common/meta/dimensions.hpp"
+#include "galileo/common/meta/eigen.hpp"
+#include "galileo/common/meta/macros.hpp"
 
 namespace galileo
 {
@@ -53,7 +58,5 @@ namespace galileo
     } // namespace internal
 
 } // namespace galileo
-
-#include "galileo/eigen.hpp"
 
 #endif // __galileo_fwd_hpp__

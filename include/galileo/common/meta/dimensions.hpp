@@ -1,8 +1,9 @@
-#ifndef __galileo_dimensions_hpp__
-#define __galileo_dimensions_hpp__
+#ifndef __galileo_common_meta_dimensions_hpp__
+#define __galileo_common_meta_dimensions_hpp__
 
 #include <cassert>
 #include <cmath>
+#include <type_traits>
 
 namespace galileo
 {
@@ -63,12 +64,12 @@ namespace galileo
      * dynamic (known only at runtime). It provides seamless arithmetic operations and
      * automatic dispatch for Eigen operations.
      */
-    template <int CompileTimeValue_ = detail::Dynamic>
+    template <int Value_ = detail::Dynamic>
     class Dimension
     {
     public:
-        static constexpr int CompileTimeValue = CompileTimeValue_;
-        static constexpr bool IsDynamic = (CompileTimeValue == detail::Dynamic);
+        static constexpr int Value = Value_;
+        static constexpr bool IsDynamic = (Value == detail::Dynamic);
         static constexpr bool IsFixed = !IsDynamic;
 
     private:
@@ -77,7 +78,7 @@ namespace galileo
     public:
         constexpr Dimension()
             requires IsFixed
-            : runtime_value_(CompileTimeValue)
+            : runtime_value_(Value)
         {
         }
 
@@ -97,7 +98,7 @@ namespace galileo
             requires(!IsDynamic)
             : runtime_value_(runtime_val)
         {
-            assert(runtime_val == CompileTimeValue &&
+            assert(runtime_val == Value &&
                    "Dimension value does not match fixed compile-time size");
         }
 
@@ -105,72 +106,70 @@ namespace galileo
         Dimension(const Dimension &) = default;
         Dimension &operator=(const Dimension &) = default;
 
-        // Conversion from fixed to dynamic dimension
-        template <int OtherValue>
-        Dimension(const Dimension<OtherValue> &other)
-            : runtime_value_(other.value()) {}
-
         // Value access
         constexpr int value() const { return runtime_value_; }
         constexpr operator int() const { return value(); }
 
-        // Compile-time value access (for template parameters)
-        static constexpr int cvalue()
+        void set_value(int runtime_val)
         {
-            return CompileTimeValue;
+            if constexpr (IsDynamic)
+                runtime_value_ = runtime_val;
+            else
+                assert(runtime_val == Value &&
+                       "Dimension value does not match fixed compile-time size");
         }
 
         // Arithmetic operations
         template <int OtherValue>
         auto operator+(const Dimension<OtherValue> &other) const
         {
-            constexpr int result_compile_time = detail::add<CompileTimeValue, OtherValue>::Value;
+            constexpr int result_compile_time = detail::add<Value, OtherValue>::Value;
             return Dimension<result_compile_time>(value() + other.value());
         }
 
         template <int OtherValue>
         auto operator-(const Dimension<OtherValue> &other) const
         {
-            constexpr int result_compile_time = detail::sub<CompileTimeValue, OtherValue>::Value;
+            constexpr int result_compile_time = detail::sub<Value, OtherValue>::Value;
             return Dimension<result_compile_time>(value() - other.value());
         }
 
         template <int OtherValue>
         auto operator*(const Dimension<OtherValue> &other) const
         {
-            constexpr int result_compile_time = detail::mul<CompileTimeValue, OtherValue>::Value;
+            constexpr int result_compile_time = detail::mul<Value, OtherValue>::Value;
             return Dimension<result_compile_time>(value() * other.value());
         }
 
         template <int OtherValue>
         auto operator/(const Dimension<OtherValue> &other) const
         {
-            constexpr int result_compile_time = detail::div<CompileTimeValue, OtherValue>::Value;
+            constexpr int result_compile_time = detail::div<Value, OtherValue>::Value;
             return Dimension<result_compile_time>(value() / other.value());
         }
 
         // Scalar operations
         auto operator+(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? CompileTimeValue + scalar : detail::Dynamic;
+            constexpr int result_compile_time = IsFixed ? Value + scalar : detail::Dynamic;
             return Dimension<result_compile_time>(value() + scalar);
         }
 
         auto operator-(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? CompileTimeValue - scalar : detail::Dynamic;
+            constexpr int result_compile_time = IsFixed ? Value - scalar : detail::Dynamic;
             return Dimension<result_compile_time>(value() - scalar);
         }
 
         auto operator*(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? CompileTimeValue * scalar : detail::Dynamic;
+            constexpr int result_compile_time = IsFixed ? Value * scalar : detail::Dynamic;
             return Dimension<result_compile_time>(value() * scalar);
         }
 
         auto operator/(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? CompileTimeValue / scalar : detail::Dynamic;
+            constexpr int result_compile_time = IsFixed ? Value / scalar : detail::Dynamic;
             return Dimension<result_compile_time>(value() / scalar);
         }
 
@@ -182,17 +181,6 @@ namespace galileo
         bool operator>(const Dimension &other) const { return value() > other.value(); }
         bool operator>=(const Dimension &other) const { return value() >= other.value(); }
     }; // class Dimension
-
-    // Type aliases for common cases
-    using Dynamic = Dimension<detail::Dynamic>;
-    template <int N>
-    using Fixed = Dimension<N>;
-
-    // Factory functions
-    inline Dynamic dynamic(int runtime_value) { return Dynamic(runtime_value); }
-
-    template <int N>
-    inline Fixed<N> fixed() { return Fixed<N>(); }
 
     // Maximum and minimum operations
     template <int A, int B>
@@ -209,6 +197,24 @@ namespace galileo
         return Dimension<result_compile_time>(std::min(a.value(), b.value()));
     }
 
+    // Helper to extract compile-time value from raw integral or dimension types
+    template <auto Val>
+    struct extract_compile_time_value
+    {
+        static constexpr int Value = []()
+        {
+            if constexpr (std::is_integral_v<decltype(Val)>)
+            {
+                return Val;
+            }
+            else
+            {
+                static_assert(!Val.IsDynamic, "Cannot use dynamic dimension as template parameter");
+                return Val.Value;
+            }
+        }();
+    };
+
 } // namespace galileo
 
-#endif // __galileo_dimensions_hpp__
+#endif // __galileo_common_meta_dimensions_hpp__

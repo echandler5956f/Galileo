@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
-#include "galileo/common/polynomial/polynomial.hpp"
+#include "galileo/common/math/polynomial.hpp"
 #include "../helpers/catch_eigen_matchers.hpp"
 
 using namespace galileo;
@@ -75,4 +75,4 @@ TEMPLATE_TEST_CASE("Jacobi Polynomial Interpolation", "[common][polynomial]", do
         }
         REQUIRE_THAT(du_dw_analytical, Approx(du_dw_numerical, epsilon * 100));
     }
-} 
+}

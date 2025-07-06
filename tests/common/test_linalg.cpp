@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "galileo/common/linalg/helpers.hpp"
+#include "galileo/common/math/symmetric-positive-definite.hpp"
 #include "../helpers/catch_eigen_matchers.hpp"
 
 using namespace galileo;

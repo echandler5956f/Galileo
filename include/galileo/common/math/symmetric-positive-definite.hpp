@@ -1,5 +1,5 @@
-#ifndef __galileo_common_linalg_helpers_hpp__
-#define __galileo_common_linalg_helpers_hpp__
+#ifndef __galileo_common_math_symmetric_positive_definite_hpp__
+#define __galileo_common_math_symmetric_positive_definite_hpp__
 
 #include "galileo/common/fwd.hpp"
 #include <Eigen/Dense>
@@ -165,4 +165,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_common_linalg_helpers_hpp__
+#endif // __galileo_common_math_symmetric_positive_definite_hpp__
