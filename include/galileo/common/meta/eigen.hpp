@@ -1,9 +1,11 @@
 #ifndef __galileo_common_meta_eigen_hpp__
 #define __galileo_common_meta_eigen_hpp__
 
-#include <Eigen/Core>
 #include <cassert>
+#include <cmath>
 #include <type_traits>
+
+#include <Eigen/Core>
 
 #include "galileo/common/meta/concepts.hpp"
 #include "galileo/common/meta/dimensions.hpp"
@@ -94,6 +96,24 @@ namespace galileo
         return vec.template segment<compile_time_len>(start);
     }
 
+    template <auto Len, typename Derived>
+        requires IsEigenVector<Derived>
+    static auto segment(const Eigen::MatrixBase<Derived> &vec,
+                        Eigen::Index start)
+    {
+        constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
+        return vec.template segment<compile_time_len>(start);
+    }
+
+    template <typename Derived, typename LenType>
+        requires IsEigenVector<Derived>
+    static auto segment(Eigen::MatrixBase<Derived> &vec,
+                        Eigen::Index start,
+                        const LenType &len)
+    {
+        return segmentImpl(vec, start, len);
+    }
+
     template <typename Derived, typename LenType>
         requires IsEigenVector<Derived>
     static auto segment(const Eigen::MatrixBase<Derived> &vec,
@@ -132,9 +152,24 @@ namespace galileo
         return vec.template head<compile_time_len>();
     }
 
+    template <auto Len, typename Derived>
+        requires IsEigenVector<Derived>
+    static auto head(const Eigen::MatrixBase<Derived> &vec)
+    {
+        constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
+        return vec.template head<compile_time_len>();
+    }
+
     template <typename Derived, typename LenType>
         requires IsEigenVector<Derived>
     static auto head(Eigen::MatrixBase<Derived> &vec, const LenType &len)
+    {
+        return headImpl(vec, len);
+    }
+
+    template <typename Derived, typename LenType>
+        requires IsEigenVector<Derived>
+    static auto head(const Eigen::MatrixBase<Derived> &vec, const LenType &len)
     {
         return headImpl(vec, len);
     }
@@ -168,9 +203,24 @@ namespace galileo
         return vec.template tail<compile_time_len>();
     }
 
+    template <auto Len, typename Derived>
+        requires IsEigenVector<Derived>
+    static auto tail(const Eigen::MatrixBase<Derived> &vec)
+    {
+        constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
+        return vec.template tail<compile_time_len>();
+    }
+
     template <typename Derived, typename LenType>
         requires IsEigenVector<Derived>
     static auto tail(Eigen::MatrixBase<Derived> &vec, const LenType &len)
+    {
+        return tailImpl(vec, len);
+    }
+
+    template <typename Derived, typename LenType>
+        requires IsEigenVector<Derived>
+    static auto tail(const Eigen::MatrixBase<Derived> &vec, const LenType &len)
     {
         return tailImpl(vec, len);
     }
@@ -235,8 +285,23 @@ namespace galileo
         return mat.template block<compile_time_rows, compile_time_cols>(start_row, start_col);
     }
 
+    template <auto RowSize, auto ColSize, typename Derived>
+    static auto block(const Eigen::MatrixBase<Derived> &mat, int start_row, int start_col)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
+        constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
+        return mat.template block<compile_time_rows, compile_time_cols>(start_row, start_col);
+    }
+
     template <typename Derived, typename RowSizeType, typename ColSizeType>
     static auto block(Eigen::MatrixBase<Derived> &mat, int start_row, int start_col,
+                      const RowSizeType &row_size, const ColSizeType &col_size)
+    {
+        return blockImpl(mat, start_row, start_col, row_size, col_size);
+    }
+
+    template <typename Derived, typename RowSizeType, typename ColSizeType>
+    static auto block(const Eigen::MatrixBase<Derived> &mat, int start_row, int start_col,
                       const RowSizeType &row_size, const ColSizeType &col_size)
     {
         return blockImpl(mat, start_row, start_col, row_size, col_size);
@@ -301,8 +366,22 @@ namespace galileo
         return mat.template topLeftCorner<compile_time_rows, compile_time_cols>();
     }
 
+    template <auto RowSize, auto ColSize, typename Derived>
+    static auto topLeftCorner(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
+        constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
+        return mat.template topLeftCorner<compile_time_rows, compile_time_cols>();
+    }
+
     template <typename Derived, typename RowSizeType, typename ColSizeType>
     static auto topLeftCorner(Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
+    {
+        return topLeftCornerImpl(mat, row_size, col_size);
+    }
+
+    template <typename Derived, typename RowSizeType, typename ColSizeType>
+    static auto topLeftCorner(const Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
     {
         return topLeftCornerImpl(mat, row_size, col_size);
     }
@@ -366,8 +445,22 @@ namespace galileo
         return mat.template topRightCorner<compile_time_rows, compile_time_cols>();
     }
 
+    template <auto RowSize, auto ColSize, typename Derived>
+    static auto topRightCorner(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
+        constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
+        return mat.template topRightCorner<compile_time_rows, compile_time_cols>();
+    }
+
     template <typename Derived, typename RowSizeType, typename ColSizeType>
     static auto topRightCorner(Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
+    {
+        return topRightCornerImpl(mat, row_size, col_size);
+    }
+
+    template <typename Derived, typename RowSizeType, typename ColSizeType>
+    static auto topRightCorner(const Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
     {
         return topRightCornerImpl(mat, row_size, col_size);
     }
@@ -431,8 +524,22 @@ namespace galileo
         return mat.template bottomLeftCorner<compile_time_rows, compile_time_cols>();
     }
 
+    template <auto RowSize, auto ColSize, typename Derived>
+    static auto bottomLeftCorner(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
+        constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
+        return mat.template bottomLeftCorner<compile_time_rows, compile_time_cols>();
+    }
+
     template <typename Derived, typename RowSizeType, typename ColSizeType>
     static auto bottomLeftCorner(Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
+    {
+        return bottomLeftCornerImpl(mat, row_size, col_size);
+    }
+
+    template <typename Derived, typename RowSizeType, typename ColSizeType>
+    static auto bottomLeftCorner(const Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
     {
         return bottomLeftCornerImpl(mat, row_size, col_size);
     }
@@ -496,8 +603,22 @@ namespace galileo
         return mat.template bottomRightCorner<compile_time_rows, compile_time_cols>();
     }
 
+    template <auto RowSize, auto ColSize, typename Derived>
+    static auto bottomRightCorner(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
+        constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
+        return mat.template bottomRightCorner<compile_time_rows, compile_time_cols>();
+    }
+
     template <typename Derived, typename RowSizeType, typename ColSizeType>
     static auto bottomRightCorner(Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
+    {
+        return bottomRightCornerImpl(mat, row_size, col_size);
+    }
+
+    template <typename Derived, typename RowSizeType, typename ColSizeType>
+    static auto bottomRightCorner(const Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size, const ColSizeType &col_size)
     {
         return bottomRightCornerImpl(mat, row_size, col_size);
     }
@@ -530,8 +651,21 @@ namespace galileo
         return mat.template topRows<compile_time_rows>();
     }
 
+    template <auto RowSize, typename Derived>
+    static auto topRows(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
+        return mat.template topRows<compile_time_rows>();
+    }
+
     template <typename Derived, typename RowSizeType>
     static auto topRows(Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size)
+    {
+        return topRowsImpl(mat, row_size);
+    }
+
+    template <typename Derived, typename RowSizeType>
+    static auto topRows(const Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size)
     {
         return topRowsImpl(mat, row_size);
     }
@@ -563,8 +697,21 @@ namespace galileo
         return mat.template bottomRows<compile_time_rows>();
     }
 
+    template <auto RowSize, typename Derived>
+    static auto bottomRows(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
+        return mat.template bottomRows<compile_time_rows>();
+    }
+
     template <typename Derived, typename RowSizeType>
     static auto bottomRows(Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size)
+    {
+        return bottomRowsImpl(mat, row_size);
+    }
+
+    template <typename Derived, typename RowSizeType>
+    static auto bottomRows(const Eigen::MatrixBase<Derived> &mat, const RowSizeType &row_size)
     {
         return bottomRowsImpl(mat, row_size);
     }
@@ -596,8 +743,21 @@ namespace galileo
         return mat.template leftCols<compile_time_cols>();
     }
 
+    template <auto ColSize, typename Derived>
+    static auto leftCols(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
+        return mat.template leftCols<compile_time_cols>();
+    }
+
     template <typename Derived, typename ColSizeType>
     static auto leftCols(Eigen::MatrixBase<Derived> &mat, const ColSizeType &col_size)
+    {
+        return leftColsImpl(mat, col_size);
+    }
+
+    template <typename Derived, typename ColSizeType>
+    static auto leftCols(const Eigen::MatrixBase<Derived> &mat, const ColSizeType &col_size)
     {
         return leftColsImpl(mat, col_size);
     }
@@ -629,8 +789,21 @@ namespace galileo
         return mat.template rightCols<compile_time_cols>();
     }
 
+    template <auto ColSize, typename Derived>
+    static auto rightCols(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
+        return mat.template rightCols<compile_time_cols>();
+    }
+
     template <typename Derived, typename ColSizeType>
     static auto rightCols(Eigen::MatrixBase<Derived> &mat, const ColSizeType &col_size)
+    {
+        return rightColsImpl(mat, col_size);
+    }
+
+    template <typename Derived, typename ColSizeType>
+    static auto rightCols(const Eigen::MatrixBase<Derived> &mat, const ColSizeType &col_size)
     {
         return rightColsImpl(mat, col_size);
     }

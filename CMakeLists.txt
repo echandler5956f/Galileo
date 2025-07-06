@@ -16,7 +16,7 @@ set(Galileo_SOURCE_DIR ${Galileo_SOURCE_DIR})
 set(Galileo_BINARY_DIR ${Galileo_BINARY_DIR})
 
 # automatically parse the version number
-file(READ "${PROJECT_SOURCE_DIR}/include/galileo/macros.hpp" _galileo_version_header)
+file(READ "${PROJECT_SOURCE_DIR}/include/galileo/common/meta/macros.hpp" _galileo_version_header)
 string(REGEX MATCH "define[ \t]+GALILEO_WORLD_VERSION[ \t]+([0-9]+)" _galileo_world_version_match "${_galileo_version_header}")
 set(GALILEO_WORLD_VERSION "${CMAKE_MATCH_1}")
 string(REGEX MATCH "define[ \t]+GALILEO_MAJOR_VERSION[ \t]+([0-9]+)" _galileo_major_version_match "${_galileo_version_header}")
@@ -32,14 +32,14 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-option(ENABLE_VECTORIZATION_SUOPPORT 
+option(ENABLE_VECTORIZATION_SUOPPORT
     "Enable vectorization and further processor-related optimizations" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
 option(GALILEO_BUILD_TESTS "Build the tests for galileo" ON)
 
-add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization 
-                    -Wno-sign-conversion -Wformat=2 -Winit-self 
-                    -Wmissing-include-dirs -Woverloaded-virtual -Wshadow 
+add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization
+                    -Wno-sign-conversion -Wformat=2 -Winit-self
+                    -Wmissing-include-dirs -Woverloaded-virtual -Wshadow
                     -Wsign-promo)
 
 if(ENABLE_VECTORIZATION_SUOPPORT)
@@ -71,10 +71,10 @@ set(PKGCONFIG_INSTALL_DIR
 
 include(RegexUtils)
 test_escape_string_as_regex()
-  
+
 install(
     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/galileo/"
-    DESTINATION "${INCLUDE_INSTALL_DIR}" 
+    DESTINATION "${INCLUDE_INSTALL_DIR}"
     FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx" PATTERN ".*" EXCLUDE
 )
 

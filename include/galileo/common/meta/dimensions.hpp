@@ -24,7 +24,7 @@ namespace galileo
         template <int A, int B>
         struct sub
         {
-            static constexpr int Value = (A == Dynamic || B == Dynamic) ? Dynamic : (A - B);
+            static constexpr int Value = (A == Dynamic || B == Dynamic || A < B) ? Dynamic : (A - B);
         };
 
         // Multiplication with dynamic handling
@@ -80,6 +80,7 @@ namespace galileo
             requires IsFixed
             : runtime_value_(Value)
         {
+            static_assert(Value >= 0, "Compile-time dimension values must be non-negative");
         }
 
         constexpr Dimension()
@@ -92,6 +93,7 @@ namespace galileo
             requires IsDynamic
             : runtime_value_(runtime_val)
         {
+            assert(runtime_val >= 0 && "Runtime dimension values must be non-negative");
         }
 
         constexpr explicit Dimension(int runtime_val)
@@ -113,10 +115,16 @@ namespace galileo
         void set_value(int runtime_val)
         {
             if constexpr (IsDynamic)
+            {
+                assert(runtime_val >= 0 && "Runtime dimension values must be non-negative");
                 runtime_value_ = runtime_val;
+            }
             else
+            {
                 assert(runtime_val == Value &&
                        "Dimension value does not match fixed compile-time size");
+                assert(runtime_val >= 0 && "Runtime dimension values must be non-negative");
+            }
         }
 
         // Arithmetic operations
@@ -129,9 +137,12 @@ namespace galileo
 
         template <int OtherValue>
         auto operator-(const Dimension<OtherValue> &other) const
+            requires(IsDynamic || OtherValue == detail::Dynamic || Value >= OtherValue)
         {
             constexpr int result_compile_time = detail::sub<Value, OtherValue>::Value;
-            return Dimension<result_compile_time>(value() - other.value());
+            int runtime_result = value() - other.value();
+            assert(runtime_result >= 0 && "Dimension subtraction resulted in negative runtime value");
+            return Dimension<result_compile_time>(runtime_result);
         }
 
         template <int OtherValue>
@@ -151,26 +162,22 @@ namespace galileo
         // Scalar operations
         auto operator+(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? Value + scalar : detail::Dynamic;
-            return Dimension<result_compile_time>(value() + scalar);
+            return Dimension<detail::Dynamic>(value() + scalar);
         }
 
         auto operator-(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? Value - scalar : detail::Dynamic;
-            return Dimension<result_compile_time>(value() - scalar);
+            return Dimension<detail::Dynamic>(value() - scalar);
         }
 
         auto operator*(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? Value * scalar : detail::Dynamic;
-            return Dimension<result_compile_time>(value() * scalar);
+            return Dimension<detail::Dynamic>(value() * scalar);
         }
 
         auto operator/(int scalar) const
         {
-            constexpr int result_compile_time = IsFixed ? Value / scalar : detail::Dynamic;
-            return Dimension<result_compile_time>(value() / scalar);
+            return Dimension<detail::Dynamic>(value() / scalar);
         }
 
         // Comparison operations
