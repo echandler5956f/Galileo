@@ -31,7 +31,11 @@ namespace galileo
         using RowDim = Dimension<R>;
         using ColDim = Dimension<C>;
 
-        // Vectors (only enabled when expression is a vector)
+        // Block accessors
+        static constexpr bool RowFixed = (R != Eigen::Dynamic);
+        static constexpr bool ColFixed = (C != Eigen::Dynamic);
+
+        // Segment accessors
         static constexpr int LenCT = (R == 1 ? C : (C == 1 ? R : -1));
 
         template <typename Derived>
@@ -58,6 +62,7 @@ namespace galileo
                 return vec.segment(start, len);
         }
 
+        // Head and tail accessors
         template <typename Derived>
             requires EigenVector<Derived>
         static auto head(Eigen::MatrixBase<Derived> &vec,
@@ -102,7 +107,7 @@ namespace galileo
                 return vec.tail(len);
         }
 
-        // Matrices (rectangular or square)
+        // Block accessors
         template <typename Derived>
         static auto block(Eigen::MatrixBase<Derived> &mat,
                           Eigen::Index row0,
@@ -110,9 +115,6 @@ namespace galileo
                           const RowDim &rsz = RowDim(),
                           const ColDim &csz = ColDim())
         {
-            constexpr bool RowFixed = (R != Eigen::Dynamic);
-            constexpr bool ColFixed = (C != Eigen::Dynamic);
-
             if constexpr (RowFixed && ColFixed)
                 return mat.template block<R, C>(row0, col0);
             else if constexpr (RowFixed && !ColFixed)
@@ -130,9 +132,6 @@ namespace galileo
                           const RowDim &rsz = RowDim(),
                           const ColDim &csz = ColDim())
         {
-            constexpr bool RowFixed = (R != Eigen::Dynamic);
-            constexpr bool ColFixed = (C != Eigen::Dynamic);
-
             if constexpr (RowFixed && ColFixed)
                 return mat.template block<R, C>(row0, col0);
             else if constexpr (RowFixed && !ColFixed)
@@ -141,6 +140,208 @@ namespace galileo
                 return mat.template block<Eigen::Dynamic, C>(row0, col0, rsz, C);
             else
                 return mat.block(row0, col0, rsz, csz);
+        }
+
+        // Corner accessors
+        template <typename Derived>
+        static auto topLeftCorner(Eigen::MatrixBase<Derived> &mat,
+                                  const RowDim &rsz = RowDim(),
+                                  const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template topLeftCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template topLeftCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template topLeftCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.topLeftCorner(rsz, csz);
+        }
+
+        template <typename Derived>
+        static auto topLeftCorner(const Eigen::MatrixBase<Derived> &mat,
+                                  const RowDim &rsz = RowDim(),
+                                  const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template topLeftCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template topLeftCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template topLeftCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.topLeftCorner(rsz, csz);
+        }
+
+        template <typename Derived>
+        static auto topRightCorner(Eigen::MatrixBase<Derived> &mat,
+                                   const RowDim &rsz = RowDim(),
+                                   const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template topRightCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template topRightCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template topRightCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.topRightCorner(rsz, csz);
+        }
+
+        template <typename Derived>
+        static auto topRightCorner(const Eigen::MatrixBase<Derived> &mat,
+                                   const RowDim &rsz = RowDim(),
+                                   const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template topRightCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template topRightCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template topRightCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.topRightCorner(rsz, csz);
+        }
+
+        template <typename Derived>
+        static auto bottomLeftCorner(Eigen::MatrixBase<Derived> &mat,
+                                     const RowDim &rsz = RowDim(),
+                                     const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template bottomLeftCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template bottomLeftCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template bottomLeftCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.bottomLeftCorner(rsz, csz);
+        }
+
+        template <typename Derived>
+        static auto bottomLeftCorner(const Eigen::MatrixBase<Derived> &mat,
+                                     const RowDim &rsz = RowDim(),
+                                     const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template bottomLeftCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template bottomLeftCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template bottomLeftCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.bottomLeftCorner(rsz, csz);
+        }
+
+        template <typename Derived>
+        static auto bottomRightCorner(Eigen::MatrixBase<Derived> &mat,
+                                      const RowDim &rsz = RowDim(),
+                                      const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template bottomRightCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template bottomRightCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template bottomRightCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.bottomRightCorner(rsz, csz);
+        }
+
+        template <typename Derived>
+        static auto bottomRightCorner(const Eigen::MatrixBase<Derived> &mat,
+                                      const RowDim &rsz = RowDim(),
+                                      const ColDim &csz = ColDim())
+        {
+            if constexpr (RowFixed && ColFixed)
+                return mat.template bottomRightCorner<R, C>();
+            else if constexpr (RowFixed && !ColFixed)
+                return mat.template bottomRightCorner<R, Eigen::Dynamic>(R, csz);
+            else if constexpr (!RowFixed && ColFixed)
+                return mat.template bottomRightCorner<Eigen::Dynamic, C>(rsz, C);
+            else
+                return mat.bottomRightCorner(rsz, csz);
+        }
+
+        // Row and column accessors
+        template <typename Derived>
+        static auto topRows(Eigen::MatrixBase<Derived> &mat,
+                            const RowDim &rsz = RowDim())
+        {
+            if constexpr (RowFixed)
+                return mat.template topRows<R>();
+            else
+                return mat.topRows(rsz);
+        }
+
+        template <typename Derived>
+        static auto topRows(const Eigen::MatrixBase<Derived> &mat,
+                            const RowDim &rsz = RowDim())
+        {
+            if constexpr (RowFixed)
+                return mat.template topRows<R>();
+            else
+                return mat.topRows(rsz);
+        }
+
+        template <typename Derived>
+        static auto bottomRows(Eigen::MatrixBase<Derived> &mat,
+                               const RowDim &rsz = RowDim())
+        {
+            if constexpr (RowFixed)
+                return mat.template bottomRows<R>();
+            else
+                return mat.bottomRows(rsz);
+        }
+
+        template <typename Derived>
+        static auto bottomRows(const Eigen::MatrixBase<Derived> &mat,
+                               const RowDim &rsz = RowDim())
+        {
+            if constexpr (RowFixed)
+                return mat.template bottomRows<R>();
+            else
+                return mat.bottomRows(rsz);
+        }
+
+        template <typename Derived>
+        static auto leftCols(Eigen::MatrixBase<Derived> &mat,
+                             const ColDim &csz = ColDim())
+        {
+            if constexpr (ColFixed)
+                return mat.template leftCols<C>();
+            else
+                return mat.leftCols(csz);
+        }
+
+        template <typename Derived>
+        static auto leftCols(const Eigen::MatrixBase<Derived> &mat,
+                             const ColDim &csz = ColDim())
+        {
+            if constexpr (ColFixed)
+                return mat.template leftCols<C>();
+            else
+                return mat.leftCols(csz);
+        }
+
+        template <typename Derived>
+        static auto rightCols(Eigen::MatrixBase<Derived> &mat,
+                              const ColDim &csz = ColDim())
+        {
+            if constexpr (ColFixed)
+                return mat.template rightCols<C>();
+            else
+                return mat.rightCols(csz);
+        }
+
+        template <typename Derived>
+        static auto rightCols(const Eigen::MatrixBase<Derived> &mat,
+                              const ColDim &csz = ColDim())
+        {
+            if constexpr (ColFixed)
+                return mat.template rightCols<C>();
+            else
+                return mat.rightCols(csz);
         }
 
         template <typename Mat>
