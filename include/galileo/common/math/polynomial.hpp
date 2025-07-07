@@ -2,6 +2,8 @@
 #define __galileo_common_math_polynomial_hpp__
 
 #include "galileo/common/fwd.hpp"
+#include <cassert>
+#include <limits>
 
 namespace galileo
 {
@@ -16,6 +18,9 @@ namespace galileo
         }
 
         // IMTQLX: Diagonalizes a symmetric tridiagonal matrix.
+        // d: diagonal elements
+        // e: off-diagonal elements
+        // z: on input, a vector. On output, the value of Q^T * z where Q is the orthogonal matrix that diagonalizes the matrix.
         template <typename VectorType1, typename VectorType2, typename VectorType3>
         inline void imtqlx(Eigen::MatrixBase<VectorType1> &d,
                            Eigen::MatrixBase<VectorType2> &e,
@@ -72,8 +77,7 @@ namespace galileo
                         break;
                     }
 
-                    if (j >= itn)
-                        assert(false && "IMTQLX - Fatal error!");
+                    assert(j < itn && "IMTQLX - Fatal error!");
                     j = j + 1;
                     g = (d(l) - p) / (2.0 * e(l - 1));
                     r = std::sqrt(g * g + 1.0);
@@ -154,7 +158,7 @@ namespace galileo
             static constexpr int N = _N;
             static constexpr int Options = _Options;
 
-            JacobiPolynomialTpl() : alpha_(0), beta_(0) {}
+            JacobiPolynomialTpl() : alpha_(0.0), beta_(0.0) {}
 
             JacobiPolynomialTpl(const NumScalar &alpha, const NumScalar &beta) : alpha_(alpha), beta_(beta)
             {
@@ -163,20 +167,36 @@ namespace galileo
                 compute_barycentric_weights();
             }
 
+            const Eigen::GMatrix<NumScalar, N, N, Options> &get_coeffs() const
+            {
+                return coeffs_;
+            }
+
+            const Eigen::GMatrix<NumScalar, N, 1, Options> &get_weights() const
+            {
+                return weights_;
+            }
+
             const Eigen::GMatrix<NumScalar, N, 1, Options> &get_nodes() const
             {
                 return nodes_;
             }
 
+            const Eigen::GMatrix<NumScalar, N, N, Options> &get_jacobi_matrix() const
+            {
+                return jacobi_matrix_;
+            }
+
+            // Interpolate a polynomial at t with values w at the nodes, yielding the vector u(t)
             template <typename InputMatrixType, typename OutputVectorType>
             void barycentricInterpolation(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputVectorType> &u) const
             {
                 assert(w.cols() == N);
-                assert(t >= NumScalar(0.) && t <= NumScalar(1.));
+                assert(t >= NumScalar(0.0) && t <= NumScalar(1.0));
 
                 for (std::size_t i = 0; i < N; ++i)
                 {
-                    if (std::abs(t - nodes_(i)) < 1e-8)
+                    if (std::abs(t - nodes_(i)) < std::numeric_limits<NumScalar>::epsilon())
                     {
                         u = w.col(i);
                         return;
@@ -191,10 +211,7 @@ namespace galileo
                     sum_c += c(i);
                 }
 
-                if (std::abs(sum_c) < 1e-12)
-                {
-                    throw std::runtime_error("Error: Division by zero in BarycentricInterpolation");
-                }
+                assert(std::abs(sum_c) > std::numeric_limits<NumScalar>::epsilon() && "Error: Division by zero in BarycentricInterpolation");
 
                 u.setZero();
                 for (std::size_t i = 0; i < N; ++i)
@@ -208,7 +225,7 @@ namespace galileo
             void barycentricInterpolationDiff(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputMatrixType> &du_dw) const
             {
                 assert(w.cols() == N);
-                assert(t >= NumScalar(0.) && t <= NumScalar(1.));
+                assert(t >= NumScalar(0.0) && t <= NumScalar(1.0));
 
                 assert(du_dw.rows() == w.rows());
                 assert(du_dw.cols() == w.rows() * N);
@@ -218,7 +235,7 @@ namespace galileo
                 // and with respect to all other columns is zero.
                 for (std::size_t i = 0; i < N; ++i)
                 {
-                    if (std::abs(t - nodes_[i]) < 1e-8)
+                    if (std::abs(t - nodes_[i]) < std::numeric_limits<NumScalar>::epsilon())
                     {
                         du_dw.setZero();
                         du_dw.block(0, i * w.rows(), w.rows(), w.rows()).setIdentity();
@@ -237,10 +254,7 @@ namespace galileo
                 }
 
                 // Check for division by zero
-                if (std::abs(sum_c) < 1e-12)
-                {
-                    throw std::runtime_error("Error: Division by zero in barycentricInterpolationDiff");
-                }
+                assert(std::abs(sum_c) > std::numeric_limits<NumScalar>::epsilon() && "Error: Division by zero in barycentricInterpolationDiff");
 
                 // The interpolated value is u = (sum_i c_i * w.col(i)) / sum_c.
                 // Thus, for each element k of u:
@@ -303,6 +317,11 @@ namespace galileo
                 }
 
                 // Diagonalize the Jacobi matrix.
+                jacobi_matrix_.setZero();
+                jacobi_matrix_.diagonal() = nodes_;
+                jacobi_matrix_.diagonal(-1) = bj.segment(1, N - 1);
+                jacobi_matrix_.diagonal(1) = bj.segment(1, N - 1);
+
                 imtqlx(nodes_, bj, weights_);
 
                 // Map nodes_ to [0, 1]
@@ -323,7 +342,7 @@ namespace galileo
                 Eigen::GMatrix<NumScalar, N, 1, Options> R;
                 for (int j = 0; j < N; j++)
                 {
-                    R(j, 0) = 1. / (j + 1);
+                    R(j, 0) = 1.0 / (j + 1);
                 }
                 Eigen::GMatrix<NumScalar, N, N, Options> R_diag = R.asDiagonal();
                 Eigen::GMatrix<NumScalar, N, N, Options> Vandermonde = Eigen::GMatrix<NumScalar, N, N, Options>::Ones();
@@ -367,6 +386,7 @@ namespace galileo
             Eigen::GMatrix<NumScalar, N, N, Options> coeffs_;
             Eigen::GMatrix<NumScalar, N, 1, Options> weights_;
             Eigen::GMatrix<NumScalar, N, 1, Options> nodes_;
+            Eigen::GMatrix<NumScalar, N, N, Options> jacobi_matrix_;
 
             Eigen::GMatrix<NumScalar, N, 1, Options> barycentric_weights_;
 
