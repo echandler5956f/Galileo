@@ -7,11 +7,11 @@
 
 using namespace galileo;
 
-TEST_CASE("Dimension - Basic Construction and Properties", "[dimensions]")
+TEST_CASE("DimensionTpl - Basic Construction and Properties", "[dimensions]")
 {
     SECTION("Fixed dimension construction")
     {
-        constexpr Dimension<5> fixed_dim;
+        constexpr DimensionTpl<5> fixed_dim;
         REQUIRE(fixed_dim.value() == 5);
         REQUIRE(fixed_dim.Value == 5);
         REQUIRE(fixed_dim.IsFixed);
@@ -21,7 +21,7 @@ TEST_CASE("Dimension - Basic Construction and Properties", "[dimensions]")
 
     SECTION("Dynamic dimension construction")
     {
-        Dimension<> dynamic_dim;
+        DimensionTpl<> dynamic_dim;
         REQUIRE(dynamic_dim.value() == 0);
         REQUIRE(dynamic_dim.Value == detail::Dynamic);
         REQUIRE(dynamic_dim.IsDynamic);
@@ -30,7 +30,7 @@ TEST_CASE("Dimension - Basic Construction and Properties", "[dimensions]")
 
     SECTION("Dynamic dimension with initial value")
     {
-        Dimension<> dynamic_dim(42);
+        DimensionTpl<> dynamic_dim(42);
         REQUIRE(dynamic_dim.value() == 42);
         REQUIRE(dynamic_dim.IsDynamic);
         REQUIRE(static_cast<int>(dynamic_dim) == 42);
@@ -38,7 +38,7 @@ TEST_CASE("Dimension - Basic Construction and Properties", "[dimensions]")
 
     SECTION("Fixed dimension with explicit runtime value")
     {
-        Dimension<7> fixed_dim(7);
+        DimensionTpl<7> fixed_dim(7);
         REQUIRE(fixed_dim.value() == 7);
         REQUIRE(fixed_dim.Value == 7);
         REQUIRE(fixed_dim.IsFixed);
@@ -46,7 +46,7 @@ TEST_CASE("Dimension - Basic Construction and Properties", "[dimensions]")
 
     SECTION("Zero dimension")
     {
-        constexpr Dimension<0> zero_dim;
+        constexpr DimensionTpl<0> zero_dim;
         REQUIRE(zero_dim.value() == 0);
         REQUIRE(zero_dim.Value == 0);
         REQUIRE_FALSE(zero_dim.IsDynamic);
@@ -54,17 +54,17 @@ TEST_CASE("Dimension - Basic Construction and Properties", "[dimensions]")
 
     SECTION("Large dimension")
     {
-        constexpr Dimension<1000> large_dim;
+        constexpr DimensionTpl<1000> large_dim;
         REQUIRE(large_dim.value() == 1000);
         REQUIRE(large_dim.Value == 1000);
     }
 }
 
-TEST_CASE("Dimension - Value Setting and Modification", "[dimensions]")
+TEST_CASE("DimensionTpl - Value Setting and Modification", "[dimensions]")
 {
     SECTION("Setting dynamic dimension value")
     {
-        Dimension<> dynamic_dim;
+        DimensionTpl<> dynamic_dim;
         dynamic_dim.set_value(123);
         REQUIRE(dynamic_dim.value() == 123);
 
@@ -77,7 +77,7 @@ TEST_CASE("Dimension - Value Setting and Modification", "[dimensions]")
 
     SECTION("Setting fixed dimension value - valid")
     {
-        Dimension<42> fixed_dim;
+        DimensionTpl<42> fixed_dim;
         // Should not throw when setting to correct value
         REQUIRE_NOTHROW(fixed_dim.set_value(42));
         REQUIRE(fixed_dim.value() == 42);
@@ -85,30 +85,30 @@ TEST_CASE("Dimension - Value Setting and Modification", "[dimensions]")
 
     SECTION("Copy construction and assignment")
     {
-        Dimension<10> fixed_original;
-        Dimension<10> fixed_copy(fixed_original);
+        DimensionTpl<10> fixed_original;
+        DimensionTpl<10> fixed_copy(fixed_original);
         REQUIRE(fixed_copy.value() == 10);
 
-        Dimension<10> fixed_assigned;
+        DimensionTpl<10> fixed_assigned;
         fixed_assigned = fixed_original;
         REQUIRE(fixed_assigned.value() == 10);
 
-        Dimension<> dynamic_original(55);
-        Dimension<> dynamic_copy(dynamic_original);
+        DimensionTpl<> dynamic_original(55);
+        DimensionTpl<> dynamic_copy(dynamic_original);
         REQUIRE(dynamic_copy.value() == 55);
 
-        Dimension<> dynamic_assigned;
+        DimensionTpl<> dynamic_assigned;
         dynamic_assigned = dynamic_original;
         REQUIRE(dynamic_assigned.value() == 55);
     }
 }
 
-TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
+TEST_CASE("DimensionTpl - Arithmetic Operations", "[dimensions]")
 {
     SECTION("Addition - Fixed + Fixed")
     {
-        constexpr Dimension<5> a;
-        constexpr Dimension<3> b;
+        constexpr DimensionTpl<5> a;
+        constexpr DimensionTpl<3> b;
         auto result = a + b;
 
         REQUIRE(result.value() == 8);
@@ -118,8 +118,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Addition - Fixed + Dynamic")
     {
-        constexpr Dimension<10> fixed;
-        Dimension<> dynamic(7);
+        constexpr DimensionTpl<10> fixed;
+        DimensionTpl<> dynamic(7);
         auto result = fixed + dynamic;
 
         REQUIRE(result.value() == 17);
@@ -129,8 +129,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Addition - Dynamic + Fixed")
     {
-        Dimension<> dynamic(12);
-        constexpr Dimension<8> fixed;
+        DimensionTpl<> dynamic(12);
+        constexpr DimensionTpl<8> fixed;
         auto result = dynamic + fixed;
 
         REQUIRE(result.value() == 20);
@@ -140,8 +140,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Addition - Dynamic + Dynamic")
     {
-        Dimension<> a(15);
-        Dimension<> b(25);
+        DimensionTpl<> a(15);
+        DimensionTpl<> b(25);
         auto result = a + b;
 
         REQUIRE(result.value() == 40);
@@ -151,8 +151,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Subtraction - Fixed - Fixed")
     {
-        constexpr Dimension<10> a;
-        constexpr Dimension<3> b;
+        constexpr DimensionTpl<10> a;
+        constexpr DimensionTpl<3> b;
         auto result = a - b;
 
         REQUIRE(result.value() == 7);
@@ -162,8 +162,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Subtraction - constraint prevents A < B for fixed dimensions")
     {
-        constexpr Dimension<5> a;
-        constexpr Dimension<8> b;
+        constexpr DimensionTpl<5> a;
+        constexpr DimensionTpl<8> b;
 
         // This should not compile because Value >= OtherValue constraint
         // auto result = a - b;  // Uncommenting this should cause compilation error
@@ -177,8 +177,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Subtraction - with dynamic dimensions requires non-negative results")
     {
-        Dimension<> a(8);
-        Dimension<> b(5);
+        DimensionTpl<> a(8);
+        DimensionTpl<> b(5);
 
         // Dynamic dimensions can be subtracted when result is non-negative
         auto result = a - b;
@@ -192,9 +192,9 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Subtraction - mixed fixed and dynamic with non-negative results")
     {
-        constexpr Dimension<10> fixed;
-        Dimension<> dynamic_smaller(3);
-        Dimension<> dynamic_larger(15);
+        constexpr DimensionTpl<10> fixed;
+        DimensionTpl<> dynamic_smaller(3);
+        DimensionTpl<> dynamic_larger(15);
 
         // Fixed - Dynamic (where result is non-negative) should work
         auto result1 = fixed - dynamic_smaller;
@@ -211,8 +211,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Subtraction - Dynamic - Fixed")
     {
-        Dimension<> dynamic(20);
-        constexpr Dimension<7> fixed;
+        DimensionTpl<> dynamic(20);
+        constexpr DimensionTpl<7> fixed;
         auto result = dynamic - fixed;
 
         REQUIRE(result.value() == 13);
@@ -222,8 +222,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Multiplication - Fixed * Fixed")
     {
-        constexpr Dimension<4> a;
-        constexpr Dimension<6> b;
+        constexpr DimensionTpl<4> a;
+        constexpr DimensionTpl<6> b;
         auto result = a * b;
 
         REQUIRE(result.value() == 24);
@@ -233,8 +233,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Multiplication - involving zero")
     {
-        constexpr Dimension<0> zero;
-        constexpr Dimension<5> five;
+        constexpr DimensionTpl<0> zero;
+        constexpr DimensionTpl<5> five;
         auto result = zero * five;
 
         REQUIRE(result.value() == 0);
@@ -244,8 +244,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Multiplication - Dynamic * Fixed")
     {
-        Dimension<> dynamic(6);
-        constexpr Dimension<4> fixed;
+        DimensionTpl<> dynamic(6);
+        constexpr DimensionTpl<4> fixed;
         auto result = dynamic * fixed;
 
         REQUIRE(result.value() == 24);
@@ -255,8 +255,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Division - Fixed / Fixed")
     {
-        constexpr Dimension<20> a;
-        constexpr Dimension<4> b;
+        constexpr DimensionTpl<20> a;
+        constexpr DimensionTpl<4> b;
         auto result = a / b;
 
         REQUIRE(result.value() == 5);
@@ -266,8 +266,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Division - with remainder")
     {
-        constexpr Dimension<7> a;
-        constexpr Dimension<3> b;
+        constexpr DimensionTpl<7> a;
+        constexpr DimensionTpl<3> b;
         auto result = a / b;
 
         REQUIRE(result.value() == 2); // Integer division
@@ -277,8 +277,8 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
 
     SECTION("Division - Dynamic / Fixed")
     {
-        Dimension<> dynamic(30);
-        constexpr Dimension<6> fixed;
+        DimensionTpl<> dynamic(30);
+        constexpr DimensionTpl<6> fixed;
         auto result = dynamic / fixed;
 
         REQUIRE(result.value() == 5);
@@ -287,11 +287,11 @@ TEST_CASE("Dimension - Arithmetic Operations", "[dimensions]")
     }
 }
 
-TEST_CASE("Dimension - Scalar Arithmetic Operations", "[dimensions]")
+TEST_CASE("DimensionTpl - Scalar Arithmetic Operations", "[dimensions]")
 {
     SECTION("Fixed dimension scalar operations")
     {
-        constexpr Dimension<10> fixed;
+        constexpr DimensionTpl<10> fixed;
 
         auto add_result = fixed + 5;
         REQUIRE(add_result.value() == 15);
@@ -316,7 +316,7 @@ TEST_CASE("Dimension - Scalar Arithmetic Operations", "[dimensions]")
 
     SECTION("Dynamic dimension scalar operations")
     {
-        Dimension<> dynamic(12);
+        DimensionTpl<> dynamic(12);
 
         auto add_result = dynamic + 8;
         REQUIRE(add_result.value() == 20);
@@ -341,7 +341,7 @@ TEST_CASE("Dimension - Scalar Arithmetic Operations", "[dimensions]")
 
     SECTION("Scalar operations with zero")
     {
-        constexpr Dimension<5> fixed;
+        constexpr DimensionTpl<5> fixed;
 
         auto add_zero = fixed + 0;
         REQUIRE(add_zero.value() == 5);
@@ -358,7 +358,7 @@ TEST_CASE("Dimension - Scalar Arithmetic Operations", "[dimensions]")
 
     SECTION("Scalar operations with negative numbers")
     {
-        constexpr Dimension<10> fixed;
+        constexpr DimensionTpl<10> fixed;
 
         auto add_negative = fixed + (-3);
         REQUIRE(add_negative.value() == 7);
@@ -374,14 +374,14 @@ TEST_CASE("Dimension - Scalar Arithmetic Operations", "[dimensions]")
     }
 }
 
-TEST_CASE("Dimension - Comparison Operations", "[dimensions]")
+TEST_CASE("DimensionTpl - Comparison Operations", "[dimensions]")
 {
     SECTION("Fixed dimension comparisons")
     {
-        constexpr Dimension<5> a;
-        constexpr Dimension<5> b;
-        constexpr Dimension<3> c;
-        constexpr Dimension<7> d;
+        constexpr DimensionTpl<5> a;
+        constexpr DimensionTpl<5> b;
+        constexpr DimensionTpl<3> c;
+        constexpr DimensionTpl<7> d;
 
         REQUIRE(a == b);
         REQUIRE_FALSE(a != b);
@@ -404,10 +404,10 @@ TEST_CASE("Dimension - Comparison Operations", "[dimensions]")
 
     SECTION("Dynamic dimension comparisons")
     {
-        Dimension<> a(10);
-        Dimension<> b(10);
-        Dimension<> c(5);
-        Dimension<> d(15);
+        DimensionTpl<> a(10);
+        DimensionTpl<> b(10);
+        DimensionTpl<> c(5);
+        DimensionTpl<> d(15);
 
         REQUIRE(a == b);
         REQUIRE_FALSE(a != b);
@@ -430,10 +430,10 @@ TEST_CASE("Dimension - Comparison Operations", "[dimensions]")
 
     SECTION("Mixed fixed and dynamic comparisons")
     {
-        constexpr Dimension<8> fixed;
-        Dimension<> dynamic_equal(8);
-        Dimension<> dynamic_less(3);
-        Dimension<> dynamic_greater(12);
+        constexpr DimensionTpl<8> fixed;
+        DimensionTpl<> dynamic_equal(8);
+        DimensionTpl<> dynamic_less(3);
+        DimensionTpl<> dynamic_greater(12);
 
         REQUIRE(fixed == dynamic_equal);
         REQUIRE(dynamic_equal == fixed);
@@ -452,9 +452,9 @@ TEST_CASE("Dimension - Comparison Operations", "[dimensions]")
 
     SECTION("Comparisons with zero")
     {
-        constexpr Dimension<0> zero_fixed;
-        Dimension<> zero_dynamic(0);
-        Dimension<> positive_dynamic(5);
+        constexpr DimensionTpl<0> zero_fixed;
+        DimensionTpl<> zero_dynamic(0);
+        DimensionTpl<> positive_dynamic(5);
 
         REQUIRE(zero_fixed == zero_dynamic);
         REQUIRE(zero_dynamic == zero_fixed);
@@ -464,9 +464,9 @@ TEST_CASE("Dimension - Comparison Operations", "[dimensions]")
 
     SECTION("Comparisons with various values")
     {
-        Dimension<> small(1);
-        Dimension<> zero(0);
-        Dimension<> large(10);
+        DimensionTpl<> small(1);
+        DimensionTpl<> zero(0);
+        DimensionTpl<> large(10);
 
         REQUIRE(small > zero);
         REQUIRE(zero < small);
@@ -478,12 +478,12 @@ TEST_CASE("Dimension - Comparison Operations", "[dimensions]")
     }
 }
 
-TEST_CASE("Dimension - Min/Max Operations", "[dimensions]")
+TEST_CASE("DimensionTpl - Min/Max Operations", "[dimensions]")
 {
     SECTION("Min/Max with fixed dimensions")
     {
-        constexpr Dimension<5> a;
-        constexpr Dimension<8> b;
+        constexpr DimensionTpl<5> a;
+        constexpr DimensionTpl<8> b;
 
         auto min_result = min(a, b);
         REQUIRE(min_result.value() == 5);
@@ -498,8 +498,8 @@ TEST_CASE("Dimension - Min/Max Operations", "[dimensions]")
 
     SECTION("Min/Max with dynamic dimensions")
     {
-        Dimension<> a(12);
-        Dimension<> b(7);
+        DimensionTpl<> a(12);
+        DimensionTpl<> b(7);
 
         auto min_result = min(a, b);
         REQUIRE(min_result.value() == 7);
@@ -514,9 +514,9 @@ TEST_CASE("Dimension - Min/Max Operations", "[dimensions]")
 
     SECTION("Min/Max with mixed dimensions")
     {
-        constexpr Dimension<10> fixed;
-        Dimension<> dynamic_less(3);
-        Dimension<> dynamic_greater(15);
+        constexpr DimensionTpl<10> fixed;
+        DimensionTpl<> dynamic_less(3);
+        DimensionTpl<> dynamic_greater(15);
 
         auto min_result1 = min(fixed, dynamic_less);
         REQUIRE(min_result1.value() == 3);
@@ -541,8 +541,8 @@ TEST_CASE("Dimension - Min/Max Operations", "[dimensions]")
 
     SECTION("Min/Max with equal values")
     {
-        constexpr Dimension<7> fixed;
-        Dimension<> dynamic(7);
+        constexpr DimensionTpl<7> fixed;
+        DimensionTpl<> dynamic(7);
 
         auto min_result = min(fixed, dynamic);
         REQUIRE(min_result.value() == 7);
@@ -557,8 +557,8 @@ TEST_CASE("Dimension - Min/Max Operations", "[dimensions]")
 
     SECTION("Min/Max with zero")
     {
-        constexpr Dimension<0> zero;
-        constexpr Dimension<5> positive;
+        constexpr DimensionTpl<0> zero;
+        constexpr DimensionTpl<5> positive;
 
         auto min_result = min(zero, positive);
         REQUIRE(min_result.value() == 0);
@@ -573,8 +573,8 @@ TEST_CASE("Dimension - Min/Max Operations", "[dimensions]")
 
     SECTION("Min/Max with different values")
     {
-        Dimension<> small(3);
-        Dimension<> large(8);
+        DimensionTpl<> small(3);
+        DimensionTpl<> large(8);
 
         auto min_result = min(small, large);
         REQUIRE(min_result.value() == 3);
@@ -588,7 +588,7 @@ TEST_CASE("Dimension - Min/Max Operations", "[dimensions]")
     }
 }
 
-TEST_CASE("Dimension - Extract Compile Time Value", "[dimensions]")
+TEST_CASE("DimensionTpl - Extract Compile Time Value", "[dimensions]")
 {
     SECTION("Extract from raw integer")
     {
@@ -599,9 +599,9 @@ TEST_CASE("Dimension - Extract Compile Time Value", "[dimensions]")
 
     SECTION("Extract from fixed dimension - concept validation")
     {
-        // Note: extract_compile_time_value with Dimension objects as template parameters
+        // Note: extract_compile_time_value with DimensionTpl objects as template parameters
         // is intended for use with constexpr dimension values in template contexts,
-        // but Dimension objects cannot be used as template non-type parameters
+        // but DimensionTpl objects cannot be used as template non-type parameters
         // because they are not structural types. This is by design - the extraction
         // should be used with compile-time constants, not runtime objects.
         static_assert(extract_compile_time_value<15>::Value == 15);
@@ -623,32 +623,32 @@ TEST_CASE("Dimension - Extract Compile Time Value", "[dimensions]")
     }
 }
 
-TEST_CASE("Dimension - Edge Cases and Boundary Conditions", "[dimensions]")
+TEST_CASE("DimensionTpl - Edge Cases and Boundary Conditions", "[dimensions]")
 {
     SECTION("Large dimension values")
     {
-        constexpr Dimension<999999> large_fixed;
+        constexpr DimensionTpl<999999> large_fixed;
         REQUIRE(large_fixed.value() == 999999);
 
-        Dimension<> large_dynamic(1000000);
+        DimensionTpl<> large_dynamic(1000000);
         REQUIRE(large_dynamic.value() == 1000000);
     }
 
     SECTION("Chained operations")
     {
-        constexpr Dimension<10> a;
-        constexpr Dimension<5> b;
-        constexpr Dimension<2> c;
+        constexpr DimensionTpl<10> a;
+        constexpr DimensionTpl<5> b;
+        constexpr DimensionTpl<2> c;
 
-        auto result = (a + b) * c - Dimension<3>();
+        auto result = (a + b) * c - DimensionTpl<3>();
         REQUIRE(result.value() == 27); // (10 + 5) * 2 - 3 = 27
         REQUIRE_FALSE(result.IsDynamic);
     }
 
     SECTION("Mixed arithmetic chains")
     {
-        constexpr Dimension<8> fixed;
-        Dimension<> dynamic(4);
+        constexpr DimensionTpl<8> fixed;
+        DimensionTpl<> dynamic(4);
 
         auto result = (fixed + dynamic) / 3;
         REQUIRE(result.value() == 4); // (8 + 4) / 3 = 4
@@ -657,18 +657,18 @@ TEST_CASE("Dimension - Edge Cases and Boundary Conditions", "[dimensions]")
 
     SECTION("Complex expressions with scalars")
     {
-        constexpr Dimension<6> fixed;
-        Dimension<> dynamic(9);
+        constexpr DimensionTpl<6> fixed;
+        DimensionTpl<> dynamic(9);
 
         auto result = (fixed * 2) + (dynamic - 1) / 2;
         REQUIRE(result.value() == 16); // (6 * 2) + (9 - 1) / 2 = 12 + 4 = 16
         REQUIRE(result.IsDynamic);
     }
 
-    SECTION("Dimension with large values")
+    SECTION("DimensionTpl with large values")
     {
-        Dimension<> large_value(INT_MAX);
-        Dimension<> small_value(0);
+        DimensionTpl<> large_value(INT_MAX);
+        DimensionTpl<> small_value(0);
 
         REQUIRE(large_value.value() == INT_MAX);
         REQUIRE(small_value.value() == 0);
@@ -677,9 +677,9 @@ TEST_CASE("Dimension - Edge Cases and Boundary Conditions", "[dimensions]")
         REQUIRE(small_value < large_value);
     }
 
-    SECTION("Dimension conversion consistency")
+    SECTION("DimensionTpl conversion consistency")
     {
-        constexpr Dimension<123> fixed;
+        constexpr DimensionTpl<123> fixed;
         int value_direct = fixed.value();
         int value_cast = static_cast<int>(fixed);
         int value_implicit = fixed;
@@ -690,21 +690,21 @@ TEST_CASE("Dimension - Edge Cases and Boundary Conditions", "[dimensions]")
     }
 }
 
-TEST_CASE("Dimension - Compile Time Constants", "[dimensions]")
+TEST_CASE("DimensionTpl - Compile Time Constants", "[dimensions]")
 {
     SECTION("Compile time dimension properties")
     {
-        static_assert(Dimension<5>::Value == 5);
-        static_assert(Dimension<5>::IsFixed);
+        static_assert(DimensionTpl<5>::Value == 5);
+        static_assert(DimensionTpl<5>::IsFixed);
 
-        static_assert(Dimension<>::Value == detail::Dynamic);
-        static_assert(Dimension<>::IsDynamic);
+        static_assert(DimensionTpl<>::Value == detail::Dynamic);
+        static_assert(DimensionTpl<>::IsDynamic);
     }
 
     SECTION("Compile time arithmetic result types")
     {
-        constexpr Dimension<3> a;
-        constexpr Dimension<4> b;
+        constexpr DimensionTpl<3> a;
+        constexpr DimensionTpl<4> b;
 
         static_assert(decltype(a + b)::Value == 7);
         static_assert(decltype(a - b)::Value == -1);
@@ -719,7 +719,7 @@ TEST_CASE("Dimension - Compile Time Constants", "[dimensions]")
 
     SECTION("Compile time scalar arithmetic result types")
     {
-        constexpr Dimension<10> fixed;
+        constexpr DimensionTpl<10> fixed;
 
         // Scalar operations with runtime values always produce Dynamic dimensions
         static_assert(decltype(fixed + 5)::Value == detail::Dynamic);
@@ -735,8 +735,8 @@ TEST_CASE("Dimension - Compile Time Constants", "[dimensions]")
 
     SECTION("Mixed compile time and dynamic result types")
     {
-        constexpr Dimension<7> fixed;
-        Dimension<> dynamic(3);
+        constexpr DimensionTpl<7> fixed;
+        DimensionTpl<> dynamic(3);
 
         static_assert(decltype(fixed + dynamic)::Value == detail::Dynamic);
         static_assert(decltype(fixed - dynamic)::Value == detail::Dynamic);

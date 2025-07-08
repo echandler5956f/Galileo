@@ -3,8 +3,8 @@
 
 #include "galileo/core/states/state-base.hpp"
 
-#include <pinocchio/multibody/model.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
+#include <pinocchio/multibody/model.hpp>
 
 namespace galileo
 {
@@ -20,8 +20,10 @@ namespace galileo
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         StateMultibodyTpl(
+            RS &rs,
             RobotModel_t *model)
-            : model_(model),
+            : rs_(rs),
+              model_(model),
               x0_(VectorNx_t::Zero(NX))
         {
             x0_.head(NQ) = pinocchio::neutral(*model_);
@@ -213,45 +215,9 @@ namespace galileo
             return x0_;
         }
 
-        /**
-         * @brief Return the state lower bound
-         */
-        const VectorNx_t &get_lb() const
-        {
-            return lb_;
-        }
-
-        /**
-         * @brief Return the state upper bound
-         */
-        const VectorNx_t &get_ub() const
-        {
-            return ub_;
-        }
-
-        /**
-         * @brief Modify the state lower bound
-         */
-        template <typename StateVector>
-        void set_lb(const Eigen::MatrixBase<StateVector> &lb)
-        {
-            lb_ = lb.derived();
-        }
-
-        /**
-         * @brief Modify the state upper bound
-         */
-        template <typename StateVector>
-        void set_ub(const Eigen::MatrixBase<StateVector> &ub)
-        {
-            ub_ = ub.derived();
-        }
-
     protected:
         RobotModel_t *model_;
         VectorNx_t x0_;
-        VectorNx_t lb_;
-        VectorNx_t ub_;
 
     }; // class StateMultibodyTpl
 

@@ -65,7 +65,7 @@ namespace galileo
      * automatic dispatch for Eigen operations.
      */
     template <int Value_ = detail::Dynamic>
-    class Dimension
+    class DimensionTpl
     {
     public:
         static constexpr int Value = Value_;
@@ -76,27 +76,27 @@ namespace galileo
         int runtime_value_;
 
     public:
-        constexpr Dimension()
+        constexpr DimensionTpl()
             requires IsFixed
             : runtime_value_(Value)
         {
             static_assert(Value >= 0, "Compile-time dimension values must be non-negative");
         }
 
-        constexpr Dimension()
+        constexpr DimensionTpl()
             requires IsDynamic
             : runtime_value_(0)
         {
         }
 
-        constexpr Dimension(int runtime_val)
+        constexpr DimensionTpl(int runtime_val)
             requires IsDynamic
             : runtime_value_(runtime_val)
         {
             assert(runtime_val >= 0 && "Runtime dimension values must be non-negative");
         }
 
-        constexpr explicit Dimension(int runtime_val)
+        constexpr explicit DimensionTpl(int runtime_val)
             requires(!IsDynamic)
             : runtime_value_(runtime_val)
         {
@@ -105,8 +105,8 @@ namespace galileo
         }
 
         // Copy and assignment
-        Dimension(const Dimension &) = default;
-        Dimension &operator=(const Dimension &) = default;
+        DimensionTpl(const DimensionTpl &) = default;
+        DimensionTpl &operator=(const DimensionTpl &) = default;
 
         // Value access
         constexpr int value() const { return runtime_value_; }
@@ -129,79 +129,79 @@ namespace galileo
 
         // Arithmetic operations
         template <int OtherValue>
-        auto operator+(const Dimension<OtherValue> &other) const
+        auto operator+(const DimensionTpl<OtherValue> &other) const
         {
             constexpr int result_compile_time = detail::add<Value, OtherValue>::Value;
-            return Dimension<result_compile_time>(value() + other.value());
+            return DimensionTpl<result_compile_time>(value() + other.value());
         }
 
         template <int OtherValue>
-        auto operator-(const Dimension<OtherValue> &other) const
+        auto operator-(const DimensionTpl<OtherValue> &other) const
             requires(IsDynamic || OtherValue == detail::Dynamic || Value >= OtherValue)
         {
             constexpr int result_compile_time = detail::sub<Value, OtherValue>::Value;
             int runtime_result = value() - other.value();
             assert(runtime_result >= 0 && "Dimension subtraction resulted in negative runtime value");
-            return Dimension<result_compile_time>(runtime_result);
+            return DimensionTpl<result_compile_time>(runtime_result);
         }
 
         template <int OtherValue>
-        auto operator*(const Dimension<OtherValue> &other) const
+        auto operator*(const DimensionTpl<OtherValue> &other) const
         {
             constexpr int result_compile_time = detail::mul<Value, OtherValue>::Value;
-            return Dimension<result_compile_time>(value() * other.value());
+            return DimensionTpl<result_compile_time>(value() * other.value());
         }
 
         template <int OtherValue>
-        auto operator/(const Dimension<OtherValue> &other) const
+        auto operator/(const DimensionTpl<OtherValue> &other) const
         {
             constexpr int result_compile_time = detail::div<Value, OtherValue>::Value;
-            return Dimension<result_compile_time>(value() / other.value());
+            return DimensionTpl<result_compile_time>(value() / other.value());
         }
 
         // Scalar operations
         auto operator+(int scalar) const
         {
-            return Dimension<detail::Dynamic>(value() + scalar);
+            return DimensionTpl<detail::Dynamic>(value() + scalar);
         }
 
         auto operator-(int scalar) const
         {
-            return Dimension<detail::Dynamic>(value() - scalar);
+            return DimensionTpl<detail::Dynamic>(value() - scalar);
         }
 
         auto operator*(int scalar) const
         {
-            return Dimension<detail::Dynamic>(value() * scalar);
+            return DimensionTpl<detail::Dynamic>(value() * scalar);
         }
 
         auto operator/(int scalar) const
         {
-            return Dimension<detail::Dynamic>(value() / scalar);
+            return DimensionTpl<detail::Dynamic>(value() / scalar);
         }
 
         // Comparison operations
-        bool operator==(const Dimension &other) const { return value() == other.value(); }
-        bool operator!=(const Dimension &other) const { return value() != other.value(); }
-        bool operator<(const Dimension &other) const { return value() < other.value(); }
-        bool operator<=(const Dimension &other) const { return value() <= other.value(); }
-        bool operator>(const Dimension &other) const { return value() > other.value(); }
-        bool operator>=(const Dimension &other) const { return value() >= other.value(); }
+        bool operator==(const DimensionTpl &other) const { return value() == other.value(); }
+        bool operator!=(const DimensionTpl &other) const { return value() != other.value(); }
+        bool operator<(const DimensionTpl &other) const { return value() < other.value(); }
+        bool operator<=(const DimensionTpl &other) const { return value() <= other.value(); }
+        bool operator>(const DimensionTpl &other) const { return value() > other.value(); }
+        bool operator>=(const DimensionTpl &other) const { return value() >= other.value(); }
     }; // class Dimension
 
     // Maximum and minimum operations
     template <int A, int B>
-    auto max(const Dimension<A> &a, const Dimension<B> &b)
+    auto max(const DimensionTpl<A> &a, const DimensionTpl<B> &b)
     {
         constexpr int result_compile_time = detail::max<A, B>::Value;
-        return Dimension<result_compile_time>(std::max(a.value(), b.value()));
+        return DimensionTpl<result_compile_time>(std::max(a.value(), b.value()));
     }
 
     template <int A, int B>
-    auto min(const Dimension<A> &a, const Dimension<B> &b)
+    auto min(const DimensionTpl<A> &a, const DimensionTpl<B> &b)
     {
         constexpr int result_compile_time = detail::min<A, B>::Value;
-        return Dimension<result_compile_time>(std::min(a.value(), b.value()));
+        return DimensionTpl<result_compile_time>(std::min(a.value(), b.value()));
     }
 
     // Helper to extract compile-time value from raw integral or dimension types

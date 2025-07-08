@@ -75,7 +75,7 @@ namespace galileo
         }
         else
         {
-            // Dimension case
+            // DimensionTpl case
             if constexpr (LenType::IsDynamic)
             {
                 return vec.segment(start, len.value());

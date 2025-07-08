@@ -30,17 +30,27 @@
 #define GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec) \
     GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(RobotSpec::BS);
 
-#define GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec) \
-    static constexpr int NQb = RobotSpec::NQb;          \
-    static constexpr int NQj = RobotSpec::NQj;          \
-    static constexpr int NVb = RobotSpec::NVb;          \
-    static constexpr int NVj = RobotSpec::NVj;          \
-    static constexpr int NRotors = RobotSpec::NRotors;  \
-    static constexpr int NQ = RobotSpec::NQ;            \
-    static constexpr int NV = RobotSpec::NV;            \
-    static constexpr int NX = RobotSpec::NX;            \
-    static constexpr int NDX = RobotSpec::NDX;          \
-    static constexpr int NUa = RobotSpec::NUa;
+#define GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec)    \
+    static constexpr int NQb = RobotSpec::NQb;             \
+    static constexpr int NQj = RobotSpec::NQj;             \
+    static constexpr int NVb = RobotSpec::NVb;             \
+    static constexpr int NVj = RobotSpec::NVj;             \
+    static constexpr int NRotors = RobotSpec::NRotors;     \
+    static constexpr int NQ = RobotSpec::NQ;               \
+    static constexpr int NV = RobotSpec::NV;               \
+    static constexpr int NX = RobotSpec::NX;               \
+    static constexpr int NDX = RobotSpec::NDX;             \
+    static constexpr int NUa = RobotSpec::NUa;             \
+    using DimNQb_t = typename RobotSpec::DimNQb_t;         \
+    using DimNQj_t = typename RobotSpec::DimNQj_t;         \
+    using DimNVb_t = typename RobotSpec::DimNVb_t;         \
+    using DimNVj_t = typename RobotSpec::DimNVj_t;         \
+    using DimNRotors_t = typename RobotSpec::DimNRotors_t; \
+    using DimNQ_t = typename RobotSpec::DimNQ_t;           \
+    using DimNV_t = typename RobotSpec::DimNV_t;           \
+    using DimNX_t = typename RobotSpec::DimNX_t;           \
+    using DimNDX_t = typename RobotSpec::DimNDX_t;         \
+    using DimNUa_t = typename RobotSpec::DimNUa_t;
 
 #define GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec)              \
     GALILEO_BASIC_SPEC_FIXED_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS)   \
@@ -96,21 +106,35 @@ namespace galileo
         GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
 
         /* ---------------------------------------------------------------- */
+        /* Dimension Types */
+        /* ---------------------------------------------------------------- */
+        using DimNQb_t = DimensionTpl<_NQb>;
+        using DimNQj_t = DimensionTpl<_NQj>;
+        using DimNVb_t = DimensionTpl<_NVb>;
+        using DimNVj_t = DimensionTpl<_NVj>;
+        using DimNRotors_t = DimensionTpl<_NRotors>;
+        using DimNQ_t = decltype(DimNQb_t{} + DimNQj_t{});
+        using DimNV_t = decltype(DimNVb_t{} + DimNVj_t{});
+        using DimNX_t = decltype(DimNQ_t{} + DimNV_t{});
+        using DimNDX_t = decltype(DimNV_t{} + DimNV_t{});
+        using DimNUa_t = decltype(DimNV_t{} - DimNVb_t{} + DimNRotors_t{});
+
+        /* ---------------------------------------------------------------- */
         /* Compile-time constants */
         /* ---------------------------------------------------------------- */
-        static constexpr int NQb = _NQb;         // Dimension of floating base generalized coordinates
-        static constexpr int NQj = _NQj;         // Dimension of joint generalized coordinates
-        static constexpr int NVb = _NVb;         // Dimension of floating base generalized velocities
-        static constexpr int NVj = _NVj;         // Dimension of joint generalized velocities
-        static constexpr int NRotors = _NRotors; // Number of rotors attached to the floating base
+        static constexpr int NQb = DimNQb_t::Value;         // Dimension of floating base generalized coordinates
+        static constexpr int NQj = DimNQj_t::Value;         // Dimension of joint generalized coordinates
+        static constexpr int NVb = DimNVb_t::Value;         // Dimension of floating base generalized velocities
+        static constexpr int NVj = DimNVj_t::Value;         // Dimension of joint generalized velocities
+        static constexpr int NRotors = DimNRotors_t::Value; // Number of rotors attached to the floating base
 
-        static constexpr int NQ = NQb + NQj; // Dimension of generalized coordinates
-        static constexpr int NV = NVb + NVj; // Dimension of generalized velocities
+        static constexpr int NQ = DimNQ_t::Value; // Dimension of generalized coordinates
+        static constexpr int NV = DimNV_t::Value; // Dimension of generalized velocities
 
-        static constexpr int NX = NQ + NV;  // State dimension
-        static constexpr int NDX = NV + NV; // State tangent space dimension
+        static constexpr int NX = DimNX_t::Value;   // State dimension
+        static constexpr int NDX = DimNDX_t::Value; // State tangent space dimension
 
-        static constexpr int NUa = NV - NVb + NRotors; // Dimension of actuated torque inputs
+        static constexpr int NUa = DimNUa_t::Value; // Dimension of actuated torque inputs
 
         /* ---------------------------------------------------------------- */
         /* Fixed-size Constant-Dependent Eigen types */
@@ -164,16 +188,16 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Actual storage of Dimension types */
         /* ---------------------------------------------------------------- */
-        Dimension<NQb> NQb_;
-        Dimension<NQj> NQj_;
-        Dimension<NVb> NVb_;
-        Dimension<NVj> NVj_;
-        Dimension<NRotors> NRotors_;
-        Dimension<NQ> NQ_;
-        Dimension<NV> NV_;
-        Dimension<NX> NX_;
-        Dimension<NDX> NDX_;
-        Dimension<NUa> NUa_;
+        DimNQb_t NQb_dim;
+        DimNQj_t NQj_dim;
+        DimNVb_t NVb_dim;
+        DimNVj_t NVj_dim;
+        DimNRotors_t NRotors_dim;
+        DimNQ_t NQ_dim;
+        DimNV_t NV_dim;
+        DimNX_t NX_dim;
+        DimNDX_t NDX_dim;
+        DimNUa_t NUa_dim;
     };
 
 } // namespace galileo

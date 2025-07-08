@@ -7,7 +7,7 @@ namespace galileo
 {
 
     template <typename RobotSpec>
-    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<RobotSpec>>
+    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -16,14 +16,18 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
+        StateEuclideanTpl(RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : StateBase<StateEuclideanTpl<RS>, RS>(rs, lb, ub)
+        {
+        }
+
         VectorNx_t zero() const
         {
-            return VectorNx_t::Zero();
+            return VectorNx_t::Zero(this->get_nx());
         }
 
         VectorNx_t rand() const
         {
-            return VectorNx_t::Random();
+            return VectorNx_t::Random(this->get_nx());
         }
 
         template <typename StateVector1, typename StateVector2, typename StateTangentVector>
@@ -51,12 +55,12 @@ namespace galileo
             if (firstsecond == first || firstsecond == both)
             {
                 Jfirst.setZero();
-                Jfirst.diagonal() = VectorNdx_t::Constant(PS::NDX, -1.);
+                Jfirst.diagonal() = VectorNdx_t::Constant(this->rs_.NDX_dim.value(), VarScalar(-1.));
             }
             if (firstsecond == second || firstsecond == both)
             {
                 Jsecond.setZero();
-                Jsecond.diagonal() = VectorNdx_t::Constant(PS::NDX, 1.);
+                Jsecond.diagonal() = VectorNdx_t::Constant(this->rs_.NDX_dim.value(), VarScalar(1.));
             }
         }
 

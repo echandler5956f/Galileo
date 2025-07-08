@@ -229,7 +229,9 @@ namespace galileo
         VectorNdx_t diff_dx(const Eigen::MatrixBase<StateVector1> &x0,
                             const Eigen::MatrixBase<StateVector2> &x1)
         {
-            return this->derived().diff_dx(x0.derived(), x1.derived());
+            VectorNdx_t dx;
+            this->derived().diff(x0.derived(), x1.derived(), dx);
+            return dx;
         }
 
         /**
@@ -243,7 +245,9 @@ namespace galileo
         VectorNx_t integrate_x(const Eigen::MatrixBase<StateVector> &x,
                                const Eigen::MatrixBase<StateTangentVector> &dx)
         {
-            return this->derived().integrate_x(x.derived(), dx.derived());
+            VectorNx_t xout;
+            this->derived().integrate(x.derived(), dx.derived(), xout);
+            return xout;
         }
 
         /**
@@ -258,7 +262,28 @@ namespace galileo
                                           const Eigen::MatrixBase<StateVector2> &x1,
                                           const Jcomponent firstsecond = both)
         {
-            return this->derived().Jdiff_Js(x0.derived(), x1.derived(), firstsecond);
+            MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
+            MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
+            std::vector<MatrixNdx_t> Jacs;
+            Jdiff(x0, x1, Jfirst, Jsecond, firstsecond);
+            switch (firstsecond)
+            {
+            case both:
+                Jacs.push_back(Jfirst);
+                Jacs.push_back(Jsecond);
+                break;
+            case first:
+                Jacs.push_back(Jfirst);
+                break;
+            case second:
+                Jacs.push_back(Jsecond);
+                break;
+            default:
+                Jacs.push_back(Jfirst);
+                Jacs.push_back(Jsecond);
+                break;
+            }
+            return Jacs;
         }
 
         /**
@@ -273,33 +298,68 @@ namespace galileo
                                                const Eigen::MatrixBase<StateTangentVector> &dx,
                                                const Jcomponent firstsecond = both)
         {
-            return this->derived().Jintegrate_Js(x.derived(), dx.derived(), firstsecond);
+            MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
+            MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
+            std::vector<MatrixNdx_t> Jacs;
+            Jintegrate(x, dx, Jfirst, Jsecond, firstsecond, setto);
+            switch (firstsecond)
+            {
+            case both:
+                Jacs.push_back(Jfirst);
+                Jacs.push_back(Jsecond);
+                break;
+            case first:
+                Jacs.push_back(Jfirst);
+                break;
+            case second:
+                Jacs.push_back(Jsecond);
+                break;
+            default:
+                Jacs.push_back(Jfirst);
+                Jacs.push_back(Jsecond);
+                break;
+            }
+            return Jacs;
         }
 
         /**
-         * @brief Return the dimension of the state
+         * @brief Return the dimension (if any) of the floating base configuration space of the state
          */
-        int get_nx() const
+        int get_nqb() const
         {
-            return this->derived().get_nx_impl();
+            return this->derived().get_nqb_impl();
         }
 
-        int get_nx_impl() const
+        int get_nqb_impl() const
         {
-            return RS::NX;
+            if constexpr (RS::DimNQb_t::IsFixed)
+            {
+                return RS::DimNQb_t::Value;
+            }
+            else
+            {
+                return rs_.NQb_dim.value();
+            }
         }
 
         /**
-         * @brief Return the dimension of the tangent space of the state manifold
+         * @brief Return the dimension of the joint configuration space of the state
          */
-        int get_ndx() const
+        int get_nqj() const
         {
-            return this->derived().get_ndx_impl();
+            return this->derived().get_nqj_impl();
         }
 
-        int get_ndx_impl() const
+        int get_nqj_impl() const
         {
-            return RS::NDX;
+            if constexpr (RS::DimNQj_t::IsFixed)
+            {
+                return RS::DimNQj_t::Value;
+            }
+            else
+            {
+                return rs_.NQj_dim.value();
+            }
         }
 
         /**
@@ -312,7 +372,54 @@ namespace galileo
 
         int get_nq_impl() const
         {
-            return RS::NQ;
+            if constexpr (RS::DimNQ_t::IsFixed)
+            {
+                return RS::DimNQ_t::Value;
+            }
+            else
+            {
+                return rs_.NQ_dim.value();
+            }
+        }
+
+        /**
+         * @brief Return the dimension (if any) of the floating base velocity space of the state
+         */
+        int get_nvb() const
+        {
+            return this->derived().get_nvb_impl();
+        }
+
+        int get_nvb_impl() const
+        {
+            if constexpr (RS::DimNVb_t::IsFixed)
+            {
+                return RS::DimNVb_t::Value;
+            }
+            else
+            {
+                return rs_.NVb_dim.value();
+            }
+        }
+
+        /**
+         * @brief Return the dimension of the joint velocity space of the state
+         */
+        int get_nvj() const
+        {
+            return this->derived().get_nvj_impl();
+        }
+
+        int get_nvj_impl() const
+        {
+            if constexpr (RS::DimNVj_t::IsFixed)
+            {
+                return RS::DimNVj_t::Value;
+            }
+            else
+            {
+                return rs_.NVj_dim.value();
+            }
         }
 
         /**
@@ -325,7 +432,94 @@ namespace galileo
 
         int get_nv_impl() const
         {
-            return RS::NV;
+            if constexpr (RS::DimNV_t::IsFixed)
+            {
+                return RS::DimNV_t::Value;
+            }
+            else
+            {
+                return rs_.NV_dim.value();
+            }
+        }
+
+        /**
+         * @brief Return the number of rotors attached to the floating base (if any)
+         */
+        int get_nrotors() const
+        {
+            return this->derived().get_nrotors_impl();
+        }
+
+        int get_nrotors_impl() const
+        {
+            if constexpr (RS::DimNRotors_t::IsFixed)
+            {
+                return RS::DimNRotors_t::Value;
+            }
+            else
+            {
+                return rs_.NRotors_dim.value();
+            }
+        }
+
+        /**
+         * @brief Return the dimension of the state
+         */
+        int get_nx() const
+        {
+            return this->derived().get_nx_impl();
+        }
+
+        int get_nx_impl() const
+        {
+            if constexpr (RS::DimNX_t::IsFixed)
+            {
+                return RS::DimNX_t::Value;
+            }
+            else
+            {
+                return rs_.NX_dim.value();
+            }
+        }
+
+        /**
+         * @brief Return the dimension of the tangent space of the state manifold
+         */
+        int get_ndx() const
+        {
+            return this->derived().get_ndx_impl();
+        }
+
+        int get_ndx_impl() const
+        {
+            if constexpr (RS::DimNDX_t::IsFixed)
+            {
+                return RS::DimNDX_t::Value;
+            }
+            else
+            {
+                return rs_.NDX_dim.value();
+            }
+        }
+
+        /**
+         * @brief Return the dimension of the actuated torque space of the state
+         */
+        int get_nua() const
+        {
+            return this->derived().get_nua_impl();
+        }
+
+        int get_nua_impl() const
+        {
+            if constexpr (RS::DimNUa_t::IsFixed)
+            {
+                return RS::DimNUa_t::Value;
+            }
+            else
+            {
+                return rs_.NUa_dim.value();
+            }
         }
 
         /**
@@ -333,7 +527,12 @@ namespace galileo
          */
         const VectorNx_t &get_lb() const
         {
-            return this->derived().get_lb();
+            return this->derived().get_lb_impl();
+        }
+
+        const VectorNx_t &get_lb_impl() const
+        {
+            return lb_;
         }
 
         /**
@@ -341,7 +540,12 @@ namespace galileo
          */
         const VectorNx_t &get_ub() const
         {
-            return this->derived().get_ub();
+            return this->derived().get_ub_impl();
+        }
+
+        const VectorNx_t &get_ub_impl() const
+        {
+            return ub_;
         }
 
         /**
@@ -350,7 +554,13 @@ namespace galileo
         template <typename StateVector>
         void set_lb(const Eigen::MatrixBase<StateVector> &lb)
         {
-            this->derived().set_lb(lb.derived());
+            this->derived().set_lb_impl(lb.derived());
+        }
+
+        template <typename StateVector>
+        void set_lb_impl(const Eigen::MatrixBase<StateVector> &lb)
+        {
+            lb_ = lb.derived();
         }
 
         /**
@@ -359,10 +569,21 @@ namespace galileo
         template <typename StateVector>
         void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
-            this->derived().set_ub(ub.derived());
+            this->derived().set_ub_impl(ub.derived());
+        }
+
+        template <typename StateVector>
+        void set_ub_impl(const Eigen::MatrixBase<StateVector> &ub)
+        {
+            ub_ = ub.derived();
         }
 
     protected:
+        inline StateBase(RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
+            : rs_(rs), lb_(lb), ub_(ub)
+        {
+        }
+
         inline StateBase()
         {
         }
@@ -376,6 +597,10 @@ namespace galileo
         {
             return *this;
         }
+
+        RS &rs_;
+        VectorNx_t lb_;
+        VectorNx_t ub_;
 
     }; // class StateBase
 

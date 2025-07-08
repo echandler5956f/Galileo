@@ -131,9 +131,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Vector Segment Dispatchers", "[eigen][vector
         }
     }
 
-    SECTION("segment with Dimension<> (dynamic)")
+    SECTION("segment with DimensionTpl<> (dynamic)")
     {
-        Dimension<> segment_dim(5);
+        DimensionTpl<> segment_dim(5);
         const int start_idx = 0;
 
         auto seg1 = segment(test_col_vector, start_idx, segment_dim);
@@ -149,9 +149,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Vector Segment Dispatchers", "[eigen][vector
         }
     }
 
-    SECTION("segment with Dimension<N> (fixed)")
+    SECTION("segment with DimensionTpl<N> (fixed)")
     {
-        constexpr Dimension<4> segment_dim;
+        constexpr DimensionTpl<4> segment_dim;
         const int start_idx = 3;
 
         auto seg1 = segment(test_col_vector, start_idx, segment_dim);
@@ -222,9 +222,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Vector Head Dispatchers", "[eigen][vector][h
         }
     }
 
-    SECTION("head with Dimension<> (dynamic)")
+    SECTION("head with DimensionTpl<> (dynamic)")
     {
-        Dimension<> head_dim(5);
+        DimensionTpl<> head_dim(5);
 
         auto head1 = head(test_col_vector, head_dim);
         auto head2 = head(test_row_vector, head_dim);
@@ -239,9 +239,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Vector Head Dispatchers", "[eigen][vector][h
         }
     }
 
-    SECTION("head with Dimension<N> (fixed)")
+    SECTION("head with DimensionTpl<N> (fixed)")
     {
-        constexpr Dimension<3> head_dim;
+        constexpr DimensionTpl<3> head_dim;
 
         auto head1 = head(test_col_vector, head_dim);
         auto head2 = head(test_row_vector, head_dim);
@@ -293,9 +293,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Vector Tail Dispatchers", "[eigen][vector][t
         }
     }
 
-    SECTION("tail with Dimension<> (dynamic)")
+    SECTION("tail with DimensionTpl<> (dynamic)")
     {
-        Dimension<> tail_dim(2);
+        DimensionTpl<> tail_dim(2);
 
         auto tail1 = tail(test_col_vector, tail_dim);
         auto tail2 = tail(test_row_vector, tail_dim);
@@ -310,9 +310,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Vector Tail Dispatchers", "[eigen][vector][t
         }
     }
 
-    SECTION("tail with Dimension<N> (fixed)")
+    SECTION("tail with DimensionTpl<N> (fixed)")
     {
-        constexpr Dimension<5> tail_dim;
+        constexpr DimensionTpl<5> tail_dim;
 
         auto tail1 = tail(test_col_vector, tail_dim);
         auto tail2 = tail(test_row_vector, tail_dim);
@@ -393,10 +393,10 @@ TEST_CASE_METHOD(EigenTestFixture, "Matrix Block Dispatchers", "[eigen][matrix][
         }
     }
 
-    SECTION("block with Dimension objects")
+    SECTION("block with DimensionTpl objects")
     {
-        constexpr Dimension<3> block_rows_dim;
-        Dimension<> block_cols_dim(2);
+        constexpr DimensionTpl<3> block_rows_dim;
+        DimensionTpl<> block_cols_dim(2);
         const int start_row = 1;
         const int start_col = 0;
 
@@ -476,10 +476,10 @@ TEST_CASE_METHOD(EigenTestFixture, "Matrix Corner Dispatchers", "[eigen][matrix]
         }
     }
 
-    SECTION("topRightCorner with Dimension objects")
+    SECTION("topRightCorner with DimensionTpl objects")
     {
-        constexpr Dimension<2> corner_rows_dim;
-        Dimension<> corner_cols_dim(4);
+        constexpr DimensionTpl<2> corner_rows_dim;
+        DimensionTpl<> corner_cols_dim(4);
 
         auto corner_result = topRightCorner(test_matrix, corner_rows_dim, corner_cols_dim);
 
@@ -572,9 +572,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Matrix Row/Column Dispatchers", "[eigen][mat
         }
     }
 
-    SECTION("bottomRows with Dimension object")
+    SECTION("bottomRows with DimensionTpl object")
     {
-        constexpr Dimension<2> num_rows_dim;
+        constexpr DimensionTpl<2> num_rows_dim;
 
         auto rows_result = bottomRows(test_matrix, num_rows_dim);
 
@@ -608,9 +608,9 @@ TEST_CASE_METHOD(EigenTestFixture, "Matrix Row/Column Dispatchers", "[eigen][mat
         }
     }
 
-    SECTION("rightCols with dynamic Dimension")
+    SECTION("rightCols with dynamic DimensionTpl")
     {
-        Dimension<> num_cols_dim(4);
+        DimensionTpl<> num_cols_dim(4);
 
         auto cols_result = rightCols(test_matrix, num_cols_dim);
 
@@ -742,11 +742,11 @@ TEST_CASE("Edge Cases and Comprehensive Dispatch Testing", "[eigen][edge_cases]"
         constexpr int TEST_SIZE = 6;
         galileo::Matrix<double, TEST_SIZE, TEST_SIZE> test_mat = galileo::Matrix<double, TEST_SIZE, TEST_SIZE>::Random();
 
-        // Test all combinations of compile-time constants, runtime ints, and Dimension objects
+        // Test all combinations of compile-time constants, runtime ints, and DimensionTpl objects
         constexpr int compile_time_size = 2;
         const int runtime_size = 3;
-        constexpr Dimension<2> fixed_dim;
-        Dimension<> dynamic_dim(3);
+        constexpr DimensionTpl<2> fixed_dim;
+        DimensionTpl<> dynamic_dim(3);
 
         // Test segment with all combinations
         auto seg1 = segment<compile_time_size>(test_mat.col(0), 0);
@@ -812,20 +812,20 @@ TEST_CASE("Type Safety and Concept Validation", "[eigen][concepts]")
         static_assert(extract_compile_time_value<15>::Value == 15);
         static_assert(extract_compile_time_value<0>::Value == 0);
 
-        // Note: extract_compile_time_value with Dimension objects as template parameters
-        // requires constexpr Dimension values, but Dimension objects cannot be used
+        // Note: extract_compile_time_value with DimensionTpl objects as template parameters
+        // requires constexpr DimensionTpl values, but DimensionTpl objects cannot be used
         // as template non-type parameters in this context. This is by design.
-        constexpr Dimension<15> test_dim_15;
-        constexpr Dimension<0> test_dim_0;
+        constexpr DimensionTpl<15> test_dim_15;
+        constexpr DimensionTpl<0> test_dim_0;
         REQUIRE(test_dim_15.Value == 15);
         REQUIRE(test_dim_0.Value == 0);
     }
 
-    SECTION("Dimension arithmetic type correctness")
+    SECTION("DimensionTpl arithmetic type correctness")
     {
-        constexpr Dimension<5> a;
-        constexpr Dimension<3> b;
-        Dimension<> c(7);
+        constexpr DimensionTpl<5> a;
+        constexpr DimensionTpl<3> b;
+        DimensionTpl<> c(7);
 
         static_assert(decltype(a + b)::Value == 8);
         static_assert(decltype(a + b)::IsFixed);
