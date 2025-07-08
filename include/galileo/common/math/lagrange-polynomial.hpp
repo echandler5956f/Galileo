@@ -2,18 +2,17 @@
 #define __galileo_common_math_lagrange_polynomial_hpp__
 
 #include "galileo/common/fwd.hpp"
-#include <cassert>
-#include <limits>
-#include <iostream>
 
-#include <unsupported/Eigen/Polynomials>
+#include <cassert>
+#include <iostream>
+#include <limits>
 
 namespace galileo
 {
     namespace math
     {
 
-        template <typename _NumScalar, int _Options>
+        template <typename _NumScalar, int _Options = 0>
         class LagrangePolynomialTpl
         {
         public:
@@ -23,71 +22,69 @@ namespace galileo
             using GMatrixX = Eigen::GMatrix<NumScalar, Eigen::Dynamic, 1, Options>;
 
             template <typename InputVectorType>
-            LagrangePolynomialTpl(const Eigen::MatrixBase<InputVectorType> &nodes) : nodes_(nodes), N_(nodes.size())
+            LagrangePolynomialTpl(const Eigen::MatrixBase<InputVectorType> &coeffs) : coeffs_(coeffs), N_(coeffs.size())
             {
-                barycentric_weights_.resize(N_, 1);
-                barycentric_weights_.setZero();
+            }
+
+            NumScalar evaluate(const NumScalar &t) const
+            {
+                // Polynomial evaluation using Horner's method
+                // coeffs_[i] corresponds to coefficient of x^(N-1-i)
+                // For polynomial: a_0*x^(n-1) + a_1*x^(n-2) + ... + a_(n-1)*x^0
+                // Horner's method: ((a_0*x + a_1)*x + a_2)*x + ... + a_(n-1)
+                if (N_ == 0)
+                {
+                    return NumScalar(0.0);
+                }
+
+                NumScalar result = coeffs_(0);
+                for (int i = 1; i < N_; ++i)
+                {
+                    result = result * t + coeffs_(i);
+                }
+
+                return result;
             }
 
             Polynomial derivative() const
             {
-                if (N_ <= 1) {
-                    GMatrixX nodes_derivative = GMatrixX::Zero(1, 1);
-                    return Polynomial(nodes_derivative);
+                if (N_ <= 1)
+                {
+                    GMatrixX coeffs_derivative = GMatrixX::Zero(1, 1);
+                    return Polynomial(coeffs_derivative);
                 }
 
-                GMatrixX nodes_derivative = GMatrixX::Zero(N_ - 1, 1);
+                GMatrixX coeffs_derivative = GMatrixX::Zero(N_ - 1, 1);
                 for (int i = 0; i < N_ - 1; ++i)
                 {
-                    int power = N_ - 1 - i;  // power of x for nodes_[i]
-                    nodes_derivative(i) = nodes_(i) * power;
+                    int power = N_ - 1 - i; // power of x for coeffs_[i]
+                    coeffs_derivative(i) = coeffs_(i) * power;
                 }
 
-                return Polynomial(nodes_derivative);
+                return Polynomial(coeffs_derivative);
             }
 
             Polynomial integral() const
             {
-                GMatrixX nodes_integral = GMatrixX::Zero(N_ + 1, 1);
+                GMatrixX coeffs_integral = GMatrixX::Zero(N_ + 1, 1);
 
-                // For descending order coefficients: nodes_[i] has power (N-1-i)
+                // For descending order coefficients: coeffs_[i] has power (N-1-i)
                 // Integration increases power by 1, so new power is (N-i)
                 for (int i = 0; i < N_; ++i)
                 {
-                    int power = N_ - 1 - i;  // original power of x for nodes_[i]
-                    int new_power = power + 1;  // power after integration
-                    nodes_integral(i) = nodes_(i) / new_power;
+                    int power = N_ - 1 - i;    // original power of x for coeffs_[i]
+                    int new_power = power + 1; // power after integration
+                    coeffs_integral(i) = coeffs_(i) / new_power;
                 }
-                nodes_integral(N_) = 0.0;  // constant of integration (lowest power term)
+                coeffs_integral(N_) = 0.0; // constant of integration (lowest power term)
 
-                return Polynomial(nodes_integral);
+                return Polynomial(coeffs_integral);
             }
 
             NumScalar integrate(const NumScalar &a, const NumScalar &b) const
             {
                 Polynomial indefinite_integral = integral();
                 return indefinite_integral.evaluate(b) - indefinite_integral.evaluate(a);
-            }
-
-            // Both work, need to decide if we want the Eigen::unsupported dependency
-            NumScalar evaluate(const NumScalar &t) const
-            {
-                return Eigen::poly_eval(nodes_.reverse(), t);
-
-                // Custom polynomial evaluation using Horner's method
-                // nodes_[i] corresponds to coefficient of x^(N-1-i)
-                // For polynomial: a_0*x^(n-1) + a_1*x^(n-2) + ... + a_(n-1)*x^0
-                // Horner's method: ((a_0*x + a_1)*x + a_2)*x + ... + a_(n-1)
-                if (N_ == 0) {
-                    return NumScalar(0.0);
-                }
-
-                NumScalar result = nodes_(0);
-                for (int i = 1; i < N_; ++i) {
-                    result = result * t + nodes_(i);
-                }
-
-                return result;
             }
 
             NumScalar operator()(const NumScalar &t) const
@@ -99,20 +96,20 @@ namespace galileo
             Polynomial operator+(const OtherPolynomial &other) const
             {
                 int NewN = std::max(N_, other.get_N());
-                GMatrixX result_nodes = GMatrixX::Zero(NewN, 1);
+                GMatrixX result_coeffs = GMatrixX::Zero(NewN, 1);
 
-                GMatrixX other_nodes = other.get_nodes();
+                GMatrixX other_coeffs = other.get_coeffs();
 
                 for (int i = 0; i < N_; ++i)
                 {
-                    result_nodes(i + NewN - N_) += nodes_(i);
+                    result_coeffs(i + NewN - N_) += coeffs_(i);
                 }
                 for (int i = 0; i < other.get_N(); ++i)
                 {
-                    result_nodes(i + NewN - other.get_N()) += other_nodes(i);
+                    result_coeffs(i + NewN - other.get_N()) += other_coeffs(i);
                 }
 
-                return Polynomial(result_nodes);
+                return Polynomial(result_coeffs);
             }
 
             template <typename OtherPolynomial>
@@ -126,19 +123,19 @@ namespace galileo
             Polynomial operator-(const OtherPolynomial &other) const
             {
                 int NewN = std::max(N_, other.get_N());
-                GMatrixX result_nodes = GMatrixX::Zero(NewN, 1);
+                GMatrixX result_coeffs = GMatrixX::Zero(NewN, 1);
 
-                GMatrixX other_nodes = other.get_nodes();
+                GMatrixX other_coeffs = other.get_coeffs();
 
                 for (int i = 0; i < N_; ++i)
                 {
-                    result_nodes(i + NewN - N_) += nodes_(i);
+                    result_coeffs(i + NewN - N_) += coeffs_(i);
                 }
                 for (int i = 0; i < other.get_N(); ++i)
                 {
-                    result_nodes(i + NewN - other.get_N()) -= other_nodes(i);
+                    result_coeffs(i + NewN - other.get_N()) -= other_coeffs(i);
                 }
-                return Polynomial(result_nodes);
+                return Polynomial(result_coeffs);
             }
 
             template <typename OtherPolynomial>
@@ -152,18 +149,18 @@ namespace galileo
             Polynomial operator*(const OtherPolynomial &other) const
             {
                 int NewN = N_ + other.get_N() - 1;
-                GMatrixX result_nodes = GMatrixX::Zero(NewN, 1);
+                GMatrixX result_coeffs = GMatrixX::Zero(NewN, 1);
 
-                GMatrixX other_nodes = other.get_nodes();
+                GMatrixX other_coeffs = other.get_coeffs();
 
                 for (int i = 0; i < N_; ++i)
                 {
                     for (int j = 0; j < other.get_N(); ++j)
                     {
-                        result_nodes(i + j) += nodes_(i) * other_nodes(j);
+                        result_coeffs(i + j) += coeffs_(i) * other_coeffs(j);
                     }
                 }
-                return Polynomial(result_nodes);
+                return Polynomial(result_coeffs);
             }
 
             template <typename OtherPolynomial>
@@ -173,90 +170,9 @@ namespace galileo
                 return *this;
             }
 
-            // Interpolate a polynomial at t with values w at the nodes, yielding the vector u(t)
-            template <typename InputMatrixType, typename OutputVectorType>
-            void barycentricInterpolation(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputVectorType> &u) const
+            const GMatrixX &get_coeffs() const
             {
-                assert(w.cols() == N_);
-                assert(t >= NumScalar(0.0) && t <= NumScalar(1.0));
-
-                for (int i = 0; i < N_; ++i)
-                {
-                    if (std::abs(t - nodes_(i)) < std::numeric_limits<NumScalar>::epsilon())
-                    {
-                        u = w.col(i);
-                        return;
-                    }
-                }
-
-                GMatrixX c = GMatrixX::Zero(N_, 1);
-                NumScalar sum_c = 0.0;
-                for (int i = 0; i < N_; ++i)
-                {
-                    c(i) = barycentric_weights_(i) / (t - nodes_(i));
-                    sum_c += c(i);
-                }
-
-                assert(std::abs(sum_c) > std::numeric_limits<NumScalar>::epsilon() && "Error: Division by zero in BarycentricInterpolation");
-
-                u.setZero();
-                for (int i = 0; i < N_; ++i)
-                {
-                    u += c(i) * w.col(i);
-                }
-                u /= sum_c;
-            }
-
-            template <typename InputMatrixType, typename OutputMatrixType>
-            void barycentricInterpolationDiff(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputMatrixType> &du_dw) const
-            {
-                assert(w.cols() == N_);
-                assert(t >= NumScalar(0.0) && t <= NumScalar(1.0));
-
-                assert(du_dw.rows() == w.rows());
-                assert(du_dw.cols() == w.rows() * N_);
-
-                // If t is very close to one of the nodes, the interpolation directly returns w.col(i).
-                // In that case, the sensitivity with respect to that column is the identity,
-                // and with respect to all other columns is zero.
-                for (int i = 0; i < N_; ++i)
-                {
-                    if (std::abs(t - nodes_[i]) < std::numeric_limits<NumScalar>::epsilon())
-                    {
-                        du_dw.setZero();
-                        du_dw.block(0, i * w.rows(), w.rows(), w.rows()).setIdentity();
-                        return;
-                    }
-                }
-
-                // Compute the barycentric coefficients c_i and their sum.
-                GMatrixX c = GMatrixX::Zero(N_, 1);
-                NumScalar sum_c = 0.0;
-                for (int i = 0; i < N_; ++i)
-                {
-                    c[i] = barycentric_weights_[i] / (t - nodes_[i]);
-                    sum_c += c[i];
-                }
-
-                // Check for division by zero
-                assert(std::abs(sum_c) > std::numeric_limits<NumScalar>::epsilon() && "Error: Division by zero in barycentricInterpolationDiff");
-
-                // The interpolated value is u = (sum_i c_i * w.col(i)) / sum_c.
-                // Thus, for each element k of u:
-                //     u(k) = (sum_i c_i * w(k,i)) / sum_c.
-                // Therefore, the partial derivative with respect to w(k,j) is c_j/sum_c (if the row index matches).
-                // We pack these derivatives into a vector of matrices, where each matrix is (w.rows() x w.rows())
-                // representing the derivative with respect to one column of w.
-                for (int j = 0; j < N_; ++j)
-                {
-                    // For each column j, the sensitivity matrix is diagonal with constant c[j] / sum_c.
-                    du_dw.block(0, j * w.rows(), w.rows(), w.rows()).diagonal().setConstant(c[j] / sum_c);
-                }
-            }
-
-            const GMatrixX &get_nodes() const
-            {
-                return nodes_;
+                return coeffs_;
             }
 
             int get_N() const
@@ -269,36 +185,16 @@ namespace galileo
                 os << "LagrangePolynomial(degree=" << poly.N_ - 1 << ", coefficients=[";
                 for (int i = 0; i < poly.N_; ++i)
                 {
-                    if (i > 0) os << ", ";
-                    os << poly.nodes_(i);
+                    if (i > 0)
+                        os << ", ";
+                    os << poly.coeffs_(i);
                 }
                 os << "])";
                 return os;
             }
 
         protected:
-            void compute_barycentric_weights()
-            {
-                /*Barycentric weights*/
-                for (int j = 0; j < N_; ++j)
-                    barycentric_weights_(j) = 1.0;
-
-                /*For all collocation points*/
-                for (int j = 0; j < N_; ++j)
-                {
-                    for (int r = 0; r < N_; ++r)
-                    {
-                        if (r != j)
-                        {
-                            barycentric_weights_(j) *= (nodes_(j) - nodes_(r));
-                        }
-                    }
-                    barycentric_weights_(j) = 1.0 / barycentric_weights_(j);
-                }
-            }
-
-            GMatrixX nodes_;
-            GMatrixX barycentric_weights_;
+            GMatrixX coeffs_;
             int N_;
 
         }; // class LagrangePolynomialTpl

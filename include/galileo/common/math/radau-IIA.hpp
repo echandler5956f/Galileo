@@ -4,10 +4,9 @@
 #include "galileo/common/fwd.hpp"
 #include "galileo/common/math/jacobi-roots.hpp"
 #include "galileo/common/math/lagrange-polynomial.hpp"
-#include <Eigen/Dense>
+
 #include <cassert>
 #include <cmath>
-#include <limits>
 #include <vector>
 
 namespace galileo
@@ -25,7 +24,7 @@ namespace galileo
                        binom(n - 1, k - 1) * n / k; // recursive
         }
 
-        template <typename _NumScalar, int _N, int _Options>
+        template <typename _NumScalar, int _N, int _Options = 0>
         class RadauIIATpl
         {
         public:
@@ -51,7 +50,7 @@ namespace galileo
                 Eigen::GMatrix<NumScalar, N - 1, 1, Options> roots = jacobi_roots_.get_roots();
                 nodes_ << roots, 1.0;
 
-                coefficients_.setZero();
+                butcher_matrix_.setZero();
                 weights_.setZero();
                 W_.setZero();
                 X_.setZero();
@@ -81,12 +80,12 @@ namespace galileo
                     for (int j = 0; j < N; ++j)
                     {
                         Polynomial p_j = polynomials_[j];
-                        coefficients_(i, j) = p_j.integrate(0.0, nodes_(i));
+                        butcher_matrix_(i, j) = p_j.integrate(0.0, nodes_(i));
                         W_(i, j) = shifted_legendre_ortho(j, nodes_(i));
                     }
                 }
 
-                weights_ = coefficients_.template bottomRows<1>().transpose();
+                weights_ = butcher_matrix_.template bottomRows<1>().transpose();
 
                 if (N > 0)
                 {
@@ -134,9 +133,9 @@ namespace galileo
                 return nodes_;
             }
 
-            const Eigen::GMatrix<NumScalar, N, N, Options> &get_coefficients() const
+            const Eigen::GMatrix<NumScalar, N, N, Options> &get_butcher_matrix() const
             {
-                return coefficients_;
+                return butcher_matrix_;
             }
 
             const Eigen::GMatrix<NumScalar, N, 1, Options> &get_weights() const
@@ -161,7 +160,7 @@ namespace galileo
 
         protected:
             JacobiRootsTpl<NumScalar, N - 1, Options> jacobi_roots_;
-            Eigen::GMatrix<NumScalar, N, N, Options> coefficients_;
+            Eigen::GMatrix<NumScalar, N, N, Options> butcher_matrix_;
             Eigen::GMatrix<NumScalar, N, 1, Options> weights_;
             Eigen::GMatrix<NumScalar, N, 1, Options> nodes_;
             Eigen::GMatrix<NumScalar, N, N, Options> W_;

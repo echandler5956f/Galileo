@@ -2,6 +2,7 @@
 #define __galileo_common_math_jacobi_roots_hpp__
 
 #include "galileo/common/fwd.hpp"
+
 #include <cassert>
 #include <limits>
 
@@ -145,7 +146,7 @@ namespace galileo
             }
         }
 
-        template <typename _NumScalar, int _N, int _Options>
+        template <typename _NumScalar, int _N, int _Options = 0>
         class JacobiRootsTpl
         {
         public:
