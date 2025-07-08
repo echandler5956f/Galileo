@@ -2,6 +2,7 @@
 #define __galileo_multibody_actuations_floating_base_hpp__
 
 #include "galileo/core/actuations/actuation-base.hpp"
+#include "galileo/multibody/robot-spec.hpp"
 
 namespace galileo
 {
@@ -37,18 +38,21 @@ namespace galileo
 
         using RS = RobotSpec;
 
+        GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
+
         using Meta_t = typename RS::ActuationMeta_t;
         using Model_t = typename RS::ActuationModel_t;
         using Data_t = typename RS::ActuationData_t;
 
-        ActuationModelFloatingBaseTpl() {}
+        ActuationModelFloatingBaseTpl(std::shared_ptr<typename RS::State_t> state)
+            : ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>(state) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data.tau.tail(RS::NUa) = u;
+            tail(data.tau, this->get_state()->get_rs().NUa_dim) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -64,7 +68,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tau.tail(RS::NUa);
+            data.u = tail(tau, this->get_state()->get_rs().NUa_dim);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -77,12 +81,12 @@ namespace galileo
 
         Data_t createData() const
         {
-            Data_t data = Data_t();
-            data.dtau_du.diagonal(-RS::NVb).setOnes();
-            data.Mtau.diagonal(RS::NVb).setOnes();
-            for (std::size_t i = 0; i < RS::NVb; ++i)
+            Data_t data(*this);
+            data.dtau_du.diagonal(-this->get_state()->get_nvb()).setOnes();
+            data.Mtau.diagonal(this->get_state()->get_nvb()).setOnes();
+            for (int i = 0; i < this->get_state()->get_nvb(); ++i)
             {
-                data.tau_set[i] = false;
+                data.tau_set(i) = false;
             }
             return data;
         }

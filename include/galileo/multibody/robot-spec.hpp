@@ -117,7 +117,7 @@ namespace galileo
         using DimNV_t = decltype(DimNVb_t{} + DimNVj_t{});
         using DimNX_t = decltype(DimNQ_t{} + DimNV_t{});
         using DimNDX_t = decltype(DimNV_t{} + DimNV_t{});
-        using DimNUa_t = decltype(DimNV_t{} - DimNVb_t{} + DimNRotors_t{});
+        using DimNUa_t = decltype(DimNVj_t{} + DimNRotors_t{});
 
         /* ---------------------------------------------------------------- */
         /* Compile-time constants */
@@ -199,6 +199,18 @@ namespace galileo
         DimNDX_t NDX_dim;
         DimNUa_t NUa_dim;
     };
+
+    // Helper function to validate if a robot spec is in a valid configuration at runtime
+    template <typename RobotSpec>
+    bool IsValidRobotSpec(const RobotSpec &rs)
+    {
+        bool valid_nq = (rs.NQ_dim.value() == rs.NQb_dim.value() + rs.NQj_dim.value());
+        bool valid_nv = (rs.NV_dim.value() == rs.NVb_dim.value() + rs.NVj_dim.value());
+        bool valid_nx = (rs.NX_dim.value() == rs.NQ_dim.value() + rs.NV_dim.value());
+        bool valid_ndx = (rs.NDX_dim.value() == rs.NV_dim.value() + rs.NV_dim.value());
+        bool valid_nua = (rs.NUa_dim.value() == rs.NVj_dim.value() + rs.NRotors_dim.value());
+        return valid_nq && valid_nv && valid_nx && valid_ndx && valid_nua;
+    }
 
 } // namespace galileo
 

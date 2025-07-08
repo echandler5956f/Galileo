@@ -3,6 +3,8 @@
 
 #include "galileo/core/states/state-base.hpp"
 
+#include <cassert>
+
 namespace galileo
 {
 
@@ -14,10 +16,13 @@ namespace galileo
 
         using RS = RobotSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
+        GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RS);
+        GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
 
-        StateEuclideanTpl(RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : StateBase<StateEuclideanTpl<RS>, RS>(rs, lb, ub)
+        StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : StateBase<StateEuclideanTpl<RS>, RS>(rs, lb, ub)
         {
+            assert(IsValidRobotSpec(rs));
+            assert(this->get_nx() == this->get_ndx());
         }
 
         VectorNx_t zero() const

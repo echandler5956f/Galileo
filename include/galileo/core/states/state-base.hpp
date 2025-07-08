@@ -27,7 +27,7 @@ namespace galileo
 
         using RS = RobotSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
+        GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
 
         /**
          * @brief Generate a zero state
@@ -322,6 +322,11 @@ namespace galileo
             return Jacs;
         }
 
+        const RS &get_rs() const
+        {
+            return rs_;
+        }
+
         /**
          * @brief Return the dimension (if any) of the floating base configuration space of the state
          */
@@ -579,12 +584,8 @@ namespace galileo
         }
 
     protected:
-        inline StateBase(RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
+        inline StateBase(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
             : rs_(rs), lb_(lb), ub_(ub)
-        {
-        }
-
-        inline StateBase()
         {
         }
 
@@ -598,7 +599,7 @@ namespace galileo
             return *this;
         }
 
-        RS &rs_;
+        RS rs_;
         VectorNx_t lb_;
         VectorNx_t ub_;
 

@@ -2,6 +2,9 @@
 #define __galileo_core_actuations_actuation_model_base_hpp__
 
 #include "galileo/core/actuations/actuation-base.hpp"
+#include "galileo/multibody/robot-spec.hpp"
+
+#include <memory>
 
 namespace galileo
 {
@@ -70,18 +73,23 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        int nua() const
+        std::shared_ptr<typename RS::State_t> get_state() const
         {
-            return this->derived().nua_impl();
+            return state_;
         }
 
-        int nua_impl() const
+        int get_nua() const
         {
-            return RS::NUa;
+            return this->derived().get_nua_impl();
+        }
+
+        int get_nua_impl() const
+        {
+            return state_->get_nua();
         }
 
     protected:
-        inline ActuationModelBase()
+        inline ActuationModelBase(std::shared_ptr<typename RS::State_t> state) : state_(state)
         {
         }
 
@@ -94,6 +102,8 @@ namespace galileo
         {
             return *this;
         }
+
+        std::shared_ptr<typename RS::State_t> state_;
 
     }; // class ActuationModelBase
 
