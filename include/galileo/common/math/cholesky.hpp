@@ -84,7 +84,7 @@ namespace galileo
         }; // class Cholesky
 
     } // namespace math
-    
+
 } // namespace galileo
 
 #endif // __galileo_common_linalg_cholesky_hpp__

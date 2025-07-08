@@ -12,7 +12,7 @@ namespace galileo
     {
         template <typename T>
         using aligned_vector = std::vector<T, Eigen::aligned_allocator<T>>;
-        
+
     } // namespace container
 
 } // namespace galileo
