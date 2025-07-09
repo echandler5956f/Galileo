@@ -322,7 +322,7 @@ namespace galileo
             return Jacs;
         }
 
-        const RS &get_rs() const
+        RS &get_rs()
         {
             return rs_;
         }
@@ -347,6 +347,11 @@ namespace galileo
             }
         }
 
+        const RS::DimNQb_t &NQbDim() const
+        {
+            return rs_.NQb_dim;
+        }
+
         /**
          * @brief Return the dimension of the joint configuration space of the state
          */
@@ -365,6 +370,11 @@ namespace galileo
             {
                 return rs_.NQj_dim.value();
             }
+        }
+
+        const RS::DimNQj_t &NQjDim() const
+        {
+            return rs_.NQj_dim;
         }
 
         /**
@@ -387,6 +397,11 @@ namespace galileo
             }
         }
 
+        const RS::DimNQ_t &NQDim() const
+        {
+            return rs_.NQ_dim;
+        }
+
         /**
          * @brief Return the dimension (if any) of the floating base velocity space of the state
          */
@@ -405,6 +420,11 @@ namespace galileo
             {
                 return rs_.NVb_dim.value();
             }
+        }
+
+        const RS::DimNVb_t &NVbDim() const
+        {
+            return rs_.NVb_dim;
         }
 
         /**
@@ -427,6 +447,11 @@ namespace galileo
             }
         }
 
+        const RS::DimNVj_t &NVjDim() const
+        {
+            return rs_.NVj_dim;
+        }
+
         /**
          * @brief Return the dimension of the velocity space of the state
          */
@@ -445,6 +470,11 @@ namespace galileo
             {
                 return rs_.NV_dim.value();
             }
+        }
+
+        const RS::DimNV_t &NVDim() const
+        {
+            return rs_.NV_dim;
         }
 
         /**
@@ -467,6 +497,11 @@ namespace galileo
             }
         }
 
+        const RS::DimNRotors_t &NRotorsDim() const
+        {
+            return rs_.NRotors_dim;
+        }
+
         /**
          * @brief Return the dimension of the state
          */
@@ -485,6 +520,11 @@ namespace galileo
             {
                 return rs_.NX_dim.value();
             }
+        }
+
+        const RS::DimNX_t &NXDim() const
+        {
+            return rs_.NX_dim;
         }
 
         /**
@@ -507,6 +547,11 @@ namespace galileo
             }
         }
 
+        const RS::DimNDX_t &NDXDim() const
+        {
+            return rs_.NDX_dim;
+        }
+
         /**
          * @brief Return the dimension of the actuated torque space of the state
          */
@@ -527,6 +572,11 @@ namespace galileo
             }
         }
 
+        const RS::DimNUa_t &NUaDim() const
+        {
+            return rs_.NUa_dim;
+        }
+
         /**
          * @brief Return the state lower bound
          */
@@ -535,22 +585,12 @@ namespace galileo
             return this->derived().get_lb_impl();
         }
 
-        const VectorNx_t &get_lb_impl() const
-        {
-            return lb_;
-        }
-
         /**
          * @brief Return the state upper bound
          */
         const VectorNx_t &get_ub() const
         {
             return this->derived().get_ub_impl();
-        }
-
-        const VectorNx_t &get_ub_impl() const
-        {
-            return ub_;
         }
 
         /**
@@ -562,12 +602,6 @@ namespace galileo
             this->derived().set_lb_impl(lb.derived());
         }
 
-        template <typename StateVector>
-        void set_lb_impl(const Eigen::MatrixBase<StateVector> &lb)
-        {
-            lb_ = lb.derived();
-        }
-
         /**
          * @brief Modify the state upper bound
          */
@@ -577,15 +611,9 @@ namespace galileo
             this->derived().set_ub_impl(ub.derived());
         }
 
-        template <typename StateVector>
-        void set_ub_impl(const Eigen::MatrixBase<StateVector> &ub)
-        {
-            ub_ = ub.derived();
-        }
-
     protected:
-        inline StateBase(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
-            : rs_(rs), lb_(lb), ub_(ub)
+        inline StateBase(const RS &rs)
+            : rs_(rs)
         {
         }
 
@@ -600,8 +628,6 @@ namespace galileo
         }
 
         RS rs_;
-        VectorNx_t lb_;
-        VectorNx_t ub_;
 
     }; // class StateBase
 

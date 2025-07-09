@@ -2,6 +2,7 @@
 #define __galileo_core_states_euclidean_hpp__
 
 #include "galileo/core/states/state-base.hpp"
+#include "galileo/multibody/robot-spec.hpp"
 
 #include <cassert>
 
@@ -19,20 +20,20 @@ namespace galileo
         GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RS);
         GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
 
-        StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : StateBase<StateEuclideanTpl<RS>, RS>(rs, lb, ub)
+        StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : StateBase<StateEuclideanTpl<RS>, RS>(rs), lb_(lb), ub_(ub)
         {
             assert(IsValidRobotSpec(rs));
-            assert(this->get_nx() == this->get_ndx());
+            assert(get_nx() == get_ndx()); // In Euclidean space, nx = ndx
         }
 
         VectorNx_t zero() const
         {
-            return VectorNx_t::Zero(this->get_nx());
+            return VectorNx_t::Zero(get_nx());
         }
 
         VectorNx_t rand() const
         {
-            return VectorNx_t::Random(this->get_nx());
+            return VectorNx_t::Random(get_nx());
         }
 
         template <typename StateVector1, typename StateVector2, typename StateTangentVector>
@@ -60,12 +61,12 @@ namespace galileo
             if (firstsecond == first || firstsecond == both)
             {
                 Jfirst.setZero();
-                Jfirst.diagonal() = VectorNdx_t::Constant(this->rs_.NDX_dim.value(), VarScalar(-1.));
+                Jfirst.diagonal() = VectorNdx_t::Constant(get_ndx(), VarScalar(-1.));
             }
             if (firstsecond == second || firstsecond == both)
             {
                 Jsecond.setZero();
-                Jsecond.diagonal() = VectorNdx_t::Constant(this->rs_.NDX_dim.value(), VarScalar(1.));
+                Jsecond.diagonal() = VectorNdx_t::Constant(get_ndx(), VarScalar(1.));
             }
         }
 
@@ -121,6 +122,71 @@ namespace galileo
         {
             // Nothing to do
         }
+
+        const VectorNx_t &get_lb_impl() const
+        {
+            return lb_;
+        }
+
+        const VectorNx_t &get_ub_impl() const
+        {
+            return ub_;
+        }
+
+        template <typename StateVector>
+        void set_lb_impl(const Eigen::MatrixBase<StateVector> &lb)
+        {
+            lb_ = lb.derived();
+        }
+
+        template <typename StateVector>
+        void set_ub_impl(const Eigen::MatrixBase<StateVector> &ub)
+        {
+            ub_ = ub.derived();
+        }
+
+        using Base = StateBase<StateEuclideanTpl<RS>, RS>;
+
+        using Base::diff_dx;
+        using Base::integrate_x;
+        using Base::Jdiff_Js;
+        using Base::Jintegrate_Js;
+
+        using Base::get_rs;
+
+        using Base::get_nqb;
+        using Base::NQbDim;
+
+        using Base::get_nqj;
+        using Base::NQjDim;
+
+        using Base::get_nq;
+        using Base::NQDim;
+
+        using Base::get_nvb;
+        using Base::NVbDim;
+
+        using Base::get_nvj;
+        using Base::NVjDim;
+
+        using Base::get_nv;
+        using Base::NVDim;
+
+        using Base::get_nrotors;
+        using Base::NRotorsDim;
+
+        using Base::get_nx;
+        using Base::NXDim;
+
+        using Base::get_ndx;
+        using Base::NDXDim;
+
+        using Base::get_nua;
+        using Base::NUaDim;
+
+    protected:
+        VectorNx_t lb_;
+        VectorNx_t ub_;
 
     }; // class StateEuclideanTpl
 
