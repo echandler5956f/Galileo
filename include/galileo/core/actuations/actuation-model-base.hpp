@@ -78,14 +78,19 @@ namespace galileo
             return state_;
         }
 
-        int get_nua() const
+        constexpr int get_nua() const
         {
             return this->derived().get_nua_impl();
         }
 
-        int get_nua_impl() const
+        constexpr int get_nua_impl() const
         {
             return state_->get_nua();
+        }
+
+        const RS::DimNUa_t &NUaDim() const
+        {
+            return state_->NUaDim();
         }
 
     protected:

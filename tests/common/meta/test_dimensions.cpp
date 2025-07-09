@@ -1,7 +1,10 @@
+#define GALILEO_TESTING
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+
 #include <climits>
+#include <stdexcept>
 
 #include "galileo/common/meta/dimensions.hpp"
 
@@ -186,8 +189,8 @@ TEST_CASE("DimensionTpl - Arithmetic Operations", "[dimensions]")
         REQUIRE(result.Value == detail::Dynamic);
         REQUIRE(result.IsDynamic);
 
-        // Subtracting in reverse order should be prevented by runtime validation
-        // This would assert or be handled by the constraint system
+        // Subtracting in reverse order should be prevented
+        REQUIRE_THROWS_AS(b - a, std::runtime_error);
     }
 
     SECTION("Subtraction - mixed fixed and dynamic with non-negative results")
@@ -368,9 +371,11 @@ TEST_CASE("DimensionTpl - Scalar Arithmetic Operations", "[dimensions]")
         REQUIRE(sub_negative.value() == 12);
         REQUIRE(sub_negative.Value == detail::Dynamic);
 
-        auto mul_negative = fixed * (-2);
-        REQUIRE(mul_negative.value() == -20);
-        REQUIRE(mul_negative.Value == detail::Dynamic);
+        // Test that assertion is raised for negative scalar multiplication
+        REQUIRE_THROWS_AS(fixed * (-2), std::runtime_error);
+
+        // Test that assertion is raised for negative scalar division
+        REQUIRE_THROWS_AS(fixed / (-2), std::runtime_error);
     }
 }
 

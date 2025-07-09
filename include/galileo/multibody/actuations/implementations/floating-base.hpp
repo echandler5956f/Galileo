@@ -52,7 +52,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            tail(data.tau, this->get_state()->NUaDim()) = u;
+            tail(data.tau, this->NUaDim()) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -68,7 +68,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tail(tau, this->get_state()->NUaDim());
+            data.u = tail(tau, this->NUaDim());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -90,6 +90,13 @@ namespace galileo
             }
             return data;
         }
+
+        using Base = ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>;
+
+        using Base::get_state;
+
+        using Base::get_nua;
+        using Base::NUaDim;
 
     }; // class ActuationModelFloatingBaseTpl
 

@@ -2,6 +2,7 @@
 #define __galileo_core_controls_control_param_model_base_hpp__
 
 #include "galileo/core/controls/control-param-base.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
@@ -68,8 +69,93 @@ namespace galileo
             this->derived().multiplyJacobianTransposeBy(data, A.derived(), out.derived(), op);
         }
 
+        Data_t createData()
+        {
+            return this->derived().createData();
+        }
+
+        PS &get_ps()
+        {
+            return ps_;
+        }
+
+        /**
+         * @brief Return the dimension of the control space
+         */
+        int get_nu() const
+        {
+            return this->derived().get_nu_impl();
+        }
+
+        int get_nu_impl() const
+        {
+            if constexpr (PS::DimNU_t::IsFixed)
+            {
+                return PS::DimNU_t::Value;
+            }
+            else
+            {
+                return ps_->NU_dim.value();
+            }
+        }
+
+        const PS::DimNU_t &NUDim() const
+        {
+            return ps_->NU_dim;
+        }
+
+        /**
+         * @brief Return the order of the control parameterization
+         */
+        int get_norder() const
+        {
+            return this->derived().get_norder_impl();
+        }
+
+        int get_norder_impl() const
+        {
+            if constexpr (PS::DimNOrder_t::IsFixed)
+            {
+                return PS::DimNOrder_t::Value;
+            }
+            else
+            {
+                return ps_->NOrder_dim.value();
+            }
+        }
+
+        const PS::DimNOrder_t &NOrderDim() const
+        {
+            return ps_->NOrder_dim;
+        }
+
+        /**
+         * @brief Return the dimension of the control parameter space
+         */
+        int get_nw() const
+        {
+            return this->derived().get_nw_impl();
+        }
+
+        int get_nw_impl() const
+        {
+            if constexpr (PS::DimNW_t::IsFixed)
+            {
+                return PS::DimNW_t::Value;
+            }
+            else
+            {
+                return ps_->NW_dim.value();
+            }
+        }
+
+        const PS::DimNW_t &NWDim() const
+        {
+            return ps_->NW_dim;
+        }
+
     protected:
-        inline ControlParamModelBase()
+        inline ControlParamModelBase(const std::shared_ptr<PS> &ps) : ps_(ps)
         {
         }
 
@@ -82,6 +168,8 @@ namespace galileo
         {
             return *this;
         }
+
+        std::shared_ptr<PS> ps_;
 
     }; // class ControlParamModelBase
 

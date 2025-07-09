@@ -6,11 +6,6 @@
 namespace galileo
 {
 
-    namespace math
-    {
-
-    } // namespace math
-
 } // namespace galileo
 
 #endif // __galileo_common_fwd_hpp__

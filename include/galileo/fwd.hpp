@@ -6,12 +6,13 @@ namespace galileo
 {
 } // namespace galileo
 
+#include <Eigen/Core>
+
 #include <cassert>
 #include <cmath>
+#include <iostream>
 #include <memory>
 #include <type_traits>
-
-#include <Eigen/Core>
 
 #include "galileo/common/meta/dimensions.hpp"
 #include "galileo/common/meta/eigen.hpp"

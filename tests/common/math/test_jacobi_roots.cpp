@@ -9,7 +9,7 @@
 #include <iostream>
 #include <chrono>
 
-using namespace galileo::math;
+using namespace galileo;
 using namespace Catch::Matchers;
 
 template<typename NumScalar>

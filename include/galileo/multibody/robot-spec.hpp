@@ -106,7 +106,7 @@ namespace galileo
         GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
 
         /* ---------------------------------------------------------------- */
-        /* Dimension Types */
+        /* Dimension types */
         /* ---------------------------------------------------------------- */
         using DimNQb_t = DimensionTpl<_NQb>;
         using DimNQj_t = DimensionTpl<_NQj>;
@@ -137,7 +137,7 @@ namespace galileo
         static constexpr int NUa = DimNUa_t::Value; // Dimension of actuated torque inputs
 
         /* ---------------------------------------------------------------- */
-        /* Fixed-size Constant-Dependent Eigen types */
+        /* Fixed-size Eigen types */
         /* ---------------------------------------------------------------- */
         using VectorNqb_t = Eigen::GMatrix<VarScalar, NQb, 1, Options>;
         using VectorNqj_t = Eigen::GMatrix<VarScalar, NQj, 1, Options>;
@@ -186,7 +186,7 @@ namespace galileo
         using ActionMatrix_t = typename SE3_t::ActionMatrixType;
 
         /* ---------------------------------------------------------------- */
-        /* Actual storage of Dimension types */
+        /* Actual storage of dimension types */
         /* ---------------------------------------------------------------- */
         DimNQb_t NQb_dim;
         DimNQj_t NQj_dim;

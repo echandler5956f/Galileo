@@ -8,7 +8,7 @@
 #include <cmath>
 #include <iostream>
 
-using namespace galileo::math;
+using namespace galileo;
 using namespace Catch::Matchers;
 
 TEST_CASE("RadauIIATpl", "[polynomial]")

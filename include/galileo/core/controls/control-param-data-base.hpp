@@ -3,6 +3,7 @@
 
 #include "galileo/core/controls/control-param-base.hpp"
 #include "galileo/core/controls/control-param-model-base.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
@@ -15,13 +16,26 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PS);
+        GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PS);
+
         using Meta_t = typename PS::ControlParamMeta_t;
         using Model_t = typename PS::ControlParamModel_t;
         using Data_t = typename PS::ControlParamData_t;
 
-        typename PS::U_t u;
-        typename PS::W_t w;
-        typename PS::Uw_t du_dw;
+        ControlParamDataTpl(const Model_t &model) : u(model.get_nu()),
+                                                    w(model.get_nw()),
+                                                    du_dw(model.get_nu(),
+                                                          model.get_nw())
+        {
+            u.setZero();
+            w.setZero();
+            du_dw.setZero();
+        }
+
+        U_t u;
+        W_t w;
+        Uw_t du_dw;
 
     }; // struct ControlParamDataTpl
 

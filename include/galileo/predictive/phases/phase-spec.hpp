@@ -45,7 +45,11 @@
     static constexpr int NU = PhaseSpec::NU;             \
     static constexpr int NOrder = PhaseSpec::NOrder;     \
     static constexpr int NW = PhaseSpec::NW;             \
-    static constexpr int NStages = PhaseSpec::NStages;
+    static constexpr int NStages = PhaseSpec::NStages;   \
+    using DimNU_t = typename PhaseSpec::DimNU_t;         \
+    using DimNOrder_t = typename PhaseSpec::DimNOrder_t; \
+    using DimNW_t = typename PhaseSpec::DimNW_t;         \
+    using DimNStages_t = typename PhaseSpec::DimNStages_t;
 
 #define GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec) \
     using XAcc_t = typename PhaseSpec::XAcc_t;           \
@@ -165,12 +169,12 @@ namespace galileo
         using PhaseDataVector_t = std::vector<PhaseData_t>;
 
         /* ---------------------------------------------------------------- */
-        /* Dependent compile-time constants */
+        /* Dependent dimension types */
         /* ---------------------------------------------------------------- */
-        static constexpr int NU = traits<NodeMeta_t>::NU;                 // Control dimension
-        static constexpr int NOrder = traits<ControlParamMeta_t>::NOrder; // Order of the control parameterization per segment
-        static constexpr int NW = traits<ControlParamMeta_t>::NW;         // Number of control parameters
-        static constexpr int NStages = traits<SegmentMeta_t>::NStages;    // Number of Runge-Kutta stages per segment
+        using DimNU_t = typename traits<NodeMeta_t>::DimNU_t;
+        using DimNOrder_t = typename traits<ControlParamMeta_t>::DimNOrder_t;
+        using DimNW_t = typename traits<ControlParamMeta_t>::DimNW_t;
+        using DimNStages_t = typename traits<SegmentMeta_t>::DimNStages_t;
 
         /*NOTE: NU is calculated differently depending on the node type*/
         // FreeFwd: NU = NUa
@@ -178,6 +182,14 @@ namespace galileo
         // ContactFwd: NU = NUa
         // ContactInv: NU = NV + NContacts
         // We do this calculation in the traits specialization for each derived node type.
+
+        /* ---------------------------------------------------------------- */
+        /* Compile-time constants */
+        /* ---------------------------------------------------------------- */
+        static constexpr int NU = DimNU_t::Value;           // Control dimension
+        static constexpr int NOrder = DimNOrder_t::Value;   // Order of the control parameterization per segment
+        static constexpr int NW = DimNW_t::Value;           // Number of control parameters
+        static constexpr int NStages = DimNStages_t::Value; // Number of Runge-Kutta stages per segment
 
         // THESE MANAGER MUST BE DEFINED AFTER THE DEPENDENT CONSTANTS ARE DEFINED
         using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
@@ -278,6 +290,14 @@ namespace galileo
 
         // Segment inequality constraint derivatives
         using Gw_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
+
+        /* ---------------------------------------------------------------- */
+        /*Actual storage of dimension types */
+        /* ---------------------------------------------------------------- */
+        DimNU_t NU_dim;
+        DimNOrder_t NOrder_dim;
+        DimNW_t NW_dim;
+        DimNStages_t NStages_dim;
     };
 
 } // namespace galileo

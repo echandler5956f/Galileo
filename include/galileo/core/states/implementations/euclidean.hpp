@@ -4,8 +4,6 @@
 #include "galileo/core/states/state-base.hpp"
 #include "galileo/multibody/robot-spec.hpp"
 
-#include <cassert>
-
 namespace galileo
 {
 
@@ -22,8 +20,8 @@ namespace galileo
 
         StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : StateBase<StateEuclideanTpl<RS>, RS>(rs), lb_(lb), ub_(ub)
         {
-            assert(IsValidRobotSpec(rs));
-            assert(get_nx() == get_ndx()); // In Euclidean space, nx = ndx
+            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateEuclideanTpl: Invalid robot spec");
+            GALILEO_ASSERT(get_nx() == get_ndx(), "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
         }
 
         VectorNx_t zero() const

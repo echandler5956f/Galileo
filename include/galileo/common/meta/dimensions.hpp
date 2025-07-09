@@ -1,7 +1,8 @@
 #ifndef __galileo_common_meta_dimensions_hpp__
 #define __galileo_common_meta_dimensions_hpp__
 
-#include <cassert>
+#include "galileo/common/meta/macros.hpp"
+
 #include <cmath>
 #include <type_traits>
 
@@ -93,15 +94,14 @@ namespace galileo
             requires IsDynamic
             : runtime_value_(runtime_val)
         {
-            assert(runtime_val >= 0 && "Runtime dimension values must be non-negative");
+            GALILEO_ASSERT(runtime_val >= 0, "DimensionTpl: Runtime dimension values must be non-negative");
         }
 
         constexpr explicit DimensionTpl(int runtime_val)
             requires(!IsDynamic)
             : runtime_value_(runtime_val)
         {
-            assert(runtime_val == Value &&
-                   "Dimension value does not match fixed compile-time size");
+            GALILEO_ASSERT(runtime_val == Value, "DimensionTpl: Dimension value does not match fixed compile-time size");
         }
 
         // Copy and assignment
@@ -116,14 +116,13 @@ namespace galileo
         {
             if constexpr (IsDynamic)
             {
-                assert(runtime_val >= 0 && "Runtime dimension values must be non-negative");
+                GALILEO_ASSERT(runtime_val >= 0, "DimensionTpl: Runtime dimension values must be non-negative");
                 runtime_value_ = runtime_val;
             }
             else
             {
-                assert(runtime_val == Value &&
-                       "Dimension value does not match fixed compile-time size");
-                assert(runtime_val >= 0 && "Runtime dimension values must be non-negative");
+                GALILEO_ASSERT(runtime_val == Value, "DimensionTpl: Dimension value does not match fixed compile-time size");
+                GALILEO_ASSERT(runtime_val >= 0, "DimensionTpl: Runtime dimension values must be non-negative");
             }
         }
 
@@ -132,7 +131,9 @@ namespace galileo
         auto operator+(const DimensionTpl<OtherValue> &other) const
         {
             constexpr int result_compile_time = detail::add<Value, OtherValue>::Value;
-            return DimensionTpl<result_compile_time>(value() + other.value());
+            int runtime_result = value() + other.value();
+            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension addition resulted in negative runtime value");
+            return DimensionTpl<result_compile_time>(runtime_result);
         }
 
         template <int OtherValue>
@@ -141,7 +142,7 @@ namespace galileo
         {
             constexpr int result_compile_time = detail::sub<Value, OtherValue>::Value;
             int runtime_result = value() - other.value();
-            assert(runtime_result >= 0 && "Dimension subtraction resulted in negative runtime value");
+            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension subtraction resulted in negative runtime value");
             return DimensionTpl<result_compile_time>(runtime_result);
         }
 
@@ -149,34 +150,44 @@ namespace galileo
         auto operator*(const DimensionTpl<OtherValue> &other) const
         {
             constexpr int result_compile_time = detail::mul<Value, OtherValue>::Value;
-            return DimensionTpl<result_compile_time>(value() * other.value());
+            int runtime_result = value() * other.value();
+            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension multiplication resulted in negative runtime value");
+            return DimensionTpl<result_compile_time>(runtime_result);
         }
 
         template <int OtherValue>
         auto operator/(const DimensionTpl<OtherValue> &other) const
         {
             constexpr int result_compile_time = detail::div<Value, OtherValue>::Value;
-            return DimensionTpl<result_compile_time>(value() / other.value());
+            int runtime_result = value() / other.value();
+            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension division resulted in negative runtime value");
+            return DimensionTpl<result_compile_time>(runtime_result);
         }
 
         // Scalar operations
         auto operator+(int scalar) const
         {
-            return DimensionTpl<detail::Dynamic>(value() + scalar);
+            int runtime_result = value() + scalar;
+            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension scalar addition resulted in negative runtime value");
+            return DimensionTpl<detail::Dynamic>(runtime_result);
         }
 
         auto operator-(int scalar) const
         {
-            return DimensionTpl<detail::Dynamic>(value() - scalar);
+            int runtime_result = value() - scalar;
+            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension scalar subtraction resulted in negative runtime value");
+            return DimensionTpl<detail::Dynamic>(runtime_result);
         }
 
         auto operator*(int scalar) const
         {
+            GALILEO_ASSERT(scalar >= 0, "DimensionTpl: Dimension scalar multiplication resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(value() * scalar);
         }
 
         auto operator/(int scalar) const
         {
+            GALILEO_ASSERT(scalar >= 0, "DimensionTpl: Dimension scalar division resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(value() / scalar);
         }
 

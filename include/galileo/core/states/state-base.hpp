@@ -330,12 +330,12 @@ namespace galileo
         /**
          * @brief Return the dimension (if any) of the floating base configuration space of the state
          */
-        int get_nqb() const
+        constexpr int get_nqb() const
         {
             return this->derived().get_nqb_impl();
         }
 
-        int get_nqb_impl() const
+        constexpr int get_nqb_impl() const
         {
             if constexpr (RS::DimNQb_t::IsFixed)
             {
@@ -355,12 +355,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the joint configuration space of the state
          */
-        int get_nqj() const
+        constexpr int get_nqj() const
         {
             return this->derived().get_nqj_impl();
         }
 
-        int get_nqj_impl() const
+        constexpr int get_nqj_impl() const
         {
             if constexpr (RS::DimNQj_t::IsFixed)
             {
@@ -380,12 +380,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the configuration space of the state
          */
-        int get_nq() const
+        constexpr int get_nq() const
         {
             return this->derived().get_nq_impl();
         }
 
-        int get_nq_impl() const
+        constexpr int get_nq_impl() const
         {
             if constexpr (RS::DimNQ_t::IsFixed)
             {
@@ -405,12 +405,12 @@ namespace galileo
         /**
          * @brief Return the dimension (if any) of the floating base velocity space of the state
          */
-        int get_nvb() const
+        constexpr int get_nvb() const
         {
             return this->derived().get_nvb_impl();
         }
 
-        int get_nvb_impl() const
+        constexpr int get_nvb_impl() const
         {
             if constexpr (RS::DimNVb_t::IsFixed)
             {
@@ -430,12 +430,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the joint velocity space of the state
          */
-        int get_nvj() const
+        constexpr int get_nvj() const
         {
             return this->derived().get_nvj_impl();
         }
 
-        int get_nvj_impl() const
+        constexpr int get_nvj_impl() const
         {
             if constexpr (RS::DimNVj_t::IsFixed)
             {
@@ -455,12 +455,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the velocity space of the state
          */
-        int get_nv() const
+        constexpr int get_nv() const
         {
             return this->derived().get_nv_impl();
         }
 
-        int get_nv_impl() const
+        constexpr int get_nv_impl() const
         {
             if constexpr (RS::DimNV_t::IsFixed)
             {
@@ -480,12 +480,12 @@ namespace galileo
         /**
          * @brief Return the number of rotors attached to the floating base (if any)
          */
-        int get_nrotors() const
+        constexpr int get_nrotors() const
         {
             return this->derived().get_nrotors_impl();
         }
 
-        int get_nrotors_impl() const
+        constexpr int get_nrotors_impl() const
         {
             if constexpr (RS::DimNRotors_t::IsFixed)
             {
@@ -505,12 +505,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the state
          */
-        int get_nx() const
+        constexpr int get_nx() const
         {
             return this->derived().get_nx_impl();
         }
 
-        int get_nx_impl() const
+        constexpr int get_nx_impl() const
         {
             if constexpr (RS::DimNX_t::IsFixed)
             {
@@ -530,12 +530,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the tangent space of the state manifold
          */
-        int get_ndx() const
+        constexpr int get_ndx() const
         {
             return this->derived().get_ndx_impl();
         }
 
-        int get_ndx_impl() const
+        constexpr int get_ndx_impl() const
         {
             if constexpr (RS::DimNDX_t::IsFixed)
             {
@@ -555,12 +555,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the actuated torque space of the state
          */
-        int get_nua() const
+        constexpr int get_nua() const
         {
             return this->derived().get_nua_impl();
         }
 
-        int get_nua_impl() const
+        constexpr int get_nua_impl() const
         {
             if constexpr (RS::DimNUa_t::IsFixed)
             {

@@ -9,6 +9,22 @@
                                                                          (GALILEO_MAJOR_VERSION > y || (GALILEO_MAJOR_VERSION >= y && \
                                                                                                         GALILEO_MINOR_VERSION >= z))))
 
+// Custom assertion macro that can be configured for testing
+#ifndef GALILEO_ASSERT
+    #ifdef GALILEO_TESTING
+        #include <stdexcept>
+        #define GALILEO_ASSERT(condition, message) \
+            do { \
+                if (!(condition)) { \
+                    throw std::runtime_error("Assertion failed: " message); \
+                } \
+            } while (0)
+    #else
+        #include <cassert>
+        #define GALILEO_ASSERT(condition, message) assert((condition) && (message))
+    #endif
+#endif
+
 #define FORWARD_ACCESSOR(ReturnType, accessor_name)        \
     /* lvalue-qualified overload */                        \
     ReturnType &accessor_name()                            \

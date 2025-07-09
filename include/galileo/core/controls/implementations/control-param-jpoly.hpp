@@ -1,8 +1,10 @@
 #ifndef __galileo_core_controls_control_param_jpoly_hpp__
 #define __galileo_core_controls_control_param_jpoly_hpp__
 
-#include "galileo/common/math/polynomial.hpp"
 #include "galileo/core/controls/control-param-base.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
+
+#include "galileo/common/math/barycentric-interpolator.hpp"
 
 namespace galileo
 {
@@ -19,8 +21,8 @@ namespace galileo
         using Model_t = ControlParamModelJacobiPolynomialTpl<PS, NOrder_>;
         using Data_t = ControlParamDataTpl<PS>;
 
-        static constexpr int NOrder = NOrder_;
-        static constexpr int NW = PS::NU * NOrder;
+        using DimNOrder_t = DimensionTpl<NOrder_>;
+        using DimNW_t = decltype(typename PS::DimNU_t{} * DimNOrder_t{});
     };
 
     template <typename PhaseSpec, int NOrder_>
@@ -45,27 +47,36 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        template <typename ControlParamVectorType>
-        void calc(Data_t &data, const typename PS::NumScalar &t,
-                  const Eigen::MatrixBase<ControlParamVectorType> &w) const
+        GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PS);
+        GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PS);
+
+        ControlParamModelJacobiPolynomialTpl(std::shared_ptr<PS> ps)
+            : ControlParamModelBase<ControlParamModelJacobiPolynomialTpl<PS, NOrder_>, PS>(ps)
         {
-            jacobi_polynomial_.barycentricInterpolation(t, w.reshaped(PS::NU, PS::NOrder), data.u.derived());
+            // interpolator_ = BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options>();
         }
 
         template <typename ControlParamVectorType>
-        void calcDiff(Data_t &data, const typename PS::NumScalar &t,
+        void calc(Data_t &data, const NumScalar &t,
+                  const Eigen::MatrixBase<ControlParamVectorType> &w) const
+        {
+            interpolator_.calc(t, w.reshaped(get_nu(), get_norder()), data.u.derived());
+        }
+
+        template <typename ControlParamVectorType>
+        void calcDiff(Data_t &data, const NumScalar &t,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            jacobi_polynomial_.barycentricInterpolationDiff(t, w.reshaped(PS::NU, PS::NOrder), data.du_dw.derived());
+            interpolator_.calcDiff(t, w.reshaped(get_nu(), get_norder()), data.du_dw.derived());
         }
 
         template <typename ControlVectorType>
-        void params(Data_t &data, const typename PS::NumScalar &t,
+        void params(Data_t &data, const NumScalar &t,
                     const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            for (std::size_t i = 0; i < PS::NOrder; ++i)
+            for (int i = 0; i < get_norder(); ++i)
             {
-                data.w.segment(i * PS::NU, PS::NU) = u;
+                segment(data.w, i * get_nu(), NUDim()) = u;
             }
         }
 
@@ -75,10 +86,10 @@ namespace galileo
                            const Eigen::MatrixBase<ControlParamBoundVectorType> &w_lb,
                            const Eigen::MatrixBase<ControlParamBoundVectorType> &w_ub) const
         {
-            for (std::size_t i = 0; i < PS::NOrder; ++i)
+            for (int i = 0; i < get_norder(); ++i)
             {
-                w_lb.segment(i * PS::NU, PS::NU) = u_lb;
-                w_ub.segment(i * PS::NU, PS::NU) = u_ub;
+                segment(w_lb, i * get_nu(), NUDim()) = u_lb;
+                segment(w_ub, i * get_nu(), NUDim()) = u_ub;
             }
         }
 
@@ -92,21 +103,21 @@ namespace galileo
             switch (op)
             {
             case setto:
-                for (std::size_t i = 0; i < PS::NOrder; ++i)
+                for (int i = 0; i < get_norder(); ++i)
                 {
-                    out.block(0, i * PS::NU, PS::NW, PS::NU) = typename PS::NumScalar(data.du_dw(0, i * PS::NU)) * A;
+                    block(out, 0, i * get_nu(), NWDim(), NUDim()) = data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case addto:
-                for (std::size_t i = 0; i < PS::NOrder; ++i)
+                for (int i = 0; i < get_norder(); ++i)
                 {
-                    out.block(0, i * PS::NU, PS::NW, PS::NU) += typename PS::NumScalar(data.du_dw(0, i * PS::NU)) * A;
+                    block(out, 0, i * get_nu(), NWDim(), NUDim()) += data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case rmfrom:
-                for (std::size_t i = 0; i < PS::NOrder; ++i)
+                for (int i = 0; i < get_norder(); ++i)
                 {
-                    out.block(0, i * PS::NU, PS::NW, PS::NU) -= typename PS::NumScalar(data.du_dw(0, i * PS::NU)) * A;
+                    block(out, 0, i * get_nu(), NWDim(), NUDim()) -= data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             default:
@@ -124,21 +135,21 @@ namespace galileo
             switch (op)
             {
             case setto:
-                for (std::size_t i = 0; i < PS::NOrder; ++i)
+                for (int i = 0; i < get_norder(); ++i)
                 {
-                    out.block(i * PS::NU, 0, PS::NU, PS::NW) = typename PS::NumScalar(data.du_dw(0, i * PS::NU)) * A;
+                    block(out, i * get_nu(), 0, NUDim(), NWDim()) = data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case addto:
-                for (std::size_t i = 0; i < PS::NOrder; ++i)
+                for (int i = 0; i < get_norder(); ++i)
                 {
-                    out.block(i * PS::NU, 0, PS::NU, PS::NW) += typename PS::NumScalar(data.du_dw(0, i * PS::NU)) * A;
+                    block(out, i * get_nu(), 0, NUDim(), NWDim()) += data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case rmfrom:
-                for (std::size_t i = 0; i < PS::NOrder; ++i)
+                for (int i = 0; i < get_norder(); ++i)
                 {
-                    out.block(i * PS::NU, 0, PS::NU, PS::NW) -= typename PS::NumScalar(data.du_dw(0, i * PS::NU)) * A;
+                    block(out, i * get_nu(), 0, NUDim(), NWDim()) -= data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             default:
@@ -146,8 +157,25 @@ namespace galileo
             }
         }
 
+        Data_t createData() const
+        {
+            Data_t data(*this);
+            return data;
+        }
+
+        using Base::get_ps;
+
+        using Base::get_nu;
+        using Base::NUDim;
+
+        using Base::get_norder;
+        using Base::NOrderDim;
+
+        using Base::get_nw;
+        using Base::NWDim;
+
     protected:
-        math::JacobiPolynomialTpl<typename PS::NumScalar, PS::NOrder, PS::Options> jacobi_polynomial_;
+        BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options> interpolator_;
 
     }; // class ControlParamModelJacobiPolynomialTpl
 

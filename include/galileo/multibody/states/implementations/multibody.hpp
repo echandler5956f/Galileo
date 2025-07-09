@@ -7,8 +7,6 @@
 #include <pinocchio/algorithm/joint-configuration.hpp>
 #include <pinocchio/multibody/model.hpp>
 
-#include <cassert>
-
 namespace galileo
 {
 
@@ -32,7 +30,7 @@ namespace galileo
               ub_(VectorNx_t::Zero(get_nx()))
                   requires(RS::DimNQb_t::IsFixed && RS::DimNQj_t::IsFixed && RS::DimNVb_t::IsFixed && RS::DimNVj_t::IsFixed)
         {
-            assert(IsValidRobotSpec(rs));
+            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateMultibodyTpl: Invalid robot spec");
             initialization();
         }
 
@@ -83,7 +81,7 @@ namespace galileo
             lb_(VectorNx_t::Zero(get_nx()));
             ub_(VectorNx_t::Zero(get_nx()));
 
-            assert(IsValidRobotSpec(rs)); // final check that the robot spec is valid
+            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateMultibodyTpl: Invalid robot spec");
             initialization();
         }
 
