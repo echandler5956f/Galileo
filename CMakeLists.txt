@@ -36,6 +36,7 @@ option(ENABLE_VECTORIZATION_SUOPPORT
     "Enable vectorization and further processor-related optimizations" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
 option(GALILEO_BUILD_TESTS "Build the tests for galileo" ON)
+option(GALILEO_BUILD_EXAMPLES "Build the examples for galileo" ON)
 
 add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization
                     -Wno-sign-conversion -Wformat=2 -Winit-self
@@ -54,7 +55,11 @@ endif()
 find_package(Eigen3 REQUIRED)
 find_package(pinocchio REQUIRED)
 
-include_directories(${GALILEO_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+find_package(mujoco REQUIRED)
+find_package(GLFW3 REQUIRED)
+find_package(Threads REQUIRED)
+
+include_directories(${GALILEO_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${mujoco_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(INCLUDE_INSTALL_DIR
     "${CMAKE_INSTALL_INCLUDEDIR}/galileo"
@@ -103,6 +108,9 @@ target_compile_features(galileo INTERFACE cxx_std_20)
 target_link_libraries(galileo INTERFACE
   pinocchio::pinocchio
   Eigen3::Eigen
+  Threads::Threads
+  mujoco
+  glfw
 )
 
 set_target_properties(galileo PROPERTIES EXPORT_NAME Galileo)
@@ -149,4 +157,8 @@ if(GALILEO_BUILD_TESTS)
   FetchContent_MakeAvailable(Catch2)
 
   add_subdirectory(tests)
+endif()
+
+if(GALILEO_BUILD_EXAMPLES)
+  add_subdirectory(examples)
 endif()
