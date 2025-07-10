@@ -20,23 +20,61 @@ namespace galileo
         using MatrixN = Eigen::GMatrix<NumScalar, N, N, Options>;
 
         template <typename InputVectorType>
-        BarycentricInterpolatorTpl(const Eigen::MatrixBase<InputVectorType> &nodes) : nodes_(nodes)
+        BarycentricInterpolatorTpl(const Eigen::MatrixBase<InputVectorType> &nodes)
         {
-            NDim_.set_value(nodes_.size());
+            // Set the dimension and validate consistency
+            NDim_.set_value(nodes.size());
+
+            // For fixed-size interpolators, check dimension consistency and copy element-wise
+            if constexpr (DimensionTpl<N>::IsFixed)
+            {
+                GALILEO_ASSERT(nodes.size() == N, "BarycentricInterpolator: Number of nodes must match template parameter N for fixed-size interpolators.");
+                if constexpr (InputVectorType::RowsAtCompileTime == Eigen::Dynamic || InputVectorType::ColsAtCompileTime == Eigen::Dynamic)
+                {
+                    nodes_ = nodes;
+                }
+                else
+                {
+                    // Element-wise copy to avoid compile-time dimension mismatch
+                    for (int i = 0; i < N; ++i)
+                    {
+                        nodes_(i) = nodes(i);
+                    }
+                }
+            }
+            else
+            {
+                // For dynamic size, direct assignment is fine
+                nodes_ = nodes;
+            }
+
             compute_weights();
         }
 
+        /**
+         * @brief Compute interpolated values at time t
+         *
+         * @param t Interpolation parameter in [0, 1]
+         * @param w Input matrix where each column represents the multidimensional state at a node
+         *          Dimensions: (num_output_dimensions × num_nodes)
+         * @param u Output vector containing the interpolated state
+         *          Dimensions: (num_output_dimensions × 1)
+         *
+         * This method performs barycentric interpolation across multiple dimensions simultaneously.
+         * Each column of w contains the values at one of the interpolation nodes, and the method
+         * computes the weighted average to produce the interpolated values at time t.
+         */
         template <typename InputMatrixType, typename OutputVectorType>
         void calc(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputVectorType> &u) const
         {
-            using RowVectorType = typename Eigen::internal::plain_row_type<OutputVectorType>::type;
+            using VectorType = typename Eigen::internal::plain_matrix_type<OutputVectorType>::type;
 
             GALILEO_ASSERT(w.cols() == NDim_.value(), "BarycentricInterpolator: Input matrix must have the same number of columns as the number of nodes.");
             GALILEO_ASSERT(t >= NumScalar(0.) && t <= NumScalar(1.), "BarycentricInterpolator: Time must be between 0 and 1.");
 
-            // Compute the interpolated value
-            RowVectorType numerator = RowVectorType::Zero(NDim_.value());
-            RowVectorType denominator = RowVectorType::Zero(NDim_.value());
+            // Compute the interpolated value using proper barycentric formula
+            VectorType numerator = VectorType::Zero(w.rows());
+            NumScalar denominator = NumScalar(0.);
             NumScalar interpolant;
             for (int i = 0; i < NDim_.value(); ++i)
             {
@@ -47,22 +85,36 @@ namespace galileo
                 }
                 interpolant = weights_(i) / (t - nodes_(i));
                 numerator += interpolant * w.col(i);
-                denominator += RowVectorType::Constant(NDim_.value(), interpolant);
+                denominator += interpolant;
             }
 
-            GALILEO_ASSERT((denominator.array() == 0).any() == false, "BarycentricInterpolator: Denominator is zero.");
+            GALILEO_ASSERT(std::abs(denominator) > std::numeric_limits<NumScalar>::epsilon(), "BarycentricInterpolator: Denominator is zero.");
 
-            u = numerator.array() / denominator.array();
+            u = numerator / denominator;
         }
 
+        /**
+         * @brief Compute sensitivities of interpolated values with respect to input values
+         *
+         * @param t Interpolation parameter in [0, 1]
+         * @param w Input matrix where each column represents the multidimensional state at a node
+         *          Dimensions: (num_output_dimensions × num_nodes)
+         * @param du_dw Output sensitivity matrix
+         *          Dimensions: (num_output_dimensions × num_output_dimensions*num_nodes)
+         *
+         * The output matrix du_dw is organized as blocks, where each block of size
+         * (num_output_dimensions × num_output_dimensions) represents the sensitivity of the
+         * interpolated output with respect to one column of w. For barycentric interpolation,
+         * these blocks are diagonal matrices.
+         */
         template <typename InputMatrixType, typename OutputMatrixType>
         void calcDiff(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputMatrixType> &du_dw) const
         {
             GALILEO_ASSERT(w.cols() == NDim_.value(), "BarycentricInterpolator: Input matrix must have the same number of columns as the number of nodes.");
             GALILEO_ASSERT(t >= NumScalar(0.) && t <= NumScalar(1.), "BarycentricInterpolator: Time must be between 0 and 1.");
 
-            GALILEO_ASSERT(du_dw.rows() == NDim_.value(), "BarycentricInterpolator: Output matrix must have the same number of rows as the number of nodes.");
-            GALILEO_ASSERT(du_dw.cols() == NDim_.value() * NDim_.value(), "BarycentricInterpolator: Output matrix must have the same number of columns as the number of nodes squared.");
+            GALILEO_ASSERT(du_dw.rows() == w.rows(), "BarycentricInterpolator: Output matrix must have the same number of rows as the input matrix.");
+            GALILEO_ASSERT(du_dw.cols() == w.rows() * NDim_.value(), "BarycentricInterpolator: Output matrix must have (num_output_dims * num_nodes) columns.");
 
             // If t is very close to one of the nodes, the interpolation directly returns w.col(i).
             // In that case, the sensitivity with respect to that column is the identity,
@@ -72,7 +124,8 @@ namespace galileo
                 if (std::abs(t - nodes_(i)) < std::numeric_limits<NumScalar>::epsilon())
                 {
                     du_dw.setZero();
-                    block(du_dw, 0, i * NDim_.value(), NDim_, NDim_) = MatrixN::Identity(NDim_.value(), NDim_.value());
+                    block(du_dw, 0, i * w.rows(), w.rows(), w.rows()) =
+                        Eigen::Matrix<NumScalar, Eigen::Dynamic, Eigen::Dynamic>::Identity(w.rows(), w.rows());
                     return;
                 }
             }
@@ -98,7 +151,7 @@ namespace galileo
             for (int j = 0; j < NDim_.value(); ++j)
             {
                 // For each column j, the sensitivity matrix is diagonal with constant c[j] / sum_c.
-                block(du_dw, 0, j * NDim_.value(), NDim_, NDim_).diagonal().setConstant(c(j) / sum_c);
+                block(du_dw, 0, j * w.rows(), w.rows(), w.rows()).diagonal().setConstant(c(j) / sum_c);
             }
         }
 
