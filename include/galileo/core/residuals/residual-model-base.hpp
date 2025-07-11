@@ -75,7 +75,7 @@ namespace galileo
             }
             else if (q_dependent())
             {
-                Eigen::Block<typename PS::MatrixX_t, Eigen::Dynamic, Eigen::Dynamic, true> Rq =
+                Eigen::Block<typename PS::MatrixX_t, traits<PS>::NR, PS::NV, true> Rq =
                     rdata.Rx.leftCols(PS::NV);
                 cdata.Lx.head(PS::NV).noalias() = Rq.transpose() * adata.Ar;
                 rdata.Arr_Rx.leftCols(PS::NV).noalias() =
@@ -89,7 +89,7 @@ namespace galileo
             }
             else if (v_dependent())
             {
-                Eigen::Block<typename PS::MatrixX_t, Eigen::Dynamic, Eigen::Dynamic, true> Rv =
+                Eigen::Block<typename PS::MatrixX_t, traits<PS>::NR, PS::NV, true> Rv =
                     rdata.Rx.rightCols(PS::NV);
                 cdata.Lx.tail(PS::NV).noalias() = Rv.transpose() * adata.Ar;
                 rdata.Arr_Rx.rightCols(PS::NV).noalias() =
