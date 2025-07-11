@@ -24,20 +24,6 @@ namespace galileo
             RS &rs,
             RobotModel_t *model)
             : StateBase<StateMultibodyTpl<RS>, RS>(rs),
-              model_(model),
-              x0_(VectorNx_t::Zero(get_nx())),
-              lb_(VectorNx_t::Zero(get_nx())),
-              ub_(VectorNx_t::Zero(get_nx()))
-                  requires(RS::DimNQb_t::IsFixed && RS::DimNQj_t::IsFixed && RS::DimNVb_t::IsFixed && RS::DimNVj_t::IsFixed)
-        {
-            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateMultibodyTpl: Invalid robot spec");
-            initialization();
-        }
-
-        StateMultibodyTpl(
-            RS &rs,
-            RobotModel_t *model)
-            : StateBase<StateMultibodyTpl<RS>, RS>(rs),
               model_(model)
         {
             if constexpr (RS::DimNQ_t::IsDynamic)
@@ -50,7 +36,7 @@ namespace galileo
                     model->existJointName("root_joint")
                         ? model->joints[model->getJointId("root_joint")].nq()
                         : 0;
-                get_rs().NQb_dim.set_value(nqb)
+                get_rs().NQb_dim.set_value(nqb);
             }
             if constexpr (RS::DimNQj_t::IsDynamic)
             {
@@ -280,7 +266,7 @@ namespace galileo
             ub_ = ub.derived();
         }
 
-        using Base = StateBase<StateEuclideanTpl<RS>, RS>;
+        using Base = StateBase<StateMultibodyTpl<RS>, RS>;
 
         using Base::diff_dx;
         using Base::integrate_x;
