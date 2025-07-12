@@ -96,6 +96,9 @@ namespace galileo
 
             // For the 3x1 position component, set to a uniform random distribution
             // between -1 and 1
+            // Need to add checks based on the type of the first joint.
+            // Currently assumes pinocchio::JointModelFreeFlyer
+            // TODO: Add support for other joint types
             if (get_nqb() >= 3)
             {
                 head(xrand, 3) = Eigen::Matrix<NumScalar, 3, 1>::Random();

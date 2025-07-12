@@ -1,5 +1,5 @@
-#ifndef __galileo_core_controls_control_param_jpoly_hpp__
-#define __galileo_core_controls_control_param_jpoly_hpp__
+#ifndef __galileo_core_controls_control_param_polynomial_hpp__
+#define __galileo_core_controls_control_param_polynomial_hpp__
 
 #include "galileo/core/controls/control-param-base.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
@@ -10,15 +10,15 @@ namespace galileo
 {
 
     template <typename PhaseSpec, int NOrder_>
-    struct ControlParamJacobiPolynomialTpl;
+    struct ControlParamPolynomialTpl;
 
     template <typename PhaseSpec, int NOrder_>
-    struct traits<ControlParamJacobiPolynomialTpl<PhaseSpec, NOrder_>>
+    struct traits<ControlParamPolynomialTpl<PhaseSpec, NOrder_>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ControlParamJacobiPolynomialTpl<PS, NOrder_>;
-        using Model_t = ControlParamModelJacobiPolynomialTpl<PS, NOrder_>;
+        using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;
+        using Model_t = ControlParamModelPolynomialTpl<PS, NOrder_>;
         using Data_t = ControlParamDataTpl<PS>;
 
         using DimNOrder_t = DimensionTpl<NOrder_>;
@@ -26,32 +26,32 @@ namespace galileo
     };
 
     template <typename PhaseSpec, int NOrder_>
-    struct traits<ControlParamModelJacobiPolynomialTpl<PhaseSpec, NOrder_>>
+    struct traits<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ControlParamJacobiPolynomialTpl<PS, NOrder_>;
+        using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec, int NOrder_>
-    class ControlParamModelJacobiPolynomialTpl : public ControlParamModelBase<ControlParamModelJacobiPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
+    class ControlParamModelPolynomialTpl : public ControlParamModelBase<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using Meta_t = ControlParamJacobiPolynomialTpl<PS, NOrder_>;
+        using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
         GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PS);
         GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PS);
 
-        ControlParamModelJacobiPolynomialTpl(std::shared_ptr<PS> ps)
-            : ControlParamModelBase<ControlParamModelJacobiPolynomialTpl<PS, NOrder_>, PS>(ps)
+        ControlParamModelPolynomialTpl(std::shared_ptr<PS> ps)
+            : ControlParamModelBase<ControlParamModelPolynomialTpl<PS, NOrder_>, PS>(ps)
         {
             // interpolator_ = BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options>();
         }
@@ -177,8 +177,8 @@ namespace galileo
     protected:
         BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options> interpolator_;
 
-    }; // class ControlParamModelJacobiPolynomialTpl
+    }; // class ControlParamModelPolynomialTpl
 
 } // namespace galileo
 
-#endif // __galileo_core_controls_control_param_jpoly_hpp__
+#endif // __galileo_core_controls_control_param_polynomial_hpp__

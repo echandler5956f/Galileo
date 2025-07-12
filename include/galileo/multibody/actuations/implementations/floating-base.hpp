@@ -52,7 +52,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            tail(data.tau, this->NUaDim()) = u;
+            tail(data.tau, NUaDim()) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -68,7 +68,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tail(tau, this->NUaDim());
+            data.u = tail(tau, NUaDim());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -82,9 +82,9 @@ namespace galileo
         Data_t createData() const
         {
             Data_t data(*this);
-            data.dtau_du.diagonal(-this->get_state()->get_nvb()).setOnes();
-            data.Mtau.diagonal(this->get_state()->get_nvb()).setOnes();
-            for (int i = 0; i < this->get_state()->get_nvb(); ++i)
+            data.dtau_du.diagonal(-get_state()->get_nvb()).setOnes();
+            data.Mtau.diagonal(get_state()->get_nvb()).setOnes();
+            for (int i = 0; i < get_state()->get_nvb(); ++i)
             {
                 data.tau_set(i) = false;
             }
