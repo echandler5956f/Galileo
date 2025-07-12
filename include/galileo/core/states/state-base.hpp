@@ -229,7 +229,7 @@ namespace galileo
         VectorNdx_t diff_dx(const Eigen::MatrixBase<StateVector1> &x0,
                             const Eigen::MatrixBase<StateVector2> &x1)
         {
-            VectorNdx_t dx;
+            VectorNdx_t dx = VectorNdx_t::Zero(get_ndx());
             this->derived().diff(x0.derived(), x1.derived(), dx);
             return dx;
         }
@@ -245,7 +245,7 @@ namespace galileo
         VectorNx_t integrate_x(const Eigen::MatrixBase<StateVector> &x,
                                const Eigen::MatrixBase<StateTangentVector> &dx)
         {
-            VectorNx_t xout;
+            VectorNx_t xout = VectorNx_t::Zero(get_nx());
             this->derived().integrate(x.derived(), dx.derived(), xout);
             return xout;
         }

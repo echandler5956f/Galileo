@@ -74,6 +74,7 @@
     using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t;           \
     using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t;         \
     using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t;         \
+    using MatrixNv6_t = typename RobotSpec::MatrixNv6_t;               \
     using Matrix6Nv_t = typename RobotSpec::Matrix6Nv_t;
 
 #define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
@@ -162,6 +163,7 @@ namespace galileo
         using MatrixNdxNua_t = Eigen::GMatrix<VarScalar, NDX, NUa, Options>;
         using MatrixNuaNdx_t = Eigen::GMatrix<VarScalar, NUa, NDX, Options>;
 
+        using MatrixNv6_t = Eigen::GMatrix<VarScalar, NV, 6, Options>;
         using Matrix6Nv_t = Eigen::GMatrix<VarScalar, 6, NV, Options>;
 
         /* ---------------------------------------------------------------- */
@@ -198,6 +200,16 @@ namespace galileo
         DimNX_t NX_dim;
         DimNDX_t NDX_dim;
         DimNUa_t NUa_dim;
+
+        // Constructor to properly initialize compound dimensions
+        RobotSpecTpl()
+            : NQb_dim{}, NQj_dim{}, NVb_dim{}, NVj_dim{}, NRotors_dim{},
+              NQ_dim(NQb_dim + NQj_dim),
+              NV_dim(NVb_dim + NVj_dim),
+              NX_dim(NQ_dim + NV_dim),
+              NDX_dim(NV_dim + NV_dim),
+              NUa_dim(NVj_dim + NRotors_dim)
+        {}
     };
 
     // Helper function to validate if a robot spec is in a valid configuration at runtime

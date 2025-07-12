@@ -7,6 +7,9 @@
 #include <pinocchio/algorithm/joint-configuration.hpp>
 #include <pinocchio/multibody/model.hpp>
 
+#include <cmath>  // For std::isfinite
+#include <limits> // For std::numeric_limits
+
 namespace galileo
 {
 
@@ -43,7 +46,6 @@ namespace galileo
                 const std::size_t nqj = get_nq() - get_nqb();
                 get_rs().NQj_dim.set_value(nqj);
             }
-
             if constexpr (RS::DimNV_t::IsDynamic)
             {
                 get_rs().NV_dim.set_value(model->nv);
@@ -61,14 +63,25 @@ namespace galileo
                 const std::size_t nvj = get_nv() - get_nvb();
                 get_rs().NVj_dim.set_value(nvj);
             }
-
-            // Now all of the dynamic dimensions are updated, so we can initialize the member variables
-            x0_(VectorNx_t::Zero(get_nx()));
-            lb_(VectorNx_t::Zero(get_nx()));
-            ub_(VectorNx_t::Zero(get_nx()));
+            if constexpr (RS::DimNX_t::IsDynamic)
+            {
+                get_rs().NX_dim = get_rs().NQ_dim + get_rs().NV_dim;
+            }
+            if constexpr (RS::DimNDX_t::IsDynamic)
+            {
+                get_rs().NDX_dim = get_rs().NV_dim + get_rs().NV_dim;
+            }
+            if constexpr (RS::DimNRotors_t::IsDynamic)
+            {
+                get_rs().NRotors_dim.set_value(0); // no rotors while using StateMultibodyTpl
+            }
+            if constexpr (RS::DimNUa_t::IsDynamic)
+            {
+                get_rs().NUa_dim = get_rs().NVj_dim + get_rs().NRotors_dim;
+            }
 
             GALILEO_ASSERT(IsValidRobotSpec(rs), "StateMultibodyTpl: Invalid robot spec");
-            initialization();
+            initialize();
         }
 
         VectorNx_t zero() const
@@ -78,8 +91,16 @@ namespace galileo
 
         VectorNx_t rand() const
         {
-            VectorNx_t xrand = VectorNx_t::Random(NX);
+            VectorNx_t xrand = VectorNx_t::Random(get_nx());
             head(xrand, NQDim()) = pinocchio::randomConfiguration(*model_);
+
+            // For the 3x1 position component, set to a uniform random distribution
+            // between -1 and 1
+            if (get_nqb() >= 3)
+            {
+                head(xrand, 3) = Eigen::Matrix<NumScalar, 3, 1>::Random();
+            }
+
             return xrand;
         }
 
@@ -306,16 +327,23 @@ namespace galileo
         using Base::NUaDim;
 
     protected:
-        void initialization()
+        void initialize()
         {
+            // Now that all of the dynamic dimensions have been updated in the constructor,
+            // we can initialize the member variables
+            x0_ = VectorNx_t::Zero(get_nx());
             head(x0_, NQDim()) = pinocchio::neutral(*model_);
-            head(lb_, NQbDim()) = -std::numeric_limits<NumScalar>::infinity() * VectorNqb_t::Ones(get_nqb());
+            lb_ = -VectorNx_t::Constant(get_nx(), std::numeric_limits<NumScalar>::infinity());
+            ub_ = VectorNx_t::Constant(get_nx(), std::numeric_limits<NumScalar>::infinity());
 
-            head(ub_, NQbDim()) = std::numeric_limits<NumScalar>::infinity() * VectorNqb_t::Ones(get_nqb());
-            segment(lb_, NQbDim(), NQjDim()) = tail(model_->lowerPositionLimit, NQjDim());
-            segment(ub_, NQbDim(), NQjDim()) = tail(model_->upperPositionLimit, NQjDim());
-            tail(lb_, NVDim()) = -model_->velocityLimit;
-            tail(ub_, NVDim()) = model_->velocityLimit;
+            head(lb_, NQbDim()) = -VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
+            head(ub_, NQbDim()) = VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
+
+            segment(lb_, get_nqb(), NQjDim()) = tail(model_->lowerPositionLimit, NQjDim());
+            segment(ub_, get_nqb(), NQjDim()) = tail(model_->upperPositionLimit, NQjDim());
+
+            segment(lb_, get_nq(), NVDim()) = -model_->velocityLimit;
+            segment(ub_, get_nq(), NVDim()) = model_->velocityLimit;
         }
 
         RobotModel_t *model_;
