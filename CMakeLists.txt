@@ -12,8 +12,8 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(Galileo_SOURCE_DIR ${Galileo_SOURCE_DIR})
-set(Galileo_BINARY_DIR ${Galileo_BINARY_DIR})
+set(Galileo_SOURCE_DIR "${CMAKE_SOURCE_DIR}")
+set(Galileo_BINARY_DIR "${CMAKE_BINARY_DIR}")
 
 # automatically parse the version number
 file(READ "${PROJECT_SOURCE_DIR}/include/galileo/common/meta/macros.hpp" _galileo_version_header)
@@ -29,10 +29,9 @@ include(CheckCXXCompilerFlag)
 include(GNUInstallDirs)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-option(ENABLE_VECTORIZATION_SUOPPORT
+option(ENABLE_VECTORIZATION_SUPPORT
     "Enable vectorization and further processor-related optimizations" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
 option(GALILEO_BUILD_TESTS "Build the tests for galileo" ON)
@@ -43,7 +42,7 @@ add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization
                     -Wmissing-include-dirs -Woverloaded-virtual -Wshadow
                     -Wsign-promo)
 
-if(ENABLE_VECTORIZATION_SUOPPORT)
+if(ENABLE_VECTORIZATION_SUPPORT)
     add_definitions(-march=native)
 endif()
 if(BUILD_WITH_OPENMP_SUPPORT)
@@ -83,8 +82,22 @@ install(
     FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx" PATTERN ".*" EXCLUDE
 )
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# Install test resources if they exist
+if(GALILEO_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/galileo/resources"
+        FILES_MATCHING
+            PATTERN "*.urdf"
+            PATTERN "*.xacro"
+            PATTERN "*.dae"
+            PATTERN "*.stl"
+            PATTERN "*.obj"
+            PATTERN "*.mesh"
+    )
+endif()
 
+# Package configuration variables
 set (GALILEO_VERSION_STRING ${GALILEO_VERSION_NUMBER} )
 set (GALILEO_VERSION_MAJOR ${GALILEO_WORLD_VERSION} )
 set (GALILEO_VERSION_MINOR ${GALILEO_MAJOR_VERSION} )
@@ -159,7 +172,7 @@ if(GALILEO_BUILD_TESTS)
   )
   FetchContent_MakeAvailable(Catch2)
 
-  # Add the GALILEO_TESTING definition for test targets
+    # Add the GALILEO_TESTING definition for test targets
   add_compile_definitions(GALILEO_TESTING)
 
   add_subdirectory(tests)

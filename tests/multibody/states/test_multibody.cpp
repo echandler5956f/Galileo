@@ -13,13 +13,10 @@
 #include <iostream>
 #include <random>
 
+#include "utils/resource_finder.hpp"
+
 using namespace galileo;
 using namespace Catch::Matchers;
-
-// Define base path for robot models
-#ifndef GALILEO_TEST_RESOURCES_DIR
-#define GALILEO_TEST_RESOURCES_DIR "/home/quant/research/Galileo/resources"
-#endif
 
 namespace test_helpers
 {
@@ -34,7 +31,7 @@ namespace test_helpers
 
         std::string urdf_path() const
         {
-            return std::string(GALILEO_TEST_RESOURCES_DIR) + "/" + name + "/urdf/" + name + ".urdf";
+            return galileo::testing::get_robot_urdf_path(name);
         }
     };
 
