@@ -106,7 +106,10 @@ target_include_directories(galileo INTERFACE
 target_compile_features(galileo INTERFACE cxx_std_20)
 
 target_link_libraries(galileo INTERFACE
-  pinocchio::pinocchio
+  pinocchio_default
+  pinocchio_parsers
+  pinocchio_cppad
+  pinocchio_cppadcg
   Eigen3::Eigen
   Threads::Threads
   mujoco
