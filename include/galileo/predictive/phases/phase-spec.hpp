@@ -1,8 +1,8 @@
 #ifndef __galileo_predictive_phases_phase_spec_hpp__
 #define __galileo_predictive_phases_phase_spec_hpp__
 
-#include "galileo/predictive/phases/fwd.hpp"
 #include "galileo/multibody/robot-spec.hpp"
+#include "galileo/predictive/phases/fwd.hpp"
 
 #include <array>
 #include <vector>
@@ -298,8 +298,19 @@ namespace galileo
         /*Actual storage of dimension types */
         /* ---------------------------------------------------------------- */
 
-        // rs must outlive the phase spec, which is very reasonable.
+        // rs (and its members, of course) must outlive the phase spec, which is very reasonable.
         const RS &rs;
+        const DimNQb_t &NQb_dim;
+        const DimNQj_t &NQj_dim;
+        const DimNVb_t &NVb_dim;
+        const DimNVj_t &NVj_dim;
+        const DimNRotors_t &NRotors_dim;
+        const DimNQ_t &NQ_dim;
+        const DimNV_t &NV_dim;
+        const DimNX_t &NX_dim;
+        const DimNDX_t &NDX_dim;
+        const DimNUa_t &NUa_dim;
+
         DimNU_t NU_dim;
         DimNOrder_t NOrder_dim;
         DimNW_t NW_dim;
@@ -308,7 +319,19 @@ namespace galileo
         // Constructor to properly initialize compound dimensions
         // rs is bound to the true robot spec, and unmodifiable after this point.
         PhaseSpecTpl(const RS &_rs)
-            : rs(_rs), NU_dim{}, NOrder_dim{}, NW_dim(NU_dim * NOrder_dim), NStages_dim{}
+            : rs(_rs),
+              NQb_dim(_rs.NQb_dim),
+              NQj_dim(_rs.NQj_dim),
+              NVb_dim(_rs.NVb_dim),
+              NVj_dim(_rs.NVj_dim),
+              NRotors_dim(_rs.NRotors_dim),
+              NQ_dim(_rs.NQ_dim),
+              NV_dim(_rs.NV_dim),
+              NX_dim(_rs.NX_dim),
+              NDX_dim(_rs.NDX_dim),
+              NUa_dim(_rs.NUa_dim),
+              NU_dim{}, NOrder_dim{},
+              NW_dim(NU_dim * NOrder_dim), NStages_dim{}
         {
         }
     };

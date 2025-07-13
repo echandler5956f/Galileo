@@ -16,8 +16,7 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PS);
-        GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PS);
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         using Meta_t = typename PS::ControlParamMeta_t;
         using Model_t = typename PS::ControlParamModel_t;

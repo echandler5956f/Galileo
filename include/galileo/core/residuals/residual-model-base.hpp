@@ -2,6 +2,14 @@
 #define __galileo_core_residuals_residual_model_base_hpp__
 
 #include "galileo/core/residuals/residual-base.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
+
+#define GALILEO_RESIDUAL_DATA_TYPEDEF(Residual)           \
+    using R_t = typename traits<Residual>::R_t;           \
+    using Rx_t = typename traits<Residual>::Rx_t;         \
+    using Ru_t = typename traits<Residual>::Ru_t;         \
+    using Arr_Rx_t = typename traits<Residual>::Arr_Rx_t; \
+    using Arr_Ru_t = typename traits<Residual>::Arr_Ru_t;
 
 namespace galileo
 {
@@ -14,9 +22,15 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
+
+        using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -56,7 +70,7 @@ namespace galileo
         {
             // This function computes the derivatives of the cost function based on a
             // Gauss-Newton approximation
-            const bool is_ru = u_dependent() && nu() != 0 && update_u;
+            const bool is_ru = u_dependent() && get_nu() != 0 && update_u;
             if (is_ru)
             {
                 cdata.Lu.noalias() = rdata.Ru.transpose() * adata.Ar;
@@ -75,30 +89,31 @@ namespace galileo
             }
             else if (q_dependent())
             {
-                Eigen::Block<typename PS::MatrixX_t, traits<PS>::NR, PS::NV, true> Rq =
-                    rdata.Rx.leftCols(PS::NV);
-                cdata.Lx.head(PS::NV).noalias() = Rq.transpose() * adata.Ar;
-                rdata.Arr_Rx.leftCols(PS::NV).noalias() =
+                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rq =
+                    leftCols(rdata.Rx, ps_.NV_dim);
+                head(cdata.Lx, ps_.NV_dim).noalias() = Rq.transpose() * adata.Ar;
+                leftCols(rdata.Arr_Rx, ps_.NV_dim).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rq;
-                cdata.Lxx.topLeftCorner(PS::NV, PS::NV).noalias() =
-                    Rq.transpose() * rdata.Arr_Rx.leftCols(PS::NV);
+                topLeftCorner(cdata.Lxx, ps_.NV_dim, ps_.NV_dim).noalias() =
+                    Rq.transpose() * leftCols(rdata.Arr_Rx, ps_.NV_dim);
                 if (is_ru)
                 {
-                    cdata.Lxu.topRows(PS::NV).noalias() = Rq.transpose() * rdata.Arr_Ru;
+                    topRows(cdata.Lxu, ps_.NV_dim).noalias() = Rq.transpose() * rdata.Arr_Ru;
                 }
             }
             else if (v_dependent())
             {
-                Eigen::Block<typename PS::MatrixX_t, traits<PS>::NR, PS::NV, true> Rv =
-                    rdata.Rx.rightCols(PS::NV);
-                cdata.Lx.tail(PS::NV).noalias() = Rv.transpose() * adata.Ar;
-                rdata.Arr_Rx.rightCols(PS::NV).noalias() =
+                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rv =
+                    rightCols(rdata.Rx, ps_.NV_dim);
+                tail(cdata.Lx, ps_.NV_dim).noalias() = Rv.transpose() * adata.Ar;
+                rightCols(rdata.Arr_Rx, ps_.NV_dim).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rv;
-                cdata.Lxx.bottomRightCorner(PS::NV, PS::NV).noalias() =
-                    Rv.transpose() * rdata.Arr_Rx.rightCols(PS::NV);
+                bottomRightCorner(cdata.Lxx, ps_.NV_dim, ps_.NV_dim).noalias() =
+                    Rv.transpose() * rightCols(rdata.Arr_Rx, ps_.NV_dim);
                 if (is_ru)
                 {
-                    cdata.Lxu.bottomRows(PS::NV).noalias() = Rv.transpose() * rdata.Arr_Ru;
+                    bottomRows(cdata.Lxu, ps_.NV_dim).noalias() =
+                        Rv.transpose() * rdata.Arr_Ru;
                 }
             }
         }
@@ -109,55 +124,88 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        bool q_dependent() const
+        const bool q_dependent() const
         {
             return this->derived().q_dependent_impl();
         }
 
-        bool q_dependent_impl() const
+        const bool q_dependent_impl() const
         {
             return true;
         }
 
-        bool v_dependent() const
+        const bool v_dependent() const
         {
             return this->derived().v_dependent_impl();
         }
 
-        bool v_dependent_impl() const
+        const bool v_dependent_impl() const
         {
             return true;
         }
 
-        bool u_dependent() const
+        const bool u_dependent() const
         {
             return this->derived().u_dependent_impl();
         }
 
-        bool u_dependent_impl() const
+        const bool u_dependent_impl() const
         {
             return true;
         }
 
-        int nr() const
+        /**
+         * @brief Return the dimension of the control space
+         */
+        const int get_nr() const
         {
-            return this->derived().nr_impl();
+            return this->derived().get_nr_impl();
         }
 
-        int nr_impl() const
+        const int get_nr_impl() const
         {
-            return traits<Meta_t>::NR;
+            if constexpr (DimNR_t::IsFixed)
+            {
+                return DimNR_t::Value;
+            }
+            else
+            {
+                return NR_dim_.value();
+            }
         }
 
-        int nu() const
+        const DimNR_t &NRDim() const
         {
-            return this->derived().nu_impl();
+            return NR_dim_;
         }
 
-        // nu MUST be implemented in the derived class
+        /**
+         * @brief Return the dimension of the control space
+         */
+        const int get_nu() const
+        {
+            return this->derived().get_nu_impl();
+        }
+
+        const int get_nu_impl() const
+        {
+            if constexpr (PS::DimNU_t::IsFixed)
+            {
+                return PS::DimNU_t::Value;
+            }
+            else
+            {
+                return ps_.NU_dim.value();
+            }
+        }
+
+        const PS::DimNU_t &NUDim() const
+        {
+            return ps_.NU_dim;
+        }
 
     protected:
-        inline ResidualModelBase()
+        inline ResidualModelBase(const PS &ps, const DimNR_t &NR_dim) : ps_(ps), NR_dim_(NR_dim)
         {
         }
 
@@ -170,6 +218,9 @@ namespace galileo
         {
             return *this;
         }
+
+        const PS &ps_;
+        DimNR_t NR_dim_;
 
     }; // class ResidualModelBase
 

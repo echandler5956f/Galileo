@@ -44,7 +44,7 @@ namespace galileo
         using Model_t = typename RS::ActuationModel_t;
         using Data_t = typename RS::ActuationData_t;
 
-        ActuationModelFloatingBaseTpl(std::shared_ptr<typename RS::State_t> state)
+        ActuationModelFloatingBaseTpl(const std::shared_ptr<typename RS::State_t> &state)
             : ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>(state) {}
 
         template <typename StateVectorType, typename ControlVectorType>

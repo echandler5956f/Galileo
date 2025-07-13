@@ -18,8 +18,7 @@ namespace galileo
 
         using RS = RobotSpec;
 
-        GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RS);
-        GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         using Meta_t = typename RS::ActuationMeta_t;
         using Model_t = typename RS::ActuationModel_t;

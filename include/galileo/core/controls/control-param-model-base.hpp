@@ -15,12 +15,14 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = typename PS::ControlParamMeta_t;
         using Model_t = typename PS::ControlParamModel_t;
         using Data_t = typename PS::ControlParamData_t;
 
         template <typename ControlParamVectorType>
-        void calc(Data_t &data, const typename PS::NumScalar t,
+        void calc(Data_t &data, const PS::NumScalar t,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             this->derived().calc(data, t, w.derived());
@@ -34,7 +36,7 @@ namespace galileo
         }
 
         template <typename ControlVectorType>
-        void params(Data_t &data, const typename PS::NumScalar t,
+        void params(Data_t &data, const PS::NumScalar t,
                     const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             this->derived().params(data, t, u.derived());
@@ -69,7 +71,7 @@ namespace galileo
             this->derived().multiplyJacobianTransposeBy(data, A.derived(), out.derived(), op);
         }
 
-        Data_t createData()
+        Data_t createData() const
         {
             return this->derived().createData();
         }
@@ -82,12 +84,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the control space
          */
-        int get_nu() const
+        const int get_nu() const
         {
             return this->derived().get_nu_impl();
         }
 
-        int get_nu_impl() const
+        const int get_nu_impl() const
         {
             if constexpr (PS::DimNU_t::IsFixed)
             {
@@ -107,12 +109,12 @@ namespace galileo
         /**
          * @brief Return the order of the control parameterization
          */
-        int get_norder() const
+        const int get_norder() const
         {
             return this->derived().get_norder_impl();
         }
 
-        int get_norder_impl() const
+        const int get_norder_impl() const
         {
             if constexpr (PS::DimNOrder_t::IsFixed)
             {
@@ -132,12 +134,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the control parameter space
          */
-        int get_nw() const
+        const int get_nw() const
         {
             return this->derived().get_nw_impl();
         }
 
-        int get_nw_impl() const
+        const int get_nw_impl() const
         {
             if constexpr (PS::DimNW_t::IsFixed)
             {

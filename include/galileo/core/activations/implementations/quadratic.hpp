@@ -24,12 +24,12 @@ namespace galileo
         using ResidualModel_t = typename traits<ResidualMeta_t>::Model_t;
         using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
-        static constexpr int NR = traits<ResidualMeta_t>::NR;
+        using DimNR_t = typename traits<ResidualMeta_t>::DimNR_t;
 
         using A_t = PS::VarScalar;
-        using Ar_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Arr_t = Eigen::GMatrix<typename PS::VarScalar, NR, NR, PS::Options>;
-        using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, NR>;
+        using Ar_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
+        using Arr_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, DimNR_t::Value, PS::Options>;
+        using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, DimNR_t::Value>;
     };
 
     template <typename PhaseSpec,
@@ -56,7 +56,8 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    struct ActivationDataQuadraticTpl : public ActivationDataBase<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
+    struct ActivationDataQuadraticTpl
+        : public ActivationDataBase<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -73,7 +74,8 @@ namespace galileo
         DEFAULT_ACCESSOR(Ar_t, Ar);
         DEFAULT_ACCESSOR(Arr_t, Arr);
 
-        ActivationDataQuadraticTpl() : A(A_t(0.)), Ar(Ar_t::Zero()), Arr(Arr_diag_t())
+        ActivationDataQuadraticTpl(const Model_t &model)
+            : A(0.), Ar(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
         {
             Arr.setZero();
         }
@@ -86,7 +88,8 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    class ActivationModelQuadraticTpl : public ActivationModelBase<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
+    class ActivationModelQuadraticTpl
+        : public ActivationModelBase<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -97,7 +100,10 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        explicit ActivationModelQuadraticTpl(const int nr) : nr_(nr) {}
+        explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &NR_dim)
+            : ActivationModelBase<ActivationModelQuadraticTpl<PS, ResidualTpl>, PS>(ps, NR_dim)
+        {
+        }
 
         template <typename ResidualVectorType>
         void calc(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
@@ -114,18 +120,17 @@ namespace galileo
 
         Data_t createData() const
         {
-            Data_t data = Data_t();
+            Data_t data = Data_t(*this);
             data.Arr.diagonal().setOnes();
             return data;
         }
 
-        int nr_impl() const
-        {
-            return nr_;
-        }
+        using Base = ActivationModelBase<ActivationModelQuadraticTpl<PS, ResidualTpl>, PS>;
 
-    protected:
-        int nr_;
+        using Base::PS;
+
+        using Base::get_nr;
+        using Base::NRDim;
 
     }; // class ActivationModelQuadraticTpl
 

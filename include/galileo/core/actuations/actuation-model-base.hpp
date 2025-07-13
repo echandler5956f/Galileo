@@ -17,6 +17,8 @@ namespace galileo
 
         using RS = RobotSpec;
 
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
+
         using Meta_t = typename RS::ActuationMeta_t;
         using Model_t = typename RS::ActuationModel_t;
         using Data_t = typename RS::ActuationData_t;
@@ -73,17 +75,17 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        std::shared_ptr<typename RS::State_t> get_state() const
+        const std::shared_ptr<RS::State_t> &get_state() const
         {
             return state_;
         }
 
-        constexpr int get_nua() const
+        const int get_nua() const
         {
             return this->derived().get_nua_impl();
         }
 
-        constexpr int get_nua_impl() const
+        const int get_nua_impl() const
         {
             return state_->get_nua();
         }
@@ -94,7 +96,7 @@ namespace galileo
         }
 
     protected:
-        inline ActuationModelBase(std::shared_ptr<typename RS::State_t> state) : state_(state)
+        inline ActuationModelBase(const std::shared_ptr<RS::State_t> &state) : state_(state)
         {
         }
 
@@ -108,7 +110,7 @@ namespace galileo
             return *this;
         }
 
-        std::shared_ptr<typename RS::State_t> state_;
+        const std::shared_ptr<RS::State_t> &state_;
 
     }; // class ActuationModelBase
 

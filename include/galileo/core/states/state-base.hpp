@@ -227,7 +227,7 @@ namespace galileo
          */
         template <typename StateVector1, typename StateVector2>
         VectorNdx_t diff_dx(const Eigen::MatrixBase<StateVector1> &x0,
-                            const Eigen::MatrixBase<StateVector2> &x1)
+                            const Eigen::MatrixBase<StateVector2> &x1) const
         {
             VectorNdx_t dx = VectorNdx_t::Zero(get_ndx());
             this->derived().diff(x0.derived(), x1.derived(), dx);
@@ -243,7 +243,7 @@ namespace galileo
          */
         template <typename StateVector, typename StateTangentVector>
         VectorNx_t integrate_x(const Eigen::MatrixBase<StateVector> &x,
-                               const Eigen::MatrixBase<StateTangentVector> &dx)
+                               const Eigen::MatrixBase<StateTangentVector> &dx) const
         {
             VectorNx_t xout = VectorNx_t::Zero(get_nx());
             this->derived().integrate(x.derived(), dx.derived(), xout);
@@ -260,7 +260,7 @@ namespace galileo
         template <typename StateVector1, typename StateVector2>
         std::vector<MatrixNdx_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
                                           const Eigen::MatrixBase<StateVector2> &x1,
-                                          const Jcomponent firstsecond = both)
+                                          const Jcomponent firstsecond = both) const
         {
             MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
             MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
@@ -296,7 +296,7 @@ namespace galileo
         template <typename StateVector, typename StateTangentVector>
         std::vector<MatrixNdx_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
                                                const Eigen::MatrixBase<StateTangentVector> &dx,
-                                               const Jcomponent firstsecond = both)
+                                               const Jcomponent firstsecond = both) const
         {
             MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
             MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
@@ -330,12 +330,12 @@ namespace galileo
         /**
          * @brief Return the dimension (if any) of the floating base configuration space of the state
          */
-        constexpr int get_nqb() const
+        const int get_nqb() const
         {
             return this->derived().get_nqb_impl();
         }
 
-        constexpr int get_nqb_impl() const
+        const int get_nqb_impl() const
         {
             if constexpr (RS::DimNQb_t::IsFixed)
             {
@@ -355,12 +355,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the joint configuration space of the state
          */
-        constexpr int get_nqj() const
+        const int get_nqj() const
         {
             return this->derived().get_nqj_impl();
         }
 
-        constexpr int get_nqj_impl() const
+        const int get_nqj_impl() const
         {
             if constexpr (RS::DimNQj_t::IsFixed)
             {
@@ -380,12 +380,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the configuration space of the state
          */
-        constexpr int get_nq() const
+        const int get_nq() const
         {
             return this->derived().get_nq_impl();
         }
 
-        constexpr int get_nq_impl() const
+        const int get_nq_impl() const
         {
             if constexpr (RS::DimNQ_t::IsFixed)
             {
@@ -405,12 +405,12 @@ namespace galileo
         /**
          * @brief Return the dimension (if any) of the floating base velocity space of the state
          */
-        constexpr int get_nvb() const
+        const int get_nvb() const
         {
             return this->derived().get_nvb_impl();
         }
 
-        constexpr int get_nvb_impl() const
+        const int get_nvb_impl() const
         {
             if constexpr (RS::DimNVb_t::IsFixed)
             {
@@ -430,12 +430,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the joint velocity space of the state
          */
-        constexpr int get_nvj() const
+        const int get_nvj() const
         {
             return this->derived().get_nvj_impl();
         }
 
-        constexpr int get_nvj_impl() const
+        const int get_nvj_impl() const
         {
             if constexpr (RS::DimNVj_t::IsFixed)
             {
@@ -455,12 +455,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the velocity space of the state
          */
-        constexpr int get_nv() const
+        const int get_nv() const
         {
             return this->derived().get_nv_impl();
         }
 
-        constexpr int get_nv_impl() const
+        const int get_nv_impl() const
         {
             if constexpr (RS::DimNV_t::IsFixed)
             {
@@ -480,12 +480,12 @@ namespace galileo
         /**
          * @brief Return the number of rotors attached to the floating base (if any)
          */
-        constexpr int get_nrotors() const
+        const int get_nrotors() const
         {
             return this->derived().get_nrotors_impl();
         }
 
-        constexpr int get_nrotors_impl() const
+        const int get_nrotors_impl() const
         {
             if constexpr (RS::DimNRotors_t::IsFixed)
             {
@@ -505,12 +505,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the state
          */
-        constexpr int get_nx() const
+        const int get_nx() const
         {
             return this->derived().get_nx_impl();
         }
 
-        constexpr int get_nx_impl() const
+        const int get_nx_impl() const
         {
             if constexpr (RS::DimNX_t::IsFixed)
             {
@@ -530,12 +530,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the tangent space of the state manifold
          */
-        constexpr int get_ndx() const
+        const int get_ndx() const
         {
             return this->derived().get_ndx_impl();
         }
 
-        constexpr int get_ndx_impl() const
+        const int get_ndx_impl() const
         {
             if constexpr (RS::DimNDX_t::IsFixed)
             {
@@ -555,12 +555,12 @@ namespace galileo
         /**
          * @brief Return the dimension of the actuated torque space of the state
          */
-        constexpr int get_nua() const
+        const int get_nua() const
         {
             return this->derived().get_nua_impl();
         }
 
-        constexpr int get_nua_impl() const
+        const int get_nua_impl() const
         {
             if constexpr (RS::DimNUa_t::IsFixed)
             {

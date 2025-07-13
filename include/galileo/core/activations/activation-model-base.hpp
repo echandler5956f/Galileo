@@ -18,6 +18,8 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
+        using DimNR_t = typename traits<Meta_t>::DimNR_t;
+
         template <typename ResidualVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<ResidualVectorType> &r) const
@@ -32,23 +34,43 @@ namespace galileo
             this->derived().calcDiff(data, r.derived());
         }
 
-        Data_t createData()
+        Data_t createData() const
         {
             return this->derived().createData();
         }
 
-        int nr() const
+        const PS &PS() const
         {
-            return this->derived().nr_impl();
+            return ps_;
         }
 
-        int nr_impl() const
+        /**
+         * @brief Return the dimension of the control space
+         */
+        const int get_nr() const
         {
-            return traits<Meta_t>::NR;
+            return this->derived().get_nr_impl();
+        }
+
+        const int get_nr_impl() const
+        {
+            if constexpr (DimNR_t::IsFixed)
+            {
+                return DimNR_t::Value;
+            }
+            else
+            {
+                return NR_dim_.value();
+            }
+        }
+
+        const DimNR_t &NRDim() const
+        {
+            return NR_dim_;
         }
 
     protected:
-        inline ActivationModelBase()
+        inline ActivationModelBase(const PS &ps, const DimNR_t &NR_dim) : ps_(ps), NR_dim_(NR_dim)
         {
         }
 
@@ -61,6 +83,9 @@ namespace galileo
         {
             return *this;
         }
+
+        const PS &ps_;
+        const DimNR_t &NR_dim_;
 
     }; // class ActivationModelBase
 
