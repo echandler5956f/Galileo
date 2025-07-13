@@ -100,8 +100,10 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
+        using Base = ActivationModelBase<ActivationModelQuadraticTpl<PS, ResidualTpl>, PS>;
+
         explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &NR_dim)
-            : ActivationModelBase<ActivationModelQuadraticTpl<PS, ResidualTpl>, PS>(ps, NR_dim)
+            : Base(ps, NR_dim)
         {
         }
 
@@ -125,9 +127,7 @@ namespace galileo
             return data;
         }
 
-        using Base = ActivationModelBase<ActivationModelQuadraticTpl<PS, ResidualTpl>, PS>;
-
-        using Base::PS;
+        using Base::get_ps;
 
         using Base::get_nr;
         using Base::NRDim;

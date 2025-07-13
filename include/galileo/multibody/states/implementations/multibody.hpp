@@ -23,8 +23,10 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
+        using Base = StateBase<StateMultibodyTpl<RS>, RS>;
+
         StateMultibodyTpl(const RobotModel_t &model)
-            : StateBase<StateMultibodyTpl<RS>, RS>(RS()),
+            : Base(RS()),
               model_(model)
         {
             if constexpr (RS::DimNQ_t::IsDynamic)
@@ -290,8 +292,6 @@ namespace galileo
         {
             ub_ = ub.derived();
         }
-
-        using Base = StateBase<StateMultibodyTpl<RS>, RS>;
 
         using Base::diff_dx;
         using Base::integrate_x;

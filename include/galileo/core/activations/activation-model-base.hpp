@@ -39,7 +39,7 @@ namespace galileo
             return this->derived().createData();
         }
 
-        const PS &PS() const
+        const PS &get_ps() const
         {
             return ps_;
         }

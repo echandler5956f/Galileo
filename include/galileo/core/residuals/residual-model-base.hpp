@@ -154,6 +154,11 @@ namespace galileo
             return true;
         }
 
+        const PS &get_ps() const
+        {
+            return ps_;
+        }
+
         /**
          * @brief Return the dimension of the control space
          */

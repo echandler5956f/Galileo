@@ -18,9 +18,11 @@ namespace galileo
         GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RS);
         GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
 
+        using Base = StateBase<StateEuclideanTpl<RS>, RS>;
+
         // For StateEuclideanTpl specifically, robot spec must be valid and all dimensions must be set apriori.
         StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
-            : StateBase<StateEuclideanTpl<RS>, RS>(rs), lb_(lb), ub_(ub)
+            : Base(rs), lb_(lb), ub_(ub)
         {
             GALILEO_ASSERT(IsValidRobotSpec(rs), "StateEuclideanTpl: Invalid robot spec");
             GALILEO_ASSERT(get_nx() == get_ndx(), "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
@@ -144,8 +146,6 @@ namespace galileo
         {
             ub_ = ub.derived();
         }
-
-        using Base = StateBase<StateEuclideanTpl<RS>, RS>;
 
         using Base::diff_dx;
         using Base::integrate_x;
