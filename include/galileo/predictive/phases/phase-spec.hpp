@@ -173,7 +173,7 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         using DimNU_t = typename traits<NodeMeta_t>::DimNU_t;
         using DimNOrder_t = typename traits<ControlParamMeta_t>::DimNOrder_t;
-        using DimNW_t = typename traits<ControlParamMeta_t>::DimNW_t;
+        using DimNW_t = decltype(DimNU_t{} * DimNOrder_t{});
         using DimNStages_t = typename traits<SegmentMeta_t>::DimNStages_t;
 
         /*NOTE: NU is calculated differently depending on the node type*/
@@ -294,11 +294,31 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /*Actual storage of dimension types */
         /* ---------------------------------------------------------------- */
+
+        const RS &rs;
         DimNU_t NU_dim;
         DimNOrder_t NOrder_dim;
         DimNW_t NW_dim;
         DimNStages_t NStages_dim;
+
+        // Constructor to properly initialize compound dimensions
+        // rs is bound to the true robot spec, and unmodifiable after this point.
+        PhaseSpecTpl(const RS &_rs)
+            : rs(_rs), NU_dim{}, NOrder_dim{}, NW_dim(NU_dim * NOrder_dim), NStages_dim{}
+        {
+        }
     };
+
+    // Helper function to validate if a phase spec is in a valid configuration at runtime
+    template <typename PhaseSpec>
+    bool IsValidPhaseSpec(const PhaseSpec &ps)
+    {
+        bool valid_nu = (ps.NU_dim.value() >= 0);
+        bool valid_norder = (ps.NOrder_dim.value() >= 0);
+        bool valid_nw = (ps.NW_dim.value() == ps.NU_dim.value() * ps.NOrder_dim.value());
+        bool valid_nstages = (ps.NStages_dim.value() > 0); // zero stages is not allowed
+        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.rs);
+    }
 
 } // namespace galileo
 

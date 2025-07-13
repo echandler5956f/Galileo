@@ -23,10 +23,8 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
-        StateMultibodyTpl(
-            RS &rs,
-            RobotModel_t &model)
-            : StateBase<StateMultibodyTpl<RS>, RS>(rs),
+        StateMultibodyTpl(const RobotModel_t &model)
+            : StateBase<StateMultibodyTpl<RS>, RS>(RS()),
               model_(model)
         {
             if constexpr (RS::DimNQ_t::IsDynamic)
@@ -73,14 +71,17 @@ namespace galileo
             }
             if constexpr (RS::DimNRotors_t::IsDynamic)
             {
-                get_rs().NRotors_dim.set_value(0); // no rotors while using StateMultibodyTpl
+                // We do not know anything about rotors at this point in the OCP data pipeline, so if rotors are
+                // used, any dynamic evaluation is deferred to ActuationModelFloatingBaseThrustersTpl's constructor.
+                // Of course, compile-time NRotors will always be available at this point.
+                get_rs().NRotors_dim.set_value(0);
             }
             if constexpr (RS::DimNUa_t::IsDynamic)
             {
                 get_rs().NUa_dim = get_rs().NVj_dim + get_rs().NRotors_dim;
             }
 
-            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateMultibodyTpl: Invalid robot spec");
+            GALILEO_ASSERT(IsValidRobotSpec(get_rs()), "StateMultibodyTpl: Invalid robot spec");
             initialize();
         }
 

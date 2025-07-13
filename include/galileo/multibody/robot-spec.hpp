@@ -209,7 +209,8 @@ namespace galileo
               NX_dim(NQ_dim + NV_dim),
               NDX_dim(NV_dim + NV_dim),
               NUa_dim(NVj_dim + NRotors_dim)
-        {}
+        {
+        }
     };
 
     // Helper function to validate if a robot spec is in a valid configuration at runtime
