@@ -5,7 +5,7 @@
 #include <climits>
 #include <stdexcept>
 
-#include "galileo/common/meta/dimensions.hpp"
+#include "galileo/common/meta/dimension.hpp"
 
 using namespace galileo;
 

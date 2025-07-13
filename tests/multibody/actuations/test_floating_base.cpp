@@ -6,7 +6,7 @@
 #include "galileo/core/states/implementations/euclidean.hpp"
 #include "galileo/core/basic-spec.hpp"
 #include "galileo/multibody/robot-spec.hpp"
-#include "galileo/common/meta/dimensions.hpp"
+#include "galileo/common/meta/dimension.hpp"
 #include "galileo/common/meta/eigen.hpp"
 
 #include <Eigen/Dense>

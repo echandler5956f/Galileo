@@ -1,5 +1,5 @@
-#ifndef __galileo_common_meta_dimensions_hpp__
-#define __galileo_common_meta_dimensions_hpp__
+#ifndef __galileo_common_meta_dimension_hpp__
+#define __galileo_common_meta_dimension_hpp__
 
 #include "galileo/common/meta/macros.hpp"
 
@@ -235,4 +235,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_common_meta_dimensions_hpp__
+#endif // __galileo_common_meta_dimension_hpp__

@@ -8,7 +8,7 @@
 #include <Eigen/Core>
 
 #include "galileo/common/meta/concepts.hpp"
-#include "galileo/common/meta/dimensions.hpp"
+#include "galileo/common/meta/dimension.hpp"
 
 namespace galileo
 {
