@@ -171,12 +171,16 @@ namespace galileo
         /* ---------------------------------------------------------------- */
         /* Dependent dimension types */
         /* ---------------------------------------------------------------- */
+
+        // ANYTHING THAT USES THE DEPENDENT CONSTANTS MUST BE DEFINED
+        // *AFTER* THESE DEPENDENT CONSTANTS ARE DEFINED
+
         using DimNU_t = typename traits<NodeMeta_t>::DimNU_t;
         using DimNOrder_t = typename traits<ControlParamMeta_t>::DimNOrder_t;
         using DimNW_t = decltype(DimNU_t{} * DimNOrder_t{});
         using DimNStages_t = typename traits<SegmentMeta_t>::DimNStages_t;
 
-        /*NOTE: NU is calculated differently depending on the node type*/
+        /* NOTE: NU is calculated differently depending on the node type */
         // FreeFwd: NU = NUa
         // FreeInv: NU = NV
         // ContactFwd: NU = NUa
@@ -191,7 +195,6 @@ namespace galileo
         static constexpr int NW = DimNW_t::Value;           // Number of control parameters
         static constexpr int NStages = DimNStages_t::Value; // Number of Runge-Kutta stages per segment
 
-        // THESE MANAGER MUST BE DEFINED AFTER THE DEPENDENT CONSTANTS ARE DEFINED
         using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
         using ConstraintCollection_t = typename traits<ConstraintManagerMeta_t>::Collection_t;
         using ConstraintModelManager_t = typename traits<ConstraintManagerMeta_t>::Model_t;
@@ -295,6 +298,7 @@ namespace galileo
         /*Actual storage of dimension types */
         /* ---------------------------------------------------------------- */
 
+        // rs must outlive the phase spec, which is very reasonable.
         const RS &rs;
         DimNU_t NU_dim;
         DimNOrder_t NOrder_dim;

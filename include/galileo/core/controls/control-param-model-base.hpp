@@ -74,7 +74,7 @@ namespace galileo
             return this->derived().createData();
         }
 
-        PS &get_ps()
+        const PS &get_ps() const
         {
             return ps_;
         }
@@ -95,13 +95,13 @@ namespace galileo
             }
             else
             {
-                return ps_->NU_dim.value();
+                return ps_.NU_dim.value();
             }
         }
 
         const PS::DimNU_t &NUDim() const
         {
-            return ps_->NU_dim;
+            return ps_.NU_dim;
         }
 
         /**
@@ -120,13 +120,13 @@ namespace galileo
             }
             else
             {
-                return ps_->NOrder_dim.value();
+                return ps_.NOrder_dim.value();
             }
         }
 
         const PS::DimNOrder_t &NOrderDim() const
         {
-            return ps_->NOrder_dim;
+            return ps_.NOrder_dim;
         }
 
         /**
@@ -145,17 +145,17 @@ namespace galileo
             }
             else
             {
-                return ps_->NW_dim.value();
+                return ps_.NW_dim.value();
             }
         }
 
         const PS::DimNW_t &NWDim() const
         {
-            return ps_->NW_dim;
+            return ps_.NW_dim;
         }
 
     protected:
-        inline ControlParamModelBase(const std::shared_ptr<PS> &ps) : ps_(ps)
+        inline ControlParamModelBase(const PS &ps) : ps_(ps)
         {
         }
 
@@ -169,7 +169,7 @@ namespace galileo
             return *this;
         }
 
-        std::shared_ptr<PS> ps_;
+        const PS &ps_;
 
     }; // class ControlParamModelBase
 

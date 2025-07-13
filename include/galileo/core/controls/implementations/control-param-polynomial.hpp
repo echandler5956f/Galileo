@@ -22,7 +22,6 @@ namespace galileo
         using Data_t = ControlParamDataTpl<PS>;
 
         using DimNOrder_t = DimensionTpl<NOrder_>;
-        using DimNW_t = decltype(typename PS::DimNU_t{} * DimNOrder_t{});
     };
 
     template <typename PhaseSpec, int NOrder_>
@@ -50,9 +49,12 @@ namespace galileo
         GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PS);
         GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PS);
 
-        ControlParamModelPolynomialTpl(std::shared_ptr<PS> ps)
+        ControlParamModelPolynomialTpl(const PS &ps)
             : ControlParamModelBase<ControlParamModelPolynomialTpl<PS, NOrder_>, PS>(ps)
         {
+            // TODO: Decide what nodes to initialize the interpolator with.
+            // Should it be customizable, or automatic? Should it be a template parameter, or constructor argument?
+
             // interpolator_ = BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options>();
         }
 
