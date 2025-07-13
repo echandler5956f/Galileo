@@ -66,7 +66,7 @@ namespace galileo
                 }
                 data = pinocchio::Data(model);
 
-                state = std::make_shared<typename DynamicSpec::State_t>(spec, &model);
+                state = std::make_shared<typename DynamicSpec::State_t>(spec, model);
                 actuation = std::make_shared<typename DynamicSpec::ActuationModel_t>(state);
             }
 

@@ -145,7 +145,7 @@ namespace galileo
               da0_dx(model_manager.nc_total(), NDX),
               dv(NV),
               ddv_dx(NV, NDX),
-              fext(model_manager.getState().get_robot()->njoints, Force_t::Zero())
+              fext(model_manager.getState().get_robot().njoints, Force_t::Zero())
         {
             Jc.setZero();
             a0.setZero();
@@ -399,7 +399,7 @@ namespace galileo
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_robot()->frames[d_i.frame()].parent;
+                            state_->get_robot().frames[d_i.frame()].parent;
                         data.fext[joint] = d_i.fext();
                     }
                     else
@@ -424,7 +424,7 @@ namespace galileo
                             force.segment(nc, nc_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_robot()->frames[d_i.frame()].parent;
+                            state_->get_robot().frames[d_i.frame()].parent;
                         data.fext[joint] = d_i.fext();
                         nc += nc_i;
                     }
