@@ -32,14 +32,14 @@ namespace galileo
         using ActivationModel_t = typename traits<ActivationMeta_t>::Model_t;
         using ActivationData_t = typename traits<ActivationMeta_t>::Data_t;
 
-        static constexpr int NR = traits<ResidualMeta_t>::NR;
+        using DimNR_t = typename traits<ResidualMeta_t>::DimNR_t;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>;
+        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, 1, PS::Options>;
+        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <
@@ -72,7 +72,8 @@ namespace galileo
         typename PhaseSpec,
         template <typename PS> class ResidualTpl,
         template <typename PS> class ActivationTpl>
-    struct CostDataResidualTpl : public CostDataBase<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
+    struct CostDataResidualTpl
+        : public CostDataBase<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -82,6 +83,10 @@ namespace galileo
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        using Base = CostDataBase<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PS>;
+
+        using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         GALILEO_COST_DATA_TYPEDEF(Meta_t);
 
@@ -115,7 +120,8 @@ namespace galileo
         typename PhaseSpec,
         template <typename PS> class ResidualTpl,
         template <typename PS> class ActivationTpl>
-    class CostModelResidualTpl : public CostModelBase<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
+    class CostModelResidualTpl
+        : public CostModelBase<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -125,6 +131,10 @@ namespace galileo
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        using Base = CostModelBase<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PS>;
+
+        using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         using ResidualMeta_t = typename traits<Meta_t>::ResidualMeta_t;
         using ResidualModel_t = typename traits<Meta_t>::ResidualModel_t;

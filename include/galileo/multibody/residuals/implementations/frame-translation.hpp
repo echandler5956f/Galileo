@@ -1,0 +1,204 @@
+#ifndef __galileo_multibody_residuals_frame_translation_hpp__
+#define __galileo_multibody_residuals_frame_translation_hpp__
+
+#include <pinocchio/multibody/fwd.hpp>
+#include <pinocchio/spatial/motion.hpp>
+
+#include <pinocchio/algorithm/frames-derivatives.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/kinematics-derivatives.hpp>
+
+#include "galileo/core/residuals/residual-base.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
+
+namespace galileo
+{
+
+    template <typename PhaseSpec>
+    struct ResidualFrameTranslationTpl;
+
+    template <typename PhaseSpec>
+    struct traits<ResidualFrameTranslationTpl<PhaseSpec>>
+    {
+        using PS = PhaseSpec;
+
+        using Meta_t = ResidualFrameTranslationTpl<PS>;
+        using Model_t = ResidualModelFrameTranslationTpl<PS>;
+        using Data_t = ResidualDataFrameTranslationTpl<PS>;
+
+        using DimNR_t = DimensionTpl<3>;
+        static constexpr int NR = DimNR_t::Value;
+
+        using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
+        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
+        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
+        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
+        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
+    };
+
+    template <typename PhaseSpec>
+    struct traits<ResidualDataFrameTranslationTpl<PhaseSpec>>
+    {
+        using PS = PhaseSpec;
+
+        using Meta_t = ResidualFrameTranslationTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+    };
+
+    template <typename PhaseSpec>
+    struct traits<ResidualModelFrameTranslationTpl<PhaseSpec>>
+    {
+        using PS = PhaseSpec;
+
+        using Meta_t = ResidualFrameTranslationTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+    };
+
+    template <typename PhaseSpec>
+    struct ResidualDataFrameTranslationTpl
+        : public ResidualDataBase<ResidualDataFrameTranslationTpl<PhaseSpec>, PhaseSpec>
+    {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using PS = PhaseSpec;
+
+        using Meta_t = ResidualFrameTranslationTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
+        GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
+
+        DEFAULT_ACCESSOR(R_t, R);
+        DEFAULT_ACCESSOR(Rx_t, Rx);
+        DEFAULT_ACCESSOR(Ru_t, Ru);
+        DEFAULT_ACCESSOR(Arr_Rx_t, Arr_Rx);
+        DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
+
+        ResidualDataFrameTranslationTpl(const Model_t &model)
+            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
+              Ru(model.get_nr(), model.get_ps().NU_dim.value()),
+              Arr_Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
+              Arr_Ru(model.get_nr(), model.get_ps().NU_dim.value()),
+              fJf(6, model.get_ps().NV_dim.value())
+        {
+            R.setZero();
+            Rx.setZero();
+            Ru.setZero();
+            Arr_Rx.setZero();
+            Arr_Ru.setZero();
+
+            fJf.setZero();
+        }
+
+        typename PS::RobotData_t *robot;
+
+        R_t R;
+        Rx_t Rx;
+        Ru_t Ru;
+        Arr_Rx_t Arr_Rx;
+        Arr_Ru_t Arr_Ru;
+
+        Matrix6Nv_t fJf;
+
+    }; // class ResidualDataFrameTranslationTpl
+
+    template <typename PhaseSpec>
+    class ResidualModelFrameTranslationTpl
+        : public ResidualModelBase<ResidualModelFrameTranslationTpl<PhaseSpec>, PhaseSpec>
+    {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using PS = PhaseSpec;
+
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
+        using Meta_t = ResidualFrameTranslationTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+
+        using Base = ResidualModelBase<ResidualModelFrameTranslationTpl<PS>, PS>;
+
+        using DimNR_t = typename traits<Meta_t>::DimNR_t;
+
+        using RobotModel_t = typename PS::RobotModel_t;
+        using FrameIndex_t = pinocchio::FrameIndex;
+
+        ResidualModelFrameTranslationTpl(const PS &ps,
+                                         RobotModel_t *robot_model,
+                                         const FrameIndex_t frame_id,
+                                         const Vector3_t &x_ref)
+            : Base(ps, DimNR_t()),
+              robot_model_(robot_model), frame_id_(frame_id), x_ref_(x_ref)
+        {
+        }
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calc(Data_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x,
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
+        {
+            pinocchio::updateFramePlacement(*robot_model_, *data.robot, frame_id_);
+            data.R = data.robot->oMf[frame_id_].translation() - x_ref_;
+        }
+
+        template <typename StateVectorType, typename ControlVectorType>
+        void calcDiff(Data_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x,
+                      const Eigen::MatrixBase<ControlVectorType> &u) const
+        {
+            pinocchio::getFrameJacobian(
+                *robot_model_,
+                *data.robot,
+                frame_id_,
+                pinocchio::ReferenceFrame::LOCAL,
+                data.fJf);
+
+            leftCols(data.Rx, get_ps().NV_dim).noalias() =
+                data.robot->oMf[frame_id_].rotation() * topRows(data.fJf, 3);
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
+        {
+            Data_t data(*this);
+            data.robot = collector->robot;
+            return data;
+        }
+
+        const bool q_dependent_impl() const
+        {
+            return true;
+        }
+
+        const bool v_dependent_impl() const
+        {
+            return false;
+        }
+
+        const bool u_dependent_impl() const
+        {
+            return false;
+        }
+
+        using Base::get_ps;
+
+        using Base::get_nr;
+        using Base::NRDim;
+
+        using Base::get_nu;
+        using Base::NUDim;
+
+    protected:
+        RobotModel_t *robot_model_;
+        FrameIndex_t frame_id_;
+        Vector3_t x_ref_;
+
+    }; // class ResidualModelFrameTranslationTpl
+
+} // namespace galileo
+
+#endif // __galileo_multibody_residuals_frame_translation_hpp__

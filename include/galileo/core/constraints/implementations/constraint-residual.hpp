@@ -29,15 +29,18 @@ namespace galileo
         using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
         static constexpr ConstraintType EqualityInequality = EqualityInequality_;
-        static constexpr int NH = constexpr(EqualityInequality == ConstraintType::Equality) ? traits<ResidualMeta_t>::NR : 0;
-        static constexpr int NG = constexpr(EqualityInequality == ConstraintType::Inequality) ? traits<ResidualMeta_t>::NR : 0;
+        static constexpr int NH = constexpr(EqualityInequality == ConstraintType::Equality) ? traits<ResidualMeta_t>::DimNR_t::Value : 0;
+        static constexpr int NG = constexpr(EqualityInequality == ConstraintType::Inequality) ? traits<ResidualMeta_t>::DimNR_t::Value : 0;
+
+        DimensionTpl<NH> DimNH;
+        DimensionTpl<NG> DimNG;
 
         using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNDX_t::Value, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNU_t::Value, PS::Options>;
         using G_t = Eigen::GMatrix<typename PS::VarScalar, NG, 1, PS::Options>;
-        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
-        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
+        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::DimNDX_t::Value, PS::Options>;
+        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::DimNU_t::Value, PS::Options>;
 
         using BoundVector_t = Eigen::GMatrix<typename PS::NumScalar, NG, 1, PS::Options>;
     };
@@ -72,7 +75,8 @@ namespace galileo
         typename PhaseSpec,
         template <typename PS> class ResidualTpl,
         ConstraintType EqualityInequality>
-    struct ConstraintDataResidualTpl : public ConstraintDataBase<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>, PhaseSpec>
+    struct ConstraintDataResidualTpl
+        : public ConstraintDataBase<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -110,7 +114,8 @@ namespace galileo
         typename PhaseSpec,
         template <typename PS> class ResidualTpl,
         ConstraintType EqualityInequality_>
-    class ConstraintModelResidualTpl : public ConstraintModelBase<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality_>, PhaseSpec>
+    class ConstraintModelResidualTpl
+        : public ConstraintModelBase<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl, EqualityInequality_>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -120,6 +125,11 @@ namespace galileo
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality_>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        using Base = ConstraintModelBase<ConstraintModelResidualTpl<PS, ResidualTpl, EqualityInequality_>, PS>;
+
+        using DimNH_t = typename traits<Meta_t>::DimNH_t;
+        using DimNG_t = typename traits<Meta_t>::DimNG_t;
 
         using ResidualMeta_t = typename traits<Meta_t>::ResidualMeta_t;
         using ResidualModel_t = typename traits<Meta_t>::ResidualModel_t;
