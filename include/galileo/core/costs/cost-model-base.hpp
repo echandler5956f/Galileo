@@ -49,13 +49,19 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return this->derived().createData(collector);
         }
 
+        const PS &get_ps() const
+        {
+            return ps_;
+        }
+
     protected:
-        inline CostModelBase()
+        inline CostModelBase(const PS &ps)
+            : ps_(ps)
         {
         }
 
@@ -68,6 +74,8 @@ namespace galileo
         {
             return *this;
         }
+
+        const PS &ps_;
 
     }; // class CostModelBase
 

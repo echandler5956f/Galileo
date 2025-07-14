@@ -2,6 +2,7 @@
 #define __galileo_core_constraints_fwd_hpp__
 
 #include "galileo/core/fwd.hpp"
+#include <type_traits>
 
 namespace galileo
 {
@@ -19,6 +20,12 @@ namespace galileo
         Equality = 0,
         Inequality = 1
     };
+
+    template <ConstraintType EqualityInequality>
+    inline constexpr bool is_equality_v = (EqualityInequality == ConstraintType::Equality);
+
+    template <ConstraintType EqualityInequality>
+    inline constexpr bool is_inequality_v = (EqualityInequality == ConstraintType::Inequality);
 
     template <
         typename PhaseSpec,

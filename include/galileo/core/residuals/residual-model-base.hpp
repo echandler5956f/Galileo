@@ -174,7 +174,7 @@ namespace galileo
         }
 
         /**
-         * @brief Return the dimension of the control space
+         * @brief Return the dimension of the residual
          */
         const int get_nr() const
         {

@@ -29,11 +29,11 @@ namespace galileo
         using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
         static constexpr ConstraintType EqualityInequality = EqualityInequality_;
-        static constexpr int NH = constexpr(EqualityInequality == ConstraintType::Equality) ? traits<ResidualMeta_t>::DimNR_t::Value : 0;
-        static constexpr int NG = constexpr(EqualityInequality == ConstraintType::Inequality) ? traits<ResidualMeta_t>::DimNR_t::Value : 0;
+        using NHDim_t = is_equality_v<EqualityInequality> ? traits<ResidualMeta_t>::DimNR_t : DimensionTpl<0>;
+        using NGDim_t = is_inequality_v<EqualityInequality> ? traits<ResidualMeta_t>::DimNR_t : DimensionTpl<0>;
 
-        DimensionTpl<NH> DimNH;
-        DimensionTpl<NG> DimNG;
+        static constexpr int NH = NHDim_t::Value;
+        static constexpr int NG = NGDim_t::Value;
 
         using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
         using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNDX_t::Value, PS::Options>;
@@ -100,6 +100,23 @@ namespace galileo
         DEFAULT_ACCESSOR(Gx_t, Gx);
         DEFAULT_ACCESSOR(Gu_t, Gu);
 
+        ConstraintDataResidualTpl(const Model_t &model)
+            : residual(model.get_residual().createData(),
+                       H(model.get_nh()),
+                       Hx(model.get_nh(), model.get_ps().DimNDX_t::Value),
+                       Hu(model.get_nh(), model.get_ps().DimNU_t::Value),
+                       G(model.get_ng()),
+                       Gx(model.get_ng(), model.get_ps().DimNDX_t::Value),
+                       Gu(model.get_ng(), model.get_ps().DimNU_t::Value))
+        {
+            H.setZero();
+            Hx.setZero();
+            Hu.setZero();
+            G.setZero();
+            Gx.setZero();
+            Gu.setZero();
+        }
+
         ResidualData_t residual;
         H_t H;
         Hx_t Hx;
@@ -138,8 +155,20 @@ namespace galileo
         static constexpr ConstraintType EqualityInequality = traits<Meta_t>::EqualityInequality;
         using BoundVector_t = typename traits<Meta_t>::BoundVector_t;
 
-        ConstraintModelResidualTpl(const ResidualModel_t &residual)
-            : residual_(residual)
+        ConstraintModelResidualTpl(const PS &ps, const ResidualModel_t &residual)
+            : Base(ps, DimNH_t(is_equality_v<EqualityInequality> ? residual.get_nr() : 0),
+                   DimNG_t(is_inequality_v<EqualityInequality> ? residual.get_nr() : 0)),
+              residual_(residual)
+        {
+        }
+
+        ConstraintModelResidualTpl(const PS &ps, const ResidualModel_t &residual,
+                                   const BoundVector_t &lb, const BoundVector_t &ub)
+            : Base(ps, DimNH_t(is_equality_v<EqualityInequality> ? residual.get_nr() : 0),
+                   DimNG_t(is_inequality_v<EqualityInequality> ? residual.get_nr() : 0)),
+              residual_(residual),
+              lb_(lb),
+              ub_(ub)
         {
         }
 
@@ -150,7 +179,19 @@ namespace galileo
         {
             residual_.calc(data.residual, x.derived(), u.derived());
 
-            if constexpr (EqualityInequality == ConstraintType::Equality)
+            if constexpr (is_equality_v<EqualityInequality>)
+                updateEqualityCalc(data);
+            else
+                updateInequalityCalc(data);
+        }
+
+        template <typename StateVectorType>
+        void calc(Data_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            residual_.calc(data.residual, x.derived());
+
+            if constexpr (is_equality_v<EqualityInequality>)
                 updateEqualityCalc(data);
             else
                 updateInequalityCalc(data);
@@ -163,7 +204,19 @@ namespace galileo
         {
             residual_.calcDiff(data.residual, x.derived(), u.derived());
 
-            if constexpr (EqualityInequality == ConstraintType::Equality)
+            if constexpr (is_equality_v<EqualityInequality>)
+                updateEqualityCalcDiff(data);
+            else
+                updateInequalityCalcDiff(data);
+        }
+
+        template <typename StateVectorType>
+        void calcDiff(Data_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            residual_.calcDiff(data.residual, x.derived());
+
+            if constexpr (is_equality_v<EqualityInequality>)
                 updateEqualityCalcDiff(data);
             else
                 updateInequalityCalcDiff(data);
@@ -177,15 +230,28 @@ namespace galileo
             ub_ = ub.derived();
         }
 
-        const BoundVector_t &lb() const
+        const ResidualModel_t &get_residual() const
+        {
+            return residual_;
+        }
+
+        const BoundVector_t &get_lb() const
         {
             return lb_;
         }
 
-        const BoundVector_t &ub() const
+        const BoundVector_t &get_ub() const
         {
             return ub_;
         }
+
+        using Base::get_ps;
+
+        using Base::get_nh;
+        using Base::NHDim;
+
+        using Base::get_ng;
+        using Base::NGDim;
 
     protected:
         void updateEqualityCalc(Data_t &data) const

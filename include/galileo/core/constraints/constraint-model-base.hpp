@@ -20,6 +20,9 @@ namespace galileo
 
         using BoundVector_t = typename traits<Meta_t>::BoundVector_t;
 
+        using DimNH_t = typename traits<Meta_t>::DimNH_t;
+        using DimNG_t = typename traits<Meta_t>::DimNG_t;
+
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -51,7 +54,7 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return this->derived().createData(collector);
         }
@@ -63,38 +66,68 @@ namespace galileo
             this->derived().updateBounds(lb.derived(), ub.derived());
         }
 
-        const BoundVector_t &lb() const
+        const BoundVector_t &get_lb() const
         {
-            return this->derived().lb_impl();
+            return this->derived().get_lb();
         }
 
-        const BoundVector_t &ub() const
+        const BoundVector_t &get_ub() const
         {
-            return this->derived().ub_impl();
+            return this->derived().get_ub();
         }
 
-        int ng() const
+        const PS &get_ps() const
         {
-            return this->derived().ng_impl();
+            return ps_;
         }
 
-        int ng_impl() const
+        const int get_nh() const
         {
-            return traits<Meta_t>::NG;
+            return this->derived().get_nh_impl();
         }
 
-        int nh() const
+        const int get_nh_impl() const
         {
-            return traits<Meta_t>::NH;
+            if constexpr (DimNH_t::IsFixed)
+            {
+                return DimNH_t::Value;
+            }
+            else
+            {
+                return NH_dim_.value();
+            }
         }
 
-        int nh_impl() const
+        const DimNH_t &NHDim() const
         {
-            return traits<Meta_t>::NH;
+            return NH_dim_;
+        }
+
+        const int get_ng() const
+        {
+            return this->derived().get_ng_impl();
+        }
+
+        const int get_ng_impl() const
+        {
+            if constexpr (DimNG_t::IsFixed)
+            {
+                return DimNG_t::Value;
+            }
+            else
+            {
+                return NG_dim_.value();
+            }
+        }
+
+        const DimNG_t &NGDim() const
+        {
+            return NG_dim_;
         }
 
     protected:
-        inline ConstraintModelBase()
+        inline ConstraintModelBase(const PS &ps, const DimNH_t &NH_dim, const DimNG_t &NG_dim)
+            : ps_(ps), NH_dim_(NH_dim), NG_dim_(NG_dim)
         {
         }
 
@@ -107,6 +140,10 @@ namespace galileo
         {
             return *this;
         }
+
+        const PS &ps_;
+        DimNH_t NH_dim_;
+        DimNG_t NG_dim_;
 
     }; // class ConstraintModelBase
 
