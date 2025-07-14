@@ -124,16 +124,15 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
-        using RobotModel_t = typename PS::RobotModel_t;
         using FrameIndex_t = pinocchio::FrameIndex;
         using SE3_t = pinocchio::SE3Tpl<typename PS::VarScalar>;
 
         ResidualModelFramePlacementTpl(const PS &ps,
-                                       RobotModel_t *robot_model,
+                                       const std::shared_ptr<State_t> &state,
                                        const FrameIndex_t frame_id,
                                        const SE3_t &p_ref)
             : Base(ps, DimNR_t()),
-              robot_model_(robot_model), frame_id_(frame_id), p_ref_(p_ref), oMf_inv_(p_ref.inverse())
+              state_(state), frame_id_(frame_id), p_ref_(p_ref), oMf_inv_(p_ref.inverse())
         {
         }
 
@@ -142,7 +141,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            pinocchio::updateFramePlacement(*robot_model_, *data.robot, frame_id_);
+            pinocchio::updateFramePlacement(state_->get_robot(), *data.robot, frame_id_);
             data.rMf = oMf_inv_ * data.robot->oMf[frame_id_];
             data.R = pinocchio::log6(data.rMf).toVector();
         }
@@ -154,7 +153,7 @@ namespace galileo
         {
             pinocchio::Jlog6(data.rMf, data.rJf);
             pinocchio::getFrameJacobian(
-                *robot_model_,
+                state_->get_robot(),
                 *data.robot,
                 frame_id_,
                 pinocchio::ReferenceFrame::LOCAL,
@@ -168,6 +167,11 @@ namespace galileo
             Data_t data(*this);
             data.robot = collector->robot;
             return data;
+        }
+
+        const std::shared_ptr<State_t> &get_state() const
+        {
+            return state_;
         }
 
         const bool q_dependent_impl() const
@@ -194,7 +198,7 @@ namespace galileo
         using Base::NUDim;
 
     protected:
-        RobotModel_t *robot_model_;
+        std::shared_ptr<State_t> state_;
         FrameIndex_t frame_id_;
         SE3_t p_ref_;
         SE3_t oMf_inv_;

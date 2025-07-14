@@ -116,18 +116,17 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
-        using RobotModel_t = typename PS::RobotModel_t;
         using FrameIndex_t = pinocchio::FrameIndex;
         using Motion_t = pinocchio::MotionTpl<typename PS::NumScalar>;
         using ReferenceFrame_t = pinocchio::ReferenceFrame;
 
         ResidualModelFrameVelocityTpl(const PS &ps,
-                                      RobotModel_t *robot_model,
+                                      const std::shared_ptr<State_t> &state,
                                       const FrameIndex_t frame_id,
                                       const Motion_t &velocity,
                                       const ReferenceFrame_t type)
             : Base(ps, DimNR_t()),
-              robot_model_(robot_model), frame_id_(frame_id), vref_(velocity), type_(type)
+              state_(state), frame_id_(frame_id), vref_(velocity), type_(type)
         {
         }
 
@@ -137,7 +136,7 @@ namespace galileo
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             data.R = (pinocchio::getFrameVelocity(
-                          *robot_model_,
+                          state_->get_robot(),
                           *data.robot,
                           frame_id_,
                           type_) -
@@ -151,7 +150,7 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             pinocchio::getFrameVelocityDerivatives(
-                *robot_model_,
+                state_->get_robot(),
                 *data.robot,
                 frame_id_,
                 type_,
@@ -165,6 +164,11 @@ namespace galileo
             Data_t data(*this);
             data.robot = collector->robot;
             return data;
+        }
+
+        const std::shared_ptr<State_t> &get_state() const
+        {
+            return state_;
         }
 
         const bool q_dependent_impl() const
@@ -191,7 +195,7 @@ namespace galileo
         using Base::NUDim;
 
     protected:
-        RobotModel_t *robot_model_;
+        std::shared_ptr<State_t> state_;
         FrameIndex_t frame_id_;
         Motion_t vref_;
         ReferenceFrame_t type_;

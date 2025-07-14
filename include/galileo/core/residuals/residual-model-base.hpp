@@ -68,6 +68,15 @@ namespace galileo
                           const ActivationDataType &adata,
                           const bool update_u) const
         {
+            this->derived().calcCostDiffImpl(cdata, rdata, adata, update_u);
+        }
+
+        template <typename CostDataType, typename ActivationDataType>
+        void calcCostDiffImpl(CostDataType &cdata,
+                              Data_t &rdata,
+                              const ActivationDataType &adata,
+                              const bool update_u) const
+        {
             // This function computes the derivatives of the cost function based on a
             // Gauss-Newton approximation
             const bool is_ru = u_dependent() && get_nu() != 0 && update_u;
@@ -152,6 +161,11 @@ namespace galileo
         const bool u_dependent_impl() const
         {
             return true;
+        }
+
+        const std::shared_ptr<State_t> &get_state() const
+        {
+            return this->derived().get_state();
         }
 
         const PS &get_ps() const
