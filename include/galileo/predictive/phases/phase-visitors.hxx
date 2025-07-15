@@ -1,12 +1,12 @@
-#ifndef __galileo_predictive_phases_phase_basic_visitors_hxx__
-#define __galileo_predictive_phases_phase_basic_visitors_hxx__
+#ifndef __galileo_predictive_phases_phase_visitors_hxx__
+#define __galileo_predictive_phases_phase_visitors_hxx__
 
 #include <vector>
 
 #include <boost/fusion/container/generation/make_vector.hpp>
 #include "galileo/predictive/phases/phase-unary-visitor.hpp"
 
-#include "galileo/predictive/phases/phase-basic-visitors.hpp"
+#include "galileo/predictive/phases/phase-visitors.hpp"
 
 #include "galileo/common/container/aligned-vector.hpp"
 
@@ -228,4 +228,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_predictive_phases_phase_basic_visitors_hxx__
+#endif // __galileo_predictive_phases_phase_visitors_hxx__

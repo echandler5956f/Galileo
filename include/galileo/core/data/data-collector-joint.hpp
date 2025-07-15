@@ -1,5 +1,5 @@
-#ifndef __galileo_core_data_joint_hpp__
-#define __galileo_core_data_joint_hpp__
+#ifndef __galileo_core_data_data_collector_joint_hpp__
+#define __galileo_core_data_data_collector_joint_hpp__
 
 namespace galileo
 {
@@ -53,4 +53,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_data_joint_hpp__
+#endif // __galileo_core_data_data_collector_joint_hpp__

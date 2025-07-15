@@ -1,5 +1,5 @@
-#ifndef __galileo_core_states_euclidean_hpp__
-#define __galileo_core_states_euclidean_hpp__
+#ifndef __galileo_core_states_state_euclidean_hpp__
+#define __galileo_core_states_state_euclidean_hpp__
 
 #include "galileo/core/states/state-base.hpp"
 #include "galileo/multibody/robot-spec.hpp"
@@ -193,4 +193,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_states_euclidean_hpp__
+#endif // __galileo_core_states_state_euclidean_hpp__

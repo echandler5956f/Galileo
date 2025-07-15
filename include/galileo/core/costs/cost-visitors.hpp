@@ -1,5 +1,5 @@
-#ifndef __galileo_core_costs_cost_basic_visitors_hpp__
-#define __galileo_core_costs_cost_basic_visitors_hpp__
+#ifndef __galileo_core_costs_cost_visitors_hpp__
+#define __galileo_core_costs_cost_visitors_hpp__
 
 #include "galileo/core/costs/fwd.hpp"
 
@@ -87,4 +87,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_costs_cost_basic_visitors_hpp__
+#endif // __galileo_core_costs_cost_visitors_hpp__

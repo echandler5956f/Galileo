@@ -1,12 +1,12 @@
-#ifndef __galileo_multibody_contacts_contact_basic_visitors_hxx__
-#define __galileo_multibody_contacts_contact_basic_visitors_hxx__
+#ifndef __galileo_multibody_contacts_contact_visitors_hxx__
+#define __galileo_multibody_contacts_contact_visitors_hxx__
 
 #include <vector>
 
 #include <boost/fusion/container/generation/make_vector.hpp>
 #include "galileo/multibody/contacts/contact-unary-visitor.hpp"
 
-#include "galileo/multibody/contacts/contact-basic-visitors.hpp"
+#include "galileo/multibody/contacts/contact-visitors.hpp"
 
 #include "galileo/common/container/aligned-vector.hpp"
 
@@ -753,4 +753,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_contacts_contact_basic_visitors_hxx__
+#endif // __galileo_multibody_contacts_contact_visitors_hxx__

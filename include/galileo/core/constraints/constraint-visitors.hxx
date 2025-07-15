@@ -1,12 +1,12 @@
-#ifndef __galileo_core_constraints_constraint_basic_visitors_hxx__
-#define __galileo_core_constraints_constraint_basic_visitors_hxx__
+#ifndef __galileo_core_constraints_constraint_visitors_hxx__
+#define __galileo_core_constraints_constraint_visitors_hxx__
 
 #include <vector>
 
 #include <boost/fusion/container/generation/make_vector.hpp>
 #include "galileo/core/constraints/constraint-unary-visitor.hpp"
 
-#include "galileo/core/constraints/constraint-basic-visitors.hpp"
+#include "galileo/core/constraints/constraint-visitors.hpp"
 
 #include "galileo/common/container/aligned-vector.hpp"
 
@@ -368,4 +368,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_basic_visitors_hxx__
+#endif // __galileo_core_constraints_constraint_visitors_hxx__

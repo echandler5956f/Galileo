@@ -1,30 +1,36 @@
-#ifndef __galileo_multibody_residuals_control_hpp__
-#define __galileo_multibody_residuals_control_hpp__
+#ifndef __galileo_multibody_residuals_residual_frame_velocity_hpp__
+#define __galileo_multibody_residuals_residual_frame_velocity_hpp__
+
+#include <pinocchio/multibody/fwd.hpp>
+#include <pinocchio/spatial/motion.hpp>
+
+#include <pinocchio/algorithm/frames-derivatives.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/kinematics-derivatives.hpp>
 
 #include "galileo/core/residuals/residual-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
 
     template <typename PhaseSpec>
-    struct ResidualControlTpl;
+    struct ResidualFrameVelocityTpl;
 
     template <typename PhaseSpec>
-    struct traits<ResidualControlTpl<PhaseSpec>>
+    struct traits<ResidualFrameVelocityTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ResidualControlTpl<PS>;
-        using Model_t = ResidualModelControlTpl<PS>;
-        using Data_t = ResidualDataControlTpl<PS>;
+        using Meta_t = ResidualFrameVelocityTpl<PS>;
+        using Model_t = ResidualModelFrameVelocityTpl<PS>;
+        using Data_t = ResidualDataFrameVelocityTpl<PS>;
 
-        using DimNR_t = DimensionTpl<PS::DimNDX_t::Value>;
+        using DimNR_t = DimensionTpl<6>;
         static constexpr int NR = DimNR_t::Value;
 
-        static constexpr bool QDependent = false;
-        static constexpr bool VDependent = false;
-        static constexpr bool UDependent = true;
+        static constexpr bool QDependent = true;
+        static constexpr bool VDependent = true;
+        static constexpr bool UDependent = false;
 
         using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
         using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
@@ -34,38 +40,38 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct traits<ResidualDataControlTpl<PhaseSpec>>
+    struct traits<ResidualDataFrameVelocityTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ResidualControlTpl<PS>;
+        using Meta_t = ResidualFrameVelocityTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec>
-    struct traits<ResidualModelControlTpl<PhaseSpec>>
+    struct traits<ResidualModelFrameVelocityTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ResidualControlTpl<PS>;
+        using Meta_t = ResidualFrameVelocityTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec>
-    struct ResidualDataControlTpl
-        : public ResidualDataBase<ResidualDataControlTpl<PhaseSpec>, PhaseSpec>
+    struct ResidualDataFrameVelocityTpl
+        : public ResidualDataBase<ResidualDataFrameVelocityTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using Meta_t = ResidualControlTpl<PS>;
+        using Meta_t = ResidualFrameVelocityTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ResidualDataBase<ResidualDataControlTpl<PS>, PS>;
+        using Base = ResidualDataBase<ResidualDataFrameVelocityTpl<PS>, PS>;
 
         GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
 
@@ -75,7 +81,7 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Rx_t, Arr_Rx);
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
-        ResidualDataControlTpl(const Model_t &model)
+        ResidualDataFrameVelocityTpl(const Model_t &model)
             : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
               Ru(model.get_nr(), model.get_ps().nu_dim.value()),
               Arr_Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
@@ -88,36 +94,43 @@ namespace galileo
             Arr_Ru.setZero();
         }
 
+        typename PS::RobotData_t *robot;
+
         R_t R;
         Rx_t Rx;
         Ru_t Ru;
         Arr_Rx_t Arr_Rx;
         Arr_Ru_t Arr_Ru;
 
-    }; // class ResidualDataControlTpl
+    }; // class ResidualDataFrameVelocityTpl
 
     template <typename PhaseSpec>
-    class ResidualModelControlTpl
-        : public ResidualModelBase<ResidualModelControlTpl<PhaseSpec>, PhaseSpec>
+    class ResidualModelFrameVelocityTpl
+    : public ResidualModelBase<ResidualModelFrameVelocityTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
-
-        using Meta_t = ResidualControlTpl<PS>;
+        using Meta_t = ResidualFrameVelocityTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ResidualModelBase<ResidualModelControlTpl<PS>, PS>;
+        using Base = ResidualModelBase<ResidualModelFrameVelocityTpl<PS>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
-        ResidualModelControlTpl(const PS &ps,
-                                const VectorNu_t &u_ref)
+        using FrameIndex_t = pinocchio::FrameIndex;
+        using Motion_t = pinocchio::MotionTpl<typename PS::NumScalar>;
+        using ReferenceFrame_t = pinocchio::ReferenceFrame;
+
+        ResidualModelFrameVelocityTpl(const PS &ps,
+                                      const std::shared_ptr<State_t> &state,
+                                      const FrameIndex_t frame_id,
+                                      const Motion_t &velocity,
+                                      const ReferenceFrame_t type)
             : Base(ps, DimNR_t()),
-              u_ref_(u_ref)
+              state_(state), frame_id_(frame_id), vref_(velocity), type_(type)
         {
         }
 
@@ -126,14 +139,13 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data.R = u - u_ref_;
-        }
-
-        template <typename StateVectorType, typename ControlVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
-        {
-            data.R.setZero();
+            data.R = (pinocchio::getFrameVelocity(
+                          state_->get_robot(),
+                          *data.robot,
+                          frame_id_,
+                          type_) -
+                      vref_)
+                         .toVector();
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -141,24 +153,26 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            // The Jacobian has constant values which were set in createData
-        }
-
-        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
-        void calcCostDiffImpl(CostDataType &cdata,
-                              Data_t &rdata,
-                              const ActivationDataType &adata) const
-        {
-            cdata.Lu = adata.Ar;
-            cdata.Luu = adata.Arr;
+            pinocchio::getFrameVelocityDerivatives(
+                state_->get_robot(),
+                *data.robot,
+                frame_id_,
+                type_,
+                leftCols(data.Rx, get_ps().nv_dim),
+                rightCols(data.Rx, get_ps().nv_dim));
         }
 
         template <typename DataCollector>
         Data_t createData(DataCollector *const collector) const
         {
             Data_t data(*this);
-            data.Ru.diagonal().fill(VarScalar_t(1.0));
+            data.robot = collector->robot;
             return data;
+        }
+
+        const std::shared_ptr<State_t> &get_state() const
+        {
+            return state_;
         }
 
         using Base::get_ps;
@@ -174,10 +188,13 @@ namespace galileo
         using Base::get_u_dependent;
 
     protected:
-        VectorNu_t u_ref_;
+        std::shared_ptr<State_t> state_;
+        FrameIndex_t frame_id_;
+        Motion_t vref_;
+        ReferenceFrame_t type_;
 
-    }; // class ResidualModelControlTpl
+    }; // class ResidualModelFrameVelocityTpl
 
 } // namespace galileo
 
-#endif // __galileo_multibody_residuals_control_hpp__
+#endif // __galileo_multibody_residuals_residual_frame_velocity_hpp__

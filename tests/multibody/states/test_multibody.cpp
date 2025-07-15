@@ -6,8 +6,8 @@
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/parsers/urdf.hpp>
 
-#include "galileo/multibody/actuations/implementations/floating-base.hpp"
-#include "galileo/multibody/states/implementations/multibody.hpp"
+#include "galileo/multibody/actuations/implementations/actuation-floating-base.hpp"
+#include "galileo/multibody/states/implementations/state-multibody.hpp"
 
 #include <filesystem>
 #include <iostream>

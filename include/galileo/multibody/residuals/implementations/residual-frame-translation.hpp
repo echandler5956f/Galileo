@@ -1,5 +1,5 @@
-#ifndef __galileo_multibody_residuals_frame_translation_hpp__
-#define __galileo_multibody_residuals_frame_translation_hpp__
+#ifndef __galileo_multibody_residuals_residual_frame_translation_hpp__
+#define __galileo_multibody_residuals_residual_frame_translation_hpp__
 
 #include <pinocchio/multibody/fwd.hpp>
 #include <pinocchio/spatial/motion.hpp>
@@ -198,4 +198,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_residuals_frame_translation_hpp__
+#endif // __galileo_multibody_residuals_residual_frame_translation_hpp__

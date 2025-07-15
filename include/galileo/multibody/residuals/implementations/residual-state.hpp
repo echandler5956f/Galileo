@@ -1,5 +1,5 @@
-#ifndef __galileo_multibody_residuals_state_hpp__
-#define __galileo_multibody_residuals_state_hpp__
+#ifndef __galileo_multibody_residuals_residual_state_hpp__
+#define __galileo_multibody_residuals_residual_state_hpp__
 
 #include <pinocchio/multibody/fwd.hpp>
 #include <pinocchio/spatial/motion.hpp>
@@ -209,4 +209,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_residuals_state_hpp__
+#endif // __galileo_multibody_residuals_residual_state_hpp__

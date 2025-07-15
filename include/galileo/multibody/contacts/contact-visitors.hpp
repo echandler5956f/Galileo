@@ -1,5 +1,5 @@
-#ifndef __galileo_multibody_contacts_contact_basic_visitors_hpp__
-#define __galileo_multibody_contacts_contact_basic_visitors_hpp__
+#ifndef __galileo_multibody_contacts_contact_visitors_hpp__
+#define __galileo_multibody_contacts_contact_visitors_hpp__
 
 #include "galileo/multibody/contacts/fwd.hpp"
 
@@ -169,4 +169,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_contacts_contact_basic_visitors_hpp__
+#endif // __galileo_multibody_contacts_contact_visitors_hpp__

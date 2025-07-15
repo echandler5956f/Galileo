@@ -1,5 +1,5 @@
-#ifndef __galileo_core_activations_quadratic_hpp__
-#define __galileo_core_activations_quadratic_hpp__
+#ifndef __galileo_core_activations_activation_quadratic_hpp__
+#define __galileo_core_activations_activation_quadratic_hpp__
 
 #include "galileo/core/activations/activation-base.hpp"
 
@@ -138,4 +138,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_activations_quadratic_hpp__
+#endif // __galileo_core_activations_activation_quadratic_hpp__

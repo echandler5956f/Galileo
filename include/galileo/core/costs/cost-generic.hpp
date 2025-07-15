@@ -2,7 +2,7 @@
 #define __galileo_core_costs_cost_generic_hpp__
 
 #include "galileo/core/costs/cost-base.hpp"
-#include "galileo/core/costs/cost-basic-visitors.hxx"
+#include "galileo/core/costs/cost-visitors.hxx"
 #include "galileo/core/costs/cost-collection.hpp"
 #include "galileo/core/costs/fwd.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef __galileo_multibody_actuations_floating_base_hpp__
-#define __galileo_multibody_actuations_floating_base_hpp__
+#ifndef __galileo_multibody_actuations_actuation_floating_base_hpp__
+#define __galileo_multibody_actuations_actuation_floating_base_hpp__
 
 #include "galileo/core/actuations/actuation-base.hpp"
 #include "galileo/multibody/robot-spec.hpp"
@@ -101,4 +101,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_actuations_floating_base_hpp__
+#endif // __galileo_multibody_actuations_actuation_floating_base_hpp__

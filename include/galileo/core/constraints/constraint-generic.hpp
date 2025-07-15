@@ -4,7 +4,7 @@
 #include "galileo/core/constraints/fwd.hpp"
 #include "galileo/core/constraints/constraint-base.hpp"
 #include "galileo/core/constraints/constraint-collection.hpp"
-#include "galileo/core/constraints/constraint-basic-visitors.hxx"
+#include "galileo/core/constraints/constraint-visitors.hxx"
 
 #include <boost/mpl/contains.hpp>
 

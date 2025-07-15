@@ -1,5 +1,5 @@
-#ifndef __galileo_predictive_phases_phase_basic_visitors_hpp__
-#define __galileo_predictive_phases_phase_basic_visitors_hpp__
+#ifndef __galileo_predictive_phases_phase_visitors_hpp__
+#define __galileo_predictive_phases_phase_visitors_hpp__
 
 #include "galileo/predictive/phases/fwd.hpp"
 
@@ -70,4 +70,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_predictive_phases_phase_basic_visitors_hpp__
+#endif // __galileo_predictive_phases_phase_visitors_hpp__

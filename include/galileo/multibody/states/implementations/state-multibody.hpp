@@ -1,5 +1,5 @@
-#ifndef __galileo_multibody_states_multibody_hpp__
-#define __galileo_multibody_states_multibody_hpp__
+#ifndef __galileo_multibody_states_state_multibody_hpp__
+#define __galileo_multibody_states_state_multibody_hpp__
 
 #include "galileo/core/states/state-base.hpp"
 #include "galileo/multibody/robot-spec.hpp"
@@ -360,4 +360,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_states_multibody_hpp__
+#endif // __galileo_multibody_states_state_multibody_hpp__

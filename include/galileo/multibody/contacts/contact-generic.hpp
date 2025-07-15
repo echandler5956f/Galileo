@@ -4,7 +4,7 @@
 #include "galileo/multibody/contacts/fwd.hpp"
 #include "galileo/multibody/contacts/contact-base.hpp"
 #include "galileo/multibody/contacts/contact-collection.hpp"
-#include "galileo/multibody/contacts/contact-basic-visitors.hxx"
+#include "galileo/multibody/contacts/contact-visitors.hxx"
 
 #include "galileo/predictive/phases/phase-spec.hpp"
 

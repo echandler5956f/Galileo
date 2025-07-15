@@ -1,5 +1,5 @@
-#ifndef __galileo_core_constraints_constraint_basic_visitors_hpp__
-#define __galileo_core_constraints_constraint_basic_visitors_hpp__
+#ifndef __galileo_core_constraints_constraint_visitors_hpp__
+#define __galileo_core_constraints_constraint_visitors_hpp__
 
 #include "galileo/core/constraints/fwd.hpp"
 
@@ -116,4 +116,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_basic_visitors_hpp__
+#endif // __galileo_core_constraints_constraint_visitors_hpp__
