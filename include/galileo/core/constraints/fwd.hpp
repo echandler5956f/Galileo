@@ -18,7 +18,8 @@ namespace galileo
     enum class ConstraintType
     {
         Equality = 0,
-        Inequality = 1
+        Inequality = 1,
+        Any = 2
     };
 
     template <ConstraintType EqualityInequality>
@@ -26,6 +27,9 @@ namespace galileo
 
     template <ConstraintType EqualityInequality>
     inline constexpr bool is_inequality_v = (EqualityInequality == ConstraintType::Inequality);
+
+    template <ConstraintType EqualityInequality>
+    inline constexpr bool is_any_constraint_v = (EqualityInequality == ConstraintType::Any);
 
     template <
         typename PhaseSpec,

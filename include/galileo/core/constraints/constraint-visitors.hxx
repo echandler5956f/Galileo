@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include <boost/fusion/container/generation/make_vector.hpp>
 #include "galileo/core/constraints/constraint-unary-visitor.hpp"
+#include <boost/fusion/container/generation/make_vector.hpp>
 
 #include "galileo/core/constraints/constraint-visitors.hpp"
 
@@ -79,6 +79,35 @@ namespace galileo
         Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x, u));
     }
 
+    template <typename PhaseSpec, typename StateVectorType>
+    struct ConstraintCalcZerothOrderVisitor
+        : fusion::ConstraintUnaryVisitorBase<ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType>>
+    {
+        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>>;
+
+        template <typename ConstraintModel>
+        static void algo(
+            const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
+            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            const Eigen::MatrixBase<StateVectorType> &x)
+        {
+            constraint_model.calc(constraint_data, x.derived());
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
+              typename StateVectorType>
+    inline void constraint_calc_zeroth_order(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
+        const Eigen::MatrixBase<StateVectorType> &x)
+    {
+        typedef ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType> Algo;
+
+        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x));
+    }
+
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct ConstraintCalcFirstOrderVisitor
         : fusion::ConstraintUnaryVisitorBase<ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
@@ -109,6 +138,35 @@ namespace galileo
         typedef ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType> Algo;
 
         Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x, u));
+    }
+
+    template <typename PhaseSpec, typename StateVectorType>
+    struct ConstraintCalcFirstOrderVisitor
+        : fusion::ConstraintUnaryVisitorBase<ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType>>
+    {
+        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>>;
+
+        template <typename ConstraintModel>
+        static void algo(
+            const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
+            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            const Eigen::MatrixBase<StateVectorType> &x)
+        {
+            constraint_model.calcDiff(constraint_data, x.derived());
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
+              typename StateVectorType>
+    inline void constraint_calc_first_order(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
+        const Eigen::MatrixBase<StateVectorType> &x)
+    {
+        typedef ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType> Algo;
+
+        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x));
     }
 
     template <typename PhaseSpec, typename LowerBoundType, typename UpperBoundType>
@@ -142,12 +200,13 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintLbVisitor : boost::static_visitor<typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t>
+    struct ConstraintLbVisitor
+        : boost::static_visitor<typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t>
     {
         template <typename ConstraintModelDerived>
         typename ConstraintModelDerived::BoundVector_t operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
         {
-            return constraint_model.lb();
+            return constraint_model.get_lb();
         }
 
         static typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
@@ -163,12 +222,13 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintUbVisitor : boost::static_visitor<typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t>
+    struct ConstraintUbVisitor
+        : boost::static_visitor<typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t>
     {
         template <typename ConstraintModelDerived>
         typename ConstraintModelDerived::BoundVector_t operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
         {
-            return constraint_model.ub();
+            return constraint_model.get_ub();
         }
 
         static typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
@@ -183,52 +243,11 @@ namespace galileo
         return ConstraintUbVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_model);
     }
 
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintNgVisitor : boost::static_visitor<int>
-    {
-        template <typename ConstraintModelDerived>
-        int operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
-        {
-            return constraint_model.ng();
-        }
-
-        static int run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-        {
-            return boost::apply_visitor(ConstraintNgVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline int constraint_ng(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-    {
-        return ConstraintNgVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_model);
-    }
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintNhVisitor : boost::static_visitor<int>
-    {
-        template <typename ConstraintModelDerived>
-        int operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
-        {
-            return constraint_model.nh();
-        }
-
-        static int run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-        {
-            return boost::apply_visitor(ConstraintNhVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline int constraint_nh(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-    {
-        return ConstraintNhVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_model);
-    }
-
     // Constraint data visitors
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintHVisitor : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t>
+    struct ConstraintHVisitor
+        : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t>
     {
 
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t;
@@ -252,7 +271,8 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintHxVisitor : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t>
+    struct ConstraintHxVisitor
+        : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t>
     {
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t;
 
@@ -275,7 +295,8 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintHuVisitor : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t>
+    struct ConstraintHuVisitor
+        : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t>
     {
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t;
 
@@ -298,7 +319,8 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintGVisitor : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::G_t>
+    struct ConstraintGVisitor
+        : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::G_t>
     {
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::G_t;
 
@@ -321,7 +343,8 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintGxVisitor : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gx_t>
+    struct ConstraintGxVisitor
+        : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gx_t>
     {
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gx_t;
 
@@ -344,7 +367,8 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintGuVisitor : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gu_t>
+    struct ConstraintGuVisitor
+        : boost::static_visitor<typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gu_t>
     {
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gu_t;
 

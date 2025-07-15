@@ -72,16 +72,6 @@ namespace galileo
     inline const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t &constraint_ub(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
-    inline int constraint_ng(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
-    inline int constraint_nh(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
-
     // Constraint data visitors
 
     template <typename PhaseSpec,

@@ -2,8 +2,8 @@
 #define __galileo_core_costs_cost_generic_hpp__
 
 #include "galileo/core/costs/cost-base.hpp"
-#include "galileo/core/costs/cost-visitors.hxx"
 #include "galileo/core/costs/cost-collection.hpp"
+#include "galileo/core/costs/cost-visitors.hxx"
 #include "galileo/core/costs/fwd.hpp"
 
 #include <boost/mpl/contains.hpp>
@@ -28,11 +28,11 @@ namespace galileo
         using Data_t = CostDataTpl<PS, CostCollectionTpl>;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>;
+        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, 1, PS::Options>;
+        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <typename PhaseSpec,
@@ -61,8 +61,9 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
-    struct CostDataTpl : public CostDataBase<CostDataTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
-                         CostCollectionTpl<PhaseSpec>::CostDataVariant
+    struct CostDataTpl
+        : public CostDataBase<CostDataTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
+          CostCollectionTpl<PhaseSpec>::CostDataVariant_t
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -72,10 +73,11 @@ namespace galileo
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = CostDataBase<CostDataTpl<PS, CostCollectionTpl>, PS>;
 
         GALILEO_COST_DATA_TYPEDEF(Meta_t);
 
-        using DataVariant_t = typename Collection_t::DataVariant_t;
+        using DataVariant_t = typename Collection_t::CostDataVariant_t;
 
         DataVariant_t &toVariant()
         {
@@ -128,7 +130,7 @@ namespace galileo
 
         template <typename DataDerived>
         CostDataTpl(const CostDataBase<DataDerived, PhaseSpec> &data)
-            : Collection_t::DataVariant_t((DataVariant_t)data.derived())
+            : Collection_t::CostDataVariant_t((DataVariant_t)data.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
@@ -144,8 +146,9 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
-    struct CostModelTpl : public CostModelBase<CostModelTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
-                          CostCollectionTpl<PhaseSpec>::CostModelVariant
+    struct CostModelTpl
+        : public CostModelBase<CostModelTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
+          CostCollectionTpl<PhaseSpec>::CostModelVariant_t
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -155,8 +158,9 @@ namespace galileo
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = CostModelBase<CostModelTpl<PS, CostCollectionTpl>, PS>;
 
-        using ModelVariant_t = typename Collection_t::ModelVariant_t;
+        using ModelVariant_t = typename Collection_t::CostModelVariant_t;
 
         CostModelTpl()
             : ModelVariant_t()
@@ -170,7 +174,7 @@ namespace galileo
 
         template <typename ModelDerived>
         CostModelTpl(const CostModelBase<ModelDerived, PhaseSpec> &model)
-            : Collection_t::ModelVariant_t((ModelVariant_t)model.derived())
+            : Collection_t::CostModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
         }
@@ -186,7 +190,7 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return galileo::cost_create_data(*this, collector);
         }
@@ -220,6 +224,8 @@ namespace galileo
         {
             galileo::cost_calc_first_order(*this, data, x.derived());
         }
+
+        using Base::get_ps;
 
     }; // struct CostModelTpl
 

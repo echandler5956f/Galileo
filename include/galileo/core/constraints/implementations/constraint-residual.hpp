@@ -181,7 +181,7 @@ namespace galileo
 
             if constexpr (is_equality_v<EqualityInequality>)
                 updateEqualityCalc(data);
-            else
+            else if constexpr (is_inequality_v<EqualityInequality>)
                 updateInequalityCalc(data);
         }
 
@@ -193,7 +193,7 @@ namespace galileo
 
             if constexpr (is_equality_v<EqualityInequality>)
                 updateEqualityCalc(data);
-            else
+            else if constexpr (is_inequality_v<EqualityInequality>)
                 updateInequalityCalc(data);
         }
 
@@ -206,7 +206,7 @@ namespace galileo
 
             if constexpr (is_equality_v<EqualityInequality>)
                 updateEqualityCalcDiff(data);
-            else
+            else if constexpr (is_inequality_v<EqualityInequality>)
                 updateInequalityCalcDiff(data);
         }
 
@@ -218,7 +218,7 @@ namespace galileo
 
             if constexpr (is_equality_v<EqualityInequality>)
                 updateEqualityCalcDiff(data);
-            else
+            else if constexpr (is_inequality_v<EqualityInequality>)
                 updateInequalityCalcDiff(data);
         }
 

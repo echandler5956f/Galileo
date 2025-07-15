@@ -1,10 +1,10 @@
 #ifndef __galileo_core_constraints_constraint_generic_hpp__
 #define __galileo_core_constraints_constraint_generic_hpp__
 
-#include "galileo/core/constraints/fwd.hpp"
 #include "galileo/core/constraints/constraint-base.hpp"
 #include "galileo/core/constraints/constraint-collection.hpp"
 #include "galileo/core/constraints/constraint-visitors.hxx"
+#include "galileo/core/constraints/fwd.hpp"
 
 #include <boost/mpl/contains.hpp>
 
@@ -27,15 +27,19 @@ namespace galileo
         using Model_t = ConstraintModelTpl<PS, ConstraintCollectionTpl>;
         using Data_t = ConstraintDataTpl<PS, ConstraintCollectionTpl>;
 
-        static constexpr int NH = Eigen::Dynamic;
-        static constexpr int NG = Eigen::Dynamic;
+        static constexpr ConstraintType EqualityInequality = ConstraintType::Any;
+        using DimNH_t = DimensionTpl<Eigen::Dynamic>;
+        using DimNG_t = DimensionTpl<Eigen::Dynamic>;
+
+        static constexpr int NH = DimNH_t::Value;
+        static constexpr int NG = DimNG_t::Value;
 
         using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNDX_t::Value, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNU_t::Value, PS::Options>;
         using G_t = Eigen::GMatrix<typename PS::VarScalar, NG, 1, PS::Options>;
-        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
-        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
+        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::DimNDX_t::Value, PS::Options>;
+        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::DimNU_t::Value, PS::Options>;
 
         using BoundVector_t = Eigen::GMatrix<typename PS::NumScalar, NG, 1, PS::Options>;
     };
@@ -66,8 +70,9 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
-    struct ConstraintDataTpl : public ConstraintDataBase<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
-                               ConstraintCollectionTpl<PhaseSpec>::DataVariant_t
+    struct ConstraintDataTpl
+        : public ConstraintDataBase<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
+          ConstraintCollectionTpl<PhaseSpec>::ConstraintDataVariant_t
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -77,10 +82,11 @@ namespace galileo
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ConstraintDataBase<ConstraintDataTpl<PS, ConstraintCollectionTpl>, PS>;
 
         GALILEO_CONSTRAINT_DATA_TYPEDEF(Meta_t);
 
-        using DataVariant_t = typename Collection_t::DataVariant_t;
+        using DataVariant_t = typename Collection_t::ConstraintDataVariant_t;
 
         DataVariant_t &toVariant()
         {
@@ -133,7 +139,7 @@ namespace galileo
 
         template <typename DataDerived>
         ConstraintDataTpl(const ConstraintDataBase<DataDerived, PhaseSpec> &data)
-            : Collection_t::DataVariant_t((DataVariant_t)data.derived())
+            : Collection_t::ConstraintDataVariant_t((DataVariant_t)data.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
@@ -149,8 +155,9 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
-    struct ConstraintModelTpl : public ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
-                                ConstraintCollectionTpl<PhaseSpec>::ModelVariant_t
+    struct ConstraintModelTpl
+    : public ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
+                                ConstraintCollectionTpl<PhaseSpec>::ConstraintModelVariant_t
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -160,8 +167,9 @@ namespace galileo
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ConstraintModelBase<ConstraintModelTpl<PS, ConstraintCollectionTpl>, PS>;
 
-        using ModelVariant_t = typename Collection_t::ModelVariant_t;
+        using ModelVariant_t = typename Collection_t::ConstraintModelVariant_t;
 
         using BoundVector_t = typename traits<Meta_t>::BoundVector_t;
 
@@ -187,13 +195,13 @@ namespace galileo
 
         template <typename ModelDerived>
         ConstraintModelTpl(const ConstraintModelBase<ModelDerived, PhaseSpec> &model)
-            : Collection_t::ModelVariant_t((ModelVariant_t)model.derived())
+            : Collection_t::ConstraintModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return galileo::constraint_create_data(*this, collector);
         }
@@ -235,25 +243,23 @@ namespace galileo
             galileo::constraint_update_bounds(*this, lb.derived(), ub.derived());
         }
 
-        const BoundVector_t &lb() const
+        const BoundVector_t &get_lb() const
         {
             return galileo::constraint_lb(*this);
         }
 
-        const BoundVector_t &ub() const
+        const BoundVector_t &get_ub() const
         {
             return galileo::constraint_ub(*this);
         }
 
-        int ng_impl() const
-        {
-            return galileo::constraint_ng(*this);
-        }
+        using Base::get_ps;
 
-        int nh_impl() const
-        {
-            return galileo::constraint_nh(*this);
-        }
+        using Base::get_nh;
+        using Base::get_nh_dim;
+
+        using Base::get_ng;
+        using Base::get_ng_dim;
 
     }; // struct ConstraintModelTpl
 
