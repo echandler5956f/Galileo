@@ -31,13 +31,15 @@ namespace galileo
         using Model_t = typename traits<MetaManager_t>::Model_t;
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
-        CostItemTpl() {}
-        CostItemTpl(const std::string &name_in, const Model_t &model_in, const typename PS::NumScalar &weight_in, bool active_in = true)
-            : name(name_in), model(model_in), weight(weight_in), active(active_in) {}
+        using NumScalar = typename PS::NumScalar;
+
+        CostItemTpl(const std::string &name_, const Model_t &model_,
+                    const NumScalar &weight_, bool active_ = true)
+            : name(name_), model(model_), weight(weight_), active(active_) {}
 
         std::string name;
         Model_t model;
-        typename PS::NumScalar weight;
+        NumScalar weight;
         bool active;
     };
 
@@ -62,11 +64,11 @@ namespace galileo
         using DataContainer_t = std::map<std::string, Data_t>;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>;
+        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, 1, PS::Options>;
+        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <typename PhaseSpec,
@@ -115,13 +117,36 @@ namespace galileo
 
         GALILEO_COST_DATA_TYPEDEF(MetaManager_t);
 
+        template <typename DataCollector>
+        CostDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
+            : L(0.),
+              Lx(model_manager.get_ps().ndx_dim.value()),
+              Lu(model_manager.get_ps().nu_dim.value()),
+              Lxx(model_manager.get_ps().ndx_dim.value(), model_manager.get_ps().ndx_dim.value()),
+              Lxu(model_manager.get_ps().ndx_dim.value(), model_manager.get_ps().nu_dim.value()),
+              Luu(model_manager.get_ps().nu_dim.value(), model_manager.get_ps().nu_dim.value())
+        {
+            Lx.setZero();
+            Lu.setZero();
+            Lxx.setZero();
+            Lxu.setZero();
+            Luu.setZero();
+            for (typename ModelManager_t::ModelContainer_t::const_iterator
+                     it = model_manager.get_costs().begin();
+                 it != model_manager.get_costs().end(); ++it)
+            {
+                const Item_t &item = it->second;
+                costs.insert(std::make_pair(item.name, item.model.createData(collector)));
+            }
+        }
+
         DataContainer_t costs;
-        Eigen::Map<L_t> L;
-        Eigen::Map<Lx_t> Lx;
-        Eigen::Map<Lu_t> Lu;
-        Eigen::Map<Lxx_t> Lxx;
-        Eigen::Map<Lxu_t> Lxu;
-        Eigen::Map<Luu_t> Luu;
+        L_t L;
+        Lx_t Lx;
+        Lu_t Lu;
+        Lxx_t Lxx;
+        Lxu_t Lxu;
+        Luu_t Luu;
 
     }; // class CostDataManagerTpl
 
@@ -148,9 +173,16 @@ namespace galileo
         using ModelContainer_t = typename traits<MetaManager_t>::ModelContainer_t;
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
-        CostModelManagerTpl() : nr_(0), nr_total_(0) {}
+        using NumScalar = typename PS::NumScalar;
+        using State_t = typename PS::State_t;
 
-        void addCost(const std::string &name, const Model_t &model, const typename PS::NumScalar &weight, const bool active = true)
+        CostModelManagerTpl(const PS &ps, std::shared_ptr<State_t> state)
+            : ps_(ps), state_(state), nr_active_dim_(0), nr_total_dim_(0)
+        {
+        }
+
+        void addCost(const std::string &name, const Model_t &model, const NumScalar &weight,
+                     const bool active = true)
         {
             std::pair<typename ModelContainer_t::iterator, bool> ret =
                 costs_.insert(std::make_pair(
@@ -162,13 +194,13 @@ namespace galileo
             }
             else if (active)
             {
-                nr_ += model.nr();
-                nr_total_ += model.nr();
+                nr_active_dim_ += model.get_nr_dim();
+                nr_total_dim_ += model.get_nr_dim();
                 active_set_.insert(name);
             }
             else if (!active)
             {
-                nr_total_ += model.nr();
+                nr_total_dim_ += model.get_nr_dim();
                 inactive_set_.insert(name);
             }
         }
@@ -178,8 +210,8 @@ namespace galileo
             typename ModelContainer_t::iterator it = costs_.find(name);
             if (it != costs_.end())
             {
-                nr_ -= it->second.model.nr();
-                nr_total_ -= it->second.model.nr();
+                nr_active_dim_ -= it->second.model.get_nr_dim();
+                nr_total_dim_ -= it->second.model.get_nr_dim();
                 costs_.erase(it);
                 active_set_.erase(name);
                 inactive_set_.erase(name);
@@ -198,14 +230,14 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    nr_ += it->second.model.nr();
+                    nr_active_dim_ += it->second.model.get_nr_dim();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    nr_ -= it->second.model.nr();
+                    nr_active_dim_ -= it->second.model.get_nr_dim();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -221,9 +253,9 @@ namespace galileo
         template <typename StateVectorType, typename ControlVectorType>
         void calc(DataManager_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
-                  const Eigen::MatrixBase<ControlVectorType> &u)
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data.L = typename PS::NumScalar(0.);
+            data.L = NumScalar(0.);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -244,9 +276,9 @@ namespace galileo
 
         template <typename StateVectorType>
         void calc(DataManager_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x)
+                  const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            data.L = typename PS::NumScalar(0.);
+            data.L = NumScalar(0.);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -268,7 +300,7 @@ namespace galileo
         template <typename StateVectorType, typename ControlVectorType>
         void calcDiff(DataManager_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
-                      const Eigen::MatrixBase<ControlVectorType> &u)
+                      const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             data.Lx.setZero();
             data.Lu.setZero();
@@ -299,7 +331,7 @@ namespace galileo
 
         template <typename StateVectorType>
         void calcDiff(DataManager_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x)
+                      const Eigen::MatrixBase<StateVectorType> &x) const
         {
             data.Lx.setZero();
             data.Lxx.setZero();
@@ -322,17 +354,38 @@ namespace galileo
             }
         }
 
-        const std::set<std::string> &getActiveSet() const
+        template <typename DataCollector>
+        DataManager_t createData(DataCollector *const collector) const
+        {
+            return DataManager_t(*this, collector);
+        }
+
+        const PS &get_ps() const
+        {
+            return ps_;
+        }
+
+        const std::shared_ptr<State_t> get_state() const
+        {
+            return state_;
+        }
+
+        const ModelContainer_t &get_costs() const
+        {
+            return costs_;
+        }
+
+        const std::set<std::string> &get_active_set() const
         {
             return active_set_;
         }
 
-        const std::set<std::string> &getInactiveSet() const
+        const std::set<std::string> &get_inactive_set() const
         {
             return inactive_set_;
         }
 
-        bool getCostStatus(const std::string &name) const
+        const bool get_cost_status(const std::string &name) const
         {
             typename ModelContainer_t::const_iterator it =
                 costs_.find(name);
@@ -348,14 +401,26 @@ namespace galileo
             }
         }
 
-    protected:
-        ModelContainer_t costs_;
+        const int get_nr_active() const
+        {
+            return nr_active_dim_.value();
+        }
 
-        std::size_t nr_;
-        std::size_t nr_total_;
+        const int get_nr_total() const
+        {
+            return nr_total_dim_.value();
+        }
+
+    protected:
+        const PS &ps_;
+        std::shared_ptr<State_t> state_;
+        ModelContainer_t costs_;
 
         std::set<std::string> active_set_;
         std::set<std::string> inactive_set_;
+
+        DimensionTpl<> nr_active_dim_;
+        DimensionTpl<> nr_total_dim_;
 
     }; // class CostModelManagerTpl
 

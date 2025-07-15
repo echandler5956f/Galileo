@@ -169,6 +169,52 @@ namespace galileo
         Algo::run(cost_model, cost_data, typename Algo::ArgsType(x));
     }
 
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl>
+    struct CostGetNrVisitor : boost::static_visitor<int>
+    {
+        template <typename CostModelDerived>
+        int operator()(const CostModelBase<CostModelDerived, PhaseSpec> &model) const
+        {
+            return model.get_nr();
+        }
+
+        static int run(const CostModelTpl<PhaseSpec, CostCollectionTpl> &model)
+        {
+            return boost::apply_visitor(CostGetNrVisitor<PhaseSpec, CostCollectionTpl>(), model);
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl>
+    inline int cost_get_nr(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
+    {
+        return CostGetNrVisitor<PhaseSpec, CostCollectionTpl>::run(cost_model);
+    }
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl>
+    struct CostGetNrDimVisitor : boost::static_visitor<DimensionTpl<>>
+    {
+        template <typename CostModelDerived>
+        DimensionTpl<> operator()(const CostModelBase<CostModelDerived, PhaseSpec> &model) const
+        {
+            return model.get_nr_dim();
+        }
+
+        static DimensionTpl<> run(const CostModelTpl<PhaseSpec, CostCollectionTpl> &model)
+        {
+            return boost::apply_visitor(CostGetNrDimVisitor<PhaseSpec, CostCollectionTpl>(), model);
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl>
+    inline const DimensionTpl<> &cost_get_nr_dim(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
+    {
+        return CostGetNrDimVisitor<PhaseSpec, CostCollectionTpl>::run(cost_model);
+    }
+
     // Cost data visitors
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl>

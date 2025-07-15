@@ -64,10 +64,10 @@ namespace galileo
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using Meta_t = Contact3dTpl<PS>;
+        using Meta_t = Contact6dTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ContactDataBase<ContactData3dTpl<PS>, PS>;
+        using Base = ContactDataBase<ContactData6dTpl<PS>, PS>;
 
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
@@ -122,8 +122,8 @@ namespace galileo
         DEFAULT_ACCESSOR(MatrixNcNdx_t, da0_dx);
         DEFAULT_ACCESSOR(MatrixNv_t, dtau_dq);
 
-        // Members used for ContactModel3dTpl
-        // Notice that we do not need to expose accessors for these because they are specific to the 3D contact model
+        // Members used for ContactModel6dTpl
+        // Notice that we do not need to expose accessors for these because they are specific to the 6D contact model
         SE3_t rMf;
         SE3_t lwaMl;
         Motion_t v;
@@ -145,7 +145,7 @@ namespace galileo
         Matrix6Nv_t fJf_df;
 
         template <typename DataCollector>
-        ContactData3dTpl(const Model_t &model, DataCollector *const collector)
+        ContactData6dTpl(const Model_t &model, DataCollector *const collector)
             : robot(collector->robot),
               frame(0),
               type(model.get_type()),
@@ -209,10 +209,10 @@ namespace galileo
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using Meta_t = Contact3dTpl<PhaseSpec>;
+        using Meta_t = Contact6dTpl<PhaseSpec>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ContactModelBase<ContactModel3dTpl<PS>, PS>;
+        using Base = ContactModelBase<ContactModel6dTpl<PS>, PS>;
 
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
@@ -328,11 +328,6 @@ namespace galileo
         void updateForce(ContactDataDerived &data,
                          const Eigen::MatrixBase<ForceVectorType> &f) const
         {
-            if (f.size() != 6)
-            {
-                throw_pretty("Invalid argument: "
-                             << "lambda has wrong dimension (it should be 6)");
-            }
             data.f = pinocchio::ForceTpl<typename PS::VarScalar>(f);
             switch (get_type())
             {

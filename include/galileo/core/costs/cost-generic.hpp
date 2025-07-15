@@ -27,6 +27,9 @@ namespace galileo
         using Model_t = CostModelTpl<PS, CostCollectionTpl>;
         using Data_t = CostDataTpl<PS, CostCollectionTpl>;
 
+        using DimNR_t = DimensionTpl<>;
+        static constexpr int NR = DimNR_t::Value;
+
         using L_t = typename PS::VarScalar;
         using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>;
         using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, 1, PS::Options>;
@@ -189,12 +192,6 @@ namespace galileo
             return *static_cast<const ModelVariant_t *>(this);
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
-        {
-            return galileo::cost_create_data(*this, collector);
-        }
-
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -223,6 +220,22 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::cost_calc_first_order(*this, data, x.derived());
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
+        {
+            return galileo::cost_create_data(*this, collector);
+        }
+
+        const int get_nr() const
+        {
+            return galileo::cost_get_nr(*this);
+        }
+
+        const DimNR_t &get_nr_dim() const
+        {
+            return galileo::cost_get_nr_dim(*this);
         }
 
         using Base::get_ps;

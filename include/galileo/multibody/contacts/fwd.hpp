@@ -19,6 +19,11 @@ namespace galileo
     template <typename PhaseSpec>
     struct ContactData3dTpl;
 
+    template <typename PhaseSpec>
+    struct ContactModel6dTpl;
+    template <typename PhaseSpec>
+    struct ContactData6dTpl;
+
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct ContactModelTpl;

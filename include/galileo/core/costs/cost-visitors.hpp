@@ -53,6 +53,14 @@ namespace galileo
         CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
         const Eigen::MatrixBase<StateVectorType> &x);
 
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl>
+    inline int cost_get_nr(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl>
+    inline const DimensionTpl<> &cost_get_nr_dim(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
+
     // Cost data visitors
 
     template <typename PhaseSpec,
