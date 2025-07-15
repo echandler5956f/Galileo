@@ -31,28 +31,29 @@ namespace galileo
     };
 
     template <typename RobotSpec>
-    class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<RobotSpec>, RobotSpec>
+    class ActuationModelFloatingBaseTpl
+        : public ActuationModelBase<ActuationModelFloatingBaseTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using RS = RobotSpec;
 
-        GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
-
         using Meta_t = typename RS::ActuationMeta_t;
         using Model_t = typename RS::ActuationModel_t;
         using Data_t = typename RS::ActuationData_t;
 
+        using Base = ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>;
+
         ActuationModelFloatingBaseTpl(const std::shared_ptr<typename RS::State_t> &state)
-            : ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>(state) {}
+            : Base(state) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            tail(data.tau, NUaDim()) = u;
+            tail(data.tau, get_nua_dim()) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -68,7 +69,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tail(tau, NUaDim());
+            data.u = tail(tau, get_nua_dim());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -91,12 +92,10 @@ namespace galileo
             return data;
         }
 
-        using Base = ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>;
-
         using Base::get_state;
 
         using Base::get_nua;
-        using Base::NUaDim;
+        using Base::get_nua_dim;
 
     }; // class ActuationModelFloatingBaseTpl
 

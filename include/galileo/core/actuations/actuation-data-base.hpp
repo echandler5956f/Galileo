@@ -47,7 +47,7 @@ namespace galileo
         MatrixNvNdx_t dtau_dx;
         MatrixNvNua_t dtau_du;
         MatrixNuaNv_t Mtau;
-        Eigen::Array<bool, RS::NV, 1> tau_set;
+        Eigen::Array<bool, NV, 1> tau_set;
 
     }; // struct ActuationDataTpl
 

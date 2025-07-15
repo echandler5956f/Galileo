@@ -300,38 +300,38 @@ namespace galileo
 
         // rs (and its members, of course) must outlive the phase spec, which is very reasonable.
         const RS &rs;
-        const DimNQb_t &NQb_dim;
-        const DimNQj_t &NQj_dim;
-        const DimNVb_t &NVb_dim;
-        const DimNVj_t &NVj_dim;
-        const DimNRotors_t &NRotors_dim;
-        const DimNQ_t &NQ_dim;
-        const DimNV_t &NV_dim;
-        const DimNX_t &NX_dim;
-        const DimNDX_t &NDX_dim;
-        const DimNUa_t &NUa_dim;
+        const DimNQb_t &nqb_dim;
+        const DimNQj_t &nqj_dim;
+        const DimNVb_t &nvb_dim;
+        const DimNVj_t &nvj_dim;
+        const DimNRotors_t &nrotors_dim;
+        const DimNQ_t &nq_dim;
+        const DimNV_t &nv_dim;
+        const DimNX_t &nx_dim;
+        const DimNDX_t &ndx_dim;
+        const DimNUa_t &nua_dim;
 
-        DimNU_t NU_dim;
-        DimNOrder_t NOrder_dim;
-        DimNW_t NW_dim;
-        DimNStages_t NStages_dim;
+        DimNU_t nu_dim;
+        DimNOrder_t norder_dim;
+        DimNW_t nw_dim;
+        DimNStages_t nstages_dim;
 
         // Constructor to properly initialize compound dimensions
         // rs is bound to the true robot spec, and unmodifiable after this point.
         PhaseSpecTpl(const RS &_rs)
             : rs(_rs),
-              NQb_dim(_rs.NQb_dim),
-              NQj_dim(_rs.NQj_dim),
-              NVb_dim(_rs.NVb_dim),
-              NVj_dim(_rs.NVj_dim),
-              NRotors_dim(_rs.NRotors_dim),
-              NQ_dim(_rs.NQ_dim),
-              NV_dim(_rs.NV_dim),
-              NX_dim(_rs.NX_dim),
-              NDX_dim(_rs.NDX_dim),
-              NUa_dim(_rs.NUa_dim),
-              NU_dim{}, NOrder_dim{},
-              NW_dim(NU_dim * NOrder_dim), NStages_dim{}
+              nqb_dim(_rs.nqb_dim),
+              nqj_dim(_rs.nqj_dim),
+              nvb_dim(_rs.nvb_dim),
+              nvj_dim(_rs.nvj_dim),
+              nrotors_dim(_rs.nrotors_dim),
+              nq_dim(_rs.nq_dim),
+              nv_dim(_rs.nv_dim),
+              nx_dim(_rs.nx_dim),
+              ndx_dim(_rs.ndx_dim),
+              nua_dim(_rs.nua_dim),
+              nu_dim{}, norder_dim{},
+              nw_dim(nu_dim * norder_dim), nstages_dim{}
         {
         }
     };
@@ -340,10 +340,10 @@ namespace galileo
     template <typename PhaseSpec>
     bool IsValidPhaseSpec(const PhaseSpec &ps)
     {
-        bool valid_nu = (ps.NU_dim.value() >= 0);
-        bool valid_norder = (ps.NOrder_dim.value() >= 0);
-        bool valid_nw = (ps.NW_dim.value() == ps.NU_dim.value() * ps.NOrder_dim.value());
-        bool valid_nstages = (ps.NStages_dim.value() > 0); // zero stages is not allowed
+        bool valid_nu = (ps.nu_dim.value() >= 0);
+        bool valid_norder = (ps.norder_dim.value() >= 0);
+        bool valid_nw = (ps.nw_dim.value() == ps.nu_dim.value() * ps.norder_dim.value());
+        bool valid_nstages = (ps.nstages_dim.value() > 0); // Zero stages is not allowed
         return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.rs);
     }
 

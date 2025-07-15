@@ -28,6 +28,10 @@ namespace galileo
         using DimNR_t = DimensionTpl<6>;
         static constexpr int NR = DimNR_t::Value;
 
+        static constexpr bool QDependent = true;
+        static constexpr bool VDependent = true;
+        static constexpr bool UDependent = false;
+
         using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
         using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
         using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
@@ -67,6 +71,7 @@ namespace galileo
         using Meta_t = ResidualFrameVelocityTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ResidualDataBase<ResidualDataFrameVelocityTpl<PS>, PS>;
 
         GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
 
@@ -77,10 +82,10 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
         ResidualDataFrameVelocityTpl(const Model_t &model)
-            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
-              Ru(model.get_nr(), model.get_ps().NU_dim.value()),
-              Arr_Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
-              Arr_Ru(model.get_nr(), model.get_ps().NU_dim.value())
+            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
+              Ru(model.get_nr(), model.get_ps().nu_dim.value()),
+              Arr_Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
+              Arr_Ru(model.get_nr(), model.get_ps().nu_dim.value())
         {
             R.setZero();
             Rx.setZero();
@@ -111,7 +116,6 @@ namespace galileo
         using Meta_t = ResidualFrameVelocityTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
         using Base = ResidualModelBase<ResidualModelFrameVelocityTpl<PS>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
@@ -154,8 +158,8 @@ namespace galileo
                 *data.robot,
                 frame_id_,
                 type_,
-                leftCols(data.Rx, get_ps().NV_dim),
-                rightCols(data.Rx, get_ps().NV_dim));
+                leftCols(data.Rx, get_ps().nv_dim),
+                rightCols(data.Rx, get_ps().nv_dim));
         }
 
         template <typename DataCollector>
@@ -171,28 +175,17 @@ namespace galileo
             return state_;
         }
 
-        const bool q_dependent_impl() const
-        {
-            return true;
-        }
-
-        const bool v_dependent_impl() const
-        {
-            return true;
-        }
-
-        const bool u_dependent_impl() const
-        {
-            return false;
-        }
-
         using Base::get_ps;
 
         using Base::get_nr;
-        using Base::NRDim;
+        using Base::get_nr_dim;
 
         using Base::get_nu;
-        using Base::NUDim;
+        using Base::get_nu_dim;
+
+        using Base::get_q_dependent;
+        using Base::get_v_dependent;
+        using Base::get_u_dependent;
 
     protected:
         std::shared_ptr<State_t> state_;

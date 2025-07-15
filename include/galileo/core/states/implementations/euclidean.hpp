@@ -8,7 +8,8 @@ namespace galileo
 {
 
     template <typename RobotSpec>
-    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<RobotSpec>, RobotSpec>
+    class StateEuclideanTpl
+        : public StateBase<StateEuclideanTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -155,34 +156,34 @@ namespace galileo
         using Base::get_rs;
 
         using Base::get_nqb;
-        using Base::NQbDim;
+        using Base::get_nqb_dim;
 
         using Base::get_nqj;
-        using Base::NQjDim;
+        using Base::get_nqj_dim;
 
         using Base::get_nq;
-        using Base::NQDim;
+        using Base::get_nq_dim;
 
         using Base::get_nvb;
-        using Base::NVbDim;
+        using Base::get_nvb_dim;
 
         using Base::get_nvj;
-        using Base::NVjDim;
+        using Base::get_nvj_dim;
 
         using Base::get_nv;
-        using Base::NVDim;
+        using Base::get_nv_dim;
 
         using Base::get_nrotors;
-        using Base::NRotorsDim;
+        using Base::get_nrotors_dim;
 
         using Base::get_nx;
-        using Base::NXDim;
+        using Base::get_nx_dim;
 
         using Base::get_ndx;
-        using Base::NDXDim;
+        using Base::get_ndx_dim;
 
         using Base::get_nua;
-        using Base::NUaDim;
+        using Base::get_nua_dim;
 
     protected:
         VectorNx_t lb_;

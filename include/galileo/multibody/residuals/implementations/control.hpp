@@ -22,6 +22,10 @@ namespace galileo
         using DimNR_t = DimensionTpl<PS::DimNDX_t::Value>;
         static constexpr int NR = DimNR_t::Value;
 
+        static constexpr bool QDependent = false;
+        static constexpr bool VDependent = false;
+        static constexpr bool UDependent = true;
+
         using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
         using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
         using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
@@ -61,6 +65,7 @@ namespace galileo
         using Meta_t = ResidualControlTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ResidualDataBase<ResidualDataControlTpl<PS>, PS>;
 
         GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
 
@@ -71,10 +76,10 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
         ResidualDataControlTpl(const Model_t &model)
-            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
-              Ru(model.get_nr(), model.get_ps().NU_dim.value()),
-              Arr_Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
-              Arr_Ru(model.get_nr(), model.get_ps().NU_dim.value())
+            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
+              Ru(model.get_nr(), model.get_ps().nu_dim.value()),
+              Arr_Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
+              Arr_Ru(model.get_nr(), model.get_ps().nu_dim.value())
         {
             R.setZero();
             Rx.setZero();
@@ -105,7 +110,6 @@ namespace galileo
         using Meta_t = ResidualControlTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
         using Base = ResidualModelBase<ResidualModelControlTpl<PS>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
@@ -140,11 +144,10 @@ namespace galileo
             // The Jacobian has constant values which were set in createData
         }
 
-        template <typename CostDataType, typename ActivationDataType>
+        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
         void calcCostDiffImpl(CostDataType &cdata,
                               Data_t &rdata,
-                              const ActivationDataType &adata,
-                              const bool update_u) const
+                              const ActivationDataType &adata) const
         {
             cdata.Lu = adata.Ar;
             cdata.Luu = adata.Arr;
@@ -158,28 +161,17 @@ namespace galileo
             return data;
         }
 
-        const bool q_dependent_impl() const
-        {
-            return false;
-        }
-
-        const bool v_dependent_impl() const
-        {
-            return false;
-        }
-
-        const bool u_dependent_impl() const
-        {
-            return true;
-        }
-
         using Base::get_ps;
 
         using Base::get_nr;
-        using Base::NRDim;
+        using Base::get_nr_dim;
 
         using Base::get_nu;
-        using Base::NUDim;
+        using Base::get_nu_dim;
+
+        using Base::get_q_dependent;
+        using Base::get_v_dependent;
+        using Base::get_u_dependent;
 
     protected:
         VectorNu_t u_ref_;

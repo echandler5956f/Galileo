@@ -20,7 +20,8 @@ namespace galileo
     }
 
     template <typename Derived, typename RobotSpec>
-    class StateBase : public internal::CRTP<Derived>
+    class StateBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -332,24 +333,19 @@ namespace galileo
          */
         const int get_nqb() const
         {
-            return this->derived().get_nqb_impl();
-        }
-
-        const int get_nqb_impl() const
-        {
             if constexpr (RS::DimNQb_t::IsFixed)
             {
                 return RS::DimNQb_t::Value;
             }
             else
             {
-                return rs_.NQb_dim.value();
+                return rs_.nqb_dim.value();
             }
         }
 
-        const RS::DimNQb_t &NQbDim() const
+        const RS::DimNQb_t &get_nqb_dim() const
         {
-            return rs_.NQb_dim;
+            return rs_.nqb_dim;
         }
 
         /**
@@ -357,24 +353,19 @@ namespace galileo
          */
         const int get_nqj() const
         {
-            return this->derived().get_nqj_impl();
-        }
-
-        const int get_nqj_impl() const
-        {
             if constexpr (RS::DimNQj_t::IsFixed)
             {
                 return RS::DimNQj_t::Value;
             }
             else
             {
-                return rs_.NQj_dim.value();
+                return rs_.nqj_dim.value();
             }
         }
 
-        const RS::DimNQj_t &NQjDim() const
+        const RS::DimNQj_t &get_nqj_dim() const
         {
-            return rs_.NQj_dim;
+            return rs_.nqj_dim;
         }
 
         /**
@@ -382,24 +373,19 @@ namespace galileo
          */
         const int get_nq() const
         {
-            return this->derived().get_nq_impl();
-        }
-
-        const int get_nq_impl() const
-        {
             if constexpr (RS::DimNQ_t::IsFixed)
             {
                 return RS::DimNQ_t::Value;
             }
             else
             {
-                return rs_.NQ_dim.value();
+                return rs_.nq_dim.value();
             }
         }
 
-        const RS::DimNQ_t &NQDim() const
+        const RS::DimNQ_t &get_nq_dim() const
         {
-            return rs_.NQ_dim;
+            return rs_.nq_dim;
         }
 
         /**
@@ -407,24 +393,19 @@ namespace galileo
          */
         const int get_nvb() const
         {
-            return this->derived().get_nvb_impl();
-        }
-
-        const int get_nvb_impl() const
-        {
             if constexpr (RS::DimNVb_t::IsFixed)
             {
                 return RS::DimNVb_t::Value;
             }
             else
             {
-                return rs_.NVb_dim.value();
+                return rs_.nvb_dim.value();
             }
         }
 
-        const RS::DimNVb_t &NVbDim() const
+        const RS::DimNVb_t &get_nvb_dim() const
         {
-            return rs_.NVb_dim;
+            return rs_.nvb_dim;
         }
 
         /**
@@ -432,24 +413,19 @@ namespace galileo
          */
         const int get_nvj() const
         {
-            return this->derived().get_nvj_impl();
-        }
-
-        const int get_nvj_impl() const
-        {
             if constexpr (RS::DimNVj_t::IsFixed)
             {
                 return RS::DimNVj_t::Value;
             }
             else
             {
-                return rs_.NVj_dim.value();
+                return rs_.nvj_dim.value();
             }
         }
 
-        const RS::DimNVj_t &NVjDim() const
+        const RS::DimNVj_t &get_nvj_dim() const
         {
-            return rs_.NVj_dim;
+            return rs_.nvj_dim;
         }
 
         /**
@@ -457,24 +433,19 @@ namespace galileo
          */
         const int get_nv() const
         {
-            return this->derived().get_nv_impl();
-        }
-
-        const int get_nv_impl() const
-        {
             if constexpr (RS::DimNV_t::IsFixed)
             {
                 return RS::DimNV_t::Value;
             }
             else
             {
-                return rs_.NV_dim.value();
+                return rs_.nv_dim.value();
             }
         }
 
-        const RS::DimNV_t &NVDim() const
+        const RS::DimNV_t &get_nv_dim() const
         {
-            return rs_.NV_dim;
+            return rs_.nv_dim;
         }
 
         /**
@@ -482,24 +453,19 @@ namespace galileo
          */
         const int get_nrotors() const
         {
-            return this->derived().get_nrotors_impl();
-        }
-
-        const int get_nrotors_impl() const
-        {
             if constexpr (RS::DimNRotors_t::IsFixed)
             {
                 return RS::DimNRotors_t::Value;
             }
             else
             {
-                return rs_.NRotors_dim.value();
+                return rs_.nrotors_dim.value();
             }
         }
 
-        const RS::DimNRotors_t &NRotorsDim() const
+        const RS::DimNRotors_t &get_nrotors_dim() const
         {
-            return rs_.NRotors_dim;
+            return rs_.nrotors_dim;
         }
 
         /**
@@ -507,24 +473,19 @@ namespace galileo
          */
         const int get_nx() const
         {
-            return this->derived().get_nx_impl();
-        }
-
-        const int get_nx_impl() const
-        {
             if constexpr (RS::DimNX_t::IsFixed)
             {
                 return RS::DimNX_t::Value;
             }
             else
             {
-                return rs_.NX_dim.value();
+                return rs_.nx_dim.value();
             }
         }
 
-        const RS::DimNX_t &NXDim() const
+        const RS::DimNX_t &get_nx_dim() const
         {
-            return rs_.NX_dim;
+            return rs_.nx_dim;
         }
 
         /**
@@ -532,24 +493,19 @@ namespace galileo
          */
         const int get_ndx() const
         {
-            return this->derived().get_ndx_impl();
-        }
-
-        const int get_ndx_impl() const
-        {
             if constexpr (RS::DimNDX_t::IsFixed)
             {
                 return RS::DimNDX_t::Value;
             }
             else
             {
-                return rs_.NDX_dim.value();
+                return rs_.ndx_dim.value();
             }
         }
 
-        const RS::DimNDX_t &NDXDim() const
+        const RS::DimNDX_t &get_ndx_dim() const
         {
-            return rs_.NDX_dim;
+            return rs_.ndx_dim;
         }
 
         /**
@@ -557,24 +513,19 @@ namespace galileo
          */
         const int get_nua() const
         {
-            return this->derived().get_nua_impl();
-        }
-
-        const int get_nua_impl() const
-        {
             if constexpr (RS::DimNUa_t::IsFixed)
             {
                 return RS::DimNUa_t::Value;
             }
             else
             {
-                return rs_.NUa_dim.value();
+                return rs_.nua_dim.value();
             }
         }
 
-        const RS::DimNUa_t &NUaDim() const
+        const RS::DimNUa_t &get_nua_dim() const
         {
-            return rs_.NUa_dim;
+            return rs_.nua_dim;
         }
 
         /**
@@ -582,7 +533,7 @@ namespace galileo
          */
         const VectorNx_t &get_lb() const
         {
-            return this->derived().get_lb_impl();
+            return this->derived().get_lb();
         }
 
         /**
@@ -590,7 +541,7 @@ namespace galileo
          */
         const VectorNx_t &get_ub() const
         {
-            return this->derived().get_ub_impl();
+            return this->derived().get_ub();
         }
 
         /**
@@ -599,7 +550,7 @@ namespace galileo
         template <typename StateVector>
         void set_lb(const Eigen::MatrixBase<StateVector> &lb)
         {
-            this->derived().set_lb_impl(lb.derived());
+            this->derived().set_lb(lb.derived());
         }
 
         /**
@@ -608,7 +559,7 @@ namespace galileo
         template <typename StateVector>
         void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
-            this->derived().set_ub_impl(ub.derived());
+            this->derived().set_ub(ub.derived());
         }
 
     protected:

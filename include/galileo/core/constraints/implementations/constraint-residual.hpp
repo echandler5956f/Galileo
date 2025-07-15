@@ -86,6 +86,7 @@ namespace galileo
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ConstraintDataBase<ConstraintDataResidualTpl<PS, ResidualTpl, EqualityInequality>, PS>;
 
         GALILEO_CONSTRAINT_DATA_TYPEDEF(Meta_t);
 
@@ -103,11 +104,11 @@ namespace galileo
         ConstraintDataResidualTpl(const Model_t &model)
             : residual(model.get_residual().createData(),
                        H(model.get_nh()),
-                       Hx(model.get_nh(), model.get_ps().DimNDX_t::Value),
-                       Hu(model.get_nh(), model.get_ps().DimNU_t::Value),
+                       Hx(model.get_nh(), model.get_ps().ndx_dim.value()),
+                       Hu(model.get_nh(), model.get_ps().nu_dim.value()),
                        G(model.get_ng()),
-                       Gx(model.get_ng(), model.get_ps().DimNDX_t::Value),
-                       Gu(model.get_ng(), model.get_ps().DimNU_t::Value))
+                       Gx(model.get_ng(), model.get_ps().ndx_dim.value()),
+                       Gu(model.get_ng(), model.get_ps().nu_dim.value()))
         {
             H.setZero();
             Hx.setZero();
@@ -142,7 +143,6 @@ namespace galileo
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl, EqualityInequality_>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
         using Base = ConstraintModelBase<ConstraintModelResidualTpl<PS, ResidualTpl, EqualityInequality_>, PS>;
 
         using DimNH_t = typename traits<Meta_t>::DimNH_t;
@@ -248,10 +248,10 @@ namespace galileo
         using Base::get_ps;
 
         using Base::get_nh;
-        using Base::NHDim;
+        using Base::get_nh_dim;
 
         using Base::get_ng;
-        using Base::NGDim;
+        using Base::get_ng_dim;
 
     protected:
         void updateEqualityCalc(Data_t &data) const

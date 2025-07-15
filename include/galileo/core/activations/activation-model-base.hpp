@@ -7,7 +7,8 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class ActivationModelBase : public internal::CRTP<Derived>
+    class ActivationModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -44,15 +45,7 @@ namespace galileo
             return ps_;
         }
 
-        /**
-         * @brief Return the dimension of the control space
-         */
         const int get_nr() const
-        {
-            return this->derived().get_nr_impl();
-        }
-
-        const int get_nr_impl() const
         {
             if constexpr (DimNR_t::IsFixed)
             {
@@ -60,17 +53,18 @@ namespace galileo
             }
             else
             {
-                return NR_dim_.value();
+                return nr_dim_.value();
             }
         }
 
-        const DimNR_t &NRDim() const
+        const DimNR_t &get_nr_dim() const
         {
-            return NR_dim_;
+            return nr_dim_;
         }
 
     protected:
-        inline ActivationModelBase(const PS &ps, const DimNR_t &NR_dim) : ps_(ps), NR_dim_(NR_dim)
+        inline ActivationModelBase(const PS &ps, const DimNR_t &nr_dim)
+            : ps_(ps), nr_dim_(nr_dim)
         {
         }
 
@@ -85,7 +79,7 @@ namespace galileo
         }
 
         const PS &ps_;
-        const DimNR_t &NR_dim_;
+        const DimNR_t &nr_dim_;
 
     }; // class ActivationModelBase
 

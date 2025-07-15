@@ -26,7 +26,7 @@ namespace galileo
 
         using DimNR_t = typename traits<ResidualMeta_t>::DimNR_t;
 
-        using A_t = PS::VarScalar;
+        using A_t = typename PS::VarScalar;
         using Ar_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
         using Arr_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, DimNR_t::Value, PS::Options>;
         using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, DimNR_t::Value>;
@@ -77,7 +77,8 @@ namespace galileo
         ActivationDataQuadraticTpl(const Model_t &model)
             : A(0.), Ar(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
         {
-            Arr.setZero();
+            Ar.setZero();
+            Arr.setIdentity();
         }
 
         A_t A;
@@ -102,8 +103,10 @@ namespace galileo
 
         using Base = ActivationModelBase<ActivationModelQuadraticTpl<PS, ResidualTpl>, PS>;
 
-        explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &NR_dim)
-            : Base(ps, NR_dim)
+        using DimNR_t = typename traits<Meta_t>::DimNR_t;
+
+        explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &nr_dim)
+            : Base(ps, nr_dim)
         {
         }
 
@@ -123,14 +126,13 @@ namespace galileo
         Data_t createData() const
         {
             Data_t data = Data_t(*this);
-            data.Arr.diagonal().setOnes();
             return data;
         }
 
         using Base::get_ps;
 
         using Base::get_nr;
-        using Base::NRDim;
+        using Base::get_nr_dim;
 
     }; // class ActivationModelQuadraticTpl
 

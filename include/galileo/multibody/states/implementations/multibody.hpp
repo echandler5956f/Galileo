@@ -14,7 +14,8 @@ namespace galileo
 {
 
     template <typename RobotSpec>
-    class StateMultibodyTpl : public StateBase<StateMultibodyTpl<RobotSpec>, RobotSpec>
+    class StateMultibodyTpl
+        : public StateBase<StateMultibodyTpl<RobotSpec>, RobotSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -31,7 +32,7 @@ namespace galileo
         {
             if constexpr (RS::DimNQ_t::IsDynamic)
             {
-                get_rs().NQ_dim.set_value(model_.nq);
+                get_rs().nq_dim.set_value(model_.nq);
             }
             if constexpr (RS::DimNQb_t::IsDynamic)
             {
@@ -39,16 +40,16 @@ namespace galileo
                     model_.existJointName("root_joint")
                         ? model_.joints[model_.getJointId("root_joint")].nq()
                         : 0;
-                get_rs().NQb_dim.set_value(nqb);
+                get_rs().nqb_dim.set_value(nqb);
             }
             if constexpr (RS::DimNQj_t::IsDynamic)
             {
                 const std::size_t nqj = get_nq() - get_nqb();
-                get_rs().NQj_dim.set_value(nqj);
+                get_rs().nqj_dim.set_value(nqj);
             }
             if constexpr (RS::DimNV_t::IsDynamic)
             {
-                get_rs().NV_dim.set_value(model_.nv);
+                get_rs().nv_dim.set_value(model_.nv);
             }
             if constexpr (RS::DimNVb_t::IsDynamic)
             {
@@ -56,31 +57,31 @@ namespace galileo
                     model_.existJointName("root_joint")
                         ? model_.joints[model_.getJointId("root_joint")].nv()
                         : 0;
-                get_rs().NVb_dim.set_value(nvb);
+                get_rs().nvb_dim.set_value(nvb);
             }
             if constexpr (RS::DimNVj_t::IsDynamic)
             {
                 const std::size_t nvj = get_nv() - get_nvb();
-                get_rs().NVj_dim.set_value(nvj);
+                get_rs().nvj_dim.set_value(nvj);
             }
             if constexpr (RS::DimNX_t::IsDynamic)
             {
-                get_rs().NX_dim = get_rs().NQ_dim + get_rs().NV_dim;
+                get_rs().nx_dim = get_rs().nq_dim + get_rs().nv_dim;
             }
             if constexpr (RS::DimNDX_t::IsDynamic)
             {
-                get_rs().NDX_dim = get_rs().NV_dim + get_rs().NV_dim;
+                get_rs().ndx_dim = get_rs().nv_dim + get_rs().nv_dim;
             }
             if constexpr (RS::DimNRotors_t::IsDynamic)
             {
                 // We do not know anything about rotors at this point in the OCP data pipeline, so if rotors are
                 // used, any dynamic evaluation is deferred to ActuationModelFloatingBaseThrustersTpl's constructor.
                 // Of course, compile-time NRotors will always be available at this point.
-                get_rs().NRotors_dim.set_value(0);
+                get_rs().nrotors_dim.set_value(0);
             }
             if constexpr (RS::DimNUa_t::IsDynamic)
             {
-                get_rs().NUa_dim = get_rs().NVj_dim + get_rs().NRotors_dim;
+                get_rs().nua_dim = get_rs().nvj_dim + get_rs().nrotors_dim;
             }
 
             GALILEO_ASSERT(IsValidRobotSpec(get_rs()), "StateMultibodyTpl: Invalid robot spec");
@@ -95,7 +96,7 @@ namespace galileo
         VectorNx_t rand() const
         {
             VectorNx_t xrand = VectorNx_t::Random(get_nx());
-            head(xrand, NQDim()) = pinocchio::randomConfiguration(model_);
+            head(xrand, get_nq_dim()) = pinocchio::randomConfiguration(model_);
 
             // For the 3x1 position component, set to a uniform random distribution
             // between -1 and 1
@@ -115,9 +116,9 @@ namespace galileo
                   const Eigen::MatrixBase<StateVector2> &x1,
                   Eigen::MatrixBase<StateTangentVector> &dxout) const
         {
-            pinocchio::difference(model_, head(x0, NQDim()), head(x1, NQDim()),
-                                  head(dxout, NVDim()));
-            tail(dxout, NVDim()) = tail(x1, NVDim()) - tail(x0, NVDim());
+            pinocchio::difference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
+                                  head(dxout, get_nv_dim()));
+            tail(dxout, get_nv_dim()) = tail(x1, get_nv_dim()) - tail(x0, get_nv_dim());
         }
 
         template <typename StateVector1, typename StateTangentVector, typename StateVector2>
@@ -125,9 +126,9 @@ namespace galileo
                        const Eigen::MatrixBase<StateTangentVector> &dx,
                        Eigen::MatrixBase<StateVector2> &xout) const
         {
-            pinocchio::integrate(model_, head(x, NQDim()), head(dx, NVDim()),
-                                 head(xout, NQDim()));
-            tail(xout, NVDim()) = tail(x, NVDim()) + tail(dx, NVDim());
+            pinocchio::integrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
+                                 head(xout, get_nq_dim()));
+            tail(xout, get_nv_dim()) = tail(x, get_nv_dim()) + tail(dx, get_nv_dim());
         }
 
         template <typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
@@ -147,24 +148,24 @@ namespace galileo
 
             if (firstsecond == first)
             {
-                pinocchio::dDifference(model_, head(x0, NQDim()), head(x1, NQDim()),
-                                       topLeftCorner(Jfirst, NVDim(), NVDim()), pinocchio::ARG0);
-                bottomRightCorner(Jfirst, NVDim(), NVDim()).diagonal().array() = VarScalar(-1.);
+                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
+                                       topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0);
+                bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(-1.);
             }
             else if (firstsecond == second)
             {
-                pinocchio::dDifference(model_, head(x0, NQDim()), head(x1, NQDim()),
-                                       topLeftCorner(Jsecond, NVDim(), NVDim()), pinocchio::ARG1);
-                bottomRightCorner(Jsecond, NVDim(), NVDim()).diagonal().array() = VarScalar(1.);
+                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
+                                       topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1);
+                bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
             }
             else
             { // computing both
-                pinocchio::dDifference(model_, head(x0, NQDim()), head(x1, NQDim()),
-                                       topLeftCorner(Jfirst, NVDim(), NVDim()), pinocchio::ARG0);
-                pinocchio::dDifference(model_, head(x0, NQDim()), head(x1, NQDim()),
-                                       topLeftCorner(Jsecond, NVDim(), NVDim()), pinocchio::ARG1);
-                bottomRightCorner(Jfirst, NVDim(), NVDim()).diagonal().array() = VarScalar(-1.);
-                bottomRightCorner(Jsecond, NVDim(), NVDim()).diagonal().array() = VarScalar(1.);
+                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
+                                       topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0);
+                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
+                                       topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1);
+                bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(-1.);
+                bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
             }
         }
 
@@ -189,22 +190,22 @@ namespace galileo
                 switch (op)
                 {
                 case setto:
-                    pinocchio::dIntegrate(model_, head(x, NQDim()), head(dx, NVDim()),
-                                          topLeftCorner(Jfirst, NVDim(), NVDim()), pinocchio::ARG0,
+                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
+                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
                                           pinocchio::SETTO);
-                    bottomRightCorner(Jfirst, NVDim(), NVDim()).diagonal().array() = VarScalar(1.);
+                    bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
                     break;
                 case addto:
-                    pinocchio::dIntegrate(model_, head(x, NQDim()), head(dx, NVDim()),
-                                          topLeftCorner(Jfirst, NVDim(), NVDim()), pinocchio::ARG0,
+                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
+                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
                                           pinocchio::ADDTO);
-                    bottomRightCorner(Jfirst, NVDim(), NVDim()).diagonal().array() += VarScalar(1.);
+                    bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() += VarScalar(1.);
                     break;
                 case rmfrom:
-                    pinocchio::dIntegrate(model_, head(x, NQDim()), head(dx, NVDim()),
-                                          topLeftCorner(Jfirst, NVDim(), NVDim()), pinocchio::ARG0,
+                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
+                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
                                           pinocchio::RMTO);
-                    bottomRightCorner(Jfirst, NVDim(), NVDim()).diagonal().array() -= VarScalar(1.);
+                    bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() -= VarScalar(1.);
                     break;
                 default:
                     break;
@@ -215,22 +216,22 @@ namespace galileo
                 switch (op)
                 {
                 case setto:
-                    pinocchio::dIntegrate(model_, head(x, NQDim()), head(dx, NVDim()),
-                                          topLeftCorner(Jsecond, NVDim(), NVDim()), pinocchio::ARG1,
+                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
+                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
                                           pinocchio::SETTO);
-                    bottomRightCorner(Jsecond, NVDim(), NVDim()).diagonal().array() = VarScalar(1.);
+                    bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
                     break;
                 case addto:
-                    pinocchio::dIntegrate(model_, head(x, NQDim()), head(dx, NVDim()),
-                                          topLeftCorner(Jsecond, NVDim(), NVDim()), pinocchio::ARG1,
+                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
+                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
                                           pinocchio::ADDTO);
-                    bottomRightCorner(Jsecond, NVDim(), NVDim()).diagonal().array() += VarScalar(1.);
+                    bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() += VarScalar(1.);
                     break;
                 case rmfrom:
-                    pinocchio::dIntegrate(model_, head(x, NQDim()), head(dx, NVDim()),
-                                          topLeftCorner(Jsecond, NVDim(), NVDim()), pinocchio::ARG1,
+                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
+                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
                                           pinocchio::RMTO);
-                    bottomRightCorner(Jsecond, NVDim(), NVDim()).diagonal().array() -= VarScalar(1.);
+                    bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() -= VarScalar(1.);
                     break;
                 default:
                     break;
@@ -247,13 +248,13 @@ namespace galileo
             switch (firstsecond)
             {
             case first:
-                pinocchio::dIntegrateTransport(model_, head(x, NQDim()),
-                                               head(dx, NVDim()), topRows(Jin, NVDim()),
+                pinocchio::dIntegrateTransport(model_, head(x, get_nq_dim()),
+                                               head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()),
                                                pinocchio::ARG0);
                 break;
             case second:
-                pinocchio::dIntegrateTransport(model_, head(x, NQDim()),
-                                               head(dx, NVDim()), topRows(Jin, NVDim()),
+                pinocchio::dIntegrateTransport(model_, head(x, get_nq_dim()),
+                                               head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()),
                                                pinocchio::ARG1);
                 break;
             default:
@@ -271,24 +272,24 @@ namespace galileo
             return x0_;
         }
 
-        const VectorNx_t &get_lb_impl() const
+        const VectorNx_t &get_lb() const
         {
             return lb_;
         }
 
-        const VectorNx_t &get_ub_impl() const
+        const VectorNx_t &get_ub() const
         {
             return ub_;
         }
 
         template <typename StateVector>
-        void set_lb_impl(const Eigen::MatrixBase<StateVector> &lb)
+        void set_lb(const Eigen::MatrixBase<StateVector> &lb)
         {
             lb_ = lb.derived();
         }
 
         template <typename StateVector>
-        void set_ub_impl(const Eigen::MatrixBase<StateVector> &ub)
+        void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
             ub_ = ub.derived();
         }
@@ -301,34 +302,34 @@ namespace galileo
         using Base::get_rs;
 
         using Base::get_nqb;
-        using Base::NQbDim;
+        using Base::get_nqb_dim;
 
         using Base::get_nqj;
-        using Base::NQjDim;
+        using Base::get_nqj_dim;
 
         using Base::get_nq;
-        using Base::NQDim;
+        using Base::get_nq_dim;
 
         using Base::get_nvb;
-        using Base::NVbDim;
+        using Base::get_nvb_dim;
 
         using Base::get_nvj;
-        using Base::NVjDim;
+        using Base::get_nvj_dim;
 
         using Base::get_nv;
-        using Base::NVDim;
+        using Base::get_nv_dim;
 
         using Base::get_nrotors;
-        using Base::NRotorsDim;
+        using Base::get_nrotors_dim;
 
         using Base::get_nx;
-        using Base::NXDim;
+        using Base::get_nx_dim;
 
         using Base::get_ndx;
-        using Base::NDXDim;
+        using Base::get_ndx_dim;
 
         using Base::get_nua;
-        using Base::NUaDim;
+        using Base::get_nua_dim;
 
     protected:
         void initialize()
@@ -336,18 +337,18 @@ namespace galileo
             // Now that all of the dynamic dimensions have been updated in the constructor,
             // we can initialize the member variables
             x0_ = VectorNx_t::Zero(get_nx());
-            head(x0_, NQDim()) = pinocchio::neutral(model_);
+            head(x0_, get_nq_dim()) = pinocchio::neutral(model_);
             lb_ = -VectorNx_t::Constant(get_nx(), std::numeric_limits<NumScalar>::infinity());
             ub_ = VectorNx_t::Constant(get_nx(), std::numeric_limits<NumScalar>::infinity());
 
-            head(lb_, NQbDim()) = -VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
-            head(ub_, NQbDim()) = VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
+            head(lb_, get_nqb_dim()) = -VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
+            head(ub_, get_nqb_dim()) = VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
 
-            segment(lb_, get_nqb(), NQjDim()) = tail(model_.lowerPositionLimit, NQjDim());
-            segment(ub_, get_nqb(), NQjDim()) = tail(model_.upperPositionLimit, NQjDim());
+            segment(lb_, get_nqb(), get_nqj_dim()) = tail(model_.lowerPositionLimit, get_nqj_dim());
+            segment(ub_, get_nqb(), get_nqj_dim()) = tail(model_.upperPositionLimit, get_nqj_dim());
 
-            segment(lb_, get_nq(), NVDim()) = -model_.velocityLimit;
-            segment(ub_, get_nq(), NVDim()) = model_.velocityLimit;
+            segment(lb_, get_nq(), get_nv_dim()) = -model_.velocityLimit;
+            segment(ub_, get_nq(), get_nv_dim()) = model_.velocityLimit;
         }
 
         RobotModel_t model_;

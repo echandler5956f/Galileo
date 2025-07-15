@@ -10,7 +10,8 @@ namespace galileo
 {
 
     template <typename Derived, typename RobotSpec>
-    class ActuationModelBase : public internal::CRTP<Derived>
+    class ActuationModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -75,28 +76,24 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const std::shared_ptr<RS::State_t> &get_state() const
+        const std::shared_ptr<State_t> &get_state() const
         {
             return state_;
         }
 
         const int get_nua() const
         {
-            return this->derived().get_nua_impl();
-        }
-
-        const int get_nua_impl() const
-        {
             return state_->get_nua();
         }
 
-        const RS::DimNUa_t &NUaDim() const
+        const RS::DimNUa_t &get_nua_dim() const
         {
-            return state_->NUaDim();
+            return state_->get_nua_dim();
         }
 
     protected:
-        inline ActuationModelBase(const std::shared_ptr<RS::State_t> &state) : state_(state)
+        inline ActuationModelBase(const std::shared_ptr<State_t> &state)
+            : state_(state)
         {
         }
 
@@ -110,7 +107,7 @@ namespace galileo
             return *this;
         }
 
-        const std::shared_ptr<RS::State_t> &state_;
+        const std::shared_ptr<State_t> &state_;
 
     }; // class ActuationModelBase
 

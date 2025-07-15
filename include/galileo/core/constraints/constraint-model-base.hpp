@@ -7,7 +7,8 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class ConstraintModelBase : public internal::CRTP<Derived>
+    class ConstraintModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -83,32 +84,22 @@ namespace galileo
 
         const int get_nh() const
         {
-            return this->derived().get_nh_impl();
-        }
-
-        const int get_nh_impl() const
-        {
             if constexpr (DimNH_t::IsFixed)
             {
                 return DimNH_t::Value;
             }
             else
             {
-                return NH_dim_.value();
+                return nh_dim_.value();
             }
         }
 
-        const DimNH_t &NHDim() const
+        const DimNH_t &get_nh_dim() const
         {
-            return NH_dim_;
+            return nh_dim_;
         }
 
         const int get_ng() const
-        {
-            return this->derived().get_ng_impl();
-        }
-
-        const int get_ng_impl() const
         {
             if constexpr (DimNG_t::IsFixed)
             {
@@ -116,18 +107,18 @@ namespace galileo
             }
             else
             {
-                return NG_dim_.value();
+                return ng_dim_.value();
             }
         }
 
-        const DimNG_t &NGDim() const
+        const DimNG_t &get_ng_dim() const
         {
-            return NG_dim_;
+            return ng_dim_;
         }
 
     protected:
-        inline ConstraintModelBase(const PS &ps, const DimNH_t &NH_dim, const DimNG_t &NG_dim)
-            : ps_(ps), NH_dim_(NH_dim), NG_dim_(NG_dim)
+        inline ConstraintModelBase(const PS &ps, const DimNH_t &nh_dim, const DimNG_t &ng_dim)
+            : ps_(ps), nh_dim_(nh_dim), ng_dim_(ng_dim)
         {
         }
 
@@ -142,8 +133,8 @@ namespace galileo
         }
 
         const PS &ps_;
-        DimNH_t NH_dim_;
-        DimNG_t NG_dim_;
+        DimNH_t nh_dim_;
+        DimNG_t ng_dim_;
 
     }; // class ConstraintModelBase
 

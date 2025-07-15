@@ -29,6 +29,10 @@ namespace galileo
         using DimNR_t = DimensionTpl<3>;
         static constexpr int NR = DimNR_t::Value;
 
+        static constexpr bool QDependent = true;
+        static constexpr bool VDependent = false;
+        static constexpr bool UDependent = false;
+
         using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
         using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
         using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
@@ -68,6 +72,7 @@ namespace galileo
         using Meta_t = ResidualFrameTranslationTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ResidualDataBase<ResidualDataFrameTranslationTpl<PS>, PS>;
 
         GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
 
@@ -78,11 +83,11 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
         ResidualDataFrameTranslationTpl(const Model_t &model)
-            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
-              Ru(model.get_nr(), model.get_ps().NU_dim.value()),
-              Arr_Rx(model.get_nr(), model.get_ps().NDX_dim.value()),
-              Arr_Ru(model.get_nr(), model.get_ps().NU_dim.value()),
-              fJf(6, model.get_ps().NV_dim.value())
+            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
+              Ru(model.get_nr(), model.get_ps().nu_dim.value()),
+              Arr_Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
+              Arr_Ru(model.get_nr(), model.get_ps().nu_dim.value()),
+              fJf(6, model.get_ps().nv_dim.value())
         {
             R.setZero();
             Rx.setZero();
@@ -119,7 +124,6 @@ namespace galileo
         using Meta_t = ResidualFrameTranslationTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
         using Base = ResidualModelBase<ResidualModelFrameTranslationTpl<PS>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
@@ -156,7 +160,7 @@ namespace galileo
                 pinocchio::ReferenceFrame::LOCAL,
                 data.fJf);
 
-            leftCols(data.Rx, get_ps().NV_dim).noalias() =
+            leftCols(data.Rx, get_ps().nv_dim).noalias() =
                 data.robot->oMf[frame_id_].rotation() * topRows(data.fJf, 3);
         }
 
@@ -173,28 +177,17 @@ namespace galileo
             return state_;
         }
 
-        const bool q_dependent_impl() const
-        {
-            return true;
-        }
-
-        const bool v_dependent_impl() const
-        {
-            return false;
-        }
-
-        const bool u_dependent_impl() const
-        {
-            return false;
-        }
-
         using Base::get_ps;
 
         using Base::get_nr;
-        using Base::NRDim;
+        using Base::get_nr_dim;
 
         using Base::get_nu;
-        using Base::NUDim;
+        using Base::get_nu_dim;
+
+        using Base::get_q_dependent;
+        using Base::get_v_dependent;
+        using Base::get_u_dependent;
 
     protected:
         std::shared_ptr<State_t> state_;

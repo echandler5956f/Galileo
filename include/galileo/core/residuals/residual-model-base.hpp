@@ -15,7 +15,8 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class ResidualModelBase : public internal::CRTP<Derived>
+    class ResidualModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -29,6 +30,10 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
 
         GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
+
+        static constexpr bool QDependent = traits<Meta_t>::QDependent;
+        static constexpr bool VDependent = traits<Meta_t>::VDependent;
+        static constexpr bool UDependent = traits<Meta_t>::UDependent;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
@@ -62,105 +67,91 @@ namespace galileo
             this->derived().calcDiff(data, x.derived());
         }
 
-        template <typename CostDataType, typename ActivationDataType>
+        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
         void calcCostDiff(CostDataType &cdata,
                           Data_t &rdata,
-                          const ActivationDataType &adata,
-                          const bool update_u) const
+                          const ActivationDataType &adata) const
         {
-            this->derived().calcCostDiffImpl(cdata, rdata, adata, update_u);
+            this->derived().calcCostDiffImpl<UpdateU>(cdata, rdata, adata);
         }
 
-        template <typename CostDataType, typename ActivationDataType>
+        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
         void calcCostDiffImpl(CostDataType &cdata,
                               Data_t &rdata,
-                              const ActivationDataType &adata,
-                              const bool update_u) const
+                              const ActivationDataType &adata) const
         {
             // This function computes the derivatives of the cost function based on a
-            // Gauss-Newton approximation
-            const bool is_ru = u_dependent() && get_nu() != 0 && update_u;
-            if (is_ru)
+            // Gauss-Newton approximation. We split the computation into two parts since it
+            // is possible (and trivial) to know the optimal branch at compile time.
+
+            calcCostDiffRxImpl(cdata, rdata, adata);
+
+            if constexpr (UDependent && PS::DimNU_t::Value > 0 && UpdateU)
             {
-                cdata.Lu.noalias() = rdata.Ru.transpose() * adata.Ar;
-                rdata.Arr_Ru.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Ru;
-                cdata.Luu.noalias() = rdata.Ru.transpose() * rdata.Arr_Ru;
+                calcCostDiffRuImpl(cdata, rdata, adata);
             }
-            if (q_dependent() && v_dependent())
+            else
+            {
+                if (UDependent && get_nu() != 0 && UpdateU)
+                {
+                    calcCostDiffRuImpl(cdata, rdata, adata);
+                }
+            }
+        }
+
+        constexpr void calcCostDiffRxImpl(CostDataType &cdata,
+                                          Data_t &rdata,
+                                          const ActivationDataType &adata) const
+        {
+            if constexpr (QDependent && VDependent)
             {
                 cdata.Lx.noalias() = rdata.Rx.transpose() * adata.Ar;
                 rdata.Arr_Rx.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Rx;
                 cdata.Lxx.noalias() = rdata.Rx.transpose() * rdata.Arr_Rx;
-                if (is_ru)
-                {
-                    cdata.Lxu.noalias() = rdata.Rx.transpose() * rdata.Arr_Ru;
-                }
             }
-            else if (q_dependent())
+            else if constexpr (QDependent)
             {
-                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rq =
-                    leftCols(rdata.Rx, ps_.NV_dim);
-                head(cdata.Lx, ps_.NV_dim).noalias() = Rq.transpose() * adata.Ar;
-                leftCols(rdata.Arr_Rx, ps_.NV_dim).noalias() =
+                Eigen::Block<Rx_t, DimNR_t::Value, DimNV_t::Value, true> Rq =
+                    leftCols(rdata.Rx, ps_.nv_dim);
+                head(cdata.Lx, ps_.nv_dim).noalias() = Rq.transpose() * adata.Ar;
+                leftCols(rdata.Arr_Rx, ps_.nv_dim).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rq;
-                topLeftCorner(cdata.Lxx, ps_.NV_dim, ps_.NV_dim).noalias() =
-                    Rq.transpose() * leftCols(rdata.Arr_Rx, ps_.NV_dim);
-                if (is_ru)
-                {
-                    topRows(cdata.Lxu, ps_.NV_dim).noalias() = Rq.transpose() * rdata.Arr_Ru;
-                }
+                topLeftCorner(cdata.Lxx, ps_.nv_dim, ps_.nv_dim).noalias() =
+                    Rq.transpose() * leftCols(rdata.Arr_Rx, ps_.nv_dim);
             }
-            else if (v_dependent())
+            else if constexpr (VDependent)
             {
-                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rv =
-                    rightCols(rdata.Rx, ps_.NV_dim);
-                tail(cdata.Lx, ps_.NV_dim).noalias() = Rv.transpose() * adata.Ar;
-                rightCols(rdata.Arr_Rx, ps_.NV_dim).noalias() =
+                Eigen::Block<Rx_t, DimNR_t::Value, DimNV_t::Value, true> Rv =
+                    rightCols(rdata.Rx, ps_.nv_dim);
+                tail(cdata.Lx, ps_.nv_dim).noalias() = Rv.transpose() * adata.Ar;
+                rightCols(rdata.Arr_Rx, ps_.nv_dim).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rv;
-                bottomRightCorner(cdata.Lxx, ps_.NV_dim, ps_.NV_dim).noalias() =
-                    Rv.transpose() * rightCols(rdata.Arr_Rx, ps_.NV_dim);
-                if (is_ru)
-                {
-                    bottomRows(cdata.Lxu, ps_.NV_dim).noalias() =
-                        Rv.transpose() * rdata.Arr_Ru;
-                }
+                bottomRightCorner(cdata.Lxx, ps_.nv_dim, ps_.nv_dim).noalias() =
+                    Rv.transpose() * rightCols(rdata.Arr_Rx, ps_.nv_dim);
             }
+        }
+
+        constexpr void calcCostDiffRuImpl(CostDataType &cdata,
+                                          Data_t &rdata,
+                                          const ActivationDataType &adata) const
+        {
+            cdata.Lu.noalias() = rdata.Ru.transpose() * adata.Ar;
+            rdata.Arr_Ru.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Ru;
+            cdata.Luu.noalias() = rdata.Ru.transpose() * rdata.Arr_Ru;
+
+            if constexpr (QDependent && VDependent)
+                cdata.Lxu.noalias() = rdata.Rx.transpose() * rdata.Arr_Ru;
+            else if constexpr (QDependent)
+                topRows(cdata.Lxu, ps_.nv_dim).noalias() = Rq.transpose() * rdata.Arr_Ru;
+            else if constexpr (VDependent)
+                bottomRows(cdata.Lxu, ps_.nv_dim).noalias() =
+                    Rv.transpose() * rdata.Arr_Ru;
         }
 
         template <typename DataCollector>
         Data_t createData(DataCollector *const collector)
         {
             return this->derived().createData(collector);
-        }
-
-        const bool q_dependent() const
-        {
-            return this->derived().q_dependent_impl();
-        }
-
-        const bool q_dependent_impl() const
-        {
-            return true;
-        }
-
-        const bool v_dependent() const
-        {
-            return this->derived().v_dependent_impl();
-        }
-
-        const bool v_dependent_impl() const
-        {
-            return true;
-        }
-
-        const bool u_dependent() const
-        {
-            return this->derived().u_dependent_impl();
-        }
-
-        const bool u_dependent_impl() const
-        {
-            return true;
         }
 
         const std::shared_ptr<State_t> &get_state() const
@@ -173,15 +164,7 @@ namespace galileo
             return ps_;
         }
 
-        /**
-         * @brief Return the dimension of the residual
-         */
         const int get_nr() const
-        {
-            return this->derived().get_nr_impl();
-        }
-
-        const int get_nr_impl() const
         {
             if constexpr (DimNR_t::IsFixed)
             {
@@ -189,42 +172,50 @@ namespace galileo
             }
             else
             {
-                return NR_dim_.value();
+                return nr_dim_.value();
             }
         }
 
-        const DimNR_t &NRDim() const
+        const DimNR_t &get_nr_dim() const
         {
-            return NR_dim_;
+            return nr_dim_;
         }
 
-        /**
-         * @brief Return the dimension of the control space
-         */
         const int get_nu() const
         {
-            return this->derived().get_nu_impl();
-        }
-
-        const int get_nu_impl() const
-        {
-            if constexpr (PS::DimNU_t::IsFixed)
+            if constexpr (DimNU_t::IsFixed)
             {
-                return PS::DimNU_t::Value;
+                return DimNU_t::Value;
             }
             else
             {
-                return ps_.NU_dim.value();
+                return ps_.nu_dim.value();
             }
         }
 
-        const PS::DimNU_t &NUDim() const
+        const DimNU_t &get_nu_dim() const
         {
-            return ps_.NU_dim;
+            return ps_.nu_dim;
+        }
+
+        const bool get_q_dependent() const
+        {
+            return QDependent;
+        }
+
+        const bool get_v_dependent() const
+        {
+            return VDependent;
+        }
+
+        const bool get_u_dependent() const
+        {
+            return UDependent;
         }
 
     protected:
-        inline ResidualModelBase(const PS &ps, const DimNR_t &NR_dim) : ps_(ps), NR_dim_(NR_dim)
+        inline ResidualModelBase(const PS &ps, const DimNR_t &nr_dim)
+            : ps_(ps), nr_dim_(nr_dim)
         {
         }
 
@@ -239,7 +230,7 @@ namespace galileo
         }
 
         const PS &ps_;
-        DimNR_t NR_dim_;
+        DimNR_t nr_dim_;
 
     }; // class ResidualModelBase
 

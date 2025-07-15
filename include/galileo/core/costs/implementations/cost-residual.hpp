@@ -81,7 +81,6 @@ namespace galileo
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
         using Base = CostDataBase<CostDataResidualTpl<PS, ResidualTpl, ActivationTpl>, PS>;
 
         GALILEO_COST_DATA_TYPEDEF(Meta_t);
@@ -105,11 +104,11 @@ namespace galileo
             : activation(model.get_activation().createData()),
               residual(model.get_residual().createData(),
                        L(0.),
-                       Lx(model.get_ps().DimNDX_t::Value),
-                       Lu(model.get_ps().DimNU_t::Value),
-                       Lxx(model.get_ps().DimNDX_t::Value, model.get_ps().DimNDX_t::Value),
-                       Lxu(model.get_ps().DimNDX_t::Value, model.get_ps().DimNU_t::Value),
-                       Luu(model.get_ps().DimNU_t::Value, model.get_ps().DimNU_t::Value))
+                       Lx(model.get_ps().ndx_dim.value()),
+                       Lu(model.get_ps().nu_dim.value()),
+                       Lxx(model.get_ps().ndx_dim.value(), model.get_ps().ndx_dim.value()),
+                       Lxu(model.get_ps().ndx_dim.value(), model.get_ps().nu_dim.value()),
+                       Luu(model.get_ps().nu_dim.value(), model.get_ps().nu_dim.value()))
         {
             Lx.setZero();
             Lu.setZero();
@@ -144,7 +143,6 @@ namespace galileo
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
         using Base = CostModelBase<CostModelResidualTpl<PS, ResidualTpl, ActivationTpl>, PS>;
 
         using ResidualMeta_t = typename traits<Meta_t>::ResidualMeta_t;
@@ -201,7 +199,7 @@ namespace galileo
             residual_.calcDiff(data.residual, x.derived(), u.derived());
             activation_.calcDiff(data.activation, data.residual.R);
 
-            residual_.calcCostDiff(data, data.residual, data.activation);
+            residual_.calcCostDiff<true>(data, data.residual, data.activation);
         }
 
         template <typename StateVectorType>
@@ -219,7 +217,7 @@ namespace galileo
                 residual_.calcDiff(data.residual, x.derived());
                 activation_.calcDiff(data.activation, data.residual.R);
 
-                residual_.calcCostDiff(data, data.residual, data.activation, false);
+                residual_.calcCostDiff<false>(data, data.residual, data.activation);
             }
         }
 
