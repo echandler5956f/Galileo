@@ -35,7 +35,8 @@ namespace galileo
     };
 
     template <typename PhaseSpec, int NOrder_>
-    class ControlParamModelPolynomialTpl : public ControlParamModelBase<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
+    class ControlParamModelPolynomialTpl
+    : public ControlParamModelBase<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -45,12 +46,13 @@ namespace galileo
         using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ControlParamModelBase<ControlParamModelPolynomialTpl<PS, NOrder_>, PS>;
 
         GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PS);
         GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PS);
 
         ControlParamModelPolynomialTpl(const PS &ps)
-            : ControlParamModelBase<ControlParamModelPolynomialTpl<PS, NOrder_>, PS>(ps)
+            : Base(ps)
         {
             // TODO: Decide what nodes to initialize the interpolator with.
             // Should it be customizable, or automatic? Should it be a template parameter, or constructor argument?
@@ -78,7 +80,7 @@ namespace galileo
         {
             for (int i = 0; i < get_norder(); ++i)
             {
-                segment(data.w, i * get_nu(), NUDim()) = u;
+                segment(data.w, i * get_nu(), get_nu_dim()) = u;
             }
         }
 
@@ -90,8 +92,8 @@ namespace galileo
         {
             for (int i = 0; i < get_norder(); ++i)
             {
-                segment(w_lb, i * get_nu(), NUDim()) = u_lb;
-                segment(w_ub, i * get_nu(), NUDim()) = u_ub;
+                segment(w_lb, i * get_nu(), get_nu_dim()) = u_lb;
+                segment(w_ub, i * get_nu(), get_nu_dim()) = u_ub;
             }
         }
 
@@ -107,19 +109,19 @@ namespace galileo
             case setto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, 0, i * get_nu(), NWDim(), NUDim()) = data.du_dw(0, i * get_nu()) * A;
+                    block(out, 0, i * get_nu(), get_nw_dim(), get_nu_dim()) = data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case addto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, 0, i * get_nu(), NWDim(), NUDim()) += data.du_dw(0, i * get_nu()) * A;
+                    block(out, 0, i * get_nu(), get_nw_dim(), get_nu_dim()) += data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case rmfrom:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, 0, i * get_nu(), NWDim(), NUDim()) -= data.du_dw(0, i * get_nu()) * A;
+                    block(out, 0, i * get_nu(), get_nw_dim(), get_nu_dim()) -= data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             default:
@@ -139,19 +141,19 @@ namespace galileo
             case setto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, i * get_nu(), 0, NUDim(), NWDim()) = data.du_dw(0, i * get_nu()) * A;
+                    block(out, i * get_nu(), 0, get_nu_dim(), get_nw_dim()) = data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case addto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, i * get_nu(), 0, NUDim(), NWDim()) += data.du_dw(0, i * get_nu()) * A;
+                    block(out, i * get_nu(), 0, get_nu_dim(), get_nw_dim()) += data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             case rmfrom:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, i * get_nu(), 0, NUDim(), NWDim()) -= data.du_dw(0, i * get_nu()) * A;
+                    block(out, i * get_nu(), 0, get_nu_dim(), get_nw_dim()) -= data.du_dw(0, i * get_nu()) * A;
                 }
                 break;
             default:
@@ -168,13 +170,13 @@ namespace galileo
         using Base::get_ps;
 
         using Base::get_nu;
-        using Base::NUDim;
+        using Base::get_nu_dim;
 
         using Base::get_norder;
-        using Base::NOrderDim;
+        using Base::get_norder_dim;
 
         using Base::get_nw;
-        using Base::NWDim;
+        using Base::get_nw_dim;
 
     protected:
         BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options> interpolator_;

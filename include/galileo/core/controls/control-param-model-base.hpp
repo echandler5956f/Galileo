@@ -8,7 +8,8 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class ControlParamModelBase : internal::CRTP<Derived>
+    class ControlParamModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -86,24 +87,19 @@ namespace galileo
          */
         const int get_nu() const
         {
-            return this->derived().get_nu_impl();
-        }
-
-        const int get_nu_impl() const
-        {
             if constexpr (PS::DimNU_t::IsFixed)
             {
                 return PS::DimNU_t::Value;
             }
             else
             {
-                return ps_.NU_dim.value();
+                return ps_.nu_dim.value();
             }
         }
 
-        const PS::DimNU_t &NUDim() const
+        const PS::DimNU_t &get_nu_dim() const
         {
-            return ps_.NU_dim;
+            return ps_.nu_dim;
         }
 
         /**
@@ -111,24 +107,19 @@ namespace galileo
          */
         const int get_norder() const
         {
-            return this->derived().get_norder_impl();
-        }
-
-        const int get_norder_impl() const
-        {
             if constexpr (PS::DimNOrder_t::IsFixed)
             {
                 return PS::DimNOrder_t::Value;
             }
             else
             {
-                return ps_.NOrder_dim.value();
+                return ps_.norder_dim.value();
             }
         }
 
-        const PS::DimNOrder_t &NOrderDim() const
+        const PS::DimNOrder_t &get_norder_dim() const
         {
-            return ps_.NOrder_dim;
+            return ps_.norder_dim;
         }
 
         /**
@@ -136,24 +127,19 @@ namespace galileo
          */
         const int get_nw() const
         {
-            return this->derived().get_nw_impl();
-        }
-
-        const int get_nw_impl() const
-        {
             if constexpr (PS::DimNW_t::IsFixed)
             {
                 return PS::DimNW_t::Value;
             }
             else
             {
-                return ps_.NW_dim.value();
+                return ps_.nw_dim.value();
             }
         }
 
-        const PS::DimNW_t &NWDim() const
+        const PS::DimNW_t &get_nw_dim() const
         {
-            return ps_.NW_dim;
+            return ps_.nw_dim;
         }
 
     protected:
