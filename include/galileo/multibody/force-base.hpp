@@ -16,14 +16,13 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct ForceDataBase : public internal::CRTP<Derived>
+    struct ForceDataBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
-
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
         using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;
@@ -32,13 +31,14 @@ namespace galileo
         GALILEO_FORCE_DATA_TYPEDEF(Meta_t);
 
         // Accessors required by ForceDataBase
-        FORWARD_ACCESSOR(RobotData_t *, robot);
-        FORWARD_ACCESSOR(FrameIndex_t, frame);
-        FORWARD_ACCESSOR(ReferenceFrame_t, type);
-        FORWARD_ACCESSOR(SE3_t, jMf);
+        FORWARD_ACCESSOR(typename PS::RobotData_t *, robot);
+        FORWARD_ACCESSOR(typename PS::FrameIndex_t, frame);
+        FORWARD_ACCESSOR(typename PS::ReferenceFrame_t, type);
+        FORWARD_ACCESSOR(typename PS::SE3_t, jMf);
+        FORWARD_ACCESSOR(typename PS::Force_t, f);
+        FORWARD_ACCESSOR(typename PS::Force_t, fext);
+
         FORWARD_ACCESSOR(MatrixNcNv_t, Jc);
-        FORWARD_ACCESSOR(Force_t, f);
-        FORWARD_ACCESSOR(Force_t, fext);
         FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
         FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
 

@@ -124,7 +124,6 @@ namespace galileo
         using Meta_t = ResidualFramePlacementTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
         using Base = ResidualModelBase<ResidualModelFramePlacementTpl<PS>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;

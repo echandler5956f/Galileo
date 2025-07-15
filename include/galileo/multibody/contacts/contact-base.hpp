@@ -27,13 +27,14 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
 
-        // Forward propogating the traits of the derived class
+        // Forward propogating the traits of the derived class. Basically, instead of looking at ContactBaseTpl,
+        // ForceDataBase will look at the traits of the derived class.
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
     };
 
@@ -58,41 +59,41 @@ namespace galileo
     };
 
     template <typename Derived, typename PhaseSpec>
-    struct ContactDataBase : public internal::CRTP<Derived>
+    struct ContactDataBase
+        : public ForceDataBase<ContactDataBase<Derived, PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
-
         using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
+        using Base = ForceDataBase<ContactDataBase<Derived, PS>, PS>;
 
         // Now we can access the traits of the derived class
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
         // Accessors required by ForceDataBase
-        FORWARD_ACCESSOR(RobotData_t *, robot);
-        FORWARD_ACCESSOR(FrameIndex_t, frame);
-        FORWARD_ACCESSOR(ReferenceFrame_t, type);
-        FORWARD_ACCESSOR(SE3_t, jMf);
-        FORWARD_ACCESSOR(MatrixNcNv_t, Jc);
-        FORWARD_ACCESSOR(Force_t, f);
-        FORWARD_ACCESSOR(Force_t, fext);
-        FORWARD_ACCESSOR(MatrixNcNdx_t, df_dx);
-        FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
+        using Base::df_du;
+        using Base::df_dx;
+        using Base::f;
+        using Base::fext;
+        using Base::frame;
+        using Base::Jc;
+        using Base::jMf;
+        using Base::robot;
+        using Base::type;
 
         // Accessors required by ContactDataBase
-        FORWARD_ACCESSOR(ActionMatrix_t, fXj);
+        FORWARD_ACCESSOR(typename PS::ActionMatrix_t, fXj);
         FORWARD_ACCESSOR(VectorNc_t, a0);
         FORWARD_ACCESSOR(MatrixNcNdx_t, da0_dx);
-        FORWARD_ACCESSOR(MatrixNv_t, dtau_dq);
+        FORWARD_ACCESSOR(typename PS::MatrixNv_t, dtau_dq);
 
-        /**We have to override the CRTP derived() method to return the
-         derived object because ForceDataBase is multi-level CRTP**/
+        // We have to override the CRTP derived() method that ForceDataBase inherits from internal::CRTP so that
+        // we can return the derived object of ContactDataBase rather than ContactDataBase itself
 
         /** Return reference to this as derived object */
         inline Derived &derived() & noexcept
@@ -128,7 +129,8 @@ namespace galileo
     }; // struct ContactDataBase
 
     template <typename Derived, typename PhaseSpec>
-    struct ContactModelBase : public internal::CRTP<Derived>
+    struct ContactModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -140,15 +142,12 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
 
-        using RobotModel_t = typename traits<Meta_t>::RobotModel_t;
-        using FrameIndex_t = typename traits<Meta_t>::FrameIndex_t;
-        using ReferenceFrame_t = typename traits<Meta_t>::ReferenceFrame_t;
+        using RobotModel_t = typename PS::RobotModel_t;
+        using FrameIndex_t = typename PS::FrameIndex_t;
+        using ReferenceFrame_t = typename PS::ReferenceFrame_t;
+        using DimNU_t = typename PS::DimNU_t;
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
-        {
-            return this->derived().createData(collector);
-        }
+        using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
         template <typename StateVectorType>
         void calc(Data_t &data,
@@ -210,43 +209,79 @@ namespace galileo
             data.df_du().setZero();
         }
 
-        const RobotModel_t *robot() const
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
         {
-            return this->derived().robot_impl();
+            return this->derived().createData(collector);
         }
 
-        FrameIndex_t id() const
+        const std::shared_ptr<State_t> &get_state() const
         {
-            return this->derived().id_impl();
+            return this->derived().get_state();
+        }
+
+        const PS &get_ps() const
+        {
+            return ps_;
+        }
+
+        const FrameIndex_t &get_id() const
+        {
+            return id_;
         }
 
         void set_id(const FrameIndex_t &id)
         {
-            this->derived().set_id_impl(id);
+            id_ = id;
         }
 
-        ReferenceFrame_t type() const
+        const ReferenceFrame_t &get_type() const
         {
-            return this->derived().type_impl();
+            return type_;
         }
 
         void set_type(const ReferenceFrame_t &type)
         {
-            this->derived().set_type_impl(type);
+            type_ = type;
         }
 
-        int nc() const
+        const int get_nc() const
         {
-            return this->derived().nc_impl();
+            if constexpr (DimNC_t::IsFixed)
+            {
+                return DimNC_t::Value;
+            }
+            else
+            {
+                return nc_dim_.value();
+            }
         }
 
-        int nu() const
+        const DimNC_t &get_nc_dim() const
         {
-            return this->derived().nu_impl();
+            return nc_dim_;
+        }
+
+        const int get_nu() const
+        {
+            if constexpr (DimNU_t::IsFixed)
+            {
+                return DimNU_t::Value;
+            }
+            else
+            {
+                return ps_.nu_dim.value();
+            }
+        }
+
+        const DimNU_t &get_nu_dim() const
+        {
+            return ps_.nu_dim;
         }
 
     protected:
-        inline ContactModelBase()
+        inline ContactModelBase(const PS &ps, const FrameIndex_t &id, const ReferenceFrame_t &type, const DimNC_t &nc_dim)
+            : ps_(ps), id_(id), type_(type), nc_dim_(nc_dim)
         {
         }
 
@@ -259,6 +294,11 @@ namespace galileo
         {
             return *this;
         }
+
+        const PS &ps_;
+        DimNC_t nc_dim_;
+        FrameIndex_t id_;
+        ReferenceFrame_t type_;
 
     }; // struct ContactModelBase
 

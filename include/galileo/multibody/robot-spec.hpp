@@ -165,6 +165,7 @@ namespace galileo
 
         using MatrixNv6_t = Eigen::GMatrix<VarScalar, NV, 6, Options>;
         using Matrix6Nv_t = Eigen::GMatrix<VarScalar, 6, NV, Options>;
+        using Matrix6Ndx_t = Eigen::GMatrix<VarScalar, 6, NDX, Options>;
 
         /* ---------------------------------------------------------------- */
         /* Template types */

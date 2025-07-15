@@ -6,192 +6,381 @@
 namespace galileo
 {
 
-    template <typename RobotSpec>
+    template <typename PhaseSpec>
     struct Contact6dTpl;
 
-    template <typename RobotSpec>
-    struct traits<Contact6dTpl<RobotSpec>>
+    template <typename PhaseSpec>
+    struct traits<Contact6dTpl<PhaseSpec>>
     {
-        using RS = RobotSpec;
+        using PS = PhaseSpec;
 
-        using VarScalar = typename RS::VarScalar;
-        using NumScalar = typename RS::NumScalar;
-        static constexpr int Options = RS::Options;
+        using Meta_t = Contact6dTpl<PS>;
+        using Model_t = ContactModel6dTpl<PS>;
+        using Data_t = ContactData6dTpl<PS>;
 
-        using ContactDataDerived = ContactData6dTpl<RobotSpec>;
-        using ContactModelDerived = ContactModel6dTpl<RobotSpec>;
+        using DimNC_t = DimensionTpl<6>;
+        static constexpr int NC = DimNC_t::Value;
 
-        static constexpr int NC = 1;
-        // using RobotData_t = // TODO: add robot data
-        using MatrixNcNv_t = Eigen::GMatrix<VarScalar, NC, RS::NV, Options>;
-        using MatrixNcNdx_t = Eigen::GMatrix<VarScalar, NC, RS::NDX, Options>;
-        using MatrixNcNu_t = Eigen::GMatrix<VarScalar, NC, RS::NU, Options>;
+        using DimNU_t = typename traits<typename PS::NodeMeta_t>::DimNU_t;
+        static constexpr int NU = DimNU_t::Value;
+
+        // Traits required by ForceDataBase
+        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNV_t::Value, PS::Options>;
+        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNDX_t::Value, PS::Options>;
+        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNU_t::Value, PS::Options>;
+
+        // Traits required by ContactDataBase
+        using VectorNc_t = Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options>;
     };
 
-    template <typename RobotSpec>
-    struct traits<ContactData6dTpl<RobotSpec>>
+    template <typename PhaseSpec>
+    struct traits<ContactData6dTpl<PhaseSpec>>
     {
-        using ContactDerived = Contact6dTpl<RobotSpec>;
-        using VarScalar = traits<ContactDerived>::VarScalar;
-        using NumScalar = traits<ContactDerived>::NumScalar;
+        using PS = PhaseSpec;
+
+        using Meta_t = Contact6dTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename RobotSpec>
-    struct traits<ContactModel6dTpl<RobotSpec>>
+    template <typename PhaseSpec>
+    struct traits<ContactModel6dTpl<PhaseSpec>>
     {
-        using ContactDerived = Contact6dTpl<RobotSpec>;
-        using VarScalar = traits<ContactDerived>::VarScalar;
-        using NumScalar = traits<ContactDerived>::NumScalar;
+        using PS = PhaseSpec;
+
+        using Meta_t = Contact6dTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename RobotSpec>
-    struct ContactData6dTpl : ContactDataBase<ContactData6dTpl<RobotSpec>, RobotSpec>
+    template <typename PhaseSpec>
+    struct ContactData6dTpl
+        : ContactDataBase<ContactData6dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        using PS = PhaseSpec;
+
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
+        using Meta_t = Contact3dTpl<PS>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ContactDataBase<ContactData3dTpl<PS>, PS>;
+
+        GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
+
+        // Accessor implementations required by ForceDataBase
+        using Base::df_du;
+        using Base::df_dx;
+        using Base::f;
+        using Base::fext;
+        using Base::frame;
+        using Base::Jc;
+        using Base::jMf;
+        using Base::robot;
+        using Base::type;
+
+        // Members required by ForceDataBase
+        RobotData_t *robot;
+        FrameIndex_t frame;
+        ReferenceFrame_t type;
+        SE3_t jMf;
+        MatrixNcNv_t Jc;
+        Force_t f;
+        Force_t fext;
+        MatrixNcNdx_t df_dx;
+        MatrixNcNu_t df_du;
+
+        // Accessor implementations required by ForceDataBase
+        DEFAULT_ACCESSOR(RobotData_t *, robot);
+        DEFAULT_ACCESSOR(FrameIndex_t, frame);
+        DEFAULT_ACCESSOR(ReferenceFrame_t, type);
+        DEFAULT_ACCESSOR(SE3_t, jMf);
+        DEFAULT_ACCESSOR(MatrixNcNv_t, Jc);
+        DEFAULT_ACCESSOR(Force_t, f);
+        DEFAULT_ACCESSOR(Force_t, fext);
+        DEFAULT_ACCESSOR(MatrixNcNdx_t, df_dx);
+        DEFAULT_ACCESSOR(MatrixNcNu_t, df_du);
+
+        // Accessor implementations required by ContactDataBase
+        using Base::a0;
+        using Base::da0_dx;
+        using Base::dtau_dq;
+        using Base::fXj;
+
+        // Members required by ContactDataBase
+        ActionMatrix_t fXj;
+        VectorNc_t a0;
+        MatrixNcNdx_t da0_dx;
+        MatrixNv_t dtau_dq;
+
+        // Accessor implementations required by ContactDataBase
+        DEFAULT_ACCESSOR(ActionMatrix_t, fXj);
+        DEFAULT_ACCESSOR(VectorNc_t, a0);
+        DEFAULT_ACCESSOR(MatrixNcNdx_t, da0_dx);
+        DEFAULT_ACCESSOR(MatrixNv_t, dtau_dq);
+
+        // Members used for ContactModel3dTpl
+        // Notice that we do not need to expose accessors for these because they are specific to the 3D contact model
+        SE3_t rMf;
+        SE3_t lwaMl;
+        Motion_t v;
+        Motion_t a0_local;
+        Force_t f_local;
+        Matrix6Ndx_t da0_local_dx;
+        Matrix6Nv_t fJf;
+        Matrix6Nv_t v_partial_dq;
+        Matrix6Nv_t a_partial_dq;
+        Matrix6Nv_t a_partial_dv;
+        Matrix6Nv_t a_partial_da;
+        Matrix3_t av_world_skew;
+        Matrix3_t aw_world_skew;
+        Matrix3_t av_skew;
+        Matrix3_t aw_skew;
+        Matrix3_t fv_skew;
+        Matrix3_t fw_skew;
+        Matrix6_t rMf_Jlog6;
+        Matrix6Nv_t fJf_df;
+
+        template <typename DataCollector>
+        ContactData3dTpl(const Model_t &model, DataCollector *const collector)
+            : robot(collector->robot),
+              frame(0),
+              type(model.get_type()),
+              jMf(SE3_t::Identity()),
+              Jc(model.get_nc(), model.get_ps().nv_dim.value()),
+              f(Force_t::Zero()),
+              fext(Force_t::Zero()),
+              df_dx(model.get_nc(), model.get_ps().ndx_dim.value()),
+              df_du(model.get_nc(), model.get_ps().nu_dim.value()),
+              fXj(jMf.inverse().toActionMatrix()),
+              a0(model.get_nc()),
+              da0_dx(model.get_nc(), model.get_ps().ndx_dim.value()),
+              dtau_dq(model.get_ps().nv_dim.value(), model.get_ps().nv_dim.value()),
+              v(Motion_t::Zero()),
+              f_local(Force_t::Zero()),
+              da0_local_dx(model.get_nc(), model.get_ps().ndx_dim.value()),
+              fJf(6, model.get_ps().nv_dim.value()),
+              v_partial_dq(6, model.get_ps().nv_dim.value()),
+              a_partial_dq(6, model.get_ps().nv_dim.value()),
+              a_partial_dv(6, model.get_ps().nv_dim.value()),
+              a_partial_da(6, model.get_ps().nv_dim.value()),
+              fXjdv_dq(6, model.get_ps().nv_dim.value()),
+              fXjda_dq(6, model.get_ps().nv_dim.value()),
+              fXjda_dv(6, model.get_ps().nv_dim.value()),
+              fJf_df(model.get_nc(), model.get_ps().nv_dim.value())
+        {
+            Jc.setZero();
+            df_dx.setZero();
+            df_du.setZero();
+            a0.setZero();
+            da0_dx.setZero();
+            dtau_dq.setZero();
+            frame = model.get_id();
+            jMf = model.get_state()->get_robot().frames[frame].placement;
+            fXj = jMf.inverse().toActionMatrix();
+            da0_local_dx.setZero();
+            fJf.setZero();
+            v_partial_dq.setZero();
+            a_partial_dq.setZero();
+            a_partial_dv.setZero();
+            a_partial_da.setZero();
+            av_world_skew.setZero();
+            aw_world_skew.setZero();
+            av_skew.setZero();
+            aw_skew.setZero();
+            fv_skew.setZero();
+            fw_skew.setZero();
+            rMf_Jlog6.setZero();
+            fJf_df.setZero();
+        }
     };
 
-    template <typename RobotSpec>
-    struct ContactModel6dTpl : ContactDataBase<ContactModel6dTpl<RobotSpec>, RobotSpec>
+    template <typename PhaseSpec>
+    struct ContactModel6dTpl
+        : ContactModelBase<ContactModel6dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-        using RS = RobotSpec;
+        using PS = PhaseSpec;
 
-        using ContactDerived = Contact6dTpl<RobotSpec>;
-        using ContactModelDerived = traits<ContactDerived>::ContactModelDerived;
-        using ContactDataDerived = traits<ContactDerived>::ContactDataDerived;
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
+        using Meta_t = Contact3dTpl<PhaseSpec>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ContactModelBase<ContactModel3dTpl<PS>, PS>;
+
+        using DimNC_t = typename traits<Meta_t>::DimNC_t;
+
+        ContactModel6dTpl(const PS &ps,
+                          const std::shared_ptr<State_t> &state,
+                          const FrameIndex_t id,
+                          const ReferenceFrame_t &type,
+                          const SE3_t &pref,
+                          const Vector2_t &gains)
+            : Base(ps, id, type, DimNC_t()),
+              state_(state),
+              pref_(pref),
+              gains_(gains)
+        {
+        }
 
         template <typename StateVectorType>
         void calc(ContactDataDerived &data,
-                  const Eigen::MatrixBase<StateVectorType> &x)
+                  const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            Data *d = static_cast<Data *>(data.get());
-            pinocchio::updateFramePlacement<Scalar>(*state_->get_pinocchio().get(),
-                                                    *d->pinocchio, id_);
-            pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio,
-                                        id_, pinocchio::LOCAL, d->fJf);
-            d->a0_local = pinocchio::getFrameAcceleration(*state_->get_pinocchio().get(),
-                                                          *d->pinocchio, id_);
+            pinocchio::updateFramePlacement(get_state()->get_robot(),
+                                            *data.robot, get_id());
+            pinocchio::getFrameJacobian(get_state()->get_robot(), *data.robot,
+                                        get_id(), pinocchio::LOCAL, data.fJf);
+            data.a0_local = pinocchio::getFrameAcceleration(get_state()->get_robot(),
+                                                            *data.robot, get_id());
 
             if (gains_[0] != 0.)
             {
-                d->rMf = pref_.actInv(d->pinocchio->oMf[id_]);
-                d->a0_local += gains_[0] * pinocchio::log6(d->rMf);
+                data.rMf = pref_.actInv(data.robot->oMf[get_id()]);
+                data.a0_local += gains_[0] * pinocchio::log6(data.rMf);
             }
             if (gains_[1] != 0.)
             {
-                d->v = pinocchio::getFrameVelocity(*state_->get_pinocchio().get(),
-                                                   *d->pinocchio, id_);
-                d->a0_local += gains_[1] * d->v;
+                data.v = pinocchio::getFrameVelocity(get_state()->get_robot(),
+                                                     *data.robot, get_id());
+                data.a0_local += gains_[1] * data.v;
             }
-            switch (type_)
+            switch (get_type())
             {
             case pinocchio::ReferenceFrame::LOCAL:
-                data->Jc = d->fJf;
-                data->a0 = d->a0_local.toVector();
+                data.Jc = data.fJf;
+                data.a0 = data.a0_local.toVector();
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                d->lwaMl.rotation(d->pinocchio->oMf[id_].rotation());
-                data->Jc.noalias() = d->lwaMl.toActionMatrix() * d->fJf;
-                data->a0.noalias() = d->lwaMl.act(d->a0_local).toVector();
+                data.lwaMl.rotation(data.robot->oMf[get_id()].rotation());
+                data.Jc.noalias() = data.lwaMl.toActionMatrix() * data.fJf;
+                data.a0.noalias() = data.lwaMl.act(data.a0_local).toVector();
                 break;
             }
         }
 
         template <typename StateVectorType>
         void calcDiff(ContactDataDerived &data,
-                      const Eigen::MatrixBase<StateVectorType> &x)
+                      const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            Data *d = static_cast<Data *>(data.get());
             const pinocchio::JointIndex joint =
-                state_->get_pinocchio()->frames[d->frame].parent;
+                get_state()->get_robot().frames[data.frame].parent;
             pinocchio::getJointAccelerationDerivatives(
-                *state_->get_pinocchio().get(), *d->pinocchio, joint, pinocchio::LOCAL,
-                d->v_partial_dq, d->a_partial_dq, d->a_partial_dv, d->a_partial_da);
-            const std::size_t nv = state_->get_nv();
-            d->da0_local_dx.leftCols(nv).noalias() = d->fXj * d->a_partial_dq;
-            d->da0_local_dx.rightCols(nv).noalias() = d->fXj * d->a_partial_dv;
+                get_state()->get_robot(), *data.robot, joint, pinocchio::LOCAL,
+                data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
+            leftCols(data.da0_local_dx, get_ps().nv_dim).noalias() = data.fXj * data.a_partial_dq;
+            rightCols(data.da0_local_dx, get_ps().nv_dim).noalias() = data.fXj * data.a_partial_dv;
 
             if (gains_[0] != 0.)
             {
-                pinocchio::Jlog6(d->rMf, d->rMf_Jlog6);
-                d->da0_local_dx.leftCols(nv).noalias() += gains_[0] * d->rMf_Jlog6 * d->fJf;
+                pinocchio::Jlog6(data.rMf, data.rMf_Jlog6);
+                leftCols(data.da0_local_dx, get_ps().nv_dim).noalias() += gains_[0] * data.rMf_Jlog6 * data.fJf;
             }
             if (gains_[1] != 0.)
             {
-                d->da0_local_dx.leftCols(nv).noalias() +=
-                    gains_[1] * d->fXj * d->v_partial_dq;
-                d->da0_local_dx.rightCols(nv).noalias() += gains_[1] * d->fJf;
+                leftCols(data.da0_local_dx, get_ps().nv_dim).noalias() +=
+                    gains_[1] * data.fXj * data.v_partial_dq;
+                rightCols(data.da0_local_dx, get_ps().nv_dim).noalias() += gains_[1] * data.fJf;
             }
-            switch (type_)
+            switch (get_type())
             {
             case pinocchio::ReferenceFrame::LOCAL:
-                d->da0_dx = d->da0_local_dx;
+                data.da0_dx = data.da0_local_dx;
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
                 // Recalculate the constrained accelerations after imposing contact
                 // constraints. This is necessary for the forward-dynamics case.
-                d->a0_local = pinocchio::getFrameAcceleration(
-                    *state_->get_pinocchio().get(), *d->pinocchio, id_);
+                data.a0_local = pinocchio::getFrameAcceleration(
+                    get_state()->get_robot(), *data.robot, get_id());
                 if (gains_[0] != 0.)
                 {
-                    d->a0_local += gains_[0] * pinocchio::log6(d->rMf);
+                    data.a0_local += gains_[0] * pinocchio::log6(data.rMf);
                 }
                 if (gains_[1] != 0.)
                 {
-                    d->a0_local += gains_[1] * d->v;
+                    data.a0_local += gains_[1] * data.v;
                 }
-                data->a0.noalias() = d->lwaMl.act(d->a0_local).toVector();
+                data.a0.noalias() = data.lwaMl.act(data.a0_local).toVector();
 
-                const Eigen::Ref<const Matrix3s> oRf = d->pinocchio->oMf[id_].rotation();
-                pinocchio::skew(d->a0.template head<3>(), d->av_skew);
-                pinocchio::skew(d->a0.template tail<3>(), d->aw_skew);
-                d->av_world_skew.noalias() = d->av_skew * oRf;
-                d->aw_world_skew.noalias() = d->aw_skew * oRf;
-                d->da0_dx.noalias() = d->lwaMl.toActionMatrix() * d->da0_local_dx;
-                d->da0_dx.leftCols(nv).template topRows<3>().noalias() -=
-                    d->av_world_skew * d->fJf.template bottomRows<3>();
-                d->da0_dx.leftCols(nv).template bottomRows<3>().noalias() -=
-                    d->aw_world_skew * d->fJf.template bottomRows<3>();
+                const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
+                pinocchio::skew(head(data.a0, 3), data.av_skew);
+                pinocchio::skew(tail(data.a0, 3), data.aw_skew);
+                data.av_world_skew.noalias() = data.av_skew * oRf;
+                data.aw_world_skew.noalias() = data.aw_skew * oRf;
+                data.da0_dx.noalias() = data.lwaMl.toActionMatrix() * data.da0_local_dx;
+                topRows(leftCols(data.da0_dx, get_ps().nv_dim), 3).noalias() -=
+                    data.av_world_skew * bottomRows(data.fJf, 3);
+                bottomRows(leftCols(data.da0_dx, get_ps().nv_dim), 3).noalias() -=
+                    data.aw_world_skew * bottomRows(data.fJf, 3);
                 break;
             }
         }
 
         template <typename ForceVectorType>
         void updateForce(ContactDataDerived &data,
-                         const Eigen::MatrixBase<ForceVectorType> &f)
+                         const Eigen::MatrixBase<ForceVectorType> &f) const
         {
-            if (force.size() != 6)
+            if (f.size() != 6)
             {
                 throw_pretty("Invalid argument: "
                              << "lambda has wrong dimension (it should be 6)");
             }
-            Data *d = static_cast<Data *>(data.get());
-            data->f = pinocchio::ForceTpl<Scalar>(force);
-            switch (type_)
+            data.f = pinocchio::ForceTpl<typename PS::VarScalar>(f);
+            switch (get_type())
             {
             case pinocchio::ReferenceFrame::LOCAL:
-                data->fext = data->jMf.act(data->f);
-                data->dtau_dq.setZero();
+                data.fext = data.jMf.act(data.f);
+                data.dtau_dq.setZero();
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                d->f_local = d->lwaMl.actInv(data->f);
-                data->fext = data->jMf.act(d->f_local);
-                pinocchio::skew(d->f_local.linear(), d->fv_skew);
-                pinocchio::skew(d->f_local.angular(), d->fw_skew);
-                d->fJf_df.template topRows<3>().noalias() =
-                    d->fv_skew * d->fJf.template bottomRows<3>();
-                d->fJf_df.template bottomRows<3>().noalias() =
-                    d->fw_skew * d->fJf.template bottomRows<3>();
-                d->dtau_dq.noalias() = -d->fJf.transpose() * d->fJf_df;
+                data.f_local = data.lwaMl.actInv(data.f);
+                data.fext = data.jMf.act(data.f_local);
+                pinocchio::skew(data.f_local.linear(), data.fv_skew);
+                pinocchio::skew(data.f_local.angular(), data.fw_skew);
+                topRows(data.fJf_df, 3).noalias() =
+                    data.fv_skew * bottomRows(data.fJf, 3);
+                bottomRows(data.fJf_df, 3).noalias() =
+                    data.fw_skew * bottomRows(data.fJf, 3);
+                data.dtau_dq.noalias() = -data.fJf.transpose() * data.fJf_df;
                 break;
             }
         }
+        using Base::setZeroForce;
+        using Base::setZeroForceDiff;
+        using Base::updateForceDiff;
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
+        {
+            return Data_t(*this, collector);
+        }
+
+        const std::shared_ptr<State_t> &get_state() const
+        {
+            return state_;
+        }
+
+        using Base::get_ps;
+
+        using Base::get_id;
+        using Base::get_type;
+
+        using Base::set_id;
+        using Base::set_type;
+
+    protected:
+        std::shared_ptr<State_t> state_;
+        SE3_t pref_;
+        Vector2_t gains_;
 
     }; // struct ContactModel6dTpl
 
