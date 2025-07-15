@@ -5,25 +5,6 @@
 
 namespace galileo
 {
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationBoundsTpl;
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelQuadraticBarrierTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataQuadraticBarrierTpl;
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelWeightedQuadraticBarrierTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataWeightedQuadraticBarrierTpl;
-
         template <typename PhaseSpec,
                   template <typename PS> class ResidualTpl>
         class ActivationModelQuadraticTpl;
@@ -33,45 +14,10 @@ namespace galileo
 
         template <typename PhaseSpec,
                   template <typename PS> class ResidualTpl>
-        class ActivationModelQuadFlatExpTpl;
+        class ActivationModelWeightedQuadraticTpl;
         template <typename PhaseSpec,
                   template <typename PS> class ResidualTpl>
-        struct ActivationDataQuadFlatExpTpl;
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelQuadFlatLogTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataQuadFlatLogTpl;
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelWeightedQuadTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataWeightedQuadTpl;
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelSmooth1NormTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataSmooth1NormTpl;
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelSmooth2NormTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataSmooth2NormTpl;
-
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModel2NormBarrierTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationData2NormBarrierTpl;
+        struct ActivationDataWeightedQuadraticTpl;
 
 } // namespace galileo
 

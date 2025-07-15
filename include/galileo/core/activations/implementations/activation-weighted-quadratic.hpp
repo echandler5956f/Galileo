@@ -1,5 +1,5 @@
-#ifndef __galileo_core_activations_activation_quadratic_hpp__
-#define __galileo_core_activations_activation_quadratic_hpp__
+#ifndef __galileo_core_activations_activation_weighted_quadratic_hpp__
+#define __galileo_core_activations_activation_weighted_quadratic_hpp__
 
 #include "galileo/core/activations/activation-base.hpp"
 
@@ -8,17 +8,17 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    struct ActivationQuadraticTpl;
+    struct ActivationWeightedQuadraticTpl;
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    struct traits<ActivationQuadraticTpl<PhaseSpec, ResidualTpl>>
+    struct traits<ActivationWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
-        using Model_t = ActivationModelQuadraticTpl<PS, ResidualTpl>;
-        using Data_t = ActivationDataQuadraticTpl<PS, ResidualTpl>;
+        using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
+        using Model_t = ActivationModelWeightedQuadraticTpl<PS, ResidualTpl>;
+        using Data_t = ActivationDataWeightedQuadraticTpl<PS, ResidualTpl>;
 
         using ResidualMeta_t = typename traits<ResidualTpl<PS>>::Meta_t;
         using ResidualModel_t = typename traits<ResidualMeta_t>::Model_t;
@@ -30,103 +30,122 @@ namespace galileo
         using Ar_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
         using Arr_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, DimNR_t::Value, PS::Options>;
         using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, DimNR_t::Value>;
+
+        using WeightVector_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    struct traits<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>>
+    struct traits<ActivationDataWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    struct traits<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>>
+    struct traits<ActivationModelWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    struct ActivationDataQuadraticTpl
-        : public ActivationDataBase<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
+    struct ActivationDataWeightedQuadraticTpl
+        : public ActivationDataBase<ActivationDataWeightedQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ActivationDataBase<ActivationDataQuadraticTpl<PS, ResidualTpl>, PS>;
+        using Base = ActivationDataBase<ActivationDataWeightedQuadraticTpl<PS, ResidualTpl>, PS>;
 
         GALILEO_ACTIVATION_DATA_TYPEDEF(Meta_t);
+
+        using WeightVector_t = typename traits<Meta_t>::WeightVector_t;
 
         DEFAULT_ACCESSOR(A_t, A);
         DEFAULT_ACCESSOR(Ar_t, Ar);
         DEFAULT_ACCESSOR(Arr_t, Arr);
 
-        ActivationDataQuadraticTpl(const Model_t &model)
-            : A(0.), Ar(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
+        ActivationDataWeightedQuadraticTpl(const Model_t &model)
+            : A(0.), Ar(model.get_nr()), Wr(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
         {
             Ar.setZero();
+            Wr.setZero();
         }
 
         A_t A;
         Ar_t Ar;
+        WeightVector_t Wr;
         Arr_t Arr;
 
-    }; // class ActivationDataQuadraticTpl
+    }; // class ActivationDataWeightedQuadraticTpl
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
-    class ActivationModelQuadraticTpl
-        : public ActivationModelBase<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
+    class ActivationModelWeightedQuadraticTpl
+        : public ActivationModelBase<ActivationModelWeightedQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        using Meta_t = ActivationQuadraticTpl<PS, ResidualTpl>;
+        using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ActivationModelBase<ActivationModelQuadraticTpl<PS, ResidualTpl>, PS>;
+        using Base = ActivationModelBase<ActivationModelWeightedQuadraticTpl<PS, ResidualTpl>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
-        explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &nr_dim)
-            : Base(ps, nr_dim)
+        explicit ActivationModelWeightedQuadraticTpl(const PS &ps, const DimNR_t &nr_dim, const WeightVector_t &weights)
+            : Base(ps, nr_dim),
+              weights_(weights),
+              new_weights_(false)
         {
         }
 
         template <typename ResidualVectorType>
         void calc(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
-            data.A = typename PS::VarScalar(0.5) * r.dot(r);
+            data.Wr = weights_.cwiseProduct(r);
+            data.A = typename PS::VarScalar(0.5) * r.dot(data.Wr);
         }
 
         template <typename ResidualVectorType>
         void calcDiff(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
-            data.Ar = r;
-            // The Hessian has constant values which were set in createData.
+            data.Ar = data.Wr;
+            if (new_weights_)
+            {
+                data.Arr.diagonal() = weights_;
+                new_weights_ = false;
+            }
         }
 
         Data_t createData() const
         {
             Data_t data = Data_t(*this);
-            data.Arr.setIdentity();
+            data.Arr.diagonal() = weights_;
             return data;
+        }
+
+        void setWeights(const WeightVector_t &weights)
+        {
+            weights_ = weights;
+            new_weights_ = true;
         }
 
         using Base::get_ps;
@@ -134,8 +153,12 @@ namespace galileo
         using Base::get_nr;
         using Base::get_nr_dim;
 
-    }; // class ActivationModelQuadraticTpl
+    protected:
+        WeightVector_t weights_;
+        bool new_weights_;
+
+    }; // class ActivationModelWeightedQuadraticTpl
 
 } // namespace galileo
 
-#endif // __galileo_core_activations_activation_quadratic_hpp__
+#endif // __galileo_core_activations_activation_weighted_quadratic_hpp__
