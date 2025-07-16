@@ -1,5 +1,5 @@
-#ifndef __galileo_core_constraints_fwd_hpp__
-#define __galileo_core_constraints_fwd_hpp__
+#ifndef __galileo_core_constraints_equality_fwd_hpp__
+#define __galileo_core_constraints_equality_fwd_hpp__
 
 #include "galileo/core/fwd.hpp"
 #include <type_traits>
@@ -15,32 +15,14 @@ namespace galileo
     {
     }; // struct ConstraintDataVoid
 
-    enum class ConstraintType
-    {
-        Equality = 0,
-        Inequality = 1,
-        Any = 2
-    };
-
-    template <ConstraintType EqualityInequality>
-    inline constexpr bool is_equality_v = (EqualityInequality == ConstraintType::Equality);
-
-    template <ConstraintType EqualityInequality>
-    inline constexpr bool is_inequality_v = (EqualityInequality == ConstraintType::Inequality);
-
-    template <ConstraintType EqualityInequality>
-    inline constexpr bool is_any_constraint_v = (EqualityInequality == ConstraintType::Any);
-
     template <
         typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        ConstraintType EqualityInequality>
+        template <typename PS> class ResidualTpl>
     struct ConstraintModelResidualTpl;
 
     template <
         typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        ConstraintType EqualityInequality>
+        template <typename PS> class ResidualTpl>
     struct ConstraintDataResidualTpl;
 
     template <typename PhaseSpec>
@@ -66,4 +48,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_fwd_hpp__
+#endif // __galileo_core_constraints_equality_fwd_hpp__

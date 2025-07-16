@@ -1,7 +1,7 @@
-#ifndef __galileo_core_constraints_constraint_collection_hpp__
-#define __galileo_core_constraints_constraint_collection_hpp__
+#ifndef __galileo_core_constraints_equality_constraint_collection_hpp__
+#define __galileo_core_constraints_equality_constraint_collection_hpp__
 
-#include "galileo/core/constraints/fwd.hpp"
+#include "galileo/core/constraints/equality/fwd.hpp"
 
 #include <boost/variant.hpp>
 
@@ -26,4 +26,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_collection_hpp__
+#endif // __galileo_core_constraints_equality_constraint_collection_hpp__

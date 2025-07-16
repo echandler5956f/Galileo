@@ -1,18 +1,15 @@
-#ifndef __galileo_core_constraints_constraint_data_base_hpp__
-#define __galileo_core_constraints_constraint_data_base_hpp__
+#ifndef __galileo_core_constraints_equality_constraint_data_base_hpp__
+#define __galileo_core_constraints_equality_constraint_data_base_hpp__
 
-#include "galileo/core/constraints/constraint-base.hpp"
-#include "galileo/core/constraints/constraint-model-base.hpp"
+#include "galileo/core/constraints/equality/constraint-base.hpp"
+#include "galileo/core/constraints/equality/constraint-model-base.hpp"
 
 // We use traits rather than PhaseSpec,
-// because each constraint model has its own NH and NG
+// because each constraint model has its own NH
 #define GALILEO_CONSTRAINT_DATA_TYPEDEF(Constraint) \
     using H_t = typename traits<Constraint>::H_t;   \
     using Hx_t = typename traits<Constraint>::Hx_t; \
-    using Hu_t = typename traits<Constraint>::Hu_t; \
-    using G_t = typename traits<Constraint>::G_t;   \
-    using Gx_t = typename traits<Constraint>::Gx_t; \
-    using Gu_t = typename traits<Constraint>::Gu_t;
+    using Hu_t = typename traits<Constraint>::Hu_t;
 
 namespace galileo
 {
@@ -35,9 +32,6 @@ namespace galileo
         FORWARD_ACCESSOR(H_t, H);
         FORWARD_ACCESSOR(Hx_t, Hx);
         FORWARD_ACCESSOR(Hu_t, Hu);
-        FORWARD_ACCESSOR(G_t, G);
-        FORWARD_ACCESSOR(Gx_t, Gx);
-        FORWARD_ACCESSOR(Gu_t, Gu);
 
     protected:
         inline ConstraintDataBase()
@@ -58,4 +52,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_data_base_hpp__
+#endif // __galileo_core_constraints_equality_constraint_data_base_hpp__

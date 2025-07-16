@@ -1,16 +1,13 @@
-#ifndef __galileo_core_constraints_constraint_manager_hpp__
-#define __galileo_core_constraints_constraint_manager_hpp__
+#ifndef __galileo_core_constraints_equality_constraint_manager_hpp__
+#define __galileo_core_constraints_equality_constraint_manager_hpp__
 
 #include <iostream>
 #include <map>
 #include <set>
 #include <string>
 
-#include "galileo/core/constraints/fwd.hpp"
-#include "galileo/core/constraints/constraint-generic.hpp"
-
-// Despite its name, this file only pertains to constraint residuals,
-// not just any general constraints derived from ConstraintModelBase/ConstraintDataBase
+#include "galileo/core/constraints/equality/constraint-generic.hpp"
+#include "galileo/core/constraints/equality/fwd.hpp"
 
 namespace galileo
 {
@@ -32,8 +29,8 @@ namespace galileo
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
         ConstraintItemTpl() {}
-        ConstraintItemTpl(const std::string &name_in, const Model_t &model_in, bool active_in = true)
-            : name(name_in), model(model_in), active(active_in) {}
+        ConstraintItemTpl(const std::string &name_, const Model_t &model_, bool active_ = true)
+            : name(name_), model(model_), active(active_) {}
 
         std::string name;
         Model_t model;
@@ -60,17 +57,12 @@ namespace galileo
         using ModelContainer_t = std::map<std::string, Item_t>;
         using DataContainer_t = std::map<std::string, Data_t>;
 
-        static constexpr int NH = Eigen::Dynamic;
-        static constexpr int NG = Eigen::Dynamic;
+        using DimNH_t = DimensionTpl<Eigen::Dynamic>;
+        static constexpr int NH = DimNH_t::Value;
 
         using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
-        using G_t = Eigen::GMatrix<typename PS::VarScalar, NG, 1, PS::Options>;
-        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NDX, PS::Options>;
-        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::NU, PS::Options>;
-
-        using BoundVector_t = Eigen::GMatrix<typename PS::NumScalar, NG, 1, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNDX_t::Value, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <typename PhaseSpec,
@@ -120,12 +112,9 @@ namespace galileo
         GALILEO_CONSTRAINT_DATA_TYPEDEF(MetaManager_t);
 
         DataContainer_t constraints;
-        Eigen::Map<H_t> H;
-        Eigen::Map<Hx_t> Hx;
-        Eigen::Map<Hu_t> Hu;
-        Eigen::Map<G_t> G;
-        Eigen::Map<Gx_t> Gx;
-        Eigen::Map<Gu_t> Gu;
+        H_t H;
+        Hx_t Hx;
+        Hu_t Hu;
 
     }; // class ConstraintDataManagerTpl
 
@@ -152,9 +141,10 @@ namespace galileo
         using ModelContainer_t = typename traits<MetaManager_t>::ModelContainer_t;
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
-        using BoundVector_t = typename traits<MetaManager_t>::BoundVector_t;
-
-        ConstraintModelManagerTpl() : nh_(0), ng_(0) {}
+        ConstraintModelManagerTpl(const PS &ps)
+            : ps_(ps), nh_dim_(0)
+        {
+        }
 
         void addConstraint(const std::string &name, const Model_t &model, const bool active = true)
         {
@@ -168,11 +158,8 @@ namespace galileo
             }
             else if (active)
             {
-                ng_ += model.ng();
-                nh_ += model.nh();
+                nh_dim_ += model.get_nh_dim();
                 active_set_.insert(name);
-                lb_.resize(ng_);
-                ub_.resize(ng_);
             }
             else if (!active)
             {
@@ -185,12 +172,9 @@ namespace galileo
             typename ModelContainer_t::iterator it = constraints_.find(name);
             if (it != constraints_.end())
             {
-                ng_ -= it->second.model.ng();
-                nh_ -= it->second.model.nh();
+                nh_dim_ -= it->second.model.get_nh_dim();
                 constraints_.erase(it);
                 inactive_set_.erase(name);
-                lb_.resize(ng_);
-                ub_.resize(ng_);
             }
             else
             {
@@ -206,23 +190,17 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    ng_ += it->second.model.ng();
-                    nh_ += it->second.model.nh();
+                    nh_dim_ += it->second.model.get_nh_dim();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
-                    lb_.resize(ng_);
-                    ub_.resize(ng_);
                 }
                 else if (!active && it->second.active)
                 {
-                    ng_ -= it->second.model.ng();
-                    nh_ -= it->second.model.nh();
+                    nh_dim_ -= it->second.model.get_nh_dim();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
-                    lb_.resize(ng_);
-                    ub_.resize(ng_);
                 }
             }
             else
@@ -237,8 +215,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u)
         {
-            std::size_t ng_i = 0;
-            std::size_t nh_i = 0;
+            DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -252,14 +229,9 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x.derived(), u.derived());
-                    const std::size_t ng = m_i.model.ng();
-                    const std::size_t nh = m_i.model.nh();
-                    data.G.segment(ng_i, ng) = d_i.G();
-                    data.H.segment(nh_i, nh) = d_i.H();
-                    lb_.segment(ng_i, ng) = m_i.model.lb();
-                    ub_.segment(ng_i, ng) = m_i.model.ub();
-                    ng_i += ng;
-                    nh_i += nh;
+                    auto nh_dim_i = m_i.model.get_nh_dim();
+                    segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }
@@ -268,8 +240,7 @@ namespace galileo
         void calc(DataManager_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x)
         {
-            std::size_t ng_i = 0;
-            std::size_t nh_i = 0;
+            DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -283,14 +254,9 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x.derived());
-                    const std::size_t ng = m_i.model.ng();
-                    const std::size_t nh = m_i.model.nh();
-                    data.G.segment(ng_i, ng) = d_i.G();
-                    data.H.segment(nh_i, nh) = d_i.H();
-                    lb_.segment(ng_i, ng) = m_i.model.lb();
-                    ub_.segment(ng_i, ng) = m_i.model.ub();
-                    ng_i += ng;
-                    nh_i += nh;
+                    auto nh_dim_i = m_i.model.get_nh_dim();
+                    segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }
@@ -300,8 +266,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u)
         {
-            std::size_t ng_i = 0;
-            std::size_t nh_i = 0;
+            DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -315,14 +280,10 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x.derived(), u.derived());
-                    const std::size_t ng = m_i.model.ng();
-                    const std::size_t nh = m_i.model.nh();
-                    data.Gx.block(ng_i, 0, ng, PS::NDX) = d_i.Gx();
-                    data.Gu.block(ng_i, 0, ng, PS::NU) = d_i.Gu();
-                    data.Hx.block(nh_i, 0, nh, PS::NDX) = d_i.Hx();
-                    data.Hu.block(nh_i, 0, nh, PS::NU) = d_i.Hu();
-                    ng_i += ng;
-                    nh_i += nh;
+                    auto nh_dim_i = m_i.model.get_nh_dim();
+                    block(data.Hx, nh_accum_i, 0, nh_dim_i, PS::NDX) = d_i.Hx();
+                    block(data.Hu, nh_accum_i, 0, nh_dim_i, PS::NU) = d_i.Hu();
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }
@@ -331,8 +292,7 @@ namespace galileo
         void calcDiff(DataManager_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x)
         {
-            std::size_t ng_i = 0;
-            std::size_t nh_i = 0;
+            DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -346,12 +306,9 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x.derived());
-                    const std::size_t ng = m_i.model.ng();
-                    const std::size_t nh = m_i.model.nh();
-                    data.Gx.block(ng_i, 0, ng, PS::NDX) = d_i.Gx();
-                    data.Hx.block(nh_i, 0, nh, PS::NDX) = d_i.Hx();
-                    ng_i += ng;
-                    nh_i += nh;
+                    auto nh_dim_i = m_i.model.get_nh_dim();
+                    block(data.Hx, nh_accum_i, 0, nh_dim_i, ps_.ndx_dim) = d_i.Hx();
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }
@@ -364,16 +321,6 @@ namespace galileo
         const std::set<std::string> &getInactiveSet() const
         {
             return inactive_set_;
-        }
-
-        const BoundVector_t &lb() const
-        {
-            return lb_;
-        }
-
-        const BoundVector_t &ub() const
-        {
-            return ub_;
         }
 
         bool getConstraintStatus(const std::string &name) const
@@ -393,18 +340,16 @@ namespace galileo
         }
 
     protected:
+        const PS &ps_;
         ModelContainer_t constraints_;
-        BoundVector_t lb_;
-        BoundVector_t ub_;
-
-        std::size_t nh_;
-        std::size_t ng_;
 
         std::set<std::string> active_set_;
         std::set<std::string> inactive_set_;
+
+        DimensionTpl<Eigen::Dynamic> nh_dim_;
 
     }; // class ConstraintModelManagerTpl
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_manager_hpp__
+#endif // __galileo_core_constraints_equality_constraint_manager_hpp__

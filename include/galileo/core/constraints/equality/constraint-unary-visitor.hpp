@@ -1,11 +1,11 @@
-#ifndef __galileo_core_constraints_constraint_unary_visitor_hpp__
-#define __galileo_core_constraints_constraint_unary_visitor_hpp__
+#ifndef __galileo_core_constraints_equality_constraint_unary_visitor_hpp__
+#define __galileo_core_constraints_equality_constraint_unary_visitor_hpp__
 
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/get.hpp>
 
 #include "galileo/common/meta/fusion.hpp"
-#include "galileo/core/constraints/constraint-base.hpp"
+#include "galileo/core/constraints/equality/constraint-base.hpp"
 
 namespace galileo
 {
@@ -245,4 +245,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_unary_visitor_hpp__
+#endif // __galileo_core_constraints_equality_constraint_unary_visitor_hpp__

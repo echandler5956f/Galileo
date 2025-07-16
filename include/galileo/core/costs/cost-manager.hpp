@@ -174,10 +174,10 @@ namespace galileo
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
         using NumScalar = typename PS::NumScalar;
-        using State_t = typename PS::State_t;
+        using VarScalar = typename PS::VarScalar;
 
-        CostModelManagerTpl(const PS &ps, std::shared_ptr<State_t> state)
-            : ps_(ps), state_(state), nr_active_dim_(0), nr_total_dim_(0)
+        CostModelManagerTpl(const PS &ps)
+            : ps_(ps), nr_active_dim_(0), nr_total_dim_(0)
         {
         }
 
@@ -255,7 +255,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data.L = NumScalar(0.);
+            data.L = VarScalar(0.);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -278,7 +278,7 @@ namespace galileo
         void calc(DataManager_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            data.L = NumScalar(0.);
+            data.L = VarScalar(0.);
 
             typename ModelContainer_t::iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -365,11 +365,6 @@ namespace galileo
             return ps_;
         }
 
-        const std::shared_ptr<State_t> get_state() const
-        {
-            return state_;
-        }
-
         const ModelContainer_t &get_costs() const
         {
             return costs_;
@@ -413,14 +408,13 @@ namespace galileo
 
     protected:
         const PS &ps_;
-        std::shared_ptr<State_t> state_;
         ModelContainer_t costs_;
 
         std::set<std::string> active_set_;
         std::set<std::string> inactive_set_;
 
-        DimensionTpl<> nr_active_dim_;
-        DimensionTpl<> nr_total_dim_;
+        DimensionTpl<Eigen::Dynamic> nr_active_dim_;
+        DimensionTpl<Eigen::Dynamic> nr_total_dim_;
 
     }; // class CostModelManagerTpl
 

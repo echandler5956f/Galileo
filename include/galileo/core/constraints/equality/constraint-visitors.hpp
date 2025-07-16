@@ -1,7 +1,7 @@
-#ifndef __galileo_core_constraints_constraint_visitors_hpp__
-#define __galileo_core_constraints_constraint_visitors_hpp__
+#ifndef __galileo_core_constraints_equality_constraint_visitors_hpp__
+#define __galileo_core_constraints_equality_constraint_visitors_hpp__
 
-#include "galileo/core/constraints/fwd.hpp"
+#include "galileo/core/constraints/equality/fwd.hpp"
 
 namespace galileo
 {
@@ -53,25 +53,6 @@ namespace galileo
         ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
         const Eigen::MatrixBase<StateVectorType> &x);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename LowerBoundType,
-              typename UpperBoundType>
-    inline void constraint_update_bounds(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
-        const Eigen::MatrixBase<LowerBoundType> &lb,
-        const Eigen::MatrixBase<UpperBoundType> &ub);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
-    inline const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t &constraint_lb(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
-    inline const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::BoundVector_t &constraint_ub(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
-
     // Constraint data visitors
 
     template <typename PhaseSpec,
@@ -89,21 +70,6 @@ namespace galileo
     inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t &constraint_Hu(
         const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::G_t &constraint_G(
-        const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gx_t &constraint_Gx(
-        const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Gu_t &constraint_Gu(
-        const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
-
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_visitors_hpp__
+#endif // __galileo_core_constraints_equality_constraint_visitors_hpp__

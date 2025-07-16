@@ -1,10 +1,10 @@
-#ifndef __galileo_core_constraints_constraint_generic_hpp__
-#define __galileo_core_constraints_constraint_generic_hpp__
+#ifndef __galileo_core_constraints_equality_constraint_generic_hpp__
+#define __galileo_core_constraints_equality_constraint_generic_hpp__
 
-#include "galileo/core/constraints/constraint-base.hpp"
-#include "galileo/core/constraints/constraint-collection.hpp"
-#include "galileo/core/constraints/constraint-visitors.hxx"
-#include "galileo/core/constraints/fwd.hpp"
+#include "galileo/core/constraints/equality/constraint-base.hpp"
+#include "galileo/core/constraints/equality/constraint-collection.hpp"
+#include "galileo/core/constraints/equality/constraint-visitors.hxx"
+#include "galileo/core/constraints/equality/fwd.hpp"
 
 #include <boost/mpl/contains.hpp>
 
@@ -27,21 +27,12 @@ namespace galileo
         using Model_t = ConstraintModelTpl<PS, ConstraintCollectionTpl>;
         using Data_t = ConstraintDataTpl<PS, ConstraintCollectionTpl>;
 
-        static constexpr ConstraintType EqualityInequality = ConstraintType::Any;
         using DimNH_t = DimensionTpl<Eigen::Dynamic>;
-        using DimNG_t = DimensionTpl<Eigen::Dynamic>;
-
         static constexpr int NH = DimNH_t::Value;
-        static constexpr int NG = DimNG_t::Value;
 
         using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
         using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNDX_t::Value, PS::Options>;
         using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNU_t::Value, PS::Options>;
-        using G_t = Eigen::GMatrix<typename PS::VarScalar, NG, 1, PS::Options>;
-        using Gx_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::DimNDX_t::Value, PS::Options>;
-        using Gu_t = Eigen::GMatrix<typename PS::VarScalar, NG, PS::DimNU_t::Value, PS::Options>;
-
-        using BoundVector_t = Eigen::GMatrix<typename PS::NumScalar, NG, 1, PS::Options>;
     };
 
     template <typename PhaseSpec,
@@ -112,21 +103,6 @@ namespace galileo
             return galileo::constraint_Hu(*this);
         }
 
-        G_t G() const
-        {
-            return galileo::constraint_G(*this);
-        }
-
-        Gx_t Gx() const
-        {
-            return galileo::constraint_Gx(*this);
-        }
-
-        Gu_t Gu() const
-        {
-            return galileo::constraint_Gu(*this);
-        }
-
         ConstraintDataTpl()
             : DataVariant_t()
         {
@@ -147,9 +123,6 @@ namespace galileo
         GENERIC_ACCESSOR(H_t, H);
         GENERIC_ACCESSOR(Hx_t, Hx);
         GENERIC_ACCESSOR(Hu_t, Hu);
-        GENERIC_ACCESSOR(G_t, G);
-        GENERIC_ACCESSOR(Gx_t, Gx);
-        GENERIC_ACCESSOR(Gu_t, Gu);
 
     }; // struct ConstraintDataTpl
 
@@ -170,8 +143,6 @@ namespace galileo
         using Base = ConstraintModelBase<ConstraintModelTpl<PS, ConstraintCollectionTpl>, PS>;
 
         using ModelVariant_t = typename Collection_t::ConstraintModelVariant_t;
-
-        using BoundVector_t = typename traits<Meta_t>::BoundVector_t;
 
         ModelVariant_t &toVariant()
         {
@@ -236,33 +207,13 @@ namespace galileo
             galileo::constraint_calc_first_order(*this, data, x.derived());
         }
 
-        template <typename LowerBoundType, typename UpperBoundType>
-        void updateBounds(const Eigen::MatrixBase<LowerBoundType> &lb,
-                          const Eigen::MatrixBase<UpperBoundType> &ub)
-        {
-            galileo::constraint_update_bounds(*this, lb.derived(), ub.derived());
-        }
-
-        const BoundVector_t &get_lb() const
-        {
-            return galileo::constraint_lb(*this);
-        }
-
-        const BoundVector_t &get_ub() const
-        {
-            return galileo::constraint_ub(*this);
-        }
-
         using Base::get_ps;
 
         using Base::get_nh;
         using Base::get_nh_dim;
 
-        using Base::get_ng;
-        using Base::get_ng_dim;
-
     }; // struct ConstraintModelTpl
 
 } // namespace galileo
 
-#endif // __galileo_core_constraints_constraint_generic_hpp__
+#endif // __galileo_core_constraints_equality_constraint_generic_hpp__
