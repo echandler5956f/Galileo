@@ -111,6 +111,24 @@ namespace galileo
 
         GALILEO_CONSTRAINT_DATA_TYPEDEF(MetaManager_t);
 
+        template <typename DataCollector>
+        ConstraintDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
+            : H(model_manager.get_nh()),
+              Hx(model_manager.get_nh(), model_manager.get_ps().ndx_dim.value()),
+              Hu(model_manager.get_nh(), model_manager.get_ps().nu_dim.value())
+        {
+            H.setZero();
+            Hx.setZero();
+            Hu.setZero();
+            for (typename ModelManager_t::ModelContainer_t::const_iterator
+                     it = model_manager.get_constraints().begin();
+                 it != model_manager.get_constraints().end(); ++it)
+            {
+                const Item_t &item = it->second;
+                constraints.insert(std::make_pair(item.name, item.model.createData(collector)));
+            }
+        }
+
         DataContainer_t constraints;
         H_t H;
         Hx_t Hx;
@@ -337,6 +355,16 @@ namespace galileo
                           << " constraint item, it doesn't exist." << std::endl;
                 return false;
             }
+        }
+
+        const DimensionTpl<Eigen::Dynamic> &get_nh_dim() const
+        {
+            return nh_dim_;
+        }
+
+        const int get_nh() const
+        {
+            return nh_dim_.value();
         }
 
     protected:

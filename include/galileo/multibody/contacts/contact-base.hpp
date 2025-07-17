@@ -145,7 +145,6 @@ namespace galileo
         using RobotModel_t = typename PS::RobotModel_t;
         using FrameIndex_t = typename PS::FrameIndex_t;
         using ReferenceFrame_t = typename PS::ReferenceFrame_t;
-        using DimNU_t = typename PS::DimNU_t;
 
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
@@ -183,8 +182,8 @@ namespace galileo
                                  const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
                                  const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
         {
-            data.df_dx() = df_dx;
-            data.df_du() = df_du;
+            data.df_dx = df_dx;
+            data.df_du = df_du;
         }
 
         void setZeroForce(Data_t &data) const
@@ -194,8 +193,8 @@ namespace galileo
 
         void setZeroForceImpl(Data_t &data) const
         {
-            data.f().setZero();
-            data.fext().setZero();
+            data.f.setZero();
+            data.fext.setZero();
         }
 
         void setZeroForceDiff(Data_t &data) const
@@ -205,8 +204,8 @@ namespace galileo
 
         void setZeroForceDiffImpl(Data_t &data) const
         {
-            data.df_dx().setZero();
-            data.df_du().setZero();
+            data.df_dx.setZero();
+            data.df_du.setZero();
         }
 
         template <typename DataCollector>
@@ -260,23 +259,6 @@ namespace galileo
         const DimNC_t &get_nc_dim() const
         {
             return nc_dim_;
-        }
-
-        const int get_nu() const
-        {
-            if constexpr (DimNU_t::IsFixed)
-            {
-                return DimNU_t::Value;
-            }
-            else
-            {
-                return ps_.nu_dim.value();
-            }
-        }
-
-        const DimNU_t &get_nu_dim() const
-        {
-            return ps_.nu_dim;
         }
 
     protected:

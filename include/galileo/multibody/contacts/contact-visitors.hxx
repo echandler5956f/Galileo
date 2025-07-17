@@ -364,48 +364,25 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    struct ContactNcVisitor : boost::static_visitor<int>
+    struct ContactNcDimVisitor : boost::static_visitor<DimensionTpl<Eigen::Dynamic>>
     {
         template <typename ContactModelDerived>
-        int operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
+        DimensionTpl<Eigen::Dynamic> operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
         {
             return contact_model.nc();
         }
 
-        static int run(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
+        static DimensionTpl<Eigen::Dynamic> run(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
         {
-            return boost::apply_visitor(ContactNcVisitor<PhaseSpec, ContactCollectionTpl>(), contact_model);
+            return boost::apply_visitor(ContactNcDimVisitor<PhaseSpec, ContactCollectionTpl>(), contact_model);
         }
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline int contact_nc(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
+    inline DimensionTpl<Eigen::Dynamic> contact_nc_dim(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
     {
-        return ContactNcVisitor<PhaseSpec, ContactCollectionTpl>::run(contact_model);
-    }
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    struct ContactNuVisitor : boost::static_visitor<int>
-    {
-        template <typename ContactModelDerived>
-        int operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
-        {
-            return contact_model.nu();
-        }
-
-        static int run(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
-        {
-            return boost::apply_visitor(ContactNuVisitor<PhaseSpec, ContactCollectionTpl>(), contact_model);
-        }
-    };
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    inline int contact_nu(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
-    {
-        return ContactNuVisitor<PhaseSpec, ContactCollectionTpl>::run(contact_model);
+        return ContactNcDimVisitor<PhaseSpec, ContactCollectionTpl>::run(contact_model);
     }
 
     // Contact data visitors

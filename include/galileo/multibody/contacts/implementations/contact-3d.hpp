@@ -27,9 +27,6 @@ namespace galileo
         using DimNC_t = DimensionTpl<3>;
         static constexpr int NC = DimNC_t::Value;
 
-        using DimNU_t = typename traits<typename PS::NodeMeta_t>::DimNU_t;
-        static constexpr int NU = DimNU_t::Value;
-
         // Traits required by ForceDataBase
         using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNV_t::Value, PS::Options>;
         using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNDX_t::Value, PS::Options>;
@@ -400,6 +397,9 @@ namespace galileo
 
         using Base::set_id;
         using Base::set_type;
+
+        using Base::get_nc;
+        using Base::get_nc_dim;
 
     protected:
         std::shared_ptr<State_t> state_;

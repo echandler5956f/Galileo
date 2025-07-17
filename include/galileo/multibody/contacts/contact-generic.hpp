@@ -1,10 +1,10 @@
 #ifndef __galileo_multibody_contacts_contact_generic_hpp__
 #define __galileo_multibody_contacts_contact_generic_hpp__
 
-#include "galileo/multibody/contacts/fwd.hpp"
 #include "galileo/multibody/contacts/contact-base.hpp"
 #include "galileo/multibody/contacts/contact-collection.hpp"
 #include "galileo/multibody/contacts/contact-visitors.hxx"
+#include "galileo/multibody/contacts/fwd.hpp"
 
 #include "galileo/predictive/phases/phase-spec.hpp"
 
@@ -21,24 +21,24 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
-
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = ContactCollectionTpl<PS>;
         using Model_t = ContactModelTpl<PS, ContactCollectionTpl>;
         using Data_t = ContactDataTpl<PS, ContactCollectionTpl>;
 
-        // static constexpr int NC = traits<typename ContactModelBase<Model_t, PhaseSpec>::Meta_t>::NC;
-        static constexpr int NC = Eigen::Dynamic;
-        static constexpr int NU = traits<typename PS::NodeMeta_t>::NU;
+        using DimNC_t = DimensionTpl<>;
+        static constexpr int NC = DimNC_t::Value;
 
         // Traits required by ForceDataBase
-        using MatrixNcNv_t = Eigen::GMatrix<VarScalar, NC, NV, Options, 6, NV>;
-        using MatrixNcNdx_t = Eigen::GMatrix<VarScalar, NC, NDX, Options, 6, NDX>;
-        using MatrixNcNu_t = Eigen::GMatrix<VarScalar, NC, NU, Options, 6, NU>;
+        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNV_t::Value, PS::Options,
+                                            6, PS::DimNV_t::Value>;
+        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNDX_t::Value, PS::Options,
+                                             6, PS::DimNDX_t::Value>;
+        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNU_t::Value, PS::Options,
+                                            6, PS::DimNU_t::Value>;
 
         // Traits required by ContactDataBase
-        using VectorNc_t = Eigen::GMatrix<VarScalar, NC, 1, Options, 6, 1>;
+        using VectorNc_t = Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options, 6, 1>;
     };
 
     template <typename PhaseSpec,
@@ -46,8 +46,6 @@ namespace galileo
     struct traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
-
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
 
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -63,8 +61,6 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
-
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -74,23 +70,24 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct ContactDataTpl : public ContactDataBase<ContactDataTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                            ContactCollectionTpl<PhaseSpec>::DataVariant_t
+                            ContactCollectionTpl<PhaseSpec>::ContactDataVariant_t
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ContactDataBase<ContactDataTpl<PS, ContactCollectionTpl>, PS>;
 
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        using DataVariant_t = typename Collection_t::DataVariant_t;
+        using DataVariant_t = typename Collection_t::ContactDataVariant_t;
 
         DataVariant_t &toVariant()
         {
@@ -178,7 +175,7 @@ namespace galileo
 
         template <typename DataDerived>
         ContactDataTpl(const ContactDataBase<DataDerived, PhaseSpec> &data)
-            : DataVariant_t((DataVariant_t)data.derived())
+            : Collection_t::ContactDataVariant_t((DataVariant_t)data.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
@@ -202,7 +199,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct ContactModelTpl : public ContactModelBase<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                             ContactCollectionTpl<PhaseSpec>::ModelVariant_t
+                             ContactCollectionTpl<PhaseSpec>::ContactModelVariant_t
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -213,15 +210,11 @@ namespace galileo
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ContactModelBase<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, PS>;
 
-        using Base_t = ContactModelBase<ContactModelTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>;
-        using Base_t::setZeroForce;
-        using Base_t::setZeroForceDiff;
-        using Base_t::updateForceDiff;
+        using ModelVariant_t = typename Collection_t::ContactModelVariant_t;
 
-        using ModelVariant_t = typename Collection_t::ModelVariant_t;
-
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(PS::RS);
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         ContactModelTpl()
             : ModelVariant_t()
@@ -277,6 +270,10 @@ namespace galileo
             galileo::contact_update_force(*this, data, force.derived());
         }
 
+        using Base::updateForceDiff;
+        using Base::setZeroForce;
+        using Base::setZeroForceDiff;
+
         // template <typename MatrixNcNdxType, typename MatrixNcNuType>
         // void updateForceDiff(Data_t &data,
         //                      const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
@@ -323,11 +320,6 @@ namespace galileo
         int nc_impl() const
         {
             return galileo::contact_nc(*this);
-        }
-
-        int nu_impl() const
-        {
-            return galileo::contact_nu(*this);
         }
 
     }; // struct ContactModelTpl

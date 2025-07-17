@@ -92,12 +92,7 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline int contact_nc(
-        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    inline int contact_nu(
+    inline DimensionTpl<Eigen::Dynamic> contact_nc_dim(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     // Contact data visitors
