@@ -223,16 +223,16 @@ TEST_CASE("StateEuclideanTpl - Dynamic Dimensions", "[euclidean][dynamic]")
         RS rs;
 
         // Setup dynamic dimensions
-        rs.NQb_dim.set_value(6);
-        rs.NQj_dim.set_value(6);
-        rs.NVb_dim.set_value(6);
-        rs.NVj_dim.set_value(6);
-        rs.NRotors_dim.set_value(0);
-        rs.NQ_dim.set_value(12);
-        rs.NV_dim.set_value(12);
-        rs.NX_dim.set_value(24);
-        rs.NDX_dim.set_value(24);
-        rs.NUa_dim.set_value(6);
+        rs.nqb_dim_.set_value(6);
+        rs.nqj_dim_.set_value(6);
+        rs.nvb_dim_.set_value(6);
+        rs.nvj_dim_.set_value(6);
+        rs.nrotors_dim_.set_value(0);
+        rs.nq_dim_.set_value(12);
+        rs.nv_dim_.set_value(12);
+        rs.nx_dim_.set_value(24);
+        rs.ndx_dim_.set_value(24);
+        rs.nua_dim_.set_value(6);
 
         RS::VectorNx_t lb(24);
         RS::VectorNx_t ub(24);
@@ -447,16 +447,16 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS rs;
 
         // Setup dynamic dimensions
-        rs.NQb_dim.set_value(2);
-        rs.NQj_dim.set_value(2);
-        rs.NVb_dim.set_value(2);
-        rs.NVj_dim.set_value(2);
-        rs.NRotors_dim.set_value(1);
-        rs.NQ_dim.set_value(4);
-        rs.NV_dim.set_value(4);
-        rs.NX_dim.set_value(8);
-        rs.NDX_dim.set_value(8);
-        rs.NUa_dim.set_value(3);
+        rs.nqb_dim_.set_value(2);
+        rs.nqj_dim_.set_value(2);
+        rs.nvb_dim_.set_value(2);
+        rs.nvj_dim_.set_value(2);
+        rs.nrotors_dim_.set_value(1);
+        rs.nq_dim_.set_value(4);
+        rs.nv_dim_.set_value(4);
+        rs.nx_dim_.set_value(8);
+        rs.ndx_dim_.set_value(8);
+        rs.nua_dim_.set_value(3);
 
         RS::VectorNx_t lb(8);
         RS::VectorNx_t ub(8);
@@ -564,16 +564,16 @@ TEST_CASE("StateEuclideanTpl - Bounds Management", "[euclidean][bounds]")
         RS rs;
 
         // Setup dynamic dimensions
-        rs.NQb_dim.set_value(1);
-        rs.NQj_dim.set_value(1);
-        rs.NVb_dim.set_value(1);
-        rs.NVj_dim.set_value(1);
-        rs.NRotors_dim.set_value(1);
-        rs.NQ_dim.set_value(2);
-        rs.NV_dim.set_value(2);
-        rs.NX_dim.set_value(4);
-        rs.NDX_dim.set_value(4);
-        rs.NUa_dim.set_value(2);
+        rs.nqb_dim_.set_value(1);
+        rs.nqj_dim_.set_value(1);
+        rs.nvb_dim_.set_value(1);
+        rs.nvj_dim_.set_value(1);
+        rs.nrotors_dim_.set_value(1);
+        rs.nq_dim_.set_value(2);
+        rs.nv_dim_.set_value(2);
+        rs.nx_dim_.set_value(4);
+        rs.ndx_dim_.set_value(4);
+        rs.nua_dim_.set_value(2);
 
         RS::VectorNx_t lb(4);
         RS::VectorNx_t ub(4);

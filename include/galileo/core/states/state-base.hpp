@@ -336,7 +336,7 @@ namespace galileo
             return rs_.get_nqb_dim();
         }
 
-        const int get_nqb() const
+        int get_nqb() const
         {
             return rs_.get_nqb();
         }
@@ -349,7 +349,7 @@ namespace galileo
             return rs_.get_nqj_dim();
         }
 
-        const int get_nqj() const
+        int get_nqj() const
         {
             return rs_.get_nqj();
         }
@@ -362,7 +362,7 @@ namespace galileo
             return rs_.get_nq_dim();
         }
 
-        const int get_nq() const
+        int get_nq() const
         {
             return rs_.get_nq();
         }
@@ -375,7 +375,7 @@ namespace galileo
             return rs_.get_nvb_dim();
         }
 
-        const int get_nvb() const
+        int get_nvb() const
         {
             return rs_.get_nvb();
         }
@@ -388,7 +388,7 @@ namespace galileo
             return rs_.get_nvj_dim();
         }
 
-        const int get_nvj() const
+        int get_nvj() const
         {
             return rs_.get_nvj();
         }
@@ -401,7 +401,7 @@ namespace galileo
             return rs_.get_nv_dim();
         }
 
-        const int get_nv() const
+        int get_nv() const
         {
             return rs_.get_nv();
         }
@@ -414,7 +414,7 @@ namespace galileo
             return rs_.get_nrotors_dim();
         }
 
-        const int get_nrotors() const
+        int get_nrotors() const
         {
             return rs_.get_nrotors();
         }
@@ -427,7 +427,7 @@ namespace galileo
             return rs_.get_nx_dim();
         }
 
-        const int get_nx() const
+        int get_nx() const
         {
             return rs_.get_nx();
         }
@@ -440,7 +440,7 @@ namespace galileo
             return rs_.get_ndx_dim();
         }
 
-        const int get_ndx() const
+        int get_ndx() const
         {
             return rs_.get_ndx();
         }
@@ -453,7 +453,7 @@ namespace galileo
             return rs_.get_nua_dim();
         }
 
-        const int get_nua() const
+        int get_nua() const
         {
             return rs_.get_nua();
         }

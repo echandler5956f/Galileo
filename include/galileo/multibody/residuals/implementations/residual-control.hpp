@@ -86,6 +86,7 @@ namespace galileo
             Ru.setZero();
             Arr_Rx.setZero();
             Arr_Ru.setZero();
+            Ru.diagonal().fill(1.0);
         }
 
         R_t R;
@@ -156,9 +157,7 @@ namespace galileo
         template <typename DataCollector>
         Data_t createData(DataCollector *const collector) const
         {
-            Data_t data(*this, collector);
-            data.Ru.diagonal().fill(VarScalar(1.0));
-            return data;
+            return Data_t(*this, collector);
         }
 
         using Base::get_ps;

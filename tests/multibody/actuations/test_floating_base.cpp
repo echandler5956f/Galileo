@@ -82,6 +82,10 @@ void test_matrix_properties(const MatrixType& matrix, int expected_rows, int exp
     }
 }
 
+struct TestDataCollector
+{
+};
+
 // Test basic construction and properties
 TEST_CASE("ActuationModelFloatingBaseTpl - Basic Construction", "[floating_base][construction]")
 {
@@ -93,9 +97,9 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Basic Construction", "[floating_base]
         REQUIRE(fixture.actuation_model_ != nullptr);
 
         // Test dimension accessors
-        REQUIRE(fixture.actuation_model_->get_nua() == fixture.rs_.NUa);
-        REQUIRE(fixture.actuation_model_->get_nua() == FloatingBaseTestFixture<double>::NVj + FloatingBaseTestFixture<double>::NRotors);
-        REQUIRE(fixture.actuation_model_->get_nua() == 12); // 12 + 0
+        REQUIRE(fixture.actuation_model_->get_state()->get_nua() == fixture.rs_.NUa);
+        REQUIRE(fixture.actuation_model_->get_state()->get_nua() == FloatingBaseTestFixture<double>::NVj + FloatingBaseTestFixture<double>::NRotors);
+        REQUIRE(fixture.actuation_model_->get_state()->get_nua() == 12); // 12 + 0
 
         // Test state access
         REQUIRE(fixture.actuation_model_->get_state() == fixture.state_);
@@ -115,7 +119,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Basic Construction", "[floating_base]
             auto state = std::make_shared<StateEuclideanTpl<RS_NoRotors>>(rs, lb, ub);
             ActuationModelFloatingBaseTpl<RS_NoRotors> model(state);
 
-            REQUIRE(model.get_nua() == 12); // Only joint actuations
+            REQUIRE(model.get_state()->get_nua() == 12); // Only joint actuations
         }
 
         // Test with many rotors
@@ -128,7 +132,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Basic Construction", "[floating_base]
             auto state = std::make_shared<StateEuclideanTpl<RS_ManyRotors>>(rs, lb, ub);
             ActuationModelFloatingBaseTpl<RS_ManyRotors> model(state);
 
-            REQUIRE(model.get_nua() == 16); // 12 joint + 4 rotor actuations
+            REQUIRE(model.get_state()->get_nua() == 16); // 12 joint + 4 rotor actuations
         }
     }
 }
@@ -139,9 +143,10 @@ TEST_CASE("ActuationModelFloatingBaseTpl - CreateData", "[floating_base][create_
     SECTION("Fixed dimensions data creation")
     {
         FloatingBaseTestFixture<double> fixture;
+        TestDataCollector data_collector;
 
         // Create data
-        auto data = fixture.actuation_model_->createData();
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Test data dimensions
         REQUIRE(data.tau.size() == fixture.rs_.NV);
@@ -204,7 +209,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Calc Method", "[floating_base][calc]"
     SECTION("Basic calc functionality")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Call calc
         fixture.actuation_model_->calc(data, fixture.x_, fixture.u_);
@@ -223,7 +229,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Calc Method", "[floating_base][calc]"
     SECTION("Calc with different vector types")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Test with dynamic vectors
         Eigen::VectorXd x_dynamic = fixture.x_;
@@ -239,7 +246,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Calc Method", "[floating_base][calc]"
     SECTION("Calc with zero input")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         typename FloatingBaseTestFixture<double>::RS::VectorNua_t u_zero =
             FloatingBaseTestFixture<double>::RS::VectorNua_t::Zero(fixture.rs_.NUa);
@@ -259,7 +267,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - CalcDiff Method", "[floating_base][ca
     SECTION("CalcDiff does not modify jacobians")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Store original jacobian values
         auto dtau_dx_orig = data.dtau_dx;
@@ -295,7 +304,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Commands Method", "[floating_base][co
     SECTION("Commands extraction from tau")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Set tau values
         for (int i = 0; i < fixture.rs_.NVb; ++i) {
@@ -316,7 +326,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Commands Method", "[floating_base][co
     SECTION("Commands with different tau configurations")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Test with all zeros
         typename FloatingBaseTestFixture<double>::RS::VectorNv_t tau_zero =
@@ -350,7 +361,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - TorqueTransform Method", "[floating_b
     SECTION("TorqueTransform preserves jacobians")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Store original values
         auto Mtau_orig = data.Mtau;
@@ -377,16 +389,16 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Dynamic Dimensions", "[floating_base]
         RS_Dynamic rs;
 
         // Setup dynamic dimensions
-        rs.NQb_dim.set_value(6);
-        rs.NQj_dim.set_value(15);
-        rs.NVb_dim.set_value(6);
-        rs.NVj_dim.set_value(15);
-        rs.NRotors_dim.set_value(3);
-        rs.NQ_dim.set_value(21);
-        rs.NV_dim.set_value(21);
-        rs.NX_dim.set_value(42);
-        rs.NDX_dim.set_value(42);
-        rs.NUa_dim.set_value(18); // 15 + 3
+        rs.nqb_dim_.set_value(6);
+        rs.nqj_dim_.set_value(15);
+        rs.nvb_dim_.set_value(6);
+        rs.nvj_dim_.set_value(15);
+        rs.nrotors_dim_.set_value(3);
+        rs.nq_dim_.set_value(21);
+        rs.nv_dim_.set_value(21);
+        rs.nx_dim_.set_value(42);
+        rs.ndx_dim_.set_value(42);
+        rs.nua_dim_.set_value(18); // 15 + 3
 
         typename RS_Dynamic::VectorNx_t lb(42);
         typename RS_Dynamic::VectorNx_t ub(42);
@@ -397,10 +409,11 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Dynamic Dimensions", "[floating_base]
         ActuationModelFloatingBaseTpl<RS_Dynamic> model(state);
 
         // Test dimensions
-        REQUIRE(model.get_nua() == 18);
+        REQUIRE(model.get_state()->get_nua() == 18);
 
         // Test data creation
-        auto data = model.createData();
+        TestDataCollector data_collector;
+        auto data = model.createData(&data_collector);
         REQUIRE(data.tau.size() == 21);
         REQUIRE(data.u.size() == 18);
         REQUIRE(data.dtau_du.rows() == 21);
@@ -429,7 +442,8 @@ TEMPLATE_TEST_CASE("ActuationModelFloatingBaseTpl - Different Scalar Types", "[f
     SECTION("Basic operations with different scalar types")
     {
         FloatingBaseTestFixture<Scalar> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Test calc
         fixture.actuation_model_->calc(data, fixture.x_, fixture.u_);
@@ -455,7 +469,8 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Integration Tests", "[floating_base][
     SECTION("Full computation pipeline")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data = fixture.actuation_model_->createData(&data_collector);
 
         // Full pipeline: calc -> commands -> calc again
         fixture.actuation_model_->calc(data, fixture.x_, fixture.u_);
@@ -476,8 +491,9 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Integration Tests", "[floating_base][
     SECTION("Consistency across multiple calls")
     {
         FloatingBaseTestFixture<double> fixture;
-        auto data1 = fixture.actuation_model_->createData();
-        auto data2 = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data1 = fixture.actuation_model_->createData(&data_collector);
+        auto data2 = fixture.actuation_model_->createData(&data_collector);
 
         // Same inputs should give same outputs
         fixture.actuation_model_->calc(data1, fixture.x_, fixture.u_);
@@ -517,7 +533,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - DimensionTpl Integration", "[floating
         static_assert(FloatingBaseTestFixture<double>::RS::NUa == 12);
         static_assert(FloatingBaseTestFixture<double>::RS::NV == 18);
 
-        REQUIRE(fixture.actuation_model_->get_nua() == FloatingBaseTestFixture<double>::RS::NUa);
+        REQUIRE(fixture.actuation_model_->get_state()->get_nua() == FloatingBaseTestFixture<double>::RS::NUa);
         REQUIRE(fixture.state_->get_nv() == FloatingBaseTestFixture<double>::RS::NV);
         REQUIRE(fixture.state_->get_nua() == FloatingBaseTestFixture<double>::RS::NUa);
     }
@@ -530,13 +546,13 @@ TEST_CASE("ActuationModelFloatingBaseTpl - DimensionTpl Integration", "[floating
         RS_Mixed rs;
 
         // Set dynamic dimensions
-        rs.NQj_dim.set_value(12);
-        rs.NVj_dim.set_value(12);
-        rs.NQ_dim.set_value(18);
-        rs.NV_dim.set_value(18);
-        rs.NX_dim.set_value(36);
-        rs.NDX_dim.set_value(36);
-        rs.NUa_dim.set_value(12); // 12 + 0
+        rs.nqj_dim_.set_value(12);
+        rs.nvj_dim_.set_value(12);
+        rs.nq_dim_.set_value(18);
+        rs.nv_dim_.set_value(18);
+        rs.nx_dim_.set_value(36);
+        rs.ndx_dim_.set_value(36);
+        rs.nua_dim_.set_value(12); // 12 + 0
 
         typename RS_Mixed::VectorNx_t lb(36);
         typename RS_Mixed::VectorNx_t ub(36);
@@ -547,9 +563,10 @@ TEST_CASE("ActuationModelFloatingBaseTpl - DimensionTpl Integration", "[floating
         ActuationModelFloatingBaseTpl<RS_Mixed> model(state);
 
         // Test mixed dimensions work correctly
-        REQUIRE(model.get_nua() == 12);
+        REQUIRE(model.get_state()->get_nua() == 12);
 
-        auto data = model.createData();
+        TestDataCollector data_collector;
+        auto data = model.createData(&data_collector);
 
         // Test matrix dimensions
         REQUIRE(data.dtau_du.rows() == 18);
@@ -579,10 +596,11 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Thread Safety", "[floating_base][thre
         const auto& const_model = *fixture.actuation_model_;
 
         // Test const methods
-        REQUIRE(const_model.get_nua() == fixture.rs_.NUa);
+        REQUIRE(const_model.get_state()->get_nua() == fixture.rs_.NUa);
 
         // Test that const methods don't modify state
-        auto data = const_model.createData();
+        TestDataCollector data_collector;
+        auto data = const_model.createData(&data_collector);
 
         // These should all be const operations
         const_model.calc(data, fixture.x_, fixture.u_);
@@ -596,8 +614,9 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Thread Safety", "[floating_base][thre
         FloatingBaseTestFixture<double> fixture;
 
         // Create multiple data objects
-        auto data1 = fixture.actuation_model_->createData();
-        auto data2 = fixture.actuation_model_->createData();
+        TestDataCollector data_collector;
+        auto data1 = fixture.actuation_model_->createData(&data_collector);
+        auto data2 = fixture.actuation_model_->createData(&data_collector);
 
         // Different operations on different data should not interfere
         typename FloatingBaseTestFixture<double>::RS::VectorNua_t u1 = fixture.u_;

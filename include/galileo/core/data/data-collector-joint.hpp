@@ -18,13 +18,13 @@ namespace galileo
         typename PS::MatrixNvNdx_t da_dx;    // Acceleration derivatives w.r.t. state
         typename PS::MatrixNvNu_t da_du;     // Acceleration derivatives w.r.t. control
 
-        JointDataTpl(int nu)
-            : tau(PS::NUa),
-              a(PS::NV),
-              dtau_dx(PS::NUa, PS::NDX),
-              dtau_du(PS::NUa, nu),
-              da_dx(PS::NV, PS::NDX),
-              da_du(PS::NV, nu)
+        JointDataTpl(const PS &ps)
+            : tau(ps.get_nua()),
+              a(ps.get_nv()),
+              dtau_dx(ps.get_nua(), ps.get_ndx()),
+              dtau_du(ps.get_nua(), ps.get_nu()),
+              da_dx(ps.get_nv(), ps.get_ndx()),
+              da_du(ps.get_nv(), ps.get_nu())
         {
             tau.setZero();
             a.setZero();

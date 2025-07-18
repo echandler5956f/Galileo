@@ -93,7 +93,7 @@ namespace test_helpers
             rs = std::make_unique<RS>();
 
             // Create state
-            state = std::make_unique<StateType>(*rs, *model);
+            state = std::make_unique<StateType>(*model);
 
             // Validate dimensions
             REQUIRE(IsValidRobotSpec(*rs));
@@ -522,8 +522,7 @@ TEST_CASE("StateMultibodyTpl - Fixed Base Robots", "[multibody][fixed_base]")
     fixture.model = std::make_unique<typename RS::RobotModel_t>();
     pinocchio::urdf::buildModel(robot_specs[2].urdf_path(), *fixture.model);
     fixture.data = std::make_unique<typename RS::RobotData_t>(*fixture.model);
-    fixture.rs = std::make_unique<RS>();
-    fixture.state = std::make_unique<typename RS::State_t>(*fixture.rs, *fixture.model);
+    fixture.state = std::make_unique<typename RS::State_t>(*fixture.model);
 
     REQUIRE(fixture.state->get_nqb() == 0);
     REQUIRE(fixture.state->get_nvb() == 0);
@@ -556,8 +555,7 @@ TEST_CASE("StateMultibodyTpl - Double Scalar Type", "[multibody][scalar_types]")
     fixture.model = std::make_unique<typename RS::RobotModel_t>();
     pinocchio::urdf::buildModel(robot_specs[1].urdf_path(), pinocchio::JointModelFreeFlyer(), *fixture.model);
     fixture.data = std::make_unique<typename RS::RobotData_t>(*fixture.model);
-    fixture.rs = std::make_unique<RS>();
-    fixture.state = std::make_unique<typename RS::State_t>(*fixture.rs, *fixture.model);
+    fixture.state = std::make_unique<typename RS::State_t>(*fixture.model);
 
     SECTION("Basic operations with double")
     {

@@ -197,7 +197,7 @@ namespace galileo
             return nqb_dim_;
         }
 
-        const int get_nqb() const
+        int get_nqb() const
         {
             return nqb_dim_.value();
         }
@@ -207,7 +207,7 @@ namespace galileo
             return nqj_dim_;
         }
 
-        const int get_nqj() const
+        int get_nqj() const
         {
             return nqj_dim_.value();
         }
@@ -217,7 +217,7 @@ namespace galileo
             return nvb_dim_;
         }
 
-        const int get_nvb() const
+        int get_nvb() const
         {
             return nvb_dim_.value();
         }
@@ -227,7 +227,7 @@ namespace galileo
             return nvj_dim_;
         }
 
-        const int get_nvj() const
+        int get_nvj() const
         {
             return nvj_dim_.value();
         }
@@ -237,7 +237,7 @@ namespace galileo
             return nrotors_dim_;
         }
 
-        const int get_nrotors() const
+        int get_nrotors() const
         {
             return nrotors_dim_.value();
         }
@@ -247,7 +247,7 @@ namespace galileo
             return nq_dim_;
         }
 
-        const int get_nq() const
+        int get_nq() const
         {
             return nq_dim_.value();
         }
@@ -257,7 +257,7 @@ namespace galileo
             return nv_dim_;
         }
 
-        const int get_nv() const
+        int get_nv() const
         {
             return nv_dim_.value();
         }
@@ -267,7 +267,7 @@ namespace galileo
             return nx_dim_;
         }
 
-        const int get_nx() const
+        int get_nx() const
         {
             return nx_dim_.value();
         }
@@ -277,7 +277,7 @@ namespace galileo
             return ndx_dim_;
         }
 
-        const int get_ndx() const
+        int get_ndx() const
         {
             return ndx_dim_.value();
         }
@@ -287,7 +287,7 @@ namespace galileo
             return nua_dim_;
         }
 
-        const int get_nua() const
+        int get_nua() const
         {
             return nua_dim_.value();
         }

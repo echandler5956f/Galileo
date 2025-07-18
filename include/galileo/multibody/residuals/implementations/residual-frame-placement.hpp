@@ -82,7 +82,8 @@ namespace galileo
 
         template <typename DataCollector>
         ResidualDataFramePlacementTpl(const Model_t &model, DataCollector *const collector)
-            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+            : robot(collector->robot),
+              R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
               Arr_Ru(model.get_nr(), model.get_ps().get_nu()),
@@ -168,9 +169,7 @@ namespace galileo
         template <typename DataCollector>
         Data_t createData(DataCollector *const collector) const
         {
-            Data_t data(*this, collector);
-            data.robot = collector->robot;
-            return data;
+            return Data_t(*this, collector);
         }
 
         const std::shared_ptr<State_t> &get_state() const
