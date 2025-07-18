@@ -20,9 +20,9 @@ namespace galileo
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
-        using Meta_t = typename RS::ActuationMeta_t;
-        using Model_t = typename RS::ActuationModel_t;
-        using Data_t = typename RS::ActuationData_t;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -71,7 +71,7 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return this->derived().createData(collector);
         }
@@ -79,16 +79,6 @@ namespace galileo
         const std::shared_ptr<State_t> &get_state() const
         {
             return state_;
-        }
-
-        const int get_nua() const
-        {
-            return state_->get_nua();
-        }
-
-        const RS::DimNUa_t &get_nua_dim() const
-        {
-            return state_->get_nua_dim();
         }
 
     protected:

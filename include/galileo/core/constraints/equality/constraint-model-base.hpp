@@ -59,24 +59,32 @@ namespace galileo
 
         const PS &get_ps() const
         {
-            return ps_;
+            return this->derived().get_ps_impl();
         }
 
-        const int get_nh() const
+        const PS &get_ps_impl() const
         {
-            if constexpr (DimNH_t::IsFixed)
-            {
-                return DimNH_t::Value;
-            }
-            else
-            {
-                return nh_dim_.value();
-            }
+            return ps_;
         }
 
         const DimNH_t &get_nh_dim() const
         {
+            return this->derived().get_nh_dim_impl();
+        }
+
+        const DimNH_t &get_nh_dim_impl() const
+        {
             return nh_dim_;
+        }
+
+        const int get_nh() const
+        {
+            return this->derived().get_nh_impl();
+        }
+
+        const int get_nh_impl() const
+        {
+            return nh_dim_.value();
         }
 
     protected:

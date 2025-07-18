@@ -45,15 +45,19 @@ namespace galileo
 
         using Base = ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>;
 
-        ActuationModelFloatingBaseTpl(const std::shared_ptr<typename RS::State_t> &state)
-            : Base(state) {}
+        using State_t = typename RS::State_t;
+
+        ActuationModelFloatingBaseTpl(const std::shared_ptr<State_t> &state)
+            : Base(state)
+        {
+        }
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            tail(data.tau, get_nua_dim()) = u;
+            tail(data.tau, get_state()->get_nua_dim()) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -69,7 +73,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tail(tau, get_nua_dim());
+            data.u = tail(tau, get_state()->get_nua_dim());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -80,9 +84,10 @@ namespace galileo
             // has constant values which are set in createData
         }
 
-        Data_t createData() const
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
         {
-            Data_t data(*this);
+            Data_t data(*this, collector);
             data.dtau_du.diagonal(-get_state()->get_nvb()).setOnes();
             data.Mtau.diagonal(get_state()->get_nvb()).setOnes();
             for (int i = 0; i < get_state()->get_nvb(); ++i)
@@ -93,9 +98,6 @@ namespace galileo
         }
 
         using Base::get_state;
-
-        using Base::get_nua;
-        using Base::get_nua_dim;
 
     }; // class ActuationModelFloatingBaseTpl
 

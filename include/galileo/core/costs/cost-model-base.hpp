@@ -19,6 +19,8 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
+        using DimNR_t = typename traits<Meta_t>::DimNR_t;
+
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -57,12 +59,37 @@ namespace galileo
 
         const PS &get_ps() const
         {
+            return this->derived().get_ps_impl();
+        }
+
+        const PS &get_ps_impl() const
+        {
             return ps_;
         }
 
+        const DimNR_t &get_nr_dim() const
+        {
+            return this->derived().get_nr_dim_impl();
+        }
+
+        const DimNR_t &get_nr_dim_impl() const
+        {
+            return nr_dim_;
+        }
+
+        const int get_nr() const
+        {
+            return this->derived().get_nr_impl();
+        }
+
+        const int get_nr_impl() const
+        {
+            return nr_dim_.value();
+        }
+
     protected:
-        inline CostModelBase(const PS &ps)
-            : ps_(ps)
+        inline CostModelBase(const PS &ps, const DimNR_t &nr_dim)
+            : ps_(ps), nr_dim_(nr_dim)
         {
         }
 
@@ -77,6 +104,7 @@ namespace galileo
         }
 
         const PS &ps_;
+        const DimNR_t &nr_dim_;
 
     }; // class CostModelBase
 

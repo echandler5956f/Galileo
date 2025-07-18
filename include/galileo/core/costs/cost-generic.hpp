@@ -228,17 +228,25 @@ namespace galileo
             return galileo::cost_create_data(*this, collector);
         }
 
-        const int get_nr() const
+        using Base::get_ps;
+
+        using Base::get_nr_dim;
+        using Base::get_nr;
+
+        const PS &get_ps_impl() const
         {
-            return galileo::cost_get_nr(*this);
+            return galileo::cost_get_ps(*this);
         }
 
-        const DimNR_t &get_nr_dim() const
+        const DimNR_t &get_nr_dim_impl() const
         {
             return galileo::cost_get_nr_dim(*this);
         }
 
-        using Base::get_ps;
+        const int get_nr_impl() const
+        {
+            return galileo::cost_get_nr(*this);
+        }
 
     }; // struct CostModelTpl
 

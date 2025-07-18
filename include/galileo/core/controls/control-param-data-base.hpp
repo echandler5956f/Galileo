@@ -22,10 +22,11 @@ namespace galileo
         using Model_t = typename PS::ControlParamModel_t;
         using Data_t = typename PS::ControlParamData_t;
 
-        ControlParamDataTpl(const Model_t &model) : u(model.get_nu()),
-                                                    w(model.get_nw()),
-                                                    du_dw(model.get_nu(),
-                                                          model.get_nw())
+        ControlParamDataTpl(const Model_t &model)
+            : u(model.get_nu()),
+              w(model.get_nw()),
+              du_dw(model.get_nu(),
+                    model.get_nw())
         {
             u.setZero();
             w.setZero();

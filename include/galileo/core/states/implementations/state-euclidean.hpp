@@ -16,8 +16,7 @@ namespace galileo
 
         using RS = RobotSpec;
 
-        GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RS);
-        GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         using Base = StateBase<StateEuclideanTpl<RS>, RS>;
 
@@ -126,24 +125,24 @@ namespace galileo
             // Nothing to do
         }
 
-        const VectorNx_t &get_lb_impl() const
+        const VectorNx_t &get_lb() const
         {
             return lb_;
         }
 
-        const VectorNx_t &get_ub_impl() const
+        const VectorNx_t &get_ub() const
         {
             return ub_;
         }
 
         template <typename StateVector>
-        void set_lb_impl(const Eigen::MatrixBase<StateVector> &lb)
+        void set_lb(const Eigen::MatrixBase<StateVector> &lb)
         {
             lb_ = lb.derived();
         }
 
         template <typename StateVector>
-        void set_ub_impl(const Eigen::MatrixBase<StateVector> &ub)
+        void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
             ub_ = ub.derived();
         }

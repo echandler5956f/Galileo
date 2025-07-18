@@ -295,56 +295,186 @@ namespace galileo
         using Gw_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
 
         /* ---------------------------------------------------------------- */
-        /*Actual storage of dimension types */
+        /* Accessors for the PhaseSpec dimensions */
         /* ---------------------------------------------------------------- */
 
-        // rs (and its members, of course) must outlive the phase spec, which is very reasonable.
-        const RS &rs;
-        const DimNQb_t &nqb_dim;
-        const DimNQj_t &nqj_dim;
-        const DimNVb_t &nvb_dim;
-        const DimNVj_t &nvj_dim;
-        const DimNRotors_t &nrotors_dim;
-        const DimNQ_t &nq_dim;
-        const DimNV_t &nv_dim;
-        const DimNX_t &nx_dim;
-        const DimNDX_t &ndx_dim;
-        const DimNUa_t &nua_dim;
+        const RS &get_rs() const
+        {
+            return rs_;
+        }
 
-        DimNU_t nu_dim;
-        DimNOrder_t norder_dim;
-        DimNW_t nw_dim;
-        DimNStages_t nstages_dim;
+        const DimNQb_t &get_nqb_dim() const
+        {
+            return rs.get_nqb_dim();
+        }
+
+        const int get_nqb() const
+        {
+            return rs.get_nqb();
+        }
+
+        const DimNQj_t &get_nqj_dim() const
+        {
+            return rs.get_nqj_dim();
+        }
+
+        const int get_nqj() const
+        {
+            return rs.get_nqj();
+        }
+
+        const DimNVb_t &get_nvb_dim() const
+        {
+            return rs.get_nvb_dim();
+        }
+
+        const int get_nvb() const
+        {
+            return rs.get_nvb();
+        }
+
+        const DimNVj_t &get_nvj_dim() const
+        {
+            return rs.get_nvj_dim();
+        }
+
+        const int get_nvj() const
+        {
+            return rs.get_nvj();
+        }
+
+        const DimNRotors_t &get_nrotors_dim() const
+        {
+            return rs.get_nrotors_dim();
+        }
+
+        const int get_nrotors() const
+        {
+            return rs.get_nrotors();
+        }
+
+        const DimNQ_t &get_nq_dim() const
+        {
+            return rs.get_nq_dim();
+        }
+
+        const int get_nq() const
+        {
+            return rs.get_nq();
+        }
+
+        const DimNV_t &get_nv_dim() const
+        {
+            return rs.get_nv_dim();
+        }
+
+        const int get_nv() const
+        {
+            return rs.get_nv();
+        }
+
+        const DimNX_t &get_nx_dim() const
+        {
+            return rs.get_nx_dim();
+        }
+
+        const int get_nx() const
+        {
+            return rs.get_nx();
+        }
+
+        const DimNDX_t &get_ndx_dim() const
+        {
+            return rs.get_ndx_dim();
+        }
+
+        const int get_ndx() const
+        {
+            return rs.get_ndx();
+        }
+
+        const DimNUa_t &get_nua_dim() const
+        {
+            return rs.get_nua_dim();
+        }
+
+        const int get_nua() const
+        {
+            return rs.get_nua();
+        }
+
+        const DimNU_t &get_nu_dim() const
+        {
+            return nu_dim_;
+        }
+
+        const int get_nu() const
+        {
+            return nu_dim_.value();
+        }
+
+        const DimNOrder_t &get_norder_dim() const
+        {
+            return norder_dim_;
+        }
+
+        const int get_norder() const
+        {
+            return norder_dim_.value();
+        }
+
+        const DimNW_t &get_nw_dim() const
+        {
+            return nw_dim_;
+        }
+
+        const int get_nw() const
+        {
+            return nw_dim_.value();
+        }
+
+        const DimNStages_t &get_nstages_dim() const
+        {
+            return nstages_dim_;
+        }
+
+        const int get_nstages() const
+        {
+            return nstages_dim_.value();
+        }
 
         // Constructor to properly initialize compound dimensions
         // rs is bound to the true robot spec, and unmodifiable after this point.
-        PhaseSpecTpl(const RS &_rs)
-            : rs(_rs),
-              nqb_dim(_rs.nqb_dim),
-              nqj_dim(_rs.nqj_dim),
-              nvb_dim(_rs.nvb_dim),
-              nvj_dim(_rs.nvj_dim),
-              nrotors_dim(_rs.nrotors_dim),
-              nq_dim(_rs.nq_dim),
-              nv_dim(_rs.nv_dim),
-              nx_dim(_rs.nx_dim),
-              ndx_dim(_rs.ndx_dim),
-              nua_dim(_rs.nua_dim),
-              nu_dim{}, norder_dim{},
-              nw_dim(nu_dim * norder_dim), nstages_dim{}
+        PhaseSpecTpl(const RS &rs)
+            : rs_(rs),
+              nu_dim_{}, norder_dim_{},
+              nw_dim_(nu_dim_ * norder_dim_), nstages_dim_{}
         {
         }
+
+    protected:
+        /* ---------------------------------------------------------------- */
+        /*Actual storage of dimensions */
+        /* ---------------------------------------------------------------- */
+
+        // rs_ must outlive the phase spec, which is very reasonable.
+        const RS &rs_;
+
+        DimNU_t nu_dim_;
+        DimNOrder_t norder_dim_;
+        DimNW_t nw_dim_;
+        DimNStages_t nstages_dim_;
     };
 
     // Helper function to validate if a phase spec is in a valid configuration at runtime
     template <typename PhaseSpec>
     bool IsValidPhaseSpec(const PhaseSpec &ps)
     {
-        bool valid_nu = (ps.nu_dim.value() >= 0);
-        bool valid_norder = (ps.norder_dim.value() >= 0);
-        bool valid_nw = (ps.nw_dim.value() == ps.nu_dim.value() * ps.norder_dim.value());
-        bool valid_nstages = (ps.nstages_dim.value() > 0); // Zero stages is not allowed
-        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.rs);
+        bool valid_nu = (ps.get_nu() >= 0);
+        bool valid_norder = (ps.get_norder() >= 0);
+        bool valid_nw = (ps.get_nw() == ps.get_nu() * ps.get_norder());
+        bool valid_nstages = (ps.get_nstages() > 0); // Zero stages is not allowed
+        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.get_rs());
     }
 
 } // namespace galileo

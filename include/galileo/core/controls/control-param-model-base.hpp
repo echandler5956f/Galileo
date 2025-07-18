@@ -16,14 +16,18 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using Meta_t = typename PS::ControlParamMeta_t;
-        using Model_t = typename PS::ControlParamModel_t;
-        using Data_t = typename PS::ControlParamData_t;
+        using NumScalar = typename PS::NumScalar;
+
+        using DimNU_t = typename traits<Meta_t>::DimNU_t;
+        using DimNW_t = typename traits<Meta_t>::DimNW_t;
+        using DimNOrder_t = typename traits<Meta_t>::DimNOrder_t;
 
         template <typename ControlParamVectorType>
-        void calc(Data_t &data, const PS::NumScalar t,
+        void calc(Data_t &data, const NumScalar t,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             this->derived().calc(data, t, w.derived());
@@ -37,7 +41,7 @@ namespace galileo
         }
 
         template <typename ControlVectorType>
-        void params(Data_t &data, const PS::NumScalar t,
+        void params(Data_t &data, const NumScalar t,
                     const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             this->derived().params(data, t, u.derived());
@@ -85,65 +89,45 @@ namespace galileo
         /**
          * @brief Return the dimension of the control space
          */
-        const int get_nu() const
+        const DimNU_t &get_nu_dim() const
         {
-            if constexpr (PS::DimNU_t::IsFixed)
-            {
-                return PS::DimNU_t::Value;
-            }
-            else
-            {
-                return ps_.nu_dim.value();
-            }
+            return ps_.get_nu_dim();
         }
 
-        const PS::DimNU_t &get_nu_dim() const
+        const int get_nu() const
         {
-            return ps_.nu_dim;
+            return ps_.get_nu();
         }
 
         /**
          * @brief Return the order of the control parameterization
          */
-        const int get_norder() const
+        const DimNOrder_t &get_norder_dim() const
         {
-            if constexpr (PS::DimNOrder_t::IsFixed)
-            {
-                return PS::DimNOrder_t::Value;
-            }
-            else
-            {
-                return ps_.norder_dim.value();
-            }
+            return ps_.get_norder_dim();
         }
 
-        const PS::DimNOrder_t &get_norder_dim() const
+        const int get_norder() const
         {
-            return ps_.norder_dim;
+            return ps_.get_norder();
         }
 
         /**
          * @brief Return the dimension of the control parameter space
          */
-        const int get_nw() const
+        const DimNW_t &get_nw_dim() const
         {
-            if constexpr (PS::DimNW_t::IsFixed)
-            {
-                return PS::DimNW_t::Value;
-            }
-            else
-            {
-                return ps_.nw_dim.value();
-            }
+            return ps_.get_nw_dim();
         }
 
-        const PS::DimNW_t &get_nw_dim() const
+        const int get_nw() const
         {
-            return ps_.nw_dim;
+            return ps_.get_nw();
         }
 
     protected:
-        inline ControlParamModelBase(const PS &ps) : ps_(ps)
+        inline ControlParamModelBase(const PS &ps)
+            : ps_(ps)
         {
         }
 

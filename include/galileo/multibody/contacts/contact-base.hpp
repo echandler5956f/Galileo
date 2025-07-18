@@ -27,8 +27,6 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
-
         using Meta_t = typename traits<Derived>::Meta_t;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -214,51 +212,79 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const std::shared_ptr<State_t> &get_state() const
+        const RobotModel_t &get_robot() const
         {
-            return this->derived().get_state();
+            return this->derived().get_robot();
         }
 
         const PS &get_ps() const
+        {
+            return this->derived().get_ps_impl();
+        }
+
+        const PS &get_ps_impl() const
         {
             return ps_;
         }
 
         const FrameIndex_t &get_id() const
         {
+            return this->derived().get_id_impl();
+        }
+
+        const FrameIndex_t &get_id_impl() const
+        {
             return id_;
         }
 
         void set_id(const FrameIndex_t &id)
+        {
+            this->derived().set_id_impl(id);
+        }
+
+        void set_id_impl(const FrameIndex_t &id)
         {
             id_ = id;
         }
 
         const ReferenceFrame_t &get_type() const
         {
+            return this->derived().get_type_impl();
+        }
+
+        const ReferenceFrame_t &get_type_impl() const
+        {
             return type_;
         }
 
         void set_type(const ReferenceFrame_t &type)
         {
-            type_ = type;
+            this->derived().set_type_impl(type);
         }
 
-        const int get_nc() const
+        void set_type_impl(const ReferenceFrame_t &type)
         {
-            if constexpr (DimNC_t::IsFixed)
-            {
-                return DimNC_t::Value;
-            }
-            else
-            {
-                return nc_dim_.value();
-            }
+            type_ = type;
         }
 
         const DimNC_t &get_nc_dim() const
         {
+            return this->derived().get_nc_dim_impl();
+        }
+
+        const DimNC_t &get_nc_dim_impl() const
+        {
             return nc_dim_;
+        }
+
+        const int get_nc() const
+        {
+            return this->derived().get_nc_impl();
+        }
+
+        const int get_nc_impl() const
+        {
+            return nc_dim_.value();
         }
 
     protected:

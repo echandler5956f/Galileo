@@ -25,18 +25,17 @@ namespace galileo
         using Model_t = ResidualModelStateTpl<PS>;
         using Data_t = ResidualDataStateTpl<PS>;
 
-        using DimNR_t = DimensionTpl<PS::DimNDX_t::Value>;
-        static constexpr int NR = DimNR_t::Value;
+        using DimNR_t = typename PS::DimNDX_t
 
         static constexpr bool QDependent = true;
         static constexpr bool VDependent = true;
         static constexpr bool UDependent = false;
 
-        using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
-        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
-        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
-        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
+        using R_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
+        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <typename PhaseSpec>
@@ -81,11 +80,12 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Rx_t, Arr_Rx);
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
-        ResidualDataStateTpl(const Model_t &model)
-            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
-              Ru(model.get_nr(), model.get_ps().nu_dim.value()),
-              Arr_Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
-              Arr_Ru(model.get_nr(), model.get_ps().nu_dim.value())
+        template <typename DataCollector>
+        ResidualDataStateTpl(const Model_t &model, DataCollector *const collector)
+            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+              Ru(model.get_nr(), model.get_ps().get_nu()),
+              Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
+              Arr_Ru(model.get_nr(), model.get_ps().get_nu())
         {
             R.setZero();
             Rx.setZero();
@@ -171,15 +171,15 @@ namespace galileo
                                      .asDiagonal() *
                                  RxBlock;
             }
-            tail(cdata.Lx, ps.nv_dim) = tail(adata.Ar, ps.nv_dim);
-            tail(cdata.Lxx.diagonal(), ps.nv_dim) =
-                tail(adata.Arr.diagonal(), ps.nv_dim);
+            tail(cdata.Lx, ps.get_nv_dim()) = tail(adata.Ar, ps.get_nv_dim());
+            tail(cdata.Lxx.diagonal(), ps.get_nv_dim()) =
+                tail(adata.Arr.diagonal(), ps.get_nv_dim());
         }
 
         template <typename DataCollector>
         Data_t createData(DataCollector *const collector) const
         {
-            Data_t data(*this);
+            Data_t data(*this, collector);
             data.robot = collector->robot;
             return data;
         }
@@ -193,9 +193,6 @@ namespace galileo
 
         using Base::get_nr;
         using Base::get_nr_dim;
-
-        using Base::get_nu;
-        using Base::get_nu_dim;
 
         using Base::get_q_dependent;
         using Base::get_v_dependent;

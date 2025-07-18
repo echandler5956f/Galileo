@@ -23,8 +23,6 @@ namespace galileo
 
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
-
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
@@ -92,7 +90,7 @@ namespace galileo
             }
             else
             {
-                if (UDependent && get_nu() != 0 && UpdateU)
+                if (UDependent && ps_.get_nu() != 0 && UpdateU)
                 {
                     calcCostDiffRuImpl(cdata, rdata, adata);
                 }
@@ -111,23 +109,23 @@ namespace galileo
             }
             else if constexpr (QDependent)
             {
-                Eigen::Block<Rx_t, DimNR_t::Value, DimNV_t::Value, true> Rq =
-                    leftCols(rdata.Rx, ps_.nv_dim);
-                head(cdata.Lx, ps_.nv_dim).noalias() = Rq.transpose() * adata.Ar;
-                leftCols(rdata.Arr_Rx, ps_.nv_dim).noalias() =
+                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rq =
+                    leftCols(rdata.Rx, ps_.get_nv_dim());
+                head(cdata.Lx, ps_.get_nv_dim()).noalias() = Rq.transpose() * adata.Ar;
+                leftCols(rdata.Arr_Rx, ps_.get_nv_dim()).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rq;
-                topLeftCorner(cdata.Lxx, ps_.nv_dim, ps_.nv_dim).noalias() =
-                    Rq.transpose() * leftCols(rdata.Arr_Rx, ps_.nv_dim);
+                topLeftCorner(cdata.Lxx, ps_.get_nv_dim(), ps_.get_nv_dim()).noalias() =
+                    Rq.transpose() * leftCols(rdata.Arr_Rx, ps_.get_nv_dim());
             }
             else if constexpr (VDependent)
             {
-                Eigen::Block<Rx_t, DimNR_t::Value, DimNV_t::Value, true> Rv =
-                    rightCols(rdata.Rx, ps_.nv_dim);
-                tail(cdata.Lx, ps_.nv_dim).noalias() = Rv.transpose() * adata.Ar;
-                rightCols(rdata.Arr_Rx, ps_.nv_dim).noalias() =
+                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rv =
+                    rightCols(rdata.Rx, ps_.get_nv_dim());
+                tail(cdata.Lx, ps_.get_nv_dim()).noalias() = Rv.transpose() * adata.Ar;
+                rightCols(rdata.Arr_Rx, ps_.get_nv_dim()).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rv;
-                bottomRightCorner(cdata.Lxx, ps_.nv_dim, ps_.nv_dim).noalias() =
-                    Rv.transpose() * rightCols(rdata.Arr_Rx, ps_.nv_dim);
+                bottomRightCorner(cdata.Lxx, ps_.get_nv_dim(), ps_.get_nv_dim()).noalias() =
+                    Rv.transpose() * rightCols(rdata.Arr_Rx, ps_.get_nv_dim());
             }
         }
 
@@ -142,14 +140,14 @@ namespace galileo
             if constexpr (QDependent && VDependent)
                 cdata.Lxu.noalias() = rdata.Rx.transpose() * rdata.Arr_Ru;
             else if constexpr (QDependent)
-                topRows(cdata.Lxu, ps_.nv_dim).noalias() = Rq.transpose() * rdata.Arr_Ru;
+                topRows(cdata.Lxu, ps_.get_nv_dim()).noalias() = Rq.transpose() * rdata.Arr_Ru;
             else if constexpr (VDependent)
-                bottomRows(cdata.Lxu, ps_.nv_dim).noalias() =
+                bottomRows(cdata.Lxu, ps_.get_nv_dim()).noalias() =
                     Rv.transpose() * rdata.Arr_Ru;
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return this->derived().createData(collector);
         }
@@ -164,38 +162,14 @@ namespace galileo
             return ps_;
         }
 
-        const int get_nr() const
-        {
-            if constexpr (DimNR_t::IsFixed)
-            {
-                return DimNR_t::Value;
-            }
-            else
-            {
-                return nr_dim_.value();
-            }
-        }
-
         const DimNR_t &get_nr_dim() const
         {
             return nr_dim_;
         }
 
-        const int get_nu() const
+        const int get_nr() const
         {
-            if constexpr (DimNU_t::IsFixed)
-            {
-                return DimNU_t::Value;
-            }
-            else
-            {
-                return ps_.nu_dim.value();
-            }
-        }
-
-        const DimNU_t &get_nu_dim() const
-        {
-            return ps_.nu_dim;
+            return nr_dim_.value();
         }
 
         const bool get_q_dependent() const

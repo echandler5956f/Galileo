@@ -79,6 +79,7 @@ namespace galileo
             : A(0.), Ar(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
         {
             Ar.setZero();
+            Arr.setIdentity();
         }
 
         A_t A;
@@ -124,9 +125,7 @@ namespace galileo
 
         Data_t createData() const
         {
-            Data_t data = Data_t(*this);
-            data.Arr.setIdentity();
-            return data;
+            return Data_t(*this);
         }
 
         using Base::get_ps;

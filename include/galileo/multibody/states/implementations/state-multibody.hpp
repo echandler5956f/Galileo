@@ -32,24 +32,21 @@ namespace galileo
         {
             if constexpr (RS::DimNQ_t::IsDynamic)
             {
-                get_rs().nq_dim.set_value(model_.nq);
+                get_rs().nq_dim_.set_value(model_.nq);
             }
             if constexpr (RS::DimNQb_t::IsDynamic)
             {
-                const std::size_t nqb =
-                    model_.existJointName("root_joint")
-                        ? model_.joints[model_.getJointId("root_joint")].nq()
-                        : 0;
-                get_rs().nqb_dim.set_value(nqb);
+                get_rs().nqb_dim_.set_value(model_.existJointName("root_joint")
+                                                ? model_.joints[model_.getJointId("root_joint")].nq()
+                                                : 0);
             }
             if constexpr (RS::DimNQj_t::IsDynamic)
             {
-                const std::size_t nqj = get_nq() - get_nqb();
-                get_rs().nqj_dim.set_value(nqj);
+                get_rs().nqj_dim_.set_value(get_nq() - get_nqb());
             }
             if constexpr (RS::DimNV_t::IsDynamic)
             {
-                get_rs().nv_dim.set_value(model_.nv);
+                get_rs().nv_dim_.set_value(model_.nv);
             }
             if constexpr (RS::DimNVb_t::IsDynamic)
             {
@@ -57,31 +54,31 @@ namespace galileo
                     model_.existJointName("root_joint")
                         ? model_.joints[model_.getJointId("root_joint")].nv()
                         : 0;
-                get_rs().nvb_dim.set_value(nvb);
+                get_rs().nvb_dim_.set_value(nvb);
             }
             if constexpr (RS::DimNVj_t::IsDynamic)
             {
                 const std::size_t nvj = get_nv() - get_nvb();
-                get_rs().nvj_dim.set_value(nvj);
+                get_rs().nvj_dim_.set_value(nvj);
             }
             if constexpr (RS::DimNX_t::IsDynamic)
             {
-                get_rs().nx_dim = get_rs().nq_dim + get_rs().nv_dim;
+                get_rs().nx_dim_.set_value(get_nq_dim() + get_nv_dim());
             }
             if constexpr (RS::DimNDX_t::IsDynamic)
             {
-                get_rs().ndx_dim = get_rs().nv_dim + get_rs().nv_dim;
+                get_rs().ndx_dim_.set_value(get_nv_dim() + get_nv_dim());
             }
             if constexpr (RS::DimNRotors_t::IsDynamic)
             {
                 // We do not know anything about rotors at this point in the OCP data pipeline, so if rotors are
                 // used, any dynamic evaluation is deferred to ActuationModelFloatingBaseThrustersTpl's constructor.
                 // Of course, compile-time NRotors will always be available at this point.
-                get_rs().nrotors_dim.set_value(0);
+                get_rs().nrotors_dim_.set_value(0);
             }
             if constexpr (RS::DimNUa_t::IsDynamic)
             {
-                get_rs().nua_dim = get_rs().nvj_dim + get_rs().nrotors_dim;
+                get_rs().nua_dim_.set_value(get_nvj_dim() + get_nrotors_dim());
             }
 
             GALILEO_ASSERT(IsValidRobotSpec(get_rs()), "StateMultibodyTpl: Invalid robot spec");

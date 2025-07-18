@@ -84,6 +84,7 @@ namespace galileo
         {
             Ar.setZero();
             Wr.setZero();
+            Arr.diagonal() = model.get_weights();
         }
 
         A_t A;
@@ -137,9 +138,12 @@ namespace galileo
 
         Data_t createData() const
         {
-            Data_t data = Data_t(*this);
-            data.Arr.diagonal() = weights_;
-            return data;
+            return Data_t(*this);
+        }
+
+        const WeightVector_t &get_weights() const
+        {
+            return weights_;
         }
 
         void setWeights(const WeightVector_t &weights)

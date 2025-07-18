@@ -28,7 +28,7 @@ namespace galileo
 
         using RS = RobotSpec;
 
-        GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RS);
+        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
 
         /**
          * @brief Generate a zero state
@@ -331,201 +331,131 @@ namespace galileo
         /**
          * @brief Return the dimension (if any) of the floating base configuration space of the state
          */
-        const int get_nqb() const
+        const DimNQb_t &get_nqb_dim() const
         {
-            if constexpr (RS::DimNQb_t::IsFixed)
-            {
-                return RS::DimNQb_t::Value;
-            }
-            else
-            {
-                return rs_.nqb_dim.value();
-            }
+            return rs_.get_nqb_dim();
         }
 
-        const RS::DimNQb_t &get_nqb_dim() const
+        const int get_nqb() const
         {
-            return rs_.nqb_dim;
+            return rs_.get_nqb();
         }
 
         /**
          * @brief Return the dimension of the joint configuration space of the state
          */
-        const int get_nqj() const
+        const DimNQj_t &get_nqj_dim() const
         {
-            if constexpr (RS::DimNQj_t::IsFixed)
-            {
-                return RS::DimNQj_t::Value;
-            }
-            else
-            {
-                return rs_.nqj_dim.value();
-            }
+            return rs_.get_nqj_dim();
         }
 
-        const RS::DimNQj_t &get_nqj_dim() const
+        const int get_nqj() const
         {
-            return rs_.nqj_dim;
+            return rs_.get_nqj();
         }
 
         /**
          * @brief Return the dimension of the configuration space of the state
          */
-        const int get_nq() const
+        const DimNQ_t &get_nq_dim() const
         {
-            if constexpr (RS::DimNQ_t::IsFixed)
-            {
-                return RS::DimNQ_t::Value;
-            }
-            else
-            {
-                return rs_.nq_dim.value();
-            }
+            return rs_.get_nq_dim();
         }
 
-        const RS::DimNQ_t &get_nq_dim() const
+        const int get_nq() const
         {
-            return rs_.nq_dim;
+            return rs_.get_nq();
         }
 
         /**
          * @brief Return the dimension (if any) of the floating base velocity space of the state
          */
-        const int get_nvb() const
+        const DimNVb_t &get_nvb_dim() const
         {
-            if constexpr (RS::DimNVb_t::IsFixed)
-            {
-                return RS::DimNVb_t::Value;
-            }
-            else
-            {
-                return rs_.nvb_dim.value();
-            }
+            return rs_.get_nvb_dim();
         }
 
-        const RS::DimNVb_t &get_nvb_dim() const
+        const int get_nvb() const
         {
-            return rs_.nvb_dim;
+            return rs_.get_nvb();
         }
 
         /**
          * @brief Return the dimension of the joint velocity space of the state
          */
-        const int get_nvj() const
+        const DimNVj_t &get_nvj_dim() const
         {
-            if constexpr (RS::DimNVj_t::IsFixed)
-            {
-                return RS::DimNVj_t::Value;
-            }
-            else
-            {
-                return rs_.nvj_dim.value();
-            }
+            return rs_.get_nvj_dim();
         }
 
-        const RS::DimNVj_t &get_nvj_dim() const
+        const int get_nvj() const
         {
-            return rs_.nvj_dim;
+            return rs_.get_nvj();
         }
 
         /**
          * @brief Return the dimension of the velocity space of the state
          */
-        const int get_nv() const
+        const DimNV_t &get_nv_dim() const
         {
-            if constexpr (RS::DimNV_t::IsFixed)
-            {
-                return RS::DimNV_t::Value;
-            }
-            else
-            {
-                return rs_.nv_dim.value();
-            }
+            return rs_.get_nv_dim();
         }
 
-        const RS::DimNV_t &get_nv_dim() const
+        const int get_nv() const
         {
-            return rs_.nv_dim;
+            return rs_.get_nv();
         }
 
         /**
          * @brief Return the number of rotors attached to the floating base (if any)
          */
-        const int get_nrotors() const
+        const DimNRotors_t &get_nrotors_dim() const
         {
-            if constexpr (RS::DimNRotors_t::IsFixed)
-            {
-                return RS::DimNRotors_t::Value;
-            }
-            else
-            {
-                return rs_.nrotors_dim.value();
-            }
+            return rs_.get_nrotors_dim();
         }
 
-        const RS::DimNRotors_t &get_nrotors_dim() const
+        const int get_nrotors() const
         {
-            return rs_.nrotors_dim;
+            return rs_.get_nrotors();
         }
 
         /**
          * @brief Return the dimension of the state
          */
-        const int get_nx() const
+        const DimNX_t &get_nx_dim() const
         {
-            if constexpr (RS::DimNX_t::IsFixed)
-            {
-                return RS::DimNX_t::Value;
-            }
-            else
-            {
-                return rs_.nx_dim.value();
-            }
+            return rs_.get_nx_dim();
         }
 
-        const RS::DimNX_t &get_nx_dim() const
+        const int get_nx() const
         {
-            return rs_.nx_dim;
+            return rs_.get_nx();
         }
 
         /**
          * @brief Return the dimension of the tangent space of the state manifold
          */
-        const int get_ndx() const
+        const DimNDX_t &get_ndx_dim() const
         {
-            if constexpr (RS::DimNDX_t::IsFixed)
-            {
-                return RS::DimNDX_t::Value;
-            }
-            else
-            {
-                return rs_.ndx_dim.value();
-            }
+            return rs_.get_ndx_dim();
         }
 
-        const RS::DimNDX_t &get_ndx_dim() const
+        const int get_ndx() const
         {
-            return rs_.ndx_dim;
+            return rs_.get_ndx();
         }
 
         /**
          * @brief Return the dimension of the actuated torque space of the state
          */
-        const int get_nua() const
+        const DimNUa_t &get_nua_dim() const
         {
-            if constexpr (RS::DimNUa_t::IsFixed)
-            {
-                return RS::DimNUa_t::Value;
-            }
-            else
-            {
-                return rs_.nua_dim.value();
-            }
+            return rs_.get_nua_dim();
         }
 
-        const RS::DimNUa_t &get_nua_dim() const
+        const int get_nua() const
         {
-            return rs_.nua_dim;
+            return rs_.get_nua();
         }
 
         /**

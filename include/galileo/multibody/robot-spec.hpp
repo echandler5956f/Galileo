@@ -189,40 +189,144 @@ namespace galileo
         using ActionMatrix_t = typename SE3_t::ActionMatrixType;
 
         /* ---------------------------------------------------------------- */
-        /* Actual storage of dimension types */
+        /* Accessors for the RobotSpec dimensions */
         /* ---------------------------------------------------------------- */
-        DimNQb_t nqb_dim;
-        DimNQj_t nqj_dim;
-        DimNVb_t nvb_dim;
-        DimNVj_t nvj_dim;
-        DimNRotors_t nrotors_dim;
-        DimNQ_t nq_dim;
-        DimNV_t nv_dim;
-        DimNX_t nx_dim;
-        DimNDX_t ndx_dim;
-        DimNUa_t nua_dim;
+
+        const DimNQb_t &get_nqb_dim() const
+        {
+            return nqb_dim_;
+        }
+
+        const int get_nqb() const
+        {
+            return nqb_dim_.value();
+        }
+
+        const DimNQj_t &get_nqj_dim() const
+        {
+            return nqj_dim_;
+        }
+
+        const int get_nqj() const
+        {
+            return nqj_dim_.value();
+        }
+
+        const DimNVb_t &get_nvb_dim() const
+        {
+            return nvb_dim_;
+        }
+
+        const int get_nvb() const
+        {
+            return nvb_dim_.value();
+        }
+
+        const DimNVj_t &get_nvj_dim() const
+        {
+            return nvj_dim_;
+        }
+
+        const int get_nvj() const
+        {
+            return nvj_dim_.value();
+        }
+
+        const DimNRotors_t &get_nrotors_dim() const
+        {
+            return nrotors_dim_;
+        }
+
+        const int get_nrotors() const
+        {
+            return nrotors_dim_.value();
+        }
+
+        const DimNQ_t &get_nq_dim() const
+        {
+            return nq_dim_;
+        }
+
+        const int get_nq() const
+        {
+            return nq_dim_.value();
+        }
+
+        const DimNV_t &get_nv_dim() const
+        {
+            return nv_dim_;
+        }
+
+        const int get_nv() const
+        {
+            return nv_dim_.value();
+        }
+
+        const DimNX_t &get_nx_dim() const
+        {
+            return nx_dim_;
+        }
+
+        const int get_nx() const
+        {
+            return nx_dim_.value();
+        }
+
+        const DimNDX_t &get_ndx_dim() const
+        {
+            return ndx_dim_;
+        }
+
+        const int get_ndx() const
+        {
+            return ndx_dim_.value();
+        }
+
+        const DimNUa_t &get_nua_dim() const
+        {
+            return nua_dim_;
+        }
+
+        const int get_nua() const
+        {
+            return nua_dim_.value();
+        }
 
         // Constructor to properly initialize compound dimensions
         RobotSpecTpl()
-            : nqb_dim{}, nqj_dim{}, nvb_dim{}, nvj_dim{}, nrotors_dim{},
-              nq_dim(nqb_dim + nqj_dim),
-              nv_dim(nvb_dim + nvj_dim),
-              nx_dim(nq_dim + nv_dim),
-              ndx_dim(nv_dim + nv_dim),
-              nua_dim(nvj_dim + nrotors_dim)
+            : nqb_dim_{}, nqj_dim_{}, nvb_dim_{}, nvj_dim_{}, nrotors_dim_{},
+              nq_dim_(nqb_dim_ + nqj_dim_),
+              nv_dim_(nvb_dim_ + nvj_dim_),
+              nx_dim_(nq_dim_ + nv_dim_),
+              ndx_dim_(nv_dim_ + nv_dim_),
+              nua_dim_(nvj_dim_ + nrotors_dim_)
         {
         }
+
+        /* ---------------------------------------------------------------- */
+        /* Actual storage of dimension types */
+        /* ---------------------------------------------------------------- */
+        DimNQb_t nqb_dim_;
+        DimNQj_t nqj_dim_;
+        DimNVb_t nvb_dim_;
+        DimNVj_t nvj_dim_;
+        DimNRotors_t nrotors_dim_;
+        DimNQ_t nq_dim_;
+        DimNV_t nv_dim_;
+        DimNX_t nx_dim_;
+        DimNDX_t ndx_dim_;
+        DimNUa_t nua_dim_;
     };
 
     // Helper function to validate if a robot spec is in a valid configuration at runtime
     template <typename RobotSpec>
     bool IsValidRobotSpec(const RobotSpec &rs)
     {
-        bool valid_nq = (rs.nq_dim.value() == rs.nqb_dim.value() + rs.nqj_dim.value());
-        bool valid_nv = (rs.nv_dim.value() == rs.nvb_dim.value() + rs.nvj_dim.value());
-        bool valid_nx = (rs.nx_dim.value() == rs.nq_dim.value() + rs.nv_dim.value());
-        bool valid_ndx = (rs.ndx_dim.value() == rs.nv_dim.value() + rs.nv_dim.value());
-        bool valid_nua = (rs.nua_dim.value() == rs.nvj_dim.value() + rs.nrotors_dim.value());
+        bool valid_nq = (rs.get_nq() == rs.get_nqb() + rs.get_nqj());
+        bool valid_nv = (rs.get_nv() == rs.get_nvb() + rs.get_nvj());
+        bool valid_nx = (rs.get_nx() == rs.get_nq() + rs.get_nv());
+        bool valid_ndx = (rs.get_ndx() == rs.get_nv() + rs.get_nv());
+        bool valid_nua = (rs.get_nua() == rs.get_nvj() + rs.get_nrotors());
         return valid_nq && valid_nv && valid_nx && valid_ndx && valid_nua;
     }
 

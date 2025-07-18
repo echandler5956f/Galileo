@@ -28,11 +28,10 @@ namespace galileo
         using Data_t = ConstraintDataTpl<PS, ConstraintCollectionTpl>;
 
         using DimNH_t = DimensionTpl<Eigen::Dynamic>;
-        static constexpr int NH = DimNH_t::Value;
 
-        using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNDX_t::Value, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNU_t::Value, PS::Options>;
+        using H_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, 1, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <typename PhaseSpec,
@@ -129,8 +128,8 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
     struct ConstraintModelTpl
-    : public ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
-                                ConstraintCollectionTpl<PhaseSpec>::ConstraintModelVariant_t
+        : public ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
+          ConstraintCollectionTpl<PhaseSpec>::ConstraintModelVariant_t
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -209,8 +208,23 @@ namespace galileo
 
         using Base::get_ps;
 
-        using Base::get_nh;
         using Base::get_nh_dim;
+        using Base::get_nh;
+
+        const PS &get_ps_impl() const
+        {
+            return galileo::constraint_get_ps(*this);
+        }
+
+        const DimNH_t &get_nh_dim_impl() const
+        {
+            return galileo::constraint_get_nh_dim(*this);
+        }
+
+        const int get_nh_impl() const
+        {
+            return galileo::constraint_get_nh(*this);
+        }
 
     }; // struct ConstraintModelTpl
 

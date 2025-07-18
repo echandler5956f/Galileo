@@ -33,7 +33,6 @@ namespace galileo
         using ActivationData_t = typename traits<ActivationMeta_t>::Data_t;
 
         using DimNR_t = typename traits<ResidualMeta_t>::DimNR_t;
-        static constexpr int NR = DimNR_t::Value;
 
         using L_t = typename PS::VarScalar;
         using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>;
@@ -108,11 +107,11 @@ namespace galileo
             : activation(model.get_activation().createData()),
               residual(model.get_residual().createData(collector),
                        L(0.),
-                       Lx(model.get_ps().ndx_dim.value()),
-                       Lu(model.get_ps().nu_dim.value()),
-                       Lxx(model.get_ps().ndx_dim.value(), model.get_ps().ndx_dim.value()),
-                       Lxu(model.get_ps().ndx_dim.value(), model.get_ps().nu_dim.value()),
-                       Luu(model.get_ps().nu_dim.value(), model.get_ps().nu_dim.value()))
+                       Lx(model.get_ps().get_ndx()),
+                       Lu(model.get_ps().get_nu()),
+                       Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
+                       Lxu(model.get_ps().get_ndx(), model.get_ps().get_nu()),
+                       Luu(model.get_ps().get_nu(), model.get_ps().get_nu()))
         {
             Lx.setZero();
             Lu.setZero();
@@ -159,7 +158,7 @@ namespace galileo
 
         CostModelResidualTpl(const PS &ps, const ResidualModel_t &residual,
                              const ActivationModel_t &activation)
-            : Base(ps),
+            : Base(ps, residual.get_nr_dim()),
               residual_(residual),
               activation_(activation)
         {
@@ -241,17 +240,10 @@ namespace galileo
             return activation_;
         }
 
-        const int get_nr() const
-        {
-            return residual_.get_nr();
-        }
-
-        const DimNR_t &get_nr_dim() const
-        {
-            return residual_.get_nr_dim();
-        }
-
         using Base::get_ps;
+
+        using Base::get_nr;
+        using Base::get_nr_dim;
 
     protected:
         ResidualModel_t residual_;

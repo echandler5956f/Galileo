@@ -26,13 +26,11 @@ namespace galileo
         using ResidualModel_t = typename traits<ResidualMeta_t>::Model_t;
         using ResidualData_t = typename traits<ResidualMeta_t>::Data_t;
 
-        using NHDim_t = typename traits<ResidualMeta_t>::DimNR_t;
+        using DimNH_t = typename traits<ResidualMeta_t>::DimNR_t;
 
-        static constexpr int NH = NHDim_t::Value;
-
-        using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNDX_t::Value, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::DimNU_t::Value, PS::Options>;
+        using H_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, 1, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <
@@ -85,11 +83,12 @@ namespace galileo
         DEFAULT_ACCESSOR(Hx_t, Hx);
         DEFAULT_ACCESSOR(Hu_t, Hu);
 
-        ConstraintDataResidualTpl(const Model_t &model)
-            : residual(model.get_residual().createData(),
+        template <typename DataCollector>
+        ConstraintDataResidualTpl(const Model_t &model, DataCollector *const collector)
+            : residual(model.get_residual().createData(collector),
                        H(model.get_nh()),
-                       Hx(model.get_nh(), model.get_ps().ndx_dim.value()),
-                       Hu(model.get_nh(), model.get_ps().nu_dim.value()))
+                       Hx(model.get_nh(), model.get_ps().get_ndx()),
+                       Hu(model.get_nh(), model.get_ps().get_nu()))
         {
             H.setZero();
             Hx.setZero();
@@ -165,6 +164,12 @@ namespace galileo
             residual_.calcDiff(data.residual, x.derived());
             data.Hx = data.residual.Rx;
             data.Hu = data.residual.Ru;
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
+        {
+            return Data_t(*this, collector);
         }
 
         const ResidualModel_t &get_residual() const

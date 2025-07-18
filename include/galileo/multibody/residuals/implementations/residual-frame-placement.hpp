@@ -26,17 +26,16 @@ namespace galileo
         using Data_t = ResidualDataFramePlacementTpl<PS>;
 
         using DimNR_t = DimensionTpl<6>;
-        static constexpr int NR = DimNR_t::Value;
 
         static constexpr bool QDependent = true;
         static constexpr bool VDependent = false;
         static constexpr bool UDependent = false;
 
-        using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
-        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
-        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNDX_t::Value, PS::Options>;
-        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::DimNU_t::Value, PS::Options>;
+        using R_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
+        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
     template <typename PhaseSpec>
@@ -81,12 +80,13 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Rx_t, Arr_Rx);
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
-        ResidualDataFramePlacementTpl(const Model_t &model)
-            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
-              Ru(model.get_nr(), model.get_ps().nu_dim.value()),
-              Arr_Rx(model.get_nr(), model.get_ps().ndx_dim.value()),
-              Arr_Ru(model.get_nr(), model.get_ps().nu_dim.value()),
-              rJf(6, 6), fJf(6, model.get_ps().nv_dim.value())
+        template <typename DataCollector>
+        ResidualDataFramePlacementTpl(const Model_t &model, DataCollector *const collector)
+            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+              Ru(model.get_nr(), model.get_ps().get_nu()),
+              Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
+              Arr_Ru(model.get_nr(), model.get_ps().get_nu()),
+              rJf(6, 6), fJf(6, model.get_ps().get_nv())
         {
             R.setZero();
             Rx.setZero();
@@ -162,13 +162,13 @@ namespace galileo
                 frame_id_,
                 pinocchio::ReferenceFrame::LOCAL,
                 data.fJf);
-            leftCols(data.Rx, get_ps().nv_dim).noalias() = data.rJf * data.fJf;
+            leftCols(data.Rx, get_ps().get_nv_dim()).noalias() = data.rJf * data.fJf;
         }
 
         template <typename DataCollector>
         Data_t createData(DataCollector *const collector) const
         {
-            Data_t data(*this);
+            Data_t data(*this, collector);
             data.robot = collector->robot;
             return data;
         }
@@ -183,12 +183,9 @@ namespace galileo
         using Base::get_nr;
         using Base::get_nr_dim;
 
-        using Base::get_nu;
-        using Base::get_nu_dim;
-
         using Base::get_q_dependent;
-        using Base::get_v_dependent;
         using Base::get_u_dependent;
+        using Base::get_v_dependent;
 
     protected:
         std::shared_ptr<State_t> state_;

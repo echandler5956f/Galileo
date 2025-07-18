@@ -24,15 +24,17 @@ namespace galileo
         using Model_t = typename RS::ActuationModel_t;
         using Data_t = typename RS::ActuationData_t;
 
-        ActuationDataTpl(const Model_t &model) : tau(model.get_state()->get_nv()),
-                                                 u(model.get_state()->get_nua()),
-                                                 dtau_dx(model.get_state()->get_nv(),
-                                                         model.get_state()->get_ndx()),
-                                                 dtau_du(model.get_state()->get_nv(),
-                                                         model.get_state()->get_nua()),
-                                                 Mtau(model.get_state()->get_nua(),
-                                                      model.get_state()->get_nv()),
-                                                 tau_set(model.get_state()->get_nv())
+        template <typename DataCollector>
+        ActuationDataTpl(const Model_t &model, DataCollector *const collector)
+            : tau(model.get_state()->get_nv()),
+              u(model.get_state()->get_nua()),
+              dtau_dx(model.get_state()->get_nv(),
+                      model.get_state()->get_ndx()),
+              dtau_du(model.get_state()->get_nv(),
+                      model.get_state()->get_nua()),
+              Mtau(model.get_state()->get_nua(),
+                   model.get_state()->get_nv()),
+              tau_set(model.get_state()->get_nv())
         {
             tau.setZero();
             u.setZero();

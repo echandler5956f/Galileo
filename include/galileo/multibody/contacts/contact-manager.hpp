@@ -130,11 +130,11 @@ namespace galileo
 
         template <typename DataCollector>
         ContactDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
-            : Jc(model_manager.get_nc_total(), model_manager.get_ps().nv_dim.value()),
+            : Jc(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
               a0(model_manager.get_nc_total()),
-              da0_dx(model_manager.get_nc_total(), model_manager.get_ps().ndx_dim.value()),
-              dv(model_manager.get_ps().nv_dim.value()),
-              ddv_dx(model_manager.get_ps().nv_dim.value(), model_manager.get_ps().ndx_dim.value()),
+              da0_dx(model_manager.get_nc_total(), model_manager.get_ps().get_ndx()),
+              dv(model_manager.get_ps().get_nv()),
+              ddv_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx()),
               fext(model_manager.get_state()->get_robot().njoints, Force_t::Zero())
         {
             Jc.setZero();

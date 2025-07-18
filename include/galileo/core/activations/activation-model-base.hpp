@@ -45,21 +45,14 @@ namespace galileo
             return ps_;
         }
 
-        const int get_nr() const
-        {
-            if constexpr (DimNR_t::IsFixed)
-            {
-                return DimNR_t::Value;
-            }
-            else
-            {
-                return nr_dim_.value();
-            }
-        }
-
         const DimNR_t &get_nr_dim() const
         {
             return nr_dim_;
+        }
+
+        const int get_nr() const
+        {
+            return nr_dim_.value();
         }
 
     protected:

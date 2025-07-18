@@ -243,12 +243,6 @@ namespace galileo
             return *static_cast<const ModelVariant_t *>(this);
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
-        {
-            return galileo::contact_create_data(*this, collector);
-        }
-
         template <typename StateVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
@@ -263,6 +257,12 @@ namespace galileo
             galileo::contact_calc_first_order(*this, data, x);
         }
 
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
+        {
+            return galileo::contact_create_data(*this, collector);
+        }
+
         template <typename ForceVectorType>
         void updateForce(Data_t &data,
                          const Eigen::MatrixBase<ForceVectorType> &force) const
@@ -270,36 +270,52 @@ namespace galileo
             galileo::contact_update_force(*this, data, force.derived());
         }
 
-        using Base::updateForceDiff;
         using Base::setZeroForce;
         using Base::setZeroForceDiff;
+        using Base::updateForceDiff;
 
-        // template <typename MatrixNcNdxType, typename MatrixNcNuType>
-        // void updateForceDiff(Data_t &data,
-        //                      const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-        //                      const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
-        // {
-        //     galileo::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
-        // }
+        template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        void updateForceDiffImpl(Data_t &data,
+                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+        {
+            galileo::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
+        }
 
-        // void setZeroForce(Data_t &data) const
-        // {
-        //     galileo::contact_set_zero_force(*this, data);
-        // }
+        void setZeroForceImpl(Data_t &data) const
+        {
+            galileo::contact_set_zero_force(*this, data);
+        }
 
-        // void setZeroForceDiff(Data_t &data) const
-        // {
-        //     galileo::contact_set_zero_force_diff(*this, data);
-        // }
+        void setZeroForceDiffImpl(Data_t &data) const
+        {
+            galileo::contact_set_zero_force_diff(*this, data);
+        }
 
-        const RobotModel_t *robot_impl() const
+        const RobotModel_t &get_robot() const
         {
             return galileo::contact_robot(*this);
         }
 
-        FrameIndex_t id_impl() const
+        using Base::get_ps;
+
+        using Base::get_id;
+        using Base::set_id;
+
+        using Base::get_type;
+        using Base::set_type;
+
+        using Base::get_nc;
+        using Base::get_nc_dim;
+
+        const PS &get_ps_impl() const
         {
-            return galileo::contact_id(*this);
+            return galileo::contact_get_ps(*this);
+        }
+
+        FrameIndex_t get_id_impl() const
+        {
+            return galileo::contact_get_id(*this);
         }
 
         void set_id_impl(const FrameIndex_t &id)
@@ -307,9 +323,9 @@ namespace galileo
             galileo::contact_set_id(*this, id);
         }
 
-        ReferenceFrame_t type_impl() const
+        ReferenceFrame_t get_type_impl() const
         {
-            return galileo::contact_type(*this);
+            return galileo::contact_get_type(*this);
         }
 
         void set_type_impl(const ReferenceFrame_t &type)
@@ -317,9 +333,14 @@ namespace galileo
             galileo::contact_set_type(*this, type);
         }
 
-        int nc_impl() const
+        const DimNC_t &get_nc_dim_impl() const
         {
-            return galileo::contact_nc(*this);
+            return galileo::contact_get_nc_dim(*this);
+        }
+
+        const int get_nc_impl() const
+        {
+            return galileo::contact_get_nc(*this);
         }
 
     }; // struct ContactModelTpl

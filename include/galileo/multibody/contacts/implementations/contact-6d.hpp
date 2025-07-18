@@ -19,15 +19,14 @@ namespace galileo
         using Data_t = ContactData6dTpl<PS>;
 
         using DimNC_t = DimensionTpl<6>;
-        static constexpr int NC = DimNC_t::Value;
 
         // Traits required by ForceDataBase
-        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNV_t::Value, PS::Options>;
-        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNDX_t::Value, PS::Options>;
-        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNU_t::Value, PS::Options>;
+        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, DimNC_t::Value, PS::DimNV_t::Value, PS::Options>;
+        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, DimNC_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, DimNC_t::Value, PS::DimNU_t::Value, PS::Options>;
 
         // Traits required by ContactDataBase
-        using VectorNc_t = Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options>;
+        using VectorNc_t = Eigen::GMatrix<typename PS::VarScalar, DimNC_t::Value, 1, PS::Options>;
     };
 
     template <typename PhaseSpec>
@@ -147,27 +146,27 @@ namespace galileo
               frame(0),
               type(model.get_type()),
               jMf(SE3_t::Identity()),
-              Jc(model.get_nc(), model.get_ps().nv_dim.value()),
+              Jc(model.get_nc(), model.get_ps().get_nv()),
               f(Force_t::Zero()),
               fext(Force_t::Zero()),
-              df_dx(model.get_nc(), model.get_ps().ndx_dim.value()),
-              df_du(model.get_nc(), model.get_ps().nu_dim.value()),
+              df_dx(model.get_nc(), model.get_ps().get_ndx()),
+              df_du(model.get_nc(), model.get_ps().get_nu()),
               fXj(jMf.inverse().toActionMatrix()),
               a0(model.get_nc()),
-              da0_dx(model.get_nc(), model.get_ps().ndx_dim.value()),
-              dtau_dq(model.get_ps().nv_dim.value(), model.get_ps().nv_dim.value()),
+              da0_dx(model.get_nc(), model.get_ps().get_ndx()),
+              dtau_dq(model.get_ps().get_nv(), model.get_ps().get_nv()),
               v(Motion_t::Zero()),
               f_local(Force_t::Zero()),
-              da0_local_dx(model.get_nc(), model.get_ps().ndx_dim.value()),
-              fJf(6, model.get_ps().nv_dim.value()),
-              v_partial_dq(6, model.get_ps().nv_dim.value()),
-              a_partial_dq(6, model.get_ps().nv_dim.value()),
-              a_partial_dv(6, model.get_ps().nv_dim.value()),
-              a_partial_da(6, model.get_ps().nv_dim.value()),
-              fXjdv_dq(6, model.get_ps().nv_dim.value()),
-              fXjda_dq(6, model.get_ps().nv_dim.value()),
-              fXjda_dv(6, model.get_ps().nv_dim.value()),
-              fJf_df(model.get_nc(), model.get_ps().nv_dim.value())
+              da0_local_dx(model.get_nc(), model.get_ps().get_ndx()),
+              fJf(6, model.get_ps().get_nv()),
+              v_partial_dq(6, model.get_ps().get_nv()),
+              a_partial_dq(6, model.get_ps().get_nv()),
+              a_partial_dv(6, model.get_ps().get_nv()),
+              a_partial_da(6, model.get_ps().get_nv()),
+              fXjdv_dq(6, model.get_ps().get_nv()),
+              fXjda_dq(6, model.get_ps().get_nv()),
+              fXjda_dv(6, model.get_ps().get_nv()),
+              fJf_df(model.get_nc(), model.get_ps().get_nv())
         {
             Jc.setZero();
             df_dx.setZero();
@@ -176,7 +175,7 @@ namespace galileo
             da0_dx.setZero();
             dtau_dq.setZero();
             frame = model.get_id();
-            jMf = model.get_state()->get_robot().frames[frame].placement;
+            jMf = model.get_robot().frames[frame].placement;
             fXj = jMf.inverse().toActionMatrix();
             da0_local_dx.setZero();
             fJf.setZero();
@@ -214,13 +213,13 @@ namespace galileo
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
         ContactModel6dTpl(const PS &ps,
-                          const std::shared_ptr<State_t> &state,
+                          const RobotModel_t &robot,
                           const FrameIndex_t id,
                           const ReferenceFrame_t &type,
                           const SE3_t &pref,
                           const Vector2_t &gains)
             : Base(ps, id, type, DimNC_t()),
-              state_(state),
+              robot_(robot),
               pref_(pref),
               gains_(gains)
         {
@@ -230,11 +229,11 @@ namespace galileo
         void calc(ContactDataDerived &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            pinocchio::updateFramePlacement(get_state()->get_robot(),
+            pinocchio::updateFramePlacement(robot_,
                                             *data.robot, get_id());
-            pinocchio::getFrameJacobian(get_state()->get_robot(), *data.robot,
+            pinocchio::getFrameJacobian(robot_, *data.robot,
                                         get_id(), pinocchio::LOCAL, data.fJf);
-            data.a0_local = pinocchio::getFrameAcceleration(get_state()->get_robot(),
+            data.a0_local = pinocchio::getFrameAcceleration(robot_,
                                                             *data.robot, get_id());
 
             if (gains_[0] != 0.)
@@ -244,7 +243,7 @@ namespace galileo
             }
             if (gains_[1] != 0.)
             {
-                data.v = pinocchio::getFrameVelocity(get_state()->get_robot(),
+                data.v = pinocchio::getFrameVelocity(robot_,
                                                      *data.robot, get_id());
                 data.a0_local += gains_[1] * data.v;
             }
@@ -268,23 +267,23 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const pinocchio::JointIndex joint =
-                get_state()->get_robot().frames[data.frame].parent;
+                robot_.frames[data.frame].parent;
             pinocchio::getJointAccelerationDerivatives(
-                get_state()->get_robot(), *data.robot, joint, pinocchio::LOCAL,
+                robot_, *data.robot, joint, pinocchio::LOCAL,
                 data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
-            leftCols(data.da0_local_dx, get_ps().nv_dim).noalias() = data.fXj * data.a_partial_dq;
-            rightCols(data.da0_local_dx, get_ps().nv_dim).noalias() = data.fXj * data.a_partial_dv;
+            leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() = data.fXj * data.a_partial_dq;
+            rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() = data.fXj * data.a_partial_dv;
 
             if (gains_[0] != 0.)
             {
                 pinocchio::Jlog6(data.rMf, data.rMf_Jlog6);
-                leftCols(data.da0_local_dx, get_ps().nv_dim).noalias() += gains_[0] * data.rMf_Jlog6 * data.fJf;
+                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() += gains_[0] * data.rMf_Jlog6 * data.fJf;
             }
             if (gains_[1] != 0.)
             {
-                leftCols(data.da0_local_dx, get_ps().nv_dim).noalias() +=
+                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
                     gains_[1] * data.fXj * data.v_partial_dq;
-                rightCols(data.da0_local_dx, get_ps().nv_dim).noalias() += gains_[1] * data.fJf;
+                rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() += gains_[1] * data.fJf;
             }
             switch (get_type())
             {
@@ -296,7 +295,7 @@ namespace galileo
                 // Recalculate the constrained accelerations after imposing contact
                 // constraints. This is necessary for the forward-dynamics case.
                 data.a0_local = pinocchio::getFrameAcceleration(
-                    get_state()->get_robot(), *data.robot, get_id());
+                    robot_, *data.robot, get_id());
                 if (gains_[0] != 0.)
                 {
                     data.a0_local += gains_[0] * pinocchio::log6(data.rMf);
@@ -313,12 +312,18 @@ namespace galileo
                 data.av_world_skew.noalias() = data.av_skew * oRf;
                 data.aw_world_skew.noalias() = data.aw_skew * oRf;
                 data.da0_dx.noalias() = data.lwaMl.toActionMatrix() * data.da0_local_dx;
-                topRows(leftCols(data.da0_dx, get_ps().nv_dim), 3).noalias() -=
+                topRows(leftCols(data.da0_dx, get_ps().get_nv_dim()), 3).noalias() -=
                     data.av_world_skew * bottomRows(data.fJf, 3);
-                bottomRows(leftCols(data.da0_dx, get_ps().nv_dim), 3).noalias() -=
+                bottomRows(leftCols(data.da0_dx, get_ps().get_nv_dim()), 3).noalias() -=
                     data.aw_world_skew * bottomRows(data.fJf, 3);
                 break;
             }
+        }
+
+        template <typename DataCollector>
+        Data_t createData(DataCollector *const collector) const
+        {
+            return Data_t(*this, collector);
         }
 
         template <typename ForceVectorType>
@@ -350,15 +355,9 @@ namespace galileo
         using Base::setZeroForceDiff;
         using Base::updateForceDiff;
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        const RobotModel_t &get_robot() const
         {
-            return Data_t(*this, collector);
-        }
-
-        const std::shared_ptr<State_t> &get_state() const
-        {
-            return state_;
+            return robot_;
         }
 
         using Base::get_ps;
@@ -373,7 +372,7 @@ namespace galileo
         using Base::get_nc_dim;
 
     protected:
-        std::shared_ptr<State_t> state_;
+        const RobotModel_t &robot_;
         SE3_t pref_;
         Vector2_t gains_;
 

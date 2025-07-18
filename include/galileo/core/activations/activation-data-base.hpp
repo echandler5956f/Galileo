@@ -34,16 +34,6 @@ namespace galileo
         FORWARD_ACCESSOR(Ar_t, Ar);
         FORWARD_ACCESSOR(Arr_t, Arr);
 
-        static Arr_diag_t getHessianMatrix(const Data_t &data)
-        {
-            return data.Arr.diagonal().asDiagonal();
-        }
-
-        static void setHessianMatrix(Data_t &data, const Arr_t &Arr)
-        {
-            data.Arr.diagonal() = Arr.diagonal();
-        }
-
     protected:
         inline ActivationDataBase()
         {

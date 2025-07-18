@@ -36,7 +36,7 @@ namespace galileo
 
     template <typename PhaseSpec, int NOrder_>
     class ControlParamModelPolynomialTpl
-    : public ControlParamModelBase<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
+        : public ControlParamModelBase<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -163,8 +163,7 @@ namespace galileo
 
         Data_t createData() const
         {
-            Data_t data(*this);
-            return data;
+            return Data_t(*this);
         }
 
         using Base::get_ps;
