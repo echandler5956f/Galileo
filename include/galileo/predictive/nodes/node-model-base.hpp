@@ -8,7 +8,8 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class NodeModelBase : public internal::CRTP<Derived>
+    class NodeModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -18,6 +19,8 @@ namespace galileo
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        using NumScalar = typename PS::NumScalar;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -53,7 +56,7 @@ namespace galileo
         void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlVectorType> &u,
-                         const std::size_t maxiter, const typename PS::NumScalar tol) const
+                         const int maxiter, const NumScalar tol) const
         {
             this->derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
         }
@@ -64,18 +67,14 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        int nu() const
+        const PS &get_ps() const
         {
-            return this->derived().nu_impl();
-        }
-
-        int nu_impl() const
-        {
-            return traits<Meta_t>::NU;
+            return ps_;
         }
 
     protected:
-        inline NodeModelBase()
+        inline NodeModelBase(const PS &ps)
+            : ps_(ps)
         {
         }
 
@@ -88,6 +87,8 @@ namespace galileo
         {
             return *this;
         }
+
+        const PS &ps_;
 
     }; // class NodeModelBase
 

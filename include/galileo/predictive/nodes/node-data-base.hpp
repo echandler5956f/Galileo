@@ -8,7 +8,8 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct NodeDataBase : public internal::CRTP<Derived>
+    struct NodeDataBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -21,9 +22,9 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        FORWARD_ACCESSOR(ActuationData_t, actuation);
-        FORWARD_ACCESSOR(ConstraintDataManager_t, constraints);
         FORWARD_ACCESSOR(CostDataManager_t, costs);
+        FORWARD_ACCESSOR(ConstraintDataManager_t, constraints);
+        FORWARD_ACCESSOR(ActuationData_t, actuation);
 
         FORWARD_ACCESSOR(XAcc_t, XAcc);
         FORWARD_ACCESSOR(XAccx_t, XAccx);

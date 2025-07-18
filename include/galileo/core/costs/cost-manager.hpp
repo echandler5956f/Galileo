@@ -396,12 +396,22 @@ namespace galileo
             }
         }
 
-        const int get_nr_active() const
+        const DimensionTpl<Eigen::Dynamic> &get_nr_active_dim() const
+        {
+            return nr_active_dim_;
+        }
+
+        int get_nr_active() const
         {
             return nr_active_dim_.value();
         }
 
-        const int get_nr_total() const
+        const DimensionTpl<Eigen::Dynamic> &get_nr_total_dim() const
+        {
+            return nr_total_dim_;
+        }
+
+        int get_nr_total() const
         {
             return nr_total_dim_.value();
         }

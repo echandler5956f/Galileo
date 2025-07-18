@@ -541,12 +541,22 @@ namespace galileo
             return contacts_;
         }
 
-        const int get_nc_active() const
+        const DimensionTpl<Eigen::Dynamic> &get_nc_active_dim() const
+        {
+            return nc_active_dim_;
+        }
+
+        int get_nc_active() const
         {
             return nc_active_dim_.value();
         }
 
-        const int get_nc_total() const
+        const DimensionTpl<Eigen::Dynamic> &get_nc_total_dim() const
+        {
+            return nc_total_dim_;
+        }
+
+        int get_nc_total() const
         {
             return nc_total_dim_.value();
         }
