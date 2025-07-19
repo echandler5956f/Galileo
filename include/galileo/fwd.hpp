@@ -13,6 +13,7 @@ namespace galileo
 #include <iostream>
 #include <memory>
 #include <type_traits>
+#include <functional>
 
 #include "galileo/common/meta/dimension.hpp"
 #include "galileo/common/meta/eigen.hpp"

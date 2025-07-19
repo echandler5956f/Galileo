@@ -422,25 +422,16 @@ namespace galileo
             return actuation_;
         }
 
-        const std::shared_ptr<State_t> &get_state() const
-        {
-            return state_;
-        }
-
-        const RobotModel_t &get_robot() const
-        {
-            return state_->get_robot();
-        }
-
         using Base::get_ps;
+
+        using Base::get_state;
+        using Base::get_robot;
 
     protected:
         CostModelManager_t costs_;
         ConstraintModelManager_t constraints_;
         ContactModelManager_t contacts_;
         ActuationModel_t actuation_;
-
-        std::shared_ptr<State_t> state_;
 
         bool with_armature_;
         VectorNv_t armature_;

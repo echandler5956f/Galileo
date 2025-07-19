@@ -83,7 +83,7 @@ namespace galileo
 
         const PS &get_ps() const
         {
-            return ps_;
+            return ps_.get();
         }
 
         /**
@@ -91,12 +91,12 @@ namespace galileo
          */
         const DimNU_t &get_nu_dim() const
         {
-            return ps_.get_nu_dim();
+            return get_ps().get_nu_dim();
         }
 
-        const int get_nu() const
+        int get_nu() const
         {
-            return ps_.get_nu();
+            return get_ps().get_nu();
         }
 
         /**
@@ -104,12 +104,12 @@ namespace galileo
          */
         const DimNOrder_t &get_norder_dim() const
         {
-            return ps_.get_norder_dim();
+            return get_ps().get_norder_dim();
         }
 
-        const int get_norder() const
+        int get_norder() const
         {
-            return ps_.get_norder();
+            return get_ps().get_norder();
         }
 
         /**
@@ -117,12 +117,12 @@ namespace galileo
          */
         const DimNW_t &get_nw_dim() const
         {
-            return ps_.get_nw_dim();
+            return get_ps().get_nw_dim();
         }
 
-        const int get_nw() const
+        int get_nw() const
         {
-            return ps_.get_nw();
+            return get_ps().get_nw();
         }
 
     protected:
@@ -138,10 +138,11 @@ namespace galileo
 
         inline ControlParamModelBase &operator=(const ControlParamModelBase &clone)
         {
+            ps_ = clone.ps_;
             return *this;
         }
 
-        const PS &ps_;
+        std::reference_wrapper<const PS> ps_;
 
     }; // class ControlParamModelBase
 

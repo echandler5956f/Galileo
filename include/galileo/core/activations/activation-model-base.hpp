@@ -42,7 +42,7 @@ namespace galileo
 
         const PS &get_ps() const
         {
-            return ps_;
+            return ps_.get();
         }
 
         const DimNR_t &get_nr_dim() const
@@ -50,7 +50,7 @@ namespace galileo
             return nr_dim_;
         }
 
-        const int get_nr() const
+        int get_nr() const
         {
             return nr_dim_.value();
         }
@@ -68,11 +68,13 @@ namespace galileo
 
         inline ActivationModelBase &operator=(const ActivationModelBase &clone)
         {
+            ps_ = clone.ps_;
+            nr_dim_ = clone.nr_dim_;
             return *this;
         }
 
-        const PS &ps_;
-        const DimNR_t &nr_dim_;
+        std::reference_wrapper<const PS> ps_;
+        DimNR_t nr_dim_;
 
     }; // class ActivationModelBase
 

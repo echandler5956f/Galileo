@@ -21,6 +21,8 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
 
         using NumScalar = typename PS::NumScalar;
+        using State_t = typename PS::State_t;
+        using RobotModel_t = typename PS::RobotModel_t;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -69,12 +71,22 @@ namespace galileo
 
         const PS &get_ps() const
         {
-            return ps_;
+            return ps_.get();
+        }
+
+        const State_t &get_state() const
+        {
+            return get_ps().get_state();
+        }
+
+        const RobotModel_t &get_robot() const
+        {
+            return robot_.get();
         }
 
     protected:
         inline NodeModelBase(const PS &ps)
-            : ps_(ps)
+            : ps_(ps), robot_(ps.get_state().get_robot())
         {
         }
 
@@ -85,10 +97,13 @@ namespace galileo
 
         inline NodeModelBase &operator=(const NodeModelBase &clone)
         {
+            ps_ = clone.ps_;
+            robot_ = clone.robot_;
             return *this;
         }
 
-        const PS &ps_;
+        std::reference_wrapper<const PS> ps_;
+        std::reference_wrapper<const RobotModel_t> robot_;
 
     }; // class NodeModelBase
 

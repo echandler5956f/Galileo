@@ -505,6 +505,7 @@ namespace galileo
 
         inline StateBase &operator=(const StateBase &clone)
         {
+            rs_ = clone.rs_;
             return *this;
         }
 

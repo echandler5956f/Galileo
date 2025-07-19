@@ -90,7 +90,7 @@ namespace galileo
             }
             else
             {
-                if (UDependent && ps_.get_nu() != 0 && UpdateU)
+                if (UDependent && get_ps().get_nu() != 0 && UpdateU)
                 {
                     calcCostDiffRuImpl(cdata, rdata, adata);
                 }
@@ -110,22 +110,22 @@ namespace galileo
             else if constexpr (QDependent)
             {
                 Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rq =
-                    leftCols(rdata.Rx, ps_.get_nv_dim());
-                head(cdata.Lx, ps_.get_nv_dim()).noalias() = Rq.transpose() * adata.Ar;
-                leftCols(rdata.Arr_Rx, ps_.get_nv_dim()).noalias() =
+                    leftCols(rdata.Rx, get_ps().get_nv_dim());
+                head(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rq.transpose() * adata.Ar;
+                leftCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rq;
-                topLeftCorner(cdata.Lxx, ps_.get_nv_dim(), ps_.get_nv_dim()).noalias() =
-                    Rq.transpose() * leftCols(rdata.Arr_Rx, ps_.get_nv_dim());
+                topLeftCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
+                    Rq.transpose() * leftCols(rdata.Arr_Rx, get_ps().get_nv_dim());
             }
             else if constexpr (VDependent)
             {
                 Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rv =
-                    rightCols(rdata.Rx, ps_.get_nv_dim());
-                tail(cdata.Lx, ps_.get_nv_dim()).noalias() = Rv.transpose() * adata.Ar;
-                rightCols(rdata.Arr_Rx, ps_.get_nv_dim()).noalias() =
+                    rightCols(rdata.Rx, get_ps().get_nv_dim());
+                tail(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rv.transpose() * adata.Ar;
+                rightCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
                     adata.Arr.diagonal().asDiagonal() * Rv;
-                bottomRightCorner(cdata.Lxx, ps_.get_nv_dim(), ps_.get_nv_dim()).noalias() =
-                    Rv.transpose() * rightCols(rdata.Arr_Rx, ps_.get_nv_dim());
+                bottomRightCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
+                    Rv.transpose() * rightCols(rdata.Arr_Rx, get_ps().get_nv_dim());
             }
         }
 
@@ -140,9 +140,9 @@ namespace galileo
             if constexpr (QDependent && VDependent)
                 cdata.Lxu.noalias() = rdata.Rx.transpose() * rdata.Arr_Ru;
             else if constexpr (QDependent)
-                topRows(cdata.Lxu, ps_.get_nv_dim()).noalias() = Rq.transpose() * rdata.Arr_Ru;
+                topRows(cdata.Lxu, get_ps().get_nv_dim()).noalias() = Rq.transpose() * rdata.Arr_Ru;
             else if constexpr (VDependent)
-                bottomRows(cdata.Lxu, ps_.get_nv_dim()).noalias() =
+                bottomRows(cdata.Lxu, get_ps().get_nv_dim()).noalias() =
                     Rv.transpose() * rdata.Arr_Ru;
         }
 
@@ -152,14 +152,9 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const std::shared_ptr<State_t> &get_state() const
-        {
-            return this->derived().get_state();
-        }
-
         const PS &get_ps() const
         {
-            return ps_;
+            return ps_.get();
         }
 
         const DimNR_t &get_nr_dim() const
@@ -167,22 +162,22 @@ namespace galileo
             return nr_dim_;
         }
 
-        const int get_nr() const
+        int get_nr() const
         {
             return nr_dim_.value();
         }
 
-        const bool get_q_dependent() const
+        bool get_q_dependent() const
         {
             return QDependent;
         }
 
-        const bool get_v_dependent() const
+        bool get_v_dependent() const
         {
             return VDependent;
         }
 
-        const bool get_u_dependent() const
+        bool get_u_dependent() const
         {
             return UDependent;
         }
@@ -200,10 +195,12 @@ namespace galileo
 
         inline ResidualModelBase &operator=(const ResidualModelBase &clone)
         {
+            ps_ = clone.ps_;
+            nr_dim_ = clone.nr_dim_;
             return *this;
         }
 
-        const PS &ps_;
+        std::reference_wrapper<const PS> ps_;
         DimNR_t nr_dim_;
 
     }; // class ResidualModelBase

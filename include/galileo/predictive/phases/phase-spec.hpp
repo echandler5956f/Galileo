@@ -298,109 +298,109 @@ namespace galileo
         /* Accessors for the PhaseSpec dimensions */
         /* ---------------------------------------------------------------- */
 
-        const RS &get_rs() const
+        const State_t &get_state() const
         {
-            return rs_;
+            return state_.get();
         }
 
         const DimNQb_t &get_nqb_dim() const
         {
-            return rs.get_nqb_dim();
+            return get_state().get_nqb_dim();
         }
 
-        const int get_nqb() const
+        int get_nqb() const
         {
-            return rs.get_nqb();
+            return get_state().get_nqb();
         }
 
         const DimNQj_t &get_nqj_dim() const
         {
-            return rs.get_nqj_dim();
+            return get_state().get_nqj_dim();
         }
 
-        const int get_nqj() const
+        int get_nqj() const
         {
-            return rs.get_nqj();
+            return get_state().get_nqj();
         }
 
         const DimNVb_t &get_nvb_dim() const
         {
-            return rs.get_nvb_dim();
+            return get_state().get_nvb_dim();
         }
 
-        const int get_nvb() const
+        int get_nvb() const
         {
-            return rs.get_nvb();
+            return get_state().get_nvb();
         }
 
         const DimNVj_t &get_nvj_dim() const
         {
-            return rs.get_nvj_dim();
+            return get_state().get_nvj_dim();
         }
 
-        const int get_nvj() const
+        int get_nvj() const
         {
-            return rs.get_nvj();
+            return get_state().get_nvj();
         }
 
         const DimNRotors_t &get_nrotors_dim() const
         {
-            return rs.get_nrotors_dim();
+            return get_state().get_nrotors_dim();
         }
 
-        const int get_nrotors() const
+        int get_nrotors() const
         {
-            return rs.get_nrotors();
+            return get_state().get_nrotors();
         }
 
         const DimNQ_t &get_nq_dim() const
         {
-            return rs.get_nq_dim();
+            return get_state().get_nq_dim();
         }
 
-        const int get_nq() const
+        int get_nq() const
         {
-            return rs.get_nq();
+            return get_state().get_nq();
         }
 
         const DimNV_t &get_nv_dim() const
         {
-            return rs.get_nv_dim();
+            return get_state().get_nv_dim();
         }
 
-        const int get_nv() const
+        int get_nv() const
         {
-            return rs.get_nv();
+            return get_state().get_nv();
         }
 
         const DimNX_t &get_nx_dim() const
         {
-            return rs.get_nx_dim();
+            return get_state().get_nx_dim();
         }
 
-        const int get_nx() const
+        int get_nx() const
         {
-            return rs.get_nx();
+            return get_state().get_nx();
         }
 
         const DimNDX_t &get_ndx_dim() const
         {
-            return rs.get_ndx_dim();
+            return get_state().get_ndx_dim();
         }
 
-        const int get_ndx() const
+        int get_ndx() const
         {
-            return rs.get_ndx();
+            return get_state().get_ndx();
         }
 
         const DimNUa_t &get_nua_dim() const
         {
-            return rs.get_nua_dim();
+            return get_state().get_nua_dim();
         }
 
-        const int get_nua() const
+        int get_nua() const
         {
-            return rs.get_nua();
+            return get_state().get_nua();
         }
 
         const DimNU_t &get_nu_dim() const
@@ -408,7 +408,12 @@ namespace galileo
             return nu_dim_;
         }
 
-        const int get_nu() const
+        DimNU_t &get_nu_dim()
+        {
+            return nu_dim_;
+        }
+
+        int get_nu() const
         {
             return nu_dim_.value();
         }
@@ -418,7 +423,12 @@ namespace galileo
             return norder_dim_;
         }
 
-        const int get_norder() const
+        DimNOrder_t &get_norder_dim()
+        {
+            return norder_dim_;
+        }
+
+        int get_norder() const
         {
             return norder_dim_.value();
         }
@@ -428,7 +438,12 @@ namespace galileo
             return nw_dim_;
         }
 
-        const int get_nw() const
+        DimNW_t &get_nw_dim()
+        {
+            return nw_dim_;
+        }
+
+        int get_nw() const
         {
             return nw_dim_.value();
         }
@@ -438,15 +453,20 @@ namespace galileo
             return nstages_dim_;
         }
 
-        const int get_nstages() const
+        DimNStages_t &get_nstages_dim()
+        {
+            return nstages_dim_;
+        }
+
+        int get_nstages() const
         {
             return nstages_dim_.value();
         }
 
         // Constructor to properly initialize compound dimensions
-        // rs is bound to the true robot spec, and unmodifiable after this point.
-        PhaseSpecTpl(const RS &rs)
-            : rs_(rs),
+        // state_ is bound to the true state, and unmodifiable after this point.
+        PhaseSpecTpl(const State_t &state)
+            : state_(state),
               nu_dim_{}, norder_dim_{},
               nw_dim_(nu_dim_ * norder_dim_), nstages_dim_{}
         {
@@ -457,8 +477,7 @@ namespace galileo
         /*Actual storage of dimensions */
         /* ---------------------------------------------------------------- */
 
-        // rs_ must outlive the phase spec, which is very reasonable.
-        const RS &rs_;
+        std::reference_wrapper<const State_t> state_;
 
         DimNU_t nu_dim_;
         DimNOrder_t norder_dim_;
@@ -474,7 +493,7 @@ namespace galileo
         bool valid_norder = (ps.get_norder() >= 0);
         bool valid_nw = (ps.get_nw() == ps.get_nu() * ps.get_norder());
         bool valid_nstages = (ps.get_nstages() > 0); // Zero stages is not allowed
-        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.get_rs());
+        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.get_state().get_rs());
     }
 
 } // namespace galileo

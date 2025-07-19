@@ -76,13 +76,13 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const std::shared_ptr<State_t> &get_state() const
+        const State_t &get_state() const
         {
-            return state_;
+            return state_.get();
         }
 
     protected:
-        inline ActuationModelBase(const std::shared_ptr<State_t> &state)
+        inline ActuationModelBase(const State_t &state)
             : state_(state)
         {
         }
@@ -94,10 +94,11 @@ namespace galileo
 
         inline ActuationModelBase &operator=(const ActuationModelBase &clone)
         {
+            state_ = clone.state_;
             return *this;
         }
 
-        const std::shared_ptr<State_t> &state_;
+        std::reference_wrapper<const State_t> state_;
 
     }; // class ActuationModelBase
 

@@ -64,7 +64,7 @@ namespace galileo
 
         const PS &get_ps_impl() const
         {
-            return ps_;
+            return ps_.get();
         }
 
         const DimNH_t &get_nh_dim() const
@@ -77,12 +77,12 @@ namespace galileo
             return nh_dim_;
         }
 
-        const int get_nh() const
+        int get_nh() const
         {
             return this->derived().get_nh_impl();
         }
 
-        const int get_nh_impl() const
+        int get_nh_impl() const
         {
             return nh_dim_.value();
         }
@@ -100,10 +100,12 @@ namespace galileo
 
         inline ConstraintModelBase &operator=(const ConstraintModelBase &clone)
         {
+            ps_ = clone.ps_;
+            nh_dim_ = clone.nh_dim_;
             return *this;
         }
 
-        const PS &ps_;
+        std::reference_wrapper<const PS> ps_;
         DimNH_t nh_dim_;
 
     }; // class ConstraintModelBase
