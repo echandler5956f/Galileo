@@ -132,11 +132,10 @@ namespace galileo
         using FrameIndex_t = pinocchio::FrameIndex;
 
         ResidualModelFrameTranslationTpl(const PS &ps,
-                                         const std::shared_ptr<State_t> &state,
                                          const FrameIndex_t frame_id,
                                          const Vector3_t &x_ref)
             : Base(ps, DimNR_t()),
-              state_(state), frame_id_(frame_id), x_ref_(x_ref)
+              frame_id_(frame_id), x_ref_(x_ref)
         {
         }
 
@@ -145,7 +144,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            pinocchio::updateFramePlacement(state_->get_robot(), *data.robot, frame_id_);
+            pinocchio::updateFramePlacement(get_ps().get_robot(), *data.robot, frame_id_);
             data.R = data.robot->oMf[frame_id_].translation() - x_ref_;
         }
 
@@ -155,7 +154,7 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             pinocchio::getFrameJacobian(
-                state_->get_robot(),
+                get_ps().get_robot(),
                 *data.robot,
                 frame_id_,
                 pinocchio::ReferenceFrame::LOCAL,
@@ -171,22 +170,16 @@ namespace galileo
             return Data_t(*this, collector);
         }
 
-        const std::shared_ptr<State_t> &get_state() const
-        {
-            return state_;
-        }
-
         using Base::get_ps;
 
         using Base::get_nr;
         using Base::get_nr_dim;
 
         using Base::get_q_dependent;
-        using Base::get_v_dependent;
         using Base::get_u_dependent;
+        using Base::get_v_dependent;
 
     protected:
-        std::shared_ptr<State_t> state_;
         FrameIndex_t frame_id_;
         Vector3_t x_ref_;
 

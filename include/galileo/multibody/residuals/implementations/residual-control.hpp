@@ -166,8 +166,8 @@ namespace galileo
         using Base::get_nr_dim;
 
         using Base::get_q_dependent;
-        using Base::get_v_dependent;
         using Base::get_u_dependent;
+        using Base::get_v_dependent;
 
     protected:
         VectorNu_t u_ref_;

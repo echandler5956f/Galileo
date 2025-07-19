@@ -25,7 +25,7 @@ namespace galileo
         using Model_t = ResidualModelStateTpl<PS>;
         using Data_t = ResidualDataStateTpl<PS>;
 
-        using DimNR_t = typename PS::DimNDX_t
+        using DimNR_t = typename PS::DimNDX_t;
 
         static constexpr bool QDependent = true;
         static constexpr bool VDependent = true;
@@ -124,10 +124,9 @@ namespace galileo
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         ResidualModelStateTpl(const PS &ps,
-                              const std::shared_ptr<State_t> &state,
                               const VectorNx_t &x_ref)
             : Base(ps, DimNR_t()),
-              state_(state), x_ref_(x_ref)
+              x_ref_(x_ref)
         {
         }
 
@@ -136,7 +135,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            state_->diff(x_ref_, x, data.R);
+            get_ps().get_state()->diff(x_ref_, x, data.R);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -144,7 +143,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            state_->Jdiff(x_ref_, x, data.Rx, data.Rx, Jcomponent::second);
+            get_ps().get_state()->Jdiff(x_ref_, x, data.Rx, data.Rx, Jcomponent::second);
         }
 
         template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
@@ -153,7 +152,7 @@ namespace galileo
                               const ActivationDataType &adata) const
         {
             const PS &ps = get_ps();
-            const RobotModel_t &robot = state_->get_robot();
+            const RobotModel_t &robot = get_ps().get_robot();
             typedef Eigen::Block<MatrixX_t> MatrixBlock;
 
             // trust
@@ -183,22 +182,16 @@ namespace galileo
             return Data_t(*this, collector);
         }
 
-        const std::shared_ptr<State_t> &get_state() const
-        {
-            return state_;
-        }
-
         using Base::get_ps;
 
         using Base::get_nr;
         using Base::get_nr_dim;
 
         using Base::get_q_dependent;
-        using Base::get_v_dependent;
         using Base::get_u_dependent;
+        using Base::get_v_dependent;
 
     protected:
-        std::shared_ptr<State_t> state_;
         VectorNx_t x_ref_;
 
     }; // class ResidualModelStateTpl
