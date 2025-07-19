@@ -408,22 +408,12 @@ namespace galileo
             return nu_dim_;
         }
 
-        DimNU_t &get_nu_dim()
-        {
-            return nu_dim_;
-        }
-
         int get_nu() const
         {
             return nu_dim_.value();
         }
 
         const DimNOrder_t &get_norder_dim() const
-        {
-            return norder_dim_;
-        }
-
-        DimNOrder_t &get_norder_dim()
         {
             return norder_dim_;
         }
@@ -438,22 +428,12 @@ namespace galileo
             return nw_dim_;
         }
 
-        DimNW_t &get_nw_dim()
-        {
-            return nw_dim_;
-        }
-
         int get_nw() const
         {
             return nw_dim_.value();
         }
 
         const DimNStages_t &get_nstages_dim() const
-        {
-            return nstages_dim_;
-        }
-
-        DimNStages_t &get_nstages_dim()
         {
             return nstages_dim_;
         }
