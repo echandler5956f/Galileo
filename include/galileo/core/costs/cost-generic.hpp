@@ -27,9 +27,6 @@ namespace galileo
         using Model_t = CostModelTpl<PS, CostCollectionTpl>;
         using Data_t = CostDataTpl<PS, CostCollectionTpl>;
 
-        using DimNR_t = DimensionTpl<>;
-        static constexpr int NR = DimNR_t::Value;
-
         using L_t = typename PS::VarScalar;
         using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>;
         using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, 1, PS::Options>;
@@ -230,22 +227,9 @@ namespace galileo
 
         using Base::get_ps;
 
-        using Base::get_nr_dim;
-        using Base::get_nr;
-
         const PS &get_ps_impl() const
         {
             return galileo::cost_get_ps(*this);
-        }
-
-        const DimNR_t &get_nr_dim_impl() const
-        {
-            return galileo::cost_get_nr_dim(*this);
-        }
-
-        const int get_nr_impl() const
-        {
-            return galileo::cost_get_nr(*this);
         }
 
     }; // struct CostModelTpl

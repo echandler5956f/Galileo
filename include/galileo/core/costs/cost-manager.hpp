@@ -120,11 +120,11 @@ namespace galileo
         template <typename DataCollector>
         CostDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
             : L(0.),
-              Lx(model_manager.get_ps().ndx_dim.value()),
-              Lu(model_manager.get_ps().nu_dim.value()),
-              Lxx(model_manager.get_ps().ndx_dim.value(), model_manager.get_ps().ndx_dim.value()),
-              Lxu(model_manager.get_ps().ndx_dim.value(), model_manager.get_ps().nu_dim.value()),
-              Luu(model_manager.get_ps().nu_dim.value(), model_manager.get_ps().nu_dim.value())
+              Lx(model_manager.get_ps().get_ndx()),
+              Lu(model_manager.get_ps().get_nu()),
+              Lxx(model_manager.get_ps().get_ndx(), model_manager.get_ps().get_ndx()),
+              Lxu(model_manager.get_ps().get_ndx(), model_manager.get_ps().get_nu()),
+              Luu(model_manager.get_ps().get_nu(), model_manager.get_ps().get_nu())
         {
             Lx.setZero();
             Lu.setZero();
@@ -177,7 +177,7 @@ namespace galileo
         using VarScalar = typename PS::VarScalar;
 
         CostModelManagerTpl(const PS &ps)
-            : ps_(ps), nr_active_dim_(0), nr_total_dim_(0)
+            : ps_(ps)
         {
         }
 
@@ -194,13 +194,10 @@ namespace galileo
             }
             else if (active)
             {
-                nr_active_dim_ += model.get_nr_dim();
-                nr_total_dim_ += model.get_nr_dim();
                 active_set_.insert(name);
             }
             else if (!active)
             {
-                nr_total_dim_ += model.get_nr_dim();
                 inactive_set_.insert(name);
             }
         }
@@ -210,8 +207,6 @@ namespace galileo
             typename ModelContainer_t::iterator it = costs_.find(name);
             if (it != costs_.end())
             {
-                nr_active_dim_ -= it->second.model.get_nr_dim();
-                nr_total_dim_ -= it->second.model.get_nr_dim();
                 costs_.erase(it);
                 active_set_.erase(name);
                 inactive_set_.erase(name);
@@ -230,14 +225,12 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    nr_active_dim_ += it->second.model.get_nr_dim();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    nr_active_dim_ -= it->second.model.get_nr_dim();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -362,7 +355,7 @@ namespace galileo
 
         const PS &get_ps() const
         {
-            return ps_;
+            return ps_.get();
         }
 
         const ModelContainer_t &get_costs() const
@@ -380,7 +373,7 @@ namespace galileo
             return inactive_set_;
         }
 
-        const bool get_cost_status(const std::string &name) const
+        bool get_cost_status(const std::string &name) const
         {
             typename ModelContainer_t::const_iterator it =
                 costs_.find(name);
@@ -396,35 +389,12 @@ namespace galileo
             }
         }
 
-        const DimensionTpl<Eigen::Dynamic> &get_nr_active_dim() const
-        {
-            return nr_active_dim_;
-        }
-
-        int get_nr_active() const
-        {
-            return nr_active_dim_.value();
-        }
-
-        const DimensionTpl<Eigen::Dynamic> &get_nr_total_dim() const
-        {
-            return nr_total_dim_;
-        }
-
-        int get_nr_total() const
-        {
-            return nr_total_dim_.value();
-        }
-
     protected:
-        const PS &ps_;
+        std::reference_wrapper<const PS> ps_;
         ModelContainer_t costs_;
 
         std::set<std::string> active_set_;
         std::set<std::string> inactive_set_;
-
-        DimensionTpl<Eigen::Dynamic> nr_active_dim_;
-        DimensionTpl<Eigen::Dynamic> nr_total_dim_;
 
     }; // class CostModelManagerTpl
 

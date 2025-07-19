@@ -12,46 +12,46 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename> class ConstraintCollectionTpl,
+              typename StateVectorType,
+              typename ControlVectorType>
+    inline void constraint_calc_zeroth_order(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Eigen::MatrixBase<ControlVectorType> &u);
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
+              typename StateVectorType>
+    inline void constraint_calc_zeroth_order(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
+        const Eigen::MatrixBase<StateVectorType> &x);
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
+              typename StateVectorType,
+              typename ControlVectorType>
+    inline void constraint_calc_first_order(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Eigen::MatrixBase<ControlVectorType> &u);
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
+              typename StateVectorType>
+    inline void constraint_calc_first_order(
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
+        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
+        const Eigen::MatrixBase<StateVectorType> &x);
+
+    template <typename PhaseSpec,
+              template <typename> class ConstraintCollectionTpl,
               typename DataCollector>
     inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         DataCollector *const collector);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType,
-              typename ControlVectorType>
-    inline void constraint_calc_zeroth_order(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
-        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
-        const Eigen::MatrixBase<StateVectorType> &x,
-        const Eigen::MatrixBase<ControlVectorType> &u);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType>
-    inline void constraint_calc_zeroth_order(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
-        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType,
-              typename ControlVectorType>
-    inline void constraint_calc_first_order(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
-        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
-        const Eigen::MatrixBase<StateVectorType> &x,
-        const Eigen::MatrixBase<ControlVectorType> &u);
-
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType>
-    inline void constraint_calc_first_order(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
-        ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
 
     // Constraint data visitors
 

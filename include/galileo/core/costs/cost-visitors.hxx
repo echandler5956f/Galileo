@@ -15,38 +15,6 @@ namespace galileo
 
     // Cost model visitors
 
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl,
-              typename DataCollector>
-    struct CostCreateDataVisitor
-        : fusion::CostUnaryVisitorBase<CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector>>
-    {
-        using ArgsType = boost::fusion::vector<DataCollector *const>;
-        using CostCollection_t = CostCollectionTpl<PhaseSpec>;
-        using CostModelVariant_t = CostCollection_t::ModelVariant_t;
-        using CostDataVariant_t = CostDataTpl<PhaseSpec, CostCollectionTpl>;
-
-        template <typename CostModelDerived>
-        static CostDataVariant_t algo(
-            const CostModelBase<CostModelDerived, PhaseSpec> &cost_model,
-            DataCollector *const collector)
-        {
-            return CostDataVariant_t(cost_model.createData(collector));
-        }
-    };
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl,
-              typename DataCollector>
-    inline CostDataTpl<PhaseSpec, CostCollectionTpl> cost_create_data(
-        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
-        DataCollector *const collector)
-    {
-        typedef CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector> Algo;
-
-        return Algo::run(cost_model, typename Algo::ArgsType(collector));
-    }
-
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct CostCalcZerothOrderVisitor
         : fusion::CostUnaryVisitorBase<CostCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
@@ -170,49 +138,35 @@ namespace galileo
     }
 
     template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl>
-    struct CostGetNrVisitor : boost::static_visitor<int>
+              template <typename> class CostCollectionTpl,
+              typename DataCollector>
+    struct CostCreateDataVisitor
+        : fusion::CostUnaryVisitorBase<CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector>>
     {
-        template <typename CostModelDerived>
-        int operator()(const CostModelBase<CostModelDerived, PhaseSpec> &model) const
-        {
-            return model.get_nr();
-        }
+        using ArgsType = boost::fusion::vector<DataCollector *const>;
+        using CostCollection_t = CostCollectionTpl<PhaseSpec>;
+        using CostModelVariant_t = CostCollection_t::ModelVariant_t;
+        using CostDataVariant_t = CostDataTpl<PhaseSpec, CostCollectionTpl>;
 
-        static int run(const CostModelTpl<PhaseSpec, CostCollectionTpl> &model)
+        template <typename CostModelDerived>
+        static CostDataVariant_t algo(
+            const CostModelBase<CostModelDerived, PhaseSpec> &cost_model,
+            DataCollector *const collector)
         {
-            return boost::apply_visitor(CostGetNrVisitor<PhaseSpec, CostCollectionTpl>(), model);
+            return CostDataVariant_t(cost_model.createData(collector));
         }
     };
 
     template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl>
-    inline int cost_get_nr(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
+              template <typename> class CostCollectionTpl,
+              typename DataCollector>
+    inline CostDataTpl<PhaseSpec, CostCollectionTpl> cost_create_data(
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
+        DataCollector *const collector)
     {
-        return CostGetNrVisitor<PhaseSpec, CostCollectionTpl>::run(cost_model);
-    }
+        typedef CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector> Algo;
 
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl>
-    struct CostGetNrDimVisitor : boost::static_visitor<DimensionTpl<>>
-    {
-        template <typename CostModelDerived>
-        DimensionTpl<> operator()(const CostModelBase<CostModelDerived, PhaseSpec> &model) const
-        {
-            return model.get_nr_dim();
-        }
-
-        static DimensionTpl<> run(const CostModelTpl<PhaseSpec, CostCollectionTpl> &model)
-        {
-            return boost::apply_visitor(CostGetNrDimVisitor<PhaseSpec, CostCollectionTpl>(), model);
-        }
-    };
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl>
-    inline const DimensionTpl<> &cost_get_nr_dim(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
-    {
-        return CostGetNrDimVisitor<PhaseSpec, CostCollectionTpl>::run(cost_model);
+        return Algo::run(cost_model, typename Algo::ArgsType(collector));
     }
 
     // Cost data visitors

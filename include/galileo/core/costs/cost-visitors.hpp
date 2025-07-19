@@ -12,54 +12,46 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl,
+              typename StateVectorType,
+              typename ControlVectorType>
+    inline void cost_calc_zeroth_order(
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
+        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Eigen::MatrixBase<ControlVectorType> &u);
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl,
+              typename StateVectorType>
+    inline void cost_calc_zeroth_order(
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
+        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
+        const Eigen::MatrixBase<StateVectorType> &x);
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl,
+              typename StateVectorType,
+              typename ControlVectorType>
+    inline void cost_calc_first_order(
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
+        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Eigen::MatrixBase<ControlVectorType> &u);
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl,
+              typename StateVectorType>
+    inline void cost_calc_first_order(
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
+        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
+        const Eigen::MatrixBase<StateVectorType> &x);
+
+    template <typename PhaseSpec,
+              template <typename> class CostCollectionTpl,
               typename DataCollector>
     inline CostDataTpl<PhaseSpec, CostCollectionTpl> cost_create_data(
         const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
         DataCollector *const collector);
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl,
-              typename StateVectorType,
-              typename ControlVectorType>
-    inline void cost_calc_zeroth_order(
-        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
-        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
-        const Eigen::MatrixBase<StateVectorType> &x,
-        const Eigen::MatrixBase<ControlVectorType> &u);
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl,
-              typename StateVectorType>
-    inline void cost_calc_zeroth_order(
-        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
-        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl,
-              typename StateVectorType,
-              typename ControlVectorType>
-    inline void cost_calc_first_order(
-        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
-        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
-        const Eigen::MatrixBase<StateVectorType> &x,
-        const Eigen::MatrixBase<ControlVectorType> &u);
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl,
-              typename StateVectorType>
-    inline void cost_calc_first_order(
-        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
-        CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl>
-    inline int cost_get_nr(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
-
-    template <typename PhaseSpec,
-              template <typename> class CostCollectionTpl>
-    inline const DimensionTpl<> &cost_get_nr_dim(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
 
     // Cost data visitors
 

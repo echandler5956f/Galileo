@@ -298,8 +298,8 @@ namespace galileo
 
                     m_i.model.calcDiff(d_i, x.derived(), u.derived());
                     auto nh_dim_i = m_i.model.get_nh_dim();
-                    block(data.Hx, nh_accum_i, 0, nh_dim_i, ps_.get_ndx_dim()) = d_i.Hx();
-                    block(data.Hu, nh_accum_i, 0, nh_dim_i, ps_.get_nu_dim()) = d_i.Hu();
+                    block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
+                    block(data.Hu, nh_accum_i, 0, nh_dim_i, get_ps().get_nu_dim()) = d_i.Hu();
                     nh_accum_i += nh_dim_i;
                 }
             }
@@ -324,7 +324,7 @@ namespace galileo
 
                     m_i.model.calcDiff(d_i, x.derived());
                     auto nh_dim_i = m_i.model.get_nh_dim();
-                    block(data.Hx, nh_accum_i, 0, nh_dim_i, ps_.get_ndx_dim()) = d_i.Hx();
+                    block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     nh_accum_i += nh_dim_i;
                 }
             }
@@ -356,6 +356,11 @@ namespace galileo
             }
         }
 
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
         const DimensionTpl<Eigen::Dynamic> &get_nh_dim() const
         {
             return nh_dim_;
@@ -367,7 +372,7 @@ namespace galileo
         }
 
     protected:
-        const PS &ps_;
+        std::reference_wrapper<const PS> ps_;
         ModelContainer_t constraints_;
 
         std::set<std::string> active_set_;
