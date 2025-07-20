@@ -67,17 +67,6 @@ namespace galileo
 
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        // Accessor implementations required by ForceDataBase
-        using Base::df_du;
-        using Base::df_dx;
-        using Base::f;
-        using Base::fext;
-        using Base::frame;
-        using Base::Jc;
-        using Base::jMf;
-        using Base::robot;
-        using Base::type;
-
         // Members required by ForceDataBase
         RobotData_t *robot;
         FrameIndex_t frame;
@@ -99,12 +88,6 @@ namespace galileo
         DEFAULT_ACCESSOR(Force_t, fext);
         DEFAULT_ACCESSOR(MatrixNcNdx_t, df_dx);
         DEFAULT_ACCESSOR(MatrixNcNu_t, df_du);
-
-        // Accessor implementations required by ContactDataBase
-        using Base::a0;
-        using Base::da0_dx;
-        using Base::dtau_dq;
-        using Base::fXj;
 
         // Members required by ContactDataBase
         ActionMatrix_t fXj;
@@ -229,11 +212,11 @@ namespace galileo
         void calc(ContactDataDerived &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            pinocchio::updateFramePlacement(robot_,
+            pinocchio::updateFramePlacement(get_robot(),
                                             *data.robot, get_id());
-            pinocchio::getFrameJacobian(robot_, *data.robot,
+            pinocchio::getFrameJacobian(get_robot(), *data.robot,
                                         get_id(), pinocchio::LOCAL, data.fJf);
-            data.a0_local = pinocchio::getFrameAcceleration(robot_,
+            data.a0_local = pinocchio::getFrameAcceleration(get_robot(),
                                                             *data.robot, get_id());
 
             if (gains_[0] != 0.)
@@ -243,7 +226,7 @@ namespace galileo
             }
             if (gains_[1] != 0.)
             {
-                data.v = pinocchio::getFrameVelocity(robot_,
+                data.v = pinocchio::getFrameVelocity(get_robot(),
                                                      *data.robot, get_id());
                 data.a0_local += gains_[1] * data.v;
             }
@@ -267,9 +250,9 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const pinocchio::JointIndex joint =
-                robot_.frames[data.frame].parent;
+                get_robot().frames[data.frame].parent;
             pinocchio::getJointAccelerationDerivatives(
-                robot_, *data.robot, joint, pinocchio::LOCAL,
+                get_robot(), *data.robot, joint, pinocchio::LOCAL,
                 data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
             leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() = data.fXj * data.a_partial_dq;
             rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() = data.fXj * data.a_partial_dv;
@@ -295,7 +278,7 @@ namespace galileo
                 // Recalculate the constrained accelerations after imposing contact
                 // constraints. This is necessary for the forward-dynamics case.
                 data.a0_local = pinocchio::getFrameAcceleration(
-                    robot_, *data.robot, get_id());
+                    get_robot(), *data.robot, get_id());
                 if (gains_[0] != 0.)
                 {
                     data.a0_local += gains_[0] * pinocchio::log6(data.rMf);
@@ -357,7 +340,7 @@ namespace galileo
 
         const RobotModel_t &get_robot() const
         {
-            return robot_;
+            return robot_.get();
         }
 
         using Base::get_ps;
@@ -372,7 +355,7 @@ namespace galileo
         using Base::get_nc_dim;
 
     protected:
-        const RobotModel_t &robot_;
+        std::reference_wrapper<const RobotModel_t> robot_;
         SE3_t pref_;
         Vector2_t gains_;
 

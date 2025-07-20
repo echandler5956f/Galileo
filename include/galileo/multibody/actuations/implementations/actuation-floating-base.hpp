@@ -84,10 +84,9 @@ namespace galileo
             // has constant values which are set in createData
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData()
         {
-            Data_t data(*this, collector);
+            Data_t data(*this);
             data.dtau_du.diagonal(-get_state().get_nvb()).setOnes();
             data.Mtau.diagonal(get_state().get_nvb()).setOnes();
             for (int i = 0; i < get_state().get_nvb(); ++i)

@@ -74,17 +74,6 @@ namespace galileo
 
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        // Accessor implementations required by ForceDataBase
-        using Base::df_du;
-        using Base::df_dx;
-        using Base::f;
-        using Base::fext;
-        using Base::frame;
-        using Base::Jc;
-        using Base::jMf;
-        using Base::robot;
-        using Base::type;
-
         // Members required by ForceDataBase
         RobotData_t *robot;
         FrameIndex_t frame;
@@ -106,12 +95,6 @@ namespace galileo
         DEFAULT_ACCESSOR(Force_t, fext);
         DEFAULT_ACCESSOR(MatrixNcNdx_t, df_dx);
         DEFAULT_ACCESSOR(MatrixNcNu_t, df_du);
-
-        // Accessor implementations required by ContactDataBase
-        using Base::a0;
-        using Base::da0_dx;
-        using Base::dtau_dq;
-        using Base::fXj;
 
         // Members required by ContactDataBase
         ActionMatrix_t fXj;
@@ -243,12 +226,12 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            pinocchio::updateFramePlacement(robot_, *data.robot, get_id());
-            pinocchio::getFrameJacobian(robot_, *data.robot, get_id(), pinocchio::LOCAL, data.fJf);
-            data.v = pinocchio::getFrameVelocity(robot_, *data.robot, get_id());
+            pinocchio::updateFramePlacement(get_robot(), *data.robot, get_id());
+            pinocchio::getFrameJacobian(get_robot(), *data.robot, get_id(), pinocchio::LOCAL, data.fJf);
+            data.v = pinocchio::getFrameVelocity(get_robot(), *data.robot, get_id());
             data.a0_local =
                 pinocchio::getFrameClassicalAcceleration(
-                    robot_, *data.robot, get_id(), pinocchio::LOCAL)
+                    get_robot(), *data.robot, get_id(), pinocchio::LOCAL)
                     .linear();
 
             const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
@@ -281,9 +264,9 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const pinocchio::JointIndex joint =
-                robot_.frames[data.frame].parent;
+                get_robot().frames[data.frame].parent;
             pinocchio::getJointAccelerationDerivatives(
-                robot_, *data.robot, joint, pinocchio::LOCAL,
+                get_robot(), *data.robot, joint, pinocchio::LOCAL,
                 data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
             pinocchio::skew(data.v.linear(), data.vv_skew);
             pinocchio::skew(data.v.angular(), data.vw_skew);
@@ -327,7 +310,7 @@ namespace galileo
                 // Recalculate the constrained accelerations after imposing contact
                 // constraints. This is necessary for the forward-dynamics case.
                 data.a0_local = pinocchio::getFrameClassicalAcceleration(
-                                    robot_, *data.robot, get_id(),
+                                    get_robot(), *data.robot, get_id(),
                                     pinocchio::LOCAL)
                                     .linear();
                 if (gains_[0] != 0.)
@@ -387,7 +370,7 @@ namespace galileo
 
         const RobotModel_t &get_robot() const
         {
-            return robot_;
+            return robot_.get();
         }
 
         using Base::get_ps;
@@ -402,7 +385,7 @@ namespace galileo
         using Base::get_nc_dim;
 
     protected:
-        const RobotModel_t &robot_;
+        std::reference_wrapper<const RobotModel_t> robot_;
         Vector3_t xref_;
         Vector2_t gains_;
 

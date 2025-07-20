@@ -70,10 +70,9 @@ namespace galileo
             this->derived().torqueTransform(data, x.derived(), u.derived());
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData()
         {
-            return this->derived().createData(collector);
+            return this->derived().createData();
         }
 
         const State_t &get_state() const

@@ -73,17 +73,6 @@ namespace galileo
         // Now we can access the traits of the derived class
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        // Accessors required by ForceDataBase
-        using Base::df_du;
-        using Base::df_dx;
-        using Base::f;
-        using Base::fext;
-        using Base::frame;
-        using Base::Jc;
-        using Base::jMf;
-        using Base::robot;
-        using Base::type;
-
         // Accessors required by ContactDataBase
         FORWARD_ACCESSOR(typename PS::ActionMatrix_t, fXj);
         FORWARD_ACCESSOR(VectorNc_t, a0);
