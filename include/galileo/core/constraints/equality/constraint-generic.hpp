@@ -210,8 +210,8 @@ namespace galileo
 
         using Base::get_ps;
 
-        using Base::get_nh_dim;
         using Base::get_nh;
+        using Base::get_nh_dim;
 
         const PS &get_ps_impl() const
         {

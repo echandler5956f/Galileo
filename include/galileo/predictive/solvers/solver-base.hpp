@@ -1,8 +1,8 @@
 #ifndef __galileo_predictive_solvers_solver_base_hpp__
 #define __galileo_predictive_solvers_solver_base_hpp__
 
-#include "galileo/predictive/solvers/fwd.hpp"
 #include "galileo/predictive/ocp.hpp"
+#include "galileo/predictive/solvers/fwd.hpp"
 
 #include <limits>
 #include <memory>

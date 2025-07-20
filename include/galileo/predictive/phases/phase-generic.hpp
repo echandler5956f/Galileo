@@ -1,11 +1,11 @@
 #ifndef __galileo_predictive_phases_phase_generic_hpp__
 #define __galileo_predictive_phases_phase_generic_hpp__
 
+#include "galileo/common/container/aligned-vector.hpp"
 #include "galileo/predictive/phases/fwd.hpp"
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/phases/phase-collection.hpp"
 #include "galileo/predictive/phases/phase-visitors.hxx"
-#include "galileo/common/container/aligned-vector.hpp"
 
 #include <boost/mpl/contains.hpp>
 

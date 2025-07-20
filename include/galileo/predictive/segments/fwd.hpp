@@ -5,12 +5,11 @@
 
 namespace galileo
 {
+    template <typename PhaseSpec>
+    struct SegmentERKModelEulerTpl;
 
     template <typename PhaseSpec>
     struct SegmentERKDataEulerTpl;
-
-    template <typename PhaseSpec>
-    struct SegmentERKModelEulerTpl;
 
 } // namespace galileo
 
