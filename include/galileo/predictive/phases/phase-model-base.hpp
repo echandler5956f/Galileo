@@ -38,7 +38,7 @@ namespace galileo
         template <typename StateMatrixType, typename ControlParamMatrixType>
         void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
-                         const std::size_t maxiter, const typename PS::NumScalar &tol) const
+                         const int maxiter, const typename PS::NumScalar &tol) const
         {
             this->derived().quasiStatic(data, xs.derived(), ws.derived(), maxiter, tol);
         }

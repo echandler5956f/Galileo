@@ -375,7 +375,7 @@ namespace galileo
         template <typename StateVectorType, typename ControlVectorType>
         void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlVectorType> &u,
-                         const std::size_t maxiter, const NumScalar tol) const
+                         const int maxiter, const NumScalar tol) const
         {
             const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNQ_t::Value> q =
                 head(x, get_ps().get_nq_dim());

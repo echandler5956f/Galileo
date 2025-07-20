@@ -207,7 +207,7 @@ namespace galileo
         void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlParamVectorType> &w,
-                         const std::size_t maxiter, const NumScalar tol) const
+                         const int maxiter, const NumScalar tol) const
         {
             data.control.u.setZero();
             node_.quasiStatic(data.node, x, data.control.u, maxiter, tol);

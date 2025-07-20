@@ -175,7 +175,7 @@ namespace galileo
         void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
-                         const std::size_t maxiter,
+                         const int maxiter,
                          const typename PS::NumScalar &tol) const
         {
             galileo::phase_quasi_static(*this, data, xs.derived(), ws.derived(), maxiter, tol);

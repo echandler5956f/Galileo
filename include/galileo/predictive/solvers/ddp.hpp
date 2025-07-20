@@ -77,7 +77,7 @@ namespace galileo
         bool solve(
             const std::vector<VectorXn> &init_xs,
             const std::vector<VectorXn> &init_us,
-            const std::size_t maxiter = 100,
+            const int maxiter = 100,
             const bool is_feasible = false,
             const NumScalar init_reg = NAN)
         {

@@ -53,7 +53,7 @@ namespace galileo
         void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlParamVectorType> &w,
-                         const std::size_t maxiter,
+                         const int maxiter,
                          const typename PS::NumScalar &tol) const
         {
             this->derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);

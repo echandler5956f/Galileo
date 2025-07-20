@@ -317,7 +317,7 @@ namespace galileo
         void quasiStatic(typename PS::SegmentData_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlParamVectorType> &ws,
-                         const std::size_t maxiter, const typename PS::NumScalar tol) const
+                         const int maxiter, const typename PS::NumScalar tol) const
         {
             typename PS::ControlParamData_t &w0_data = data.controls[0];
             w0_data.u *= 0.;
