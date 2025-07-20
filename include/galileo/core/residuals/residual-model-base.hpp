@@ -79,71 +79,115 @@ namespace galileo
                               const ActivationDataType &adata) const
         {
             // This function computes the derivatives of the cost function based on a
-            // Gauss-Newton approximation. We split the computation into two parts since it
-            // is possible (and trivial) to know the optimal branch at compile time.
+            // Gauss-Newton approximation. We split the computation into branches based on
+            // compile-time conditions to optimize performance and share matrix views.
 
-            calcCostDiffRxImpl(cdata, rdata, adata);
+            static constexpr bool compile_time_update_u = UDependent && PS::DimNU_t::Value > 0 && UpdateU;
+            bool runtime_update_u = UDependent && get_ps().get_nu() != 0 && UpdateU;
 
-            if constexpr (UDependent && PS::DimNU_t::Value > 0 && UpdateU)
-            {
-                calcCostDiffRuImpl(cdata, rdata, adata);
-            }
-            else
-            {
-                if (UDependent && get_ps().get_nu() != 0 && UpdateU)
-                {
-                    calcCostDiffRuImpl(cdata, rdata, adata);
-                }
-            }
-        }
-
-        constexpr void calcCostDiffRxImpl(CostDataType &cdata,
-                                          Data_t &rdata,
-                                          const ActivationDataType &adata) const
-        {
             if constexpr (QDependent && VDependent)
             {
-                cdata.Lx.noalias() = rdata.Rx.transpose() * adata.Ar;
-                rdata.Arr_Rx.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Rx;
-                cdata.Lxx.noalias() = rdata.Rx.transpose() * rdata.Arr_Rx;
+                // Both Q and V dependent - use full Rx matrix
+                calcCostDiffRxFullImpl(cdata, rdata, adata);
+
+                if constexpr (compile_time_update_u)
+                    calcCostDiffRuFullImpl(cdata, rdata, adata);
+                else if (runtime_update_u)
+                    calcCostDiffRuFullImpl(cdata, rdata, adata);
             }
             else if constexpr (QDependent)
             {
-                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rq =
-                    leftCols(rdata.Rx, get_ps().get_nv_dim());
-                head(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rq.transpose() * adata.Ar;
-                leftCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
-                    adata.Arr.diagonal().asDiagonal() * Rq;
-                topLeftCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
-                    Rq.transpose() * leftCols(rdata.Arr_Rx, get_ps().get_nv_dim());
+                // Only Q dependent - compute Rq once and share it
+                auto Rq = leftCols(rdata.Rx, get_ps().get_nv_dim());
+                calcCostDiffRxQImpl(cdata, rdata, adata, Rq);
+
+                if constexpr (compile_time_update_u)
+                    calcCostDiffRuQImpl(cdata, rdata, adata, Rq);
+                else if (runtime_update_u)
+                    calcCostDiffRuQImpl(cdata, rdata, adata, Rq);
             }
             else if constexpr (VDependent)
             {
-                Eigen::Block<Rx_t, DimNR_t::Value, PS::DimNV_t::Value, true> Rv =
-                    rightCols(rdata.Rx, get_ps().get_nv_dim());
-                tail(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rv.transpose() * adata.Ar;
-                rightCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
-                    adata.Arr.diagonal().asDiagonal() * Rv;
-                bottomRightCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
-                    Rv.transpose() * rightCols(rdata.Arr_Rx, get_ps().get_nv_dim());
+                // Only V dependent - compute Rv once and share it
+                auto Rv = rightCols(rdata.Rx, get_ps().get_nv_dim());
+                calcCostDiffRxVImpl(cdata, rdata, adata, Rv);
+
+                if constexpr (compile_time_update_u)
+                    calcCostDiffRuVImpl(cdata, rdata, adata, Rv);
+                else if (runtime_update_u)
+                    calcCostDiffRuVImpl(cdata, rdata, adata, Rv);
             }
         }
 
-        constexpr void calcCostDiffRuImpl(CostDataType &cdata,
-                                          Data_t &rdata,
-                                          const ActivationDataType &adata) const
+        template <typename CostDataType, typename ActivationDataType>
+        constexpr void calcCostDiffRxFullImpl(CostDataType &cdata,
+                                              Data_t &rdata,
+                                              const ActivationDataType &adata) const
+        {
+            cdata.Lx.noalias() = rdata.Rx.transpose() * adata.Ar;
+            rdata.Arr_Rx.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Rx;
+            cdata.Lxx.noalias() = rdata.Rx.transpose() * rdata.Arr_Rx;
+        }
+
+        template <typename CostDataType, typename ActivationDataType, typename RqType>
+        constexpr void calcCostDiffRxQImpl(CostDataType &cdata,
+                                           Data_t &rdata,
+                                           const ActivationDataType &adata,
+                                           const Eigen::MatrixBase<RqType> &Rq) const
+        {
+            head(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rq.transpose() * adata.Ar;
+            leftCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
+                adata.Arr.diagonal().asDiagonal() * Rq;
+            topLeftCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
+                Rq.transpose() * leftCols(rdata.Arr_Rx, get_ps().get_nv_dim());
+        }
+
+        template <typename CostDataType, typename ActivationDataType, typename RvType>
+        constexpr void calcCostDiffRxVImpl(CostDataType &cdata,
+                                           Data_t &rdata,
+                                           const ActivationDataType &adata,
+                                           const Eigen::MatrixBase<RvType> &Rv) const
+        {
+            tail(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rv.transpose() * adata.Ar;
+            rightCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
+                adata.Arr.diagonal().asDiagonal() * Rv;
+            bottomRightCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
+                Rv.transpose() * rightCols(rdata.Arr_Rx, get_ps().get_nv_dim());
+        }
+
+        template <typename CostDataType, typename ActivationDataType>
+        constexpr void calcCostDiffRuFullImpl(CostDataType &cdata,
+                                              Data_t &rdata,
+                                              const ActivationDataType &adata) const
         {
             cdata.Lu.noalias() = rdata.Ru.transpose() * adata.Ar;
             rdata.Arr_Ru.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Ru;
             cdata.Luu.noalias() = rdata.Ru.transpose() * rdata.Arr_Ru;
+            cdata.Lxu.noalias() = rdata.Rx.transpose() * rdata.Arr_Ru;
+        }
 
-            if constexpr (QDependent && VDependent)
-                cdata.Lxu.noalias() = rdata.Rx.transpose() * rdata.Arr_Ru;
-            else if constexpr (QDependent)
-                topRows(cdata.Lxu, get_ps().get_nv_dim()).noalias() = Rq.transpose() * rdata.Arr_Ru;
-            else if constexpr (VDependent)
-                bottomRows(cdata.Lxu, get_ps().get_nv_dim()).noalias() =
-                    Rv.transpose() * rdata.Arr_Ru;
+        template <typename CostDataType, typename ActivationDataType, typename RqType>
+        constexpr void calcCostDiffRuQImpl(CostDataType &cdata,
+                                           Data_t &rdata,
+                                           const ActivationDataType &adata,
+                                           const Eigen::MatrixBase<RqType> &Rq) const
+        {
+            cdata.Lu.noalias() = rdata.Ru.transpose() * adata.Ar;
+            rdata.Arr_Ru.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Ru;
+            cdata.Luu.noalias() = rdata.Ru.transpose() * rdata.Arr_Ru;
+            topRows(cdata.Lxu, get_ps().get_nv_dim()).noalias() = Rq.transpose() * rdata.Arr_Ru;
+        }
+
+        template <typename CostDataType, typename ActivationDataType, typename RvType>
+        constexpr void calcCostDiffRuVImpl(CostDataType &cdata,
+                                           Data_t &rdata,
+                                           const ActivationDataType &adata,
+                                           const Eigen::MatrixBase<RvType> &Rv) const
+        {
+            cdata.Lu.noalias() = rdata.Ru.transpose() * adata.Ar;
+            rdata.Arr_Ru.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Ru;
+            cdata.Luu.noalias() = rdata.Ru.transpose() * rdata.Arr_Ru;
+            bottomRows(cdata.Lxu, get_ps().get_nv_dim()).noalias() = Rv.transpose() * rdata.Arr_Ru;
         }
 
         template <typename DataCollector>

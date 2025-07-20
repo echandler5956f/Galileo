@@ -9,6 +9,7 @@
 #include <pinocchio/algorithm/kinematics-derivatives.hpp>
 
 #include "galileo/core/residuals/residual-base.hpp"
+#include "galileo/multibody/residuals/fwd.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
@@ -68,6 +69,8 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = ResidualFrameTranslationTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
@@ -99,7 +102,7 @@ namespace galileo
             fJf.setZero();
         }
 
-        typename PS::RobotData_t *robot;
+        RobotData_t *robot;
 
         R_t R;
         Rx_t Rx;
@@ -128,8 +131,6 @@ namespace galileo
         using Base = ResidualModelBase<ResidualModelFrameTranslationTpl<PS>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
-
-        using FrameIndex_t = pinocchio::FrameIndex;
 
         ResidualModelFrameTranslationTpl(const PS &ps,
                                          const FrameIndex_t frame_id,

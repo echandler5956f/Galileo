@@ -51,7 +51,7 @@ namespace galileo
 
     template <typename PhaseSpec>
     struct ContactData6dTpl
-        : ContactDataBase<ContactData6dTpl<PhaseSpec>, PhaseSpec>
+        : public ContactDataBase<ContactData6dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -146,9 +146,6 @@ namespace galileo
               a_partial_dq(6, model.get_ps().get_nv()),
               a_partial_dv(6, model.get_ps().get_nv()),
               a_partial_da(6, model.get_ps().get_nv()),
-              fXjdv_dq(6, model.get_ps().get_nv()),
-              fXjda_dq(6, model.get_ps().get_nv()),
-              fXjda_dv(6, model.get_ps().get_nv()),
               fJf_df(model.get_nc(), model.get_ps().get_nv())
         {
             Jc.setZero();
@@ -179,7 +176,7 @@ namespace galileo
 
     template <typename PhaseSpec>
     struct ContactModel6dTpl
-        : ContactModelBase<ContactModel6dTpl<PhaseSpec>, PhaseSpec>
+        : public ContactModelBase<ContactModel6dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -209,7 +206,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(ContactDataDerived &data,
+        void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
             pinocchio::updateFramePlacement(get_robot(),
@@ -246,7 +243,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(ContactDataDerived &data,
+        void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const pinocchio::JointIndex joint =
@@ -310,7 +307,7 @@ namespace galileo
         }
 
         template <typename ForceVectorType>
-        void updateForce(ContactDataDerived &data,
+        void updateForce(Data_t &data,
                          const Eigen::MatrixBase<ForceVectorType> &f) const
         {
             data.f = pinocchio::ForceTpl<typename PS::VarScalar>(f);

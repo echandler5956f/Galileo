@@ -10,7 +10,7 @@ namespace galileo
     struct ControlParamDataTpl;
 
     template <typename PhaseSpec, int NOrder_>
-    struct ControlParamModelJacobiPolynomialTpl;
+    struct ControlParamModelPolynomialTpl;
 
 } // namespace galileo
 

@@ -143,6 +143,8 @@ namespace galileo
 
         using ModelVariant_t = typename Collection_t::ConstraintModelVariant_t;
 
+        using DimNH_t = typename traits<Meta_t>::DimNH_t;
+
         ModelVariant_t &toVariant()
         {
             return *static_cast<ModelVariant_t *>(this);
@@ -221,7 +223,7 @@ namespace galileo
             return galileo::constraint_get_nh_dim(*this);
         }
 
-        const int get_nh_impl() const
+        int get_nh_impl() const
         {
             return galileo::constraint_get_nh(*this);
         }

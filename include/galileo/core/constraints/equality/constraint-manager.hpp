@@ -106,6 +106,8 @@ namespace galileo
         using Model_t = typename traits<MetaManager_t>::Model_t;
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
+        using Item_t = typename traits<MetaManager_t>::Item_t;
+
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
         GALILEO_CONSTRAINT_DATA_TYPEDEF(MetaManager_t);
@@ -366,7 +368,7 @@ namespace galileo
             return nh_dim_;
         }
 
-        const int get_nh() const
+        int get_nh() const
         {
             return nh_dim_.value();
         }

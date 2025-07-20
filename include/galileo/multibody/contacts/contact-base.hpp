@@ -266,12 +266,12 @@ namespace galileo
             return nc_dim_;
         }
 
-        const int get_nc() const
+        int get_nc() const
         {
             return this->derived().get_nc_impl();
         }
 
-        const int get_nc_impl() const
+        int get_nc_impl() const
         {
             return nc_dim_.value();
         }

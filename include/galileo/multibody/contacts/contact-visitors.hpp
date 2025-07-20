@@ -63,14 +63,17 @@ namespace galileo
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
         ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline const PhaseSpec &contact_get_ps(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::RobotModel_t *contact_robot(
+    inline const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::RobotModel_t &contact_get_robot(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t contact_id(
+    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t contact_get_id(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
@@ -81,7 +84,7 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t contact_type(
+    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t contact_get_type(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
@@ -92,7 +95,12 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline DimensionTpl<Eigen::Dynamic> contact_nc_dim(
+    inline DimensionTpl<Eigen::Dynamic> contact_get_nc_dim(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    inline int contact_get_nc(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     // Contact data visitors

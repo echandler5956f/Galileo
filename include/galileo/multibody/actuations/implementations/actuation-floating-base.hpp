@@ -84,7 +84,7 @@ namespace galileo
             // has constant values which are set in createData
         }
 
-        Data_t createData()
+        Data_t createData() const
         {
             Data_t data(*this);
             data.dtau_du.diagonal(-get_state().get_nvb()).setOnes();

@@ -26,7 +26,8 @@ namespace galileo
     inline void constraint_calc_zeroth_order(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Blank blank);
 
     template <typename PhaseSpec,
               template <typename> class ConstraintCollectionTpl,
@@ -44,7 +45,8 @@ namespace galileo
     inline void constraint_calc_first_order(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Blank blank);
 
     template <typename PhaseSpec,
               template <typename> class ConstraintCollectionTpl,
@@ -52,6 +54,15 @@ namespace galileo
     inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         DataCollector *const collector);
+
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
+    inline const PhaseSpec &constraint_get_ps(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
+
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
+    inline const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t &constraint_get_nh_dim(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
+
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
+    inline int constraint_get_nh(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
 
     // Constraint data visitors
 

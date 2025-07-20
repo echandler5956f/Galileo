@@ -2,6 +2,7 @@
 #define __galileo_multibody_residuals_residual_control_hpp__
 
 #include "galileo/core/residuals/residual-base.hpp"
+#include "galileo/multibody/residuals/fwd.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
@@ -61,6 +62,8 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = ResidualControlTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
@@ -106,13 +109,13 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = ResidualControlTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
         using Base = ResidualModelBase<ResidualModelControlTpl<PS>, PS>;
 
-        using VarScalar = typename PS::VarScalar;
-        using VectorNu_t = typename PS::VectorNu_t;
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         ResidualModelControlTpl(const PS &ps,

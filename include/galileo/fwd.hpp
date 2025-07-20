@@ -10,10 +10,10 @@ namespace galileo
 
 #include <cassert>
 #include <cmath>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <type_traits>
-#include <functional>
 
 #include "galileo/common/meta/dimension.hpp"
 #include "galileo/common/meta/eigen.hpp"
@@ -27,12 +27,12 @@ namespace galileo
     {
     };
 
+    struct Blank
+    {
+    }; // struct Blank
+
     namespace internal
     {
-
-        struct Blank
-        {
-        }; // struct Blank
 
         // Base class for numerical classes.
         template <class Derived>

@@ -26,7 +26,8 @@ namespace galileo
     inline void cost_calc_zeroth_order(
         const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
         CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Blank blank);
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl,
@@ -44,7 +45,8 @@ namespace galileo
     inline void cost_calc_first_order(
         const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
         CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data,
-        const Eigen::MatrixBase<StateVectorType> &x);
+        const Eigen::MatrixBase<StateVectorType> &x,
+        const Blank blank);
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl,
@@ -52,6 +54,9 @@ namespace galileo
     inline CostDataTpl<PhaseSpec, CostCollectionTpl> cost_create_data(
         const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
         DataCollector *const collector);
+
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
+    inline const PhaseSpec &cost_get_ps(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
 
     // Cost data visitors
 

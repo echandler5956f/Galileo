@@ -214,6 +214,8 @@ namespace galileo
 
         using ModelVariant_t = typename Collection_t::ContactModelVariant_t;
 
+        using DimNC_t = typename traits<Meta_t>::DimNC_t;
+
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         ContactModelTpl()
@@ -294,7 +296,7 @@ namespace galileo
 
         const RobotModel_t &get_robot() const
         {
-            return galileo::contact_robot(*this);
+            return galileo::contact_get_robot(*this);
         }
 
         using Base::get_ps;
@@ -338,7 +340,7 @@ namespace galileo
             return galileo::contact_get_nc_dim(*this);
         }
 
-        const int get_nc_impl() const
+        int get_nc_impl() const
         {
             return galileo::contact_get_nc(*this);
         }

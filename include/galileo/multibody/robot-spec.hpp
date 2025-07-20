@@ -75,7 +75,8 @@
     using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t;         \
     using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t;         \
     using MatrixNv6_t = typename RobotSpec::MatrixNv6_t;               \
-    using Matrix6Nv_t = typename RobotSpec::Matrix6Nv_t;
+    using Matrix6Nv_t = typename RobotSpec::Matrix6Nv_t;               \
+    using Matrix6Ndx_t = typename RobotSpec::Matrix6Ndx_t;
 
 #define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
     GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec);           \
