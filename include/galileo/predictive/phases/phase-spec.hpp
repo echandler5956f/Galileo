@@ -413,6 +413,11 @@ namespace galileo
             return nu_dim_.value();
         }
 
+        void set_nu(int nu)
+        {
+            nu_dim_.set_value(nu);
+        }
+
         const DimNOrder_t &get_norder_dim() const
         {
             return norder_dim_;
@@ -421,6 +426,11 @@ namespace galileo
         int get_norder() const
         {
             return norder_dim_.value();
+        }
+
+        void set_norder(int norder)
+        {
+            norder_dim_.set_value(norder);
         }
 
         const DimNW_t &get_nw_dim() const
@@ -433,6 +443,11 @@ namespace galileo
             return nw_dim_.value();
         }
 
+        void set_nw(int nw)
+        {
+            nw_dim_.set_value(nw);
+        }
+
         const DimNStages_t &get_nstages_dim() const
         {
             return nstages_dim_;
@@ -441,6 +456,11 @@ namespace galileo
         int get_nstages() const
         {
             return nstages_dim_.value();
+        }
+
+        void set_nstages(int nstages)
+        {
+            nstages_dim_.set_value(nstages);
         }
 
         // Constructor to properly initialize compound dimensions

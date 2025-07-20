@@ -20,9 +20,13 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
+        using DimNU_t = typename traits<Meta_t>::DimNU_t;
+
         using NumScalar = typename PS::NumScalar;
         using State_t = typename PS::State_t;
         using RobotModel_t = typename PS::RobotModel_t;
+
+        using UBound_t = Eigen::GMatrix<NumScalar, DimNU_t::Value, 1, PS::Options>;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -68,7 +72,7 @@ namespace galileo
             return this->derived().createData();
         }
 
-        const PS &get_ps() const
+        PS &get_ps()
         {
             return ps_.get();
         }
@@ -83,9 +87,31 @@ namespace galileo
             return robot_.get();
         }
 
+        const UBound_t &get_u_lb() const
+        {
+            return u_lb_;
+        }
+
+        const UBound_t &get_u_ub() const
+        {
+            return u_ub_;
+        }
+
+        void set_u_lb(const UBound_t &u_lb)
+        {
+            u_lb_ = u_lb;
+        }
+
+        void set_u_ub(const UBound_t &u_ub)
+        {
+            u_ub_ = u_ub;
+        }
+
     protected:
-        inline NodeModelBase(const PS &ps)
-            : ps_(ps), robot_(ps.get_state().get_robot())
+        inline NodeModelBase(PS &ps)
+            : ps_(ps), robot_(ps.get_state().get_robot()),
+              u_lb_(UBound_t::Zero(get_ps().get_nu())),
+              u_ub_(UBound_t::Zero(get_ps().get_nu()))
         {
         }
 
@@ -98,11 +124,15 @@ namespace galileo
         {
             ps_ = clone.ps_;
             robot_ = clone.robot_;
+            u_lb_ = clone.u_lb_;
+            u_ub_ = clone.u_ub_;
             return *this;
         }
 
-        std::reference_wrapper<const PS> ps_;
+        std::reference_wrapper<PS> ps_;
         std::reference_wrapper<const RobotModel_t> robot_;
+        UBound_t u_lb_;
+        UBound_t u_ub_;
 
     }; // class NodeModelBase
 

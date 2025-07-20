@@ -8,7 +8,8 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class SegmentERKModelBase : public internal::CRTP<Derived>
+    class SegmentERKModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -18,6 +19,9 @@ namespace galileo
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        using NumScalar = typename PS::NumScalar;
+        using State_t = typename PS::State_t;
 
         template <typename StateVectorType, typename ControlParamVectorType>
         void calc(Data_t &data,
@@ -54,19 +58,29 @@ namespace galileo
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlParamVectorType> &w,
                          const int maxiter,
-                         const typename PS::NumScalar &tol) const
+                         const NumScalar &tol) const
         {
             this->derived().quasiStatic(data, x.derived(), w.derived(), maxiter, tol);
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData()
         {
-            return this->derived().createData(collector);
+            return this->derived().createData();
+        }
+
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
+        const State_t &get_state() const
+        {
+            return state_.get();
         }
 
     protected:
-        inline SegmentERKModelBase()
+        inline SegmentERKModelBase(const PS &ps)
+            : ps_(ps), state_(ps.get_state())
         {
         }
 
@@ -77,8 +91,13 @@ namespace galileo
 
         inline SegmentERKModelBase &operator=(const SegmentERKModelBase &clone)
         {
+            ps_ = clone.ps_;
+            state_ = clone.state_;
             return *this;
         }
+
+        std::reference_wrapper<const PS> ps_;
+        std::reference_wrapper<const State_t> state_;
 
     }; // class SegmentERKModelBase
 

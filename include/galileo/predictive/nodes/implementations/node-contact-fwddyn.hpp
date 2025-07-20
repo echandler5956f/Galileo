@@ -16,6 +16,8 @@
 
 #include "galileo/core/data/data-collector-default.hpp"
 
+#include "galileo/predictive/phases/phase-spec.hpp"
+
 namespace galileo
 {
 
@@ -235,6 +237,29 @@ namespace galileo
         using MatrixNcNv_t = typename traits<Meta_t>::MatrixNcNv_t;
         using MatrixNc_t = typename traits<Meta_t>::MatrixNc_t;
 
+        NodeModelContactFwdDynTpl(PS &ps, const CostModelManager_t &costs,
+                                  const ConstraintModelManager_t &constraints,
+                                  const ContactModelManager_t &contacts,
+                                  const ActuationModel_t &actuation,
+                                  const NumScalar &JMinvJt_damping,
+                                  const bool enable_force)
+            : Base(ps),
+              costs_(costs),
+              constraints_(constraints),
+              contacts_(contacts),
+              actuation_(actuation),
+              JMinvJt_damping_(fabs(JMinvJt_damping)),
+              enable_force_(enable_force),
+              with_armature_(true),
+              armature_(VectorNv_t::Zero(ps.get_nv()))
+        {
+            int nua = get_ps().get_nua();
+            get_ps().set_nu(nua);
+
+            set_u_lb(NumScalar(-1.) * get_robot().effortLimit.tail(nua));
+            set_u_ub(NumScalar(+1.) * get_robot().effortLimit.tail(nua));
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -411,22 +436,22 @@ namespace galileo
 
         const CostModelManager_t &get_costs() const
         {
-            return costs_;
+            return costs_.get();
         }
 
         const ConstraintModelManager_t &get_constraints() const
         {
-            return constraints_;
+            return constraints_.get();
         }
 
         const ContactModelManager_t &get_contacts() const
         {
-            return contacts_;
+            return contacts_.get();
         }
 
         const ActuationModel_t &get_actuation() const
         {
-            return actuation_;
+            return actuation_.get();
         }
 
         using Base::get_ps;
@@ -434,16 +459,22 @@ namespace galileo
         using Base::get_robot;
         using Base::get_state;
 
-    protected:
-        CostModelManager_t costs_;
-        ConstraintModelManager_t constraints_;
-        ContactModelManager_t contacts_;
-        ActuationModel_t actuation_;
+        using Base::get_u_lb;
+        using Base::get_u_ub;
 
-        bool with_armature_;
+        using Base::set_u_lb;
+        using Base::set_u_ub;
+
+    protected:
+        std::reference_wrapper<CostModelManager_t> costs_;
+        std::reference_wrapper<ConstraintModelManager_t> constraints_;
+        std::reference_wrapper<ContactModelManager_t> contacts_;
+        std::reference_wrapper<ActuationModel_t> actuation_;
+
+        bool with_armature_ = true;
         VectorNv_t armature_;
         NumScalar JMinvJt_damping_;
-        bool enable_force_;
+        bool enable_force_ = false;
 
     }; // class NodeModelContactFwdDynTpl
 

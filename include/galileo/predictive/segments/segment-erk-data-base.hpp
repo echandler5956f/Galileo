@@ -8,18 +8,19 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct SegmentERKDataBase : public internal::CRTP<Derived>
+    struct SegmentERKDataBase
+        : public internal::CRTP<Derived>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         FORWARD_ACCESSOR(XNext_t, XNext);
         FORWARD_ACCESSOR(XNextx_t, XNextx);
@@ -35,6 +36,7 @@ namespace galileo
         FORWARD_ACCESSOR(H_t, H);
         FORWARD_ACCESSOR(Hx_t, Hx);
         FORWARD_ACCESSOR(Hw_t, Hw);
+
         FORWARD_ACCESSOR(G_t, G);
         FORWARD_ACCESSOR(Gx_t, Gx);
         FORWARD_ACCESSOR(Gw_t, Gw);
