@@ -17,4 +17,8 @@
 #include "galileo/multibody/contacts/implementations/contact-3d.hpp"
 #include "galileo/multibody/contacts/contact-manager.hpp"
 
+#include "galileo/predictive/nodes/implementations/node-contact-fwddyn.hpp"
+
 #include "galileo/core/controls/implementations/control-param-polynomial.hpp"
+
+#include "galileo/predictive/segments/implementations/segment-erk-euler.hpp"

@@ -25,6 +25,8 @@ namespace galileo
         using NumScalar = typename PS::NumScalar;
         using State_t = typename PS::State_t;
         using RobotModel_t = typename PS::RobotModel_t;
+        using CostModelManager_t = typename PS::CostModelManager_t;
+        using ConstraintModelManager_t = typename PS::ConstraintModelManager_t;
 
         using UBound_t = Eigen::GMatrix<NumScalar, DimNU_t::Value, 1, PS::Options>;
 
@@ -85,6 +87,16 @@ namespace galileo
         const RobotModel_t &get_robot() const
         {
             return robot_.get();
+        }
+
+        const CostModelManager_t &get_costs() const
+        {
+            return this->derived().get_costs();
+        }
+
+        const ConstraintModelManager_t &get_constraints() const
+        {
+            return this->derived().get_constraints();
         }
 
         const UBound_t &get_u_lb() const

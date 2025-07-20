@@ -20,7 +20,8 @@ namespace galileo
         using Model_t = SegmentERKDataEulerTpl<PS>;
         using Data_t = SegmentERKModelEulerTpl<PS>;
 
-        static constexpr int NStages = 1;
+        using DimNStages_t = DimensionTpl<1>;
+        static constexpr int NStages = DimNStages_t::Value;
     };
 
     template <
@@ -46,7 +47,8 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct SegmentERKDataEulerTpl : public SegmentERKDataBase<SegmentERKDataEulerTpl<PhaseSpec>, PhaseSpec>
+    struct SegmentERKDataEulerTpl
+        : public SegmentERKDataBase<SegmentERKDataEulerTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -56,6 +58,7 @@ namespace galileo
         using Meta_t = SegmentERKEulerTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = SegmentERKDataBase<SegmentERKDataEulerTpl<PS>, PS>;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
@@ -73,14 +76,59 @@ namespace galileo
         DEFAULT_ACCESSOR(H_t, H);
         DEFAULT_ACCESSOR(Hx_t, Hx);
         DEFAULT_ACCESSOR(Hw_t, Hw);
+
         DEFAULT_ACCESSOR(G_t, G);
         DEFAULT_ACCESSOR(Gx_t, Gx);
         DEFAULT_ACCESSOR(Gw_t, Gw);
+
+        SegmentERKDataEulerTpl(const Model_t &model)
+            : node(model.get_node().createData()),
+              control(model.get_control().createData()),
+              dx(model.get_ps().get_ndx()),
+              da_dw(model.get_ps().get_nv(), model.get_ps().get_nw()),
+              Luw(model.get_ps().get_nu(), model.get_ps().get_nw()),
+              XNext(model.get_ps().get_nx()),
+              XNextx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
+              XNextw(model.get_ps().get_ndx(), model.get_ps().get_nw()),
+              L(0.),
+              Lx(model.get_ps().get_ndx()),
+              Lw(model.get_ps().get_nw()),
+              Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
+              Lxw(model.get_ps().get_ndx(), model.get_ps().get_nw()),
+              Lww(model.get_ps().get_nw(), model.get_ps().get_nw()),
+              H(model.get_node().get_constraints().get_nh(), model.get_node().get_constraints().get_nh()),
+              Hx(model.get_node().get_constraints().get_nh(), model.get_ps().get_ndx()),
+              Hw(model.get_node().get_constraints().get_nh(), model.get_ps().get_nw()),
+              G(model.get_node().get_constraints().get_nh(), model.get_node().get_constraints().get_nh()),
+              Gx(model.get_node().get_constraints().get_nh(), model.get_ps().get_ndx()),
+              Gw(model.get_node().get_constraints().get_nh(), model.get_ps().get_nw())
+        {
+            dx.setZero();
+            da_dw.setZero();
+            Luw.setZero();
+
+            XNext.setZero();
+            XNextx.setZero();
+            XNextw.setZero();
+            L.setZero();
+            Lx.setZero();
+            Lw.setZero();
+            Lxx.setZero();
+            Lxw.setZero();
+            Lww.setZero();
+            H.setZero();
+            Hx.setZero();
+            Hw.setZero();
+            G.setZero();
+            Gx.setZero();
+            Gw.setZero();
+        }
 
         NodeData_t node;
         ControlParamData_t control;
         VectorNdx_t dx;
         MatrixNvNw_t da_dw;
+        MatrixNuNw_t Luw;
 
         XNext_t XNext;
         XNextx_t XNextx;
@@ -96,6 +144,7 @@ namespace galileo
         H_t H;
         Hx_t Hx;
         Hw_t Hw;
+
         G_t G;
         Gx_t Gx;
         Gw_t Gw;
@@ -103,56 +152,61 @@ namespace galileo
     }; // struct SegmentERKDataEulerTpl
 
     template <typename PhaseSpec>
-    class SegmentERKModelEulerTpl : public SegmentERKModelBase<SegmentERKModelEulerTpl<PhaseSpec>, PhaseSpec>
+    class SegmentERKModelEulerTpl
+        : public SegmentERKModelBase<SegmentERKModelEulerTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = SegmentERKEulerTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = SegmentERKModelBase<SegmentERKModelEulerTpl<PS>, PS>;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        SegmentERKModelEulerTpl(const PS &ps, const NodeModel_t &node,
+                                const ControlParamModel_t &control,
+                                const NumScalar period)
+            : Base(ps),
+              node_(node),
+              control_(control),
+              period_(period),
+              period_squared_(period * period)
+        {
+        }
 
         template <typename StateVectorType, typename ControlParamVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, NV> v =
-                x.tail(NV);
+            const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, DimNV_t::Value> v =
+                tail(x, get_ps().get_nv_dim());
 
-            control_.calc(data.control, NumScalar(0.), w);
-            node_.calc(data.node, x, data.control.u);
-            const VectorNdx_t &a = data.node.Xacc;
-            data.dx.head(NV).noalias() = v * period_ + a * period_squared_;
-            data.dx.tail(NV).noalias() = a * period_;
-            state_.integrate(x, data.dx, data.XNext);
+            control_.calc(data.control, NumScalar(0.), w.derived());
+            node_.calc(data.node, x.derived(), data.control.u);
+            const VectorNv_t &a = data.node.XAcc;
+            head(data.dx, get_ps().get_nv_dim()).noalias() = v * period_ + a * period_squared_;
+            tail(data.dx, get_ps().get_nv_dim()).noalias() = a * period_;
+            state_.integrate(x.derived(), data.dx, data.XNext);
             data.L = period_ * data.node.L;
-            data.G = data.node.G;
             data.H = data.node.H;
-            if (with_cost_residual_)
-            {
-                data.r = data.node.r;
-            }
+            data.G = data.node.G;
         }
 
         template <typename StateVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            node_.calc(data.node, x);
+            node_.calc(data.node, x.derived());
             data.dx.setZero();
             data.XNext = x;
             data.L = data.node.L;
-            data.G = data.node.G;
             data.H = data.node.H;
-            if (with_cost_residual_)
-            {
-                data.r = data.node.r;
-            }
+            data.G = data.node.G;
         }
 
         template <typename StateVectorType, typename ControlParamVectorType>
@@ -160,19 +214,19 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            control_.calc(data.control, NumScalar(0.), w);
-            node_.calcDiff(data.node, x, data.control.u);
-            const MatrixNvNdx_t &da_dx = data.node.Fx;
-            const MatrixNvNw_t &da_dw = data.node.Fu;
-            control_.multiplyByJacobian(data.control, da_dw, data.da_dw);
-            data.XNextx.topRows(NV).noalias() = da_dx * period_squared_;
-            data.XNextx.bottomRows(NV).noalias() = da_dx * period_;
-            data.XNextx.topRightCorner(NV, NV).diagonal().array() += NumScalar(period_);
-            data.XNextw.topRows(NV).noalias() = period_squared_ * data.da_dw;
-            data.XNextw.bottomRows(NV).noalias() = period_ * data.da_dw;
-            state_.JintegrateTransport(x, data.dx, data.XNextx, second);
-            state_.Jintegrate(x, data.dx, data.XNextx, data.XNextx, first, addto);
-            state_.JintegrateTransport(x, data.dx, data.XNextw, second);
+            control_.calc(data.control, NumScalar(0.), w.derived());
+            node_.calcDiff(data.node, x.derived(), data.control.u);
+            const MatrixNvNdx_t &da_dx = data.node.XAccx;
+            const MatrixNvNw_t &da_du = data.node.XAccu;
+            control_.multiplyByJacobian(data.control, da_du, data.da_dw);
+            topRows(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_squared_;
+            tail(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_;
+            topRightCorner(data.XNextx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).diagonal().array() += VarScalar(period_);
+            topRows(data.XNextw, get_ps().get_nv_dim()).noalias() = period_squared_ * data.da_dw;
+            tail(data.XNextw, get_ps().get_nv_dim()).noalias() = period_ * data.da_dw;
+            state_.JintegrateTransport(x.derived(), data.dx, data.XNextx, second);
+            state_.Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx, first, addto);
+            state_.JintegrateTransport(x.derived(), data.dx, data.XNextw, second);
 
             data.Lx.noalias() = period_ * data.node.Lx;
             control_.multiplyJacobianTransposeBy(data.control, data.node.Lu, data.Lw);
@@ -185,8 +239,8 @@ namespace galileo
             data.Lww *= period_;
             data.Gx = data.node.Gx;
             data.Hx = data.node.Hx;
-            data.Gw.resize(node_.ng(), NW);
-            data.Hw.resize(node_.nh(), NW);
+            data.Gw.conservativeResize(node_.get_constraints().get_nh(), get_ps().get_nw());
+            data.Hw.conservativeResize(node_.get_constraints().get_nh(), get_ps().get_nw());
             control_.multiplyByJacobian(data.control, data.node.Gu, data.Gw);
             control_.multiplyByJacobian(data.control, data.node.Hu, data.Hw);
         }
@@ -195,8 +249,8 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            node_.calcDiff(data.node, x);
-            state_.Jintegrate(x, data.dx, data.XNextx, data.XNextx);
+            node_.calcDiff(data.node, x.derived());
+            state_.Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx);
             data.Lx = data.node.Lx;
             data.Lxx = data.node.Lxx;
             data.Gx = data.node.Gx;
@@ -210,10 +264,28 @@ namespace galileo
                          const int maxiter, const NumScalar tol) const
         {
             data.control.u.setZero();
-            node_.quasiStatic(data.node, x, data.control.u, maxiter, tol);
+            node_.quasiStatic(data.node, x.derived(), data.control.u, maxiter, tol);
             control_.params(data.control, NumScalar(0.), data.control.u);
             w = data.control.w;
         }
+
+        Data_t createData()
+        {
+            return Data_t(this->derived());
+        }
+
+        const ControlParamModel_t &get_control() const
+        {
+            return control_;
+        }
+
+        const NodeModel_t &get_node() const
+        {
+            return node_;
+        }
+
+        using Base::get_ps;
+        using Base::get_state;
 
     protected:
         State_t state_;
@@ -222,8 +294,6 @@ namespace galileo
 
         NumScalar period_;
         NumScalar period_squared_;
-
-        bool with_cost_residual_;
 
     }; // class SegmentERKModelEulerTpl
 
