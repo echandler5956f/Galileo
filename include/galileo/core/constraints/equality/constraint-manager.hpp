@@ -232,11 +232,11 @@ namespace galileo
         template <typename StateVectorType, typename ControlVectorType>
         void calc(DataManager_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
-                  const Eigen::MatrixBase<ControlVectorType> &u)
+                  const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = constraints_.begin(), end_m = constraints_.end(),
                 it_d = data.constraints.begin(), end_d = data.constraints.end();
@@ -250,18 +250,18 @@ namespace galileo
                     m_i.model.calc(d_i, x.derived(), u.derived());
                     auto nh_dim_i = m_i.model.get_nh_dim();
                     segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
-                    nh_accum_i += nh_dim_i;
+                    nh_accum_i = nh_accum_i + nh_dim_i;
                 }
             }
         }
 
         template <typename StateVectorType>
         void calc(DataManager_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x)
+                  const Eigen::MatrixBase<StateVectorType> &x) const
         {
             DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = constraints_.begin(), end_m = constraints_.end(),
                 it_d = data.constraints.begin(), end_d = data.constraints.end();
@@ -275,7 +275,7 @@ namespace galileo
                     m_i.model.calc(d_i, x.derived());
                     auto nh_dim_i = m_i.model.get_nh_dim();
                     segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
-                    nh_accum_i += nh_dim_i;
+                    nh_accum_i = nh_accum_i + nh_dim_i;
                 }
             }
         }
@@ -283,11 +283,11 @@ namespace galileo
         template <typename StateVectorType, typename ControlVectorType>
         void calcDiff(DataManager_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
-                      const Eigen::MatrixBase<ControlVectorType> &u)
+                      const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = constraints_.begin(), end_m = constraints_.end(),
                 it_d = data.constraints.begin(), end_d = data.constraints.end();
@@ -302,18 +302,18 @@ namespace galileo
                     auto nh_dim_i = m_i.model.get_nh_dim();
                     block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     block(data.Hu, nh_accum_i, 0, nh_dim_i, get_ps().get_nu_dim()) = d_i.Hu();
-                    nh_accum_i += nh_dim_i;
+                    nh_accum_i = nh_accum_i + nh_dim_i;
                 }
             }
         }
 
         template <typename StateVectorType>
         void calcDiff(DataManager_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x)
+                      const Eigen::MatrixBase<StateVectorType> &x) const
         {
             DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = constraints_.begin(), end_m = constraints_.end(),
                 it_d = data.constraints.begin(), end_d = data.constraints.end();
@@ -327,7 +327,7 @@ namespace galileo
                     m_i.model.calcDiff(d_i, x.derived());
                     auto nh_dim_i = m_i.model.get_nh_dim();
                     block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
-                    nh_accum_i += nh_dim_i;
+                    nh_accum_i = nh_accum_i + nh_dim_i;
                 }
             }
         }

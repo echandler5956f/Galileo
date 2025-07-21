@@ -22,9 +22,9 @@ namespace galileo
 
         using NumScalar = typename PS::NumScalar;
 
-        using DimNU_t = typename traits<Meta_t>::DimNU_t;
-        using DimNW_t = typename traits<Meta_t>::DimNW_t;
-        using DimNOrder_t = typename traits<Meta_t>::DimNOrder_t;
+        using DimNU_t = typename PS::DimNU_t;
+        using DimNW_t = typename PS::DimNW_t;
+        using DimNOrder_t = typename PS::DimNOrder_t;
 
         template <typename ControlParamVectorType>
         void calc(Data_t &data, const NumScalar t,

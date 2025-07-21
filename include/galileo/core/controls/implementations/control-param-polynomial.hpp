@@ -51,13 +51,12 @@ namespace galileo
         GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PS);
         GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PS);
 
-        ControlParamModelPolynomialTpl(const PS &ps)
-            : Base(ps)
-        {
-            // TODO: Decide what nodes to initialize the interpolator with.
-            // Should it be customizable, or automatic? Should it be a template parameter, or constructor argument?
+        using BarycentricInterpolator_t = BarycentricInterpolatorTpl<NumScalar, NOrder_, Options>;
 
-            // interpolator_ = BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options>();
+        ControlParamModelPolynomialTpl(const PS &ps, const BarycentricInterpolator_t &interpolator)
+            : Base(ps),
+              interpolator_(interpolator)
+        {
         }
 
         template <typename ControlParamVectorType>

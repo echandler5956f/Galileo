@@ -252,7 +252,7 @@ namespace galileo
         {
             data.L = VarScalar(0.);
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
                 end_d = data.costs.end();
@@ -275,7 +275,7 @@ namespace galileo
         {
             data.L = VarScalar(0.);
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
                 end_d = data.costs.end();
@@ -303,7 +303,7 @@ namespace galileo
             data.Lxu.setZero();
             data.Luu.setZero();
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
                 end_d = data.costs.end();
@@ -331,7 +331,7 @@ namespace galileo
             data.Lx.setZero();
             data.Lxx.setZero();
 
-            typename ModelContainer_t::iterator it_m, end_m;
+            typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
             for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
                 end_d = data.costs.end();

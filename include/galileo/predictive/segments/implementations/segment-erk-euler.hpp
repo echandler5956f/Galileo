@@ -17,8 +17,8 @@ namespace galileo
         using PS = PhaseSpec;
 
         using Meta_t = SegmentERKEulerTpl<PS>;
-        using Model_t = SegmentERKDataEulerTpl<PS>;
-        using Data_t = SegmentERKModelEulerTpl<PS>;
+        using Model_t = SegmentERKModelEulerTpl<PS>;
+        using Data_t = SegmentERKDataEulerTpl<PS>;
 
         using DimNStages_t = DimensionTpl<1>;
         static constexpr int NStages = DimNStages_t::Value;
@@ -96,10 +96,10 @@ namespace galileo
               Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
               Lxw(model.get_ps().get_ndx(), model.get_ps().get_nw()),
               Lww(model.get_ps().get_nw(), model.get_ps().get_nw()),
-              H(model.get_node().get_constraints().get_nh(), model.get_node().get_constraints().get_nh()),
+              H(model.get_node().get_constraints().get_nh()),
               Hx(model.get_node().get_constraints().get_nh(), model.get_ps().get_ndx()),
               Hw(model.get_node().get_constraints().get_nh(), model.get_ps().get_nw()),
-              G(model.get_node().get_constraints().get_nh(), model.get_node().get_constraints().get_nh()),
+              G(model.get_node().get_constraints().get_nh()),
               Gx(model.get_node().get_constraints().get_nh(), model.get_ps().get_ndx()),
               Gw(model.get_node().get_constraints().get_nh(), model.get_ps().get_nw())
         {
@@ -110,7 +110,6 @@ namespace galileo
             XNext.setZero();
             XNextx.setZero();
             XNextw.setZero();
-            L.setZero();
             Lx.setZero();
             Lw.setZero();
             Lxx.setZero();
@@ -183,18 +182,31 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, DimNV_t::Value> v =
-                tail(x, get_ps().get_nv_dim());
+            auto compute_dx = [&](const auto &v)
+            {
+                control_.calc(data.control, NumScalar(0.), w.derived());
+                node_.calc(data.node, x.derived(), data.control.u);
+                const VectorNv_t &a = data.node.XAcc_accessor();
+                head(data.dx, get_ps().get_nv_dim()).noalias() = v * period_ + a * period_squared_;
+                tail(data.dx, get_ps().get_nv_dim()).noalias() = a * period_;
+            };
 
-            control_.calc(data.control, NumScalar(0.), w.derived());
-            node_.calc(data.node, x.derived(), data.control.u);
-            const VectorNv_t &a = data.node.XAcc;
-            head(data.dx, get_ps().get_nv_dim()).noalias() = v * period_ + a * period_squared_;
-            tail(data.dx, get_ps().get_nv_dim()).noalias() = a * period_;
-            state_.integrate(x.derived(), data.dx, data.XNext);
-            data.L = period_ * data.node.L;
-            data.H = data.node.H;
-            data.G = data.node.G;
+            if constexpr (StateVectorType::RowsAtCompileTime == Eigen::Dynamic)
+            {
+                const auto v = tail(x, get_ps().get_nv_dim());
+                compute_dx(v);
+            }
+            else
+            {
+                const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, DimNV_t::Value> v =
+                    tail(x, get_ps().get_nv_dim());
+                compute_dx(v);
+            }
+
+            get_state().integrate(x.derived(), data.dx, data.XNext);
+            data.L = period_ * data.node.L_accessor();
+            data.H = data.node.H_accessor();
+            data.G = data.node.G_accessor();
         }
 
         template <typename StateVectorType>
@@ -204,9 +216,9 @@ namespace galileo
             node_.calc(data.node, x.derived());
             data.dx.setZero();
             data.XNext = x;
-            data.L = data.node.L;
-            data.H = data.node.H;
-            data.G = data.node.G;
+            data.L = data.node.L_accessor();
+            data.H = data.node.H_accessor();
+            data.G = data.node.G_accessor();
         }
 
         template <typename StateVectorType, typename ControlParamVectorType>
@@ -216,33 +228,33 @@ namespace galileo
         {
             control_.calc(data.control, NumScalar(0.), w.derived());
             node_.calcDiff(data.node, x.derived(), data.control.u);
-            const MatrixNvNdx_t &da_dx = data.node.XAccx;
-            const MatrixNvNw_t &da_du = data.node.XAccu;
+            const MatrixNvNdx_t &da_dx = data.node.XAccx_accessor();
+            const MatrixNvNw_t &da_du = data.node.XAccu_accessor();
             control_.multiplyByJacobian(data.control, da_du, data.da_dw);
             topRows(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_squared_;
             tail(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_;
             topRightCorner(data.XNextx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).diagonal().array() += VarScalar(period_);
             topRows(data.XNextw, get_ps().get_nv_dim()).noalias() = period_squared_ * data.da_dw;
             tail(data.XNextw, get_ps().get_nv_dim()).noalias() = period_ * data.da_dw;
-            state_.JintegrateTransport(x.derived(), data.dx, data.XNextx, second);
-            state_.Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx, first, addto);
-            state_.JintegrateTransport(x.derived(), data.dx, data.XNextw, second);
+            get_state().JintegrateTransport(x.derived(), data.dx, data.XNextx, second);
+            get_state().Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx, first, addto);
+            get_state().JintegrateTransport(x.derived(), data.dx, data.XNextw, second);
 
-            data.Lx.noalias() = period_ * data.node.Lx;
-            control_.multiplyJacobianTransposeBy(data.control, data.node.Lu, data.Lw);
+            data.Lx.noalias() = period_ * data.node.Lx_accessor();
+            control_.multiplyJacobianTransposeBy(data.control, data.node.Lu_accessor(), data.Lw);
             data.Lw *= period_;
-            data.Lxx.noalias() = period_ * data.node.Lxx;
-            control_.multiplyByJacobian(data.control, data.node.Lxu, data.Lxw);
+            data.Lxx.noalias() = period_ * data.node.Lxx_accessor();
+            control_.multiplyByJacobian(data.control, data.node.Lxu_accessor(), data.Lxw);
             data.Lxw *= period_;
-            control_.multiplyByJacobian(data.control, data.node.Luu, data.Luw);
+            control_.multiplyByJacobian(data.control, data.node.Luu_accessor(), data.Luw);
             control_.multiplyJacobianTransposeBy(data.control, data.Luw, data.Lww);
             data.Lww *= period_;
-            data.Gx = data.node.Gx;
-            data.Hx = data.node.Hx;
+            data.Gx = data.node.Gx_accessor();
+            data.Hx = data.node.Hx_accessor();
             data.Gw.conservativeResize(node_.get_constraints().get_nh(), get_ps().get_nw());
             data.Hw.conservativeResize(node_.get_constraints().get_nh(), get_ps().get_nw());
-            control_.multiplyByJacobian(data.control, data.node.Gu, data.Gw);
-            control_.multiplyByJacobian(data.control, data.node.Hu, data.Hw);
+            control_.multiplyByJacobian(data.control, data.node.Gu_accessor(), data.Gw);
+            control_.multiplyByJacobian(data.control, data.node.Hu_accessor(), data.Hw);
         }
 
         template <typename StateVectorType>
@@ -250,11 +262,11 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             node_.calcDiff(data.node, x.derived());
-            state_.Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx);
-            data.Lx = data.node.Lx;
-            data.Lxx = data.node.Lxx;
-            data.Gx = data.node.Gx;
-            data.Hx = data.node.Hx;
+            get_state().Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx);
+            data.Lx = data.node.Lx_accessor();
+            data.Lxx = data.node.Lxx_accessor();
+            data.Gx = data.node.Gx_accessor();
+            data.Hx = data.node.Hx_accessor();
         }
 
         template <typename StateVectorType, typename ControlParamVectorType>
@@ -269,9 +281,9 @@ namespace galileo
             w = data.control.w;
         }
 
-        Data_t createData()
+        Data_t createData() const
         {
-            return Data_t(this->derived());
+            return Data_t(*this);
         }
 
         const ControlParamModel_t &get_control() const
@@ -288,7 +300,6 @@ namespace galileo
         using Base::get_state;
 
     protected:
-        State_t state_;
         ControlParamModel_t control_;
         NodeModel_t node_;
 

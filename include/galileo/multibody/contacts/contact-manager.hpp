@@ -398,7 +398,7 @@ namespace galileo
                             segment(force, nc_accum_i, nc_dim_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_robot().frames[d_i.frame()].parent;
+                            get_state().get_robot().frames[d_i.frame()].parent;
                         data.fext[joint] = d_i.fext();
                     }
                     else
@@ -423,7 +423,7 @@ namespace galileo
                             segment(force, nc_accum_i, nc_dim_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            state_->get_robot().frames[d_i.frame()].parent;
+                            get_state().get_robot().frames[d_i.frame()].parent;
                         data.fext[joint] = d_i.fext();
                         nc_accum_i = nc_accum_i + nc_dim_i;
                     }
@@ -446,7 +446,7 @@ namespace galileo
         {
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
-            typename DataContainer_t::const_iterator it_d, end_d;
+            typename DataContainer_t::iterator it_d, end_d;
             if (compute_all_contacts_)
             {
                 for (it_m = contacts_.begin(), end_m = contacts_.end(),
@@ -500,7 +500,7 @@ namespace galileo
         void updateRneaDiff(DataManager_t &data, RobotData_t &robot_data) const
         {
             typename ModelContainer_t::const_iterator it_m, end_m;
-            typename DataContainer_t::const_iterator it_d, end_d;
+            typename DataContainer_t::iterator it_d, end_d;
             for (it_m = contacts_.begin(), end_m = contacts_.end(),
                 it_d = data.contacts.begin(), end_d = data.contacts.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)

@@ -69,7 +69,7 @@ namespace galileo
             this->derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
         }
 
-        Data_t createData()
+        Data_t createData() const
         {
             return this->derived().createData();
         }

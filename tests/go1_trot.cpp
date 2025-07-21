@@ -10,19 +10,22 @@
 #include "galileo/core/activations/implementations/activation-quadratic.hpp"
 #include "galileo/multibody/residuals/implementations/residual-frame-translation.hpp"
 
-#include "galileo/core/costs/fwd.hpp"
 #include "galileo/core/costs/cost-manager.hpp"
+#include "galileo/core/costs/fwd.hpp"
 #include "galileo/core/costs/implementations/cost-residual.hpp"
 
-#include "galileo/core/constraints/equality/fwd.hpp"
 #include "galileo/core/constraints/equality/constraint-manager.hpp"
+#include "galileo/core/constraints/equality/fwd.hpp"
 #include "galileo/core/constraints/equality/implementations/constraint-residual.hpp"
 
-#include "galileo/multibody/contacts/fwd.hpp"
 #include "galileo/multibody/contacts/contact-manager.hpp"
+#include "galileo/multibody/contacts/fwd.hpp"
 #include "galileo/multibody/contacts/implementations/contact-3d.hpp"
 
 #include "galileo/predictive/nodes/implementations/node-contact-fwddyn.hpp"
+
+#include "galileo/common/math/barycentric-interpolator.hpp"
+#include "galileo/common/math/jacobi-roots.hpp"
 
 #include "galileo/core/controls/implementations/control-param-polynomial.hpp"
 
@@ -170,6 +173,14 @@ using ContactModelManager_t = ContactModelManagerTestTpl<PhaseSpec_t>;
 using NodeModel_t = typename PhaseSpec_t::NodeModel_t;
 using NodeData_t = typename PhaseSpec_t::NodeData_t;
 
+using JacobiRoots_t = galileo::JacobiRootsTpl<VarScalar, NOrder, Options>;
+using BarycentricInterpolator_t = galileo::BarycentricInterpolatorTpl<VarScalar, NOrder, Options>;
+
+using ControlParamModel_t = typename PhaseSpec_t::ControlParamModel_t;
+
+using SegmentModel_t = typename PhaseSpec_t::SegmentModel_t;
+using SegmentData_t = typename PhaseSpec_t::SegmentData_t;
+
 int main(int argc, char *argv[])
 {
     std::string urdf_path = "/home/quant/research/Galileo/resources/go1/urdf/go1.urdf";
@@ -200,7 +211,23 @@ int main(int argc, char *argv[])
     contact_manager.addContact("test_contact", contact);
 
     NodeModel_t node = NodeModel_t(ps, cost_manager, constraint_manager, contact_manager, actuation, 0.0, false);
-    NodeData_t node_data = node.createData();
+    // NodeData_t node_data = node.createData();
+
+    JacobiRoots_t jacobi_roots = JacobiRoots_t(1.0, 0.0);
+    jacobi_roots.compute_roots();
+    Eigen::VectorXd nodes = jacobi_roots.get_roots();
+
+    BarycentricInterpolator_t interpolator = BarycentricInterpolator_t(nodes);
+    ControlParamModel_t control_param = ControlParamModel_t(ps, interpolator);
+
+    NumScalar period = 0.0;
+    SegmentModel_t segment = SegmentModel_t(ps, node, control_param, period);
+
+    SegmentData_t segment_data = segment.createData();
+
+    Eigen::VectorXd x = Eigen::VectorXd::Zero(ps.get_nx());
+    Eigen::VectorXd u = Eigen::VectorXd::Zero(ps.get_nu());
+    segment.calc(segment_data, x, u);
 
     return 0;
 }
