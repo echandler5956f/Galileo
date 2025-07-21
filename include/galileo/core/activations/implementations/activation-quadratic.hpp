@@ -113,7 +113,9 @@ namespace galileo
         template <typename ResidualVectorType>
         void calc(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
+            std::cout << "activation quadratic calc" << std::endl;
             data.A = typename PS::VarScalar(0.5) * r.dot(r);
+            std::cout << "data.A: " << data.A << std::endl;
         }
 
         template <typename ResidualVectorType>

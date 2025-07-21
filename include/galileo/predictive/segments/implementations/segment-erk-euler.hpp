@@ -182,31 +182,47 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
+            std::cout << "calc" << std::endl;
             auto compute_dx = [&](const auto &v)
             {
+                std::cout << "control calc" << std::endl;
                 control_.calc(data.control, NumScalar(0.), w.derived());
+                std::cout << "control calc done" << std::endl;
                 node_.calc(data.node, x.derived(), data.control.u);
+                std::cout << "node calc done" << std::endl;
                 const VectorNv_t &a = data.node.XAcc_accessor();
+                std::cout << "a: " << a.transpose() << std::endl;
                 head(data.dx, get_ps().get_nv_dim()).noalias() = v * period_ + a * period_squared_;
+                std::cout << "dx: " << data.dx.transpose() << std::endl;
                 tail(data.dx, get_ps().get_nv_dim()).noalias() = a * period_;
+                std::cout << "dx done" << std::endl;
             };
 
             if constexpr (StateVectorType::RowsAtCompileTime == Eigen::Dynamic)
             {
+                std::cout << "calc dynamic" << std::endl;
                 const auto v = tail(x, get_ps().get_nv_dim());
+                std::cout << "v: " << v.transpose() << std::endl;
                 compute_dx(v);
             }
             else
             {
+                std::cout << "calc static" << std::endl;
                 const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, DimNV_t::Value> v =
                     tail(x, get_ps().get_nv_dim());
+                std::cout << "v: " << v.transpose() << std::endl;
                 compute_dx(v);
             }
 
+            std::cout << "integrate" << std::endl;
             get_state().integrate(x.derived(), data.dx, data.XNext);
+            std::cout << "integrate done" << std::endl;
             data.L = period_ * data.node.L_accessor();
+            std::cout << "L: " << data.L << std::endl;
             data.H = data.node.H_accessor();
+            std::cout << "H: " << data.H.transpose() << std::endl;
             data.G = data.node.G_accessor();
+            std::cout << "G: " << data.G.transpose() << std::endl;
         }
 
         template <typename StateVectorType>

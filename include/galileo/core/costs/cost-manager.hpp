@@ -250,6 +250,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
+            std::cout << "cost manager calc" << std::endl;
             data.L = VarScalar(0.);
 
             typename ModelContainer_t::const_iterator it_m, end_m;
@@ -258,15 +259,21 @@ namespace galileo
                 end_d = data.costs.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
+                std::cout << "cost manager calc loop" << std::endl;
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
                 {
+                    std::cout << "cost manager calc loop active" << std::endl;
                     Data_t &d_i = it_d->second;
 
+                    std::cout << "got data" << std::endl;
                     m_i.model.calc(d_i, x.derived(), u.derived());
+                    std::cout << "cost active calc done" << std::endl;
                     data.L += m_i.weight * d_i.L();
+                    std::cout << "data.L: " << data.L << std::endl;
                 }
             }
+            std::cout << "cost manager calc done" << std::endl;
         }
 
         template <typename StateVectorType>

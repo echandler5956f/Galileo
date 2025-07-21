@@ -121,7 +121,7 @@ using ContactModelManagerTestTpl = galileo::ContactModelManagerTpl<PhaseSpec, Co
 template <typename PhaseSpec>
 using NodeTpl = galileo::NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTestTpl>;
 
-static constexpr int NOrder = 2;
+static constexpr int NOrder = 1;
 template <typename PhaseSpec>
 using ControlParamTpl = galileo::ControlParamPolynomialTpl<PhaseSpec, NOrder>;
 
@@ -225,9 +225,9 @@ int main(int argc, char *argv[])
 
     SegmentData_t segment_data = segment.createData();
 
-    Eigen::VectorXd x = Eigen::VectorXd::Zero(ps.get_nx());
-    Eigen::VectorXd u = Eigen::VectorXd::Zero(ps.get_nu());
-    segment.calc(segment_data, x, u);
+    Eigen::VectorXd x = state.rand();
+    Eigen::VectorXd w = Eigen::VectorXd::Zero(ps.get_nw());
+    segment.calc(segment_data, x, w);
 
     return 0;
 }

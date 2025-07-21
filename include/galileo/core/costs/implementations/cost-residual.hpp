@@ -167,10 +167,13 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
+            std::cout << "residual calc" << std::endl;
             residual_.calc(data.residual, x.derived(), u.derived());
+            std::cout << "residual calc done" << std::endl;
             activation_.calc(data.activation, data.residual.R);
-
+            std::cout << "activation calc done" << std::endl;
             data.L = data.activation.A;
+            std::cout << "data.L: " << data.L << std::endl;
         }
 
         template <typename StateVectorType>
