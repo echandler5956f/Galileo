@@ -85,8 +85,8 @@ namespace galileo
         }
 
         inline SegmentERKModelBase(const SegmentERKModelBase &clone)
+            : ps_(clone.ps_), state_(clone.state_)
         {
-            *this = clone;
         }
 
         inline SegmentERKModelBase &operator=(const SegmentERKModelBase &clone)

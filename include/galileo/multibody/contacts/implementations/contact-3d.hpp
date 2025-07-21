@@ -132,11 +132,10 @@ namespace galileo
         Matrix6X_t fXjda_dv;
         Matrix3X_t fJf_df;
 
-        template <typename DataCollector>
-        ContactData3dTpl(const Model_t &model, DataCollector *const collector)
-            : robot(collector->robot),
-              frame(0),
-              type(model.type()),
+        ContactData3dTpl(const Model_t &model, RobotData_t *const robot)
+            : robot(robot),
+              frame(model.get_id()),
+              type(model.get_type()),
               jMf(SE3_t::Identity()),
               Jc(model.get_nc(), model.get_ps().get_nv()),
               f(Force_t::Zero()),
@@ -166,7 +165,6 @@ namespace galileo
             a0.setZero();
             da0_dx.setZero();
             dtau_dq.setZero();
-            frame = model.get_id();
             jMf = model.get_robot().frames[frame].placement;
             fXj = jMf.inverse().toActionMatrix();
             a0_local.setZero();
@@ -209,16 +207,16 @@ namespace galileo
 
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
+        template <typename Vector3Type, typename Vector2Type>
         ContactModel3dTpl(const PS &ps,
-                          const RobotModel_t &robot,
                           const FrameIndex_t id,
                           const ReferenceFrame_t &type,
-                          const Vector3_t &xref,
-                          const Vector2_t &gains)
+                          const Eigen::MatrixBase<Vector3Type> &xref,
+                          const Eigen::MatrixBase<Vector2Type> &gains)
             : Base(ps, id, type, DimNC_t()),
-              robot_(robot),
-              xref_(xref),
-              gains_(gains)
+              robot_(ps.get_state().get_robot()),
+              xref_(xref.derived()),
+              gains_(gains.derived())
         {
         }
 
@@ -332,10 +330,9 @@ namespace galileo
             }
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(RobotData_t *const robot) const
         {
-            return Data_t(*this, collector);
+            return Data_t(*this, robot);
         }
 
         template <typename ForceVectorType>

@@ -62,8 +62,8 @@ namespace galileo
         }
 
         inline ActivationModelBase(const ActivationModelBase &clone)
+            : ps_(clone.ps_), nr_dim_(clone.nr_dim_)
         {
-            *this = clone;
         }
 
         inline ActivationModelBase &operator=(const ActivationModelBase &clone)

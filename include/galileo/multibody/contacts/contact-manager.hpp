@@ -128,14 +128,15 @@ namespace galileo
         using Force_t = typename traits<MetaManager_t>::Force_t;
         using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
 
-        template <typename DataCollector>
-        ContactDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
+        using RobotData_t = typename PS::RobotData_t;
+
+        ContactDataManagerTpl(const ModelManager_t &model_manager, RobotData_t *const robot)
             : Jc(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
               a0(model_manager.get_nc_total()),
               da0_dx(model_manager.get_nc_total(), model_manager.get_ps().get_ndx()),
               dv(model_manager.get_ps().get_nv()),
               ddv_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx()),
-              fext(model_manager.get_state()->get_robot().njoints, Force_t::Zero())
+              fext(model_manager.get_state().get_robot().njoints, Force_t::Zero())
         {
             Jc.setZero();
             a0.setZero();
@@ -143,12 +144,12 @@ namespace galileo
             dv.setZero();
             ddv_dx.setZero();
             for (typename ModelContainer_t::const_iterator
-                     it = model_manager.getContacts().begin();
-                 it != model_manager.getContacts().end(); ++it)
+                     it = model_manager.get_contacts().begin();
+                 it != model_manager.get_contacts().end(); ++it)
             {
                 const Item_t &item = it->second;
                 contacts.insert(
-                    std::make_pair(item.name, item.model.createData(collector)));
+                    std::make_pair(item.name, item.model.createData(robot)));
             }
         }
 
@@ -191,8 +192,8 @@ namespace galileo
         using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
         using ForceIterator_t = typename ForceVector_t::iterator;
 
-        ContactModelManagerTpl(const PS &ps, const std::shared_ptr<State_t> &state)
-            : ps_(ps), state_(state),
+        ContactModelManagerTpl(const PS &ps)
+            : ps_(ps), state_(ps.get_state()),
               nc_active_dim_(DimensionTpl<Eigen::Dynamic>(0)), nc_total_dim_(DimensionTpl<Eigen::Dynamic>(0)),
               compute_all_contacts_(true)
         {
@@ -210,13 +211,13 @@ namespace galileo
             }
             else if (active)
             {
-                nc_active_dim_ += model.get_nc();
-                nc_total_dim_ += model.get_nc();
+                nc_active_dim_ = nc_active_dim_ + model.get_nc();
+                nc_total_dim_ = nc_total_dim_ + model.get_nc();
                 active_set_.insert(name);
             }
             else if (!active)
             {
-                nc_total_dim_ += model.get_nc();
+                nc_total_dim_ = nc_total_dim_ + model.get_nc();
                 inactive_set_.insert(name);
             }
         }
@@ -226,8 +227,8 @@ namespace galileo
             typename ModelContainer_t::iterator it = contacts_.find(name);
             if (it != contacts_.end())
             {
-                nc_active_dim_ -= it->second.model.get_nc();
-                nc_total_dim_ -= it->second.model.get_nc();
+                nc_active_dim_ = nc_active_dim_ - it->second.model.get_nc();
+                nc_total_dim_ = nc_total_dim_ - it->second.model.get_nc();
                 contacts_.erase(it);
                 inactive_set_.erase(name);
             }
@@ -245,14 +246,14 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    nc_active_dim_ += it->second.model.get_nc();
+                    nc_active_dim_ = nc_active_dim_ + it->second.model.get_nc();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    nc_active_dim_ -= it->second.model.get_nc();
+                    nc_active_dim_ = nc_active_dim_ - it->second.model.get_nc();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -286,14 +287,14 @@ namespace galileo
 
                         m_i.model.calc(d_i, x.derived());
                         segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
-                        block(data.Jc, nc_accum_i, 0, nc_dim_i, ps_.nv_dim) = d_i.Jc();
+                        block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
                     }
                     else
                     {
                         segment(data.a0, nc_accum_i, nc_dim_i).setZero();
-                        block(data.Jc, nc_accum_i, 0, nc_dim_i, ps_.nv_dim).setZero();
+                        block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()).setZero();
                     }
-                    nc_accum_i += nc_dim_i;
+                    nc_accum_i = nc_accum_i + nc_dim_i;
                 }
             }
             else
@@ -310,8 +311,8 @@ namespace galileo
                         m_i.model.calc(d_i, x.derived());
                         auto nc_dim_i = m_i.model.get_nc_dim();
                         segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
-                        block(data.Jc, nc_accum_i, 0, nc_dim_i, ps_.nv_dim) = d_i.Jc();
-                        nc_accum_i += nc_dim_i;
+                        block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
+                        nc_accum_i = nc_accum_i + nc_dim_i;
                     }
                 }
             }
@@ -336,13 +337,13 @@ namespace galileo
                         Data_t &d_i = it_d->second;
 
                         m_i.model.calcDiff(d_i, x.derived());
-                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, ps_.ndx_dim) = d_i.da0_dx();
+                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
                     }
                     else
                     {
-                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, ps_.ndx_dim).setZero();
+                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()).setZero();
                     }
-                    nc_accum_i += nc_dim_i;
+                    nc_accum_i = nc_accum_i + nc_dim_i;
                 }
             }
             else
@@ -358,8 +359,8 @@ namespace galileo
 
                         m_i.model.calcDiff(d_i, x.derived());
                         auto nc_dim_i = m_i.model.get_nc_dim();
-                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, ps_.ndx_dim) = d_i.da0_dx();
-                        nc_accum_i += nc_dim_i;
+                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
+                        nc_accum_i = nc_accum_i + nc_dim_i;
                     }
                 }
             }
@@ -404,7 +405,7 @@ namespace galileo
                     {
                         m_i.model.setZeroForce(d_i);
                     }
-                    nc_accum_i += nc_dim_i;
+                    nc_accum_i = nc_accum_i + nc_dim_i;
                 }
             }
             else
@@ -424,7 +425,7 @@ namespace galileo
                         const pinocchio::JointIndex joint =
                             state_->get_robot().frames[d_i.frame()].parent;
                         data.fext[joint] = d_i.fext();
-                        nc_accum_i += nc_dim_i;
+                        nc_accum_i = nc_accum_i + nc_dim_i;
                     }
                     else
                     {
@@ -458,16 +459,16 @@ namespace galileo
                     if (m_i.active)
                     {
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>> df_dx_i =
-                            block(df_dx, nc_accum_i, 0, nc_dim_i, ps_.ndx_dim);
+                            block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNU_t::Value>> df_du_i =
-                            block(df_du, nc_accum_i, 0, nc_dim_i, ps_.nu_dim);
+                            block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
                         m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
                     }
                     else
                     {
                         m_i.model.setZeroForceDiff(d_i);
                     }
-                    nc_accum_i += nc_dim_i;
+                    nc_accum_i = nc_accum_i + nc_dim_i;
                 }
             }
             else
@@ -482,11 +483,11 @@ namespace galileo
                     {
                         auto nc_dim_i = m_i.model.get_nc_dim();
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>> df_dx_i =
-                            block(df_dx, nc_accum_i, 0, nc_dim_i, ps_.ndx_dim);
+                            block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNU_t::Value>> df_du_i =
-                            block(df_du, nc_accum_i, 0, nc_dim_i, ps_.nu_dim);
+                            block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
                         m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
-                        nc_accum_i += nc_dim_i;
+                        nc_accum_i = nc_accum_i + nc_dim_i;
                     }
                     else
                     {
@@ -520,20 +521,20 @@ namespace galileo
                 }
             }
         }
-        template <typename DataCollector>
-        DataManager_t createData(DataCollector *const collector) const
+
+        DataManager_t createData(RobotData_t *const robot) const
         {
-            return DataManager_t(*this, collector);
+            return DataManager_t(*this, robot);
         }
 
         const PS &get_ps() const
         {
-            return ps_;
+            return ps_.get();
         }
 
-        const std::shared_ptr<State_t> &get_state() const
+        const State_t &get_state() const
         {
-            return state_;
+            return state_.get();
         }
 
         const ModelContainer_t &get_contacts() const
@@ -562,8 +563,8 @@ namespace galileo
         }
 
     protected:
-        const PS &ps_;
-        std::shared_ptr<State_t> state_;
+        std::reference_wrapper<const PS> ps_;
+        std::reference_wrapper<const State_t> state_;
         ModelContainer_t contacts_;
 
         std::set<std::string> active_set_;

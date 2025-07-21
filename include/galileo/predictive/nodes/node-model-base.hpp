@@ -74,6 +74,11 @@ namespace galileo
             return this->derived().createData();
         }
 
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
         PS &get_ps()
         {
             return ps_.get();
@@ -128,8 +133,8 @@ namespace galileo
         }
 
         inline NodeModelBase(const NodeModelBase &clone)
+            : ps_(clone.ps_), robot_(clone.robot_), u_lb_(clone.u_lb_), u_ub_(clone.u_ub_)
         {
-            *this = clone;
         }
 
         inline NodeModelBase &operator=(const NodeModelBase &clone)

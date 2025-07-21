@@ -31,13 +31,13 @@ namespace galileo
         using JointData_t = JointDataTpl<PS>;
         using ContactData_t = ContactDataManager_t;
 
-        DataCollectorDefaultTpl(RobotData_t *robot,
-                                ActuationData_t *actuation,
-                                JointData_t *joint,
-                                ContactData_t *contacts) : MultibodyDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS>(robot),
-                                                           ActuationDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS>(actuation),
-                                                           JointDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS>(joint),
-                                                           ContactDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS, ContactCollectionTpl>(contacts)
+        DataCollectorDefaultTpl(RobotData_t *robot_,
+                                ActuationData_t *actuation_,
+                                JointData_t *joint_,
+                                ContactData_t *contacts_) : MultibodyDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS>(robot_),
+                                                                ActuationDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS>(actuation_),
+                                                                JointDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS>(joint_),
+                                                                ContactDataMixinTpl<DataCollectorDefaultTpl<PS, ContactCollectionTpl>, PS, ContactCollectionTpl>(contacts_)
 
         {
         }

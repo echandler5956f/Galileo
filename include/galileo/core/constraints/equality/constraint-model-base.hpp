@@ -94,8 +94,8 @@ namespace galileo
         }
 
         inline ConstraintModelBase(const ConstraintModelBase &clone)
+            : ps_(clone.ps_), nh_dim_(clone.nh_dim_)
         {
-            *this = clone;
         }
 
         inline ConstraintModelBase &operator=(const ConstraintModelBase &clone)

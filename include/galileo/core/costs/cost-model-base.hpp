@@ -72,8 +72,8 @@ namespace galileo
         }
 
         inline CostModelBase(const CostModelBase &clone)
+            : ps_(clone.ps_)
         {
-            *this = clone;
         }
 
         inline CostModelBase &operator=(const CostModelBase &clone)

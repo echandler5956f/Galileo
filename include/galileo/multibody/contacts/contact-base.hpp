@@ -130,6 +130,7 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
 
         using RobotModel_t = typename PS::RobotModel_t;
+        using RobotData_t = typename PS::RobotData_t;
         using FrameIndex_t = typename PS::FrameIndex_t;
         using ReferenceFrame_t = typename PS::ReferenceFrame_t;
 
@@ -195,10 +196,9 @@ namespace galileo
             data.df_du.setZero();
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(RobotData_t *const robot) const
         {
-            return this->derived().createData(collector);
+            return this->derived().createData(robot);
         }
 
         const RobotModel_t &get_robot() const
@@ -283,12 +283,16 @@ namespace galileo
         }
 
         inline ContactModelBase(const ContactModelBase &clone)
+            : ps_(clone.ps_), nc_dim_(clone.nc_dim_), id_(clone.id_), type_(clone.type_)
         {
-            *this = clone;
         }
 
         inline ContactModelBase &operator=(const ContactModelBase &clone)
         {
+            ps_ = clone.ps_;
+            nc_dim_ = clone.nc_dim_;
+            id_ = clone.id_;
+            type_ = clone.type_;
             return *this;
         }
 

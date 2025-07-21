@@ -103,13 +103,13 @@ namespace galileo
         template <typename DataCollector>
         CostDataResidualTpl(const Model_t &model, DataCollector *const collector)
             : activation(model.get_activation().createData()),
-              residual(model.get_residual().createData(collector),
-                       L(0.),
-                       Lx(model.get_ps().get_ndx()),
-                       Lu(model.get_ps().get_nu()),
-                       Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
-                       Lxu(model.get_ps().get_ndx(), model.get_ps().get_nu()),
-                       Luu(model.get_ps().get_nu(), model.get_ps().get_nu()))
+              residual(model.get_residual().createData(collector)),
+              L(L_t(0.)),
+              Lx(model.get_ps().get_ndx()),
+              Lu(model.get_ps().get_nu()),
+              Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
+              Lxu(model.get_ps().get_ndx(), model.get_ps().get_nu()),
+              Luu(model.get_ps().get_nu(), model.get_ps().get_nu())
         {
             Lx.setZero();
             Lu.setZero();

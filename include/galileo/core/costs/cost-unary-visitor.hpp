@@ -42,22 +42,22 @@ namespace galileo
                 return boost::apply_visitor(visitor, cost_model);
             }
 
-            template <typename CostModelDerived, typename ArgsTmp>
+            template <typename CostModelType, typename ArgsTmp>
             static ReturnType run(
-                const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model,
-                typename CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS>::CostDataDerived &cost_data,
+                const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model,
+                typename CostModelBase<CostModelType, typename traits<CostModelType>::PS>::Data_t &cost_data,
                 ArgsTmp args)
             {
-                InternalVisitorModelAndData<CostModelDerived, ArgsTmp> visitor(cost_data, args);
+                InternalVisitorModelAndData<CostModelType, ArgsTmp> visitor(cost_data, args);
                 return visitor(cost_model.derived());
             }
 
-            template <typename CostModelDerived>
+            template <typename CostModelType>
             static ReturnType run(
-                const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model,
-                typename CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS>::CostDataDerived &cost_data)
+                const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model,
+                typename CostModelBase<CostModelType, typename traits<CostModelType>::PS>::Data_t &cost_data)
             {
-                InternalVisitorModelAndData<CostModelDerived, NoArg> visitor(cost_data);
+                InternalVisitorModelAndData<CostModelType, NoArg> visitor(cost_data);
                 return visitor(cost_model.derived());
             }
 
@@ -97,29 +97,29 @@ namespace galileo
                 return boost::apply_visitor(visitor, cost_data);
             }
 
-            template <typename CostModelDerived, typename ArgsTmp>
-            static ReturnType run(const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model, ArgsTmp args)
+            template <typename CostModelType, typename ArgsTmp>
+            static ReturnType run(const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(cost_model.derived());
             }
 
-            template <typename CostDataDerived, typename ArgsTmp>
-            static ReturnType run(const CostDataBase<CostDataDerived, typename traits<CostDataDerived>::PS> &cost_data, ArgsTmp args)
+            template <typename CostDataType, typename ArgsTmp>
+            static ReturnType run(const CostDataBase<CostDataType, typename traits<CostDataType>::PS> &cost_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
                 return visitor(cost_data.derived());
             }
 
-            template <typename CostModelDerived>
-            static ReturnType run(const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model)
+            template <typename CostModelType>
+            static ReturnType run(const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(cost_model.derived());
             }
 
-            template <typename CostDataDerived>
-            static ReturnType run(const CostDataBase<CostDataDerived, typename traits<CostDataDerived>::PS> &cost_data)
+            template <typename CostDataType>
+            static ReturnType run(const CostDataBase<CostDataType, typename traits<CostDataType>::PS> &cost_data)
             {
                 InternalVisitorModel<NoArg> visitor;
                 return visitor(cost_data.derived());
@@ -129,22 +129,22 @@ namespace galileo
             template <typename CostModel, typename ArgType>
             struct InternalVisitorModelAndData : public boost::static_visitor<ReturnType>
             {
-                using CostData = typename traits<CostModel>::CostDataDerived;
+                using CostData = typename traits<CostModel>::Data_t;
 
                 InternalVisitorModelAndData(CostData &cost_data, ArgType args)
                     : cost_data(cost_data), args(args)
                 {
                 }
 
-                template <typename CostModelDerived>
-                ReturnType operator()(const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model) const
+                template <typename CostModelType>
+                ReturnType operator()(const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model) const
                 {
                     return bf::invoke(
-                        &CostVisitorDerived::template algo<CostModelDerived>,
+                        &CostVisitorDerived::template algo<CostModelType>,
                         gf::append(
                             boost::ref(cost_model.derived()),
                             boost::ref(
-                                boost::get<typename CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS>::CostDataDerived>(cost_data)),
+                                boost::get<typename CostModelBase<CostModelType, typename traits<CostModelType>::PS>::Data_t>(cost_data)),
                             args));
                 }
 
@@ -161,22 +161,22 @@ namespace galileo
             struct InternalVisitorModelAndData<CostModel, NoArg>
                 : public boost::static_visitor<ReturnType>
             {
-                using CostData = typename traits<CostModel>::CostDataDerived;
+                using CostData = typename traits<CostModel>::Data_t;
 
                 InternalVisitorModelAndData(CostData &cost_data)
                     : cost_data(cost_data)
                 {
                 }
 
-                template <typename CostModelDerived>
-                ReturnType operator()(const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model) const
+                template <typename CostModelType>
+                ReturnType operator()(const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model) const
                 {
                     return bf::invoke(
-                        &CostVisitorDerived::template algo<CostModelDerived>,
+                        &CostVisitorDerived::template algo<CostModelType>,
                         bf::make_vector(
                             boost::ref(cost_model.derived()),
                             boost::ref(
-                                boost::get<typename CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS>::CostDataDerived>(cost_data))));
+                                boost::get<typename CostModelBase<CostModelType, typename traits<CostModelType>::PS>::Data_t>(cost_data))));
                 }
 
                 ReturnType operator()(const CostModelVoid)
@@ -195,19 +195,19 @@ namespace galileo
                 {
                 }
 
-                template <typename CostModelDerived>
-                ReturnType operator()(const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model) const
+                template <typename CostModelType>
+                ReturnType operator()(const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model) const
                 {
                     return bf::invoke(
-                        &CostVisitorDerived::template algo<CostModelDerived>,
+                        &CostVisitorDerived::template algo<CostModelType>,
                         gf::append(boost::ref(cost_model.derived()), args));
                 }
 
-                template <typename CostDataDerived>
-                ReturnType operator()(const CostDataBase<CostDataDerived, typename traits<CostDataDerived>::PS> &cost_data) const
+                template <typename CostDataType>
+                ReturnType operator()(const CostDataBase<CostDataType, typename traits<CostDataType>::PS> &cost_data) const
                 {
                     return bf::invoke(
-                        &CostVisitorDerived::template algo<CostDataDerived>,
+                        &CostVisitorDerived::template algo<CostDataType>,
                         gf::append(boost::ref(cost_data.derived()), args));
                 }
 
@@ -226,16 +226,16 @@ namespace galileo
                 {
                 }
 
-                template <typename CostModelDerived>
-                ReturnType operator()(const CostModelBase<CostModelDerived, typename traits<CostModelDerived>::PS> &cost_model) const
+                template <typename CostModelType>
+                ReturnType operator()(const CostModelBase<CostModelType, typename traits<CostModelType>::PS> &cost_model) const
                 {
-                    return CostVisitorDerived::template algo<CostModelDerived>(cost_model.derived());
+                    return CostVisitorDerived::template algo<CostModelType>(cost_model.derived());
                 }
 
-                template <typename CostDataDerived>
-                ReturnType operator()(const CostDataBase<CostDataDerived, typename traits<CostDataDerived>::PS> &cost_data) const
+                template <typename CostDataType>
+                ReturnType operator()(const CostDataBase<CostDataType, typename traits<CostDataType>::PS> &cost_data) const
                 {
-                    return CostVisitorDerived::template algo<CostDataDerived>(cost_data.derived());
+                    return CostVisitorDerived::template algo<CostDataType>(cost_data.derived());
                 }
             };
 

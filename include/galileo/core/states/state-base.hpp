@@ -499,8 +499,8 @@ namespace galileo
         }
 
         inline StateBase(const StateBase &clone)
+            : rs_(clone.rs_)
         {
-            *this = clone;
         }
 
         inline StateBase &operator=(const StateBase &clone)

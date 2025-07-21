@@ -21,10 +21,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
 
-        template <typename CostModel>
+        template <typename CostModelType>
         static void algo(
-            const CostModelBase<CostModel, PhaseSpec> &cost_model,
-            CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
+            const CostModelBase<CostModelType, PhaseSpec> &cost_model,
+            CostDataBase<typename CostModelType::Data_t, PhaseSpec> &cost_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -53,10 +53,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
 
-        template <typename CostModel>
+        template <typename CostModelType>
         static void algo(
-            const CostModelBase<CostModel, PhaseSpec> &cost_model,
-            CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
+            const CostModelBase<CostModelType, PhaseSpec> &cost_model,
+            CostDataBase<typename CostModelType::Data_t, PhaseSpec> &cost_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
@@ -84,10 +84,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
 
-        template <typename CostModel>
+        template <typename CostModelType>
         static void algo(
-            const CostModelBase<CostModel, PhaseSpec> &cost_model,
-            CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
+            const CostModelBase<CostModelType, PhaseSpec> &cost_model,
+            CostDataBase<typename CostModelType::Data_t, PhaseSpec> &cost_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -116,10 +116,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
 
-        template <typename CostModel>
+        template <typename CostModelType>
         static void algo(
-            const CostModelBase<CostModel, PhaseSpec> &cost_model,
-            CostDataBase<typename CostModel::CostDataDerived, PhaseSpec> &cost_data,
+            const CostModelBase<CostModelType, PhaseSpec> &cost_model,
+            CostDataBase<typename CostModelType::Data_t, PhaseSpec> &cost_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
@@ -145,16 +145,17 @@ namespace galileo
               template <typename> class CostCollectionTpl,
               typename DataCollector>
     struct CostCreateDataVisitor
-        : fusion::CostUnaryVisitorBase<CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector>>
+        : fusion::CostUnaryVisitorBase<CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector>,
+                                       CostDataTpl<PhaseSpec, CostCollectionTpl>>
     {
         using ArgsType = boost::fusion::vector<DataCollector *const>;
         using CostCollection_t = CostCollectionTpl<PhaseSpec>;
-        using CostModelVariant_t = CostCollection_t::ModelVariant_t;
+        using CostModelVariant_t = CostCollection_t::CostModelVariant_t;
         using CostDataVariant_t = CostDataTpl<PhaseSpec, CostCollectionTpl>;
 
-        template <typename CostModelDerived>
+        template <typename CostModelType>
         static CostDataVariant_t algo(
-            const CostModelBase<CostModelDerived, PhaseSpec> &cost_model,
+            const CostModelBase<CostModelType, PhaseSpec> &cost_model,
             DataCollector *const collector)
         {
             return CostDataVariant_t(cost_model.createData(collector));
@@ -180,8 +181,8 @@ namespace galileo
 
         using ReturnType = const PhaseSpec &;
 
-        template <typename CostModelDerived>
-        ReturnType operator()(const CostModelBase<CostModelDerived, PhaseSpec> &cost_model) const
+        template <typename CostModelType>
+        ReturnType operator()(const CostModelBase<CostModelType, PhaseSpec> &cost_model) const
         {
             return cost_model.get_ps();
         }
@@ -207,8 +208,8 @@ namespace galileo
 
         using ReturnType = typename CostDataTpl<PhaseSpec, CostCollectionTpl>::L_t;
 
-        template <typename CostDataDerived>
-        ReturnType operator()(const CostDataBase<CostDataDerived, PhaseSpec> &cost_data) const
+        template <typename CostDataType>
+        ReturnType operator()(const CostDataBase<CostDataType, PhaseSpec> &cost_data) const
         {
             return cost_data.L();
         }
@@ -231,8 +232,8 @@ namespace galileo
     {
         using ReturnType = typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lx_t;
 
-        template <typename CostDataDerived>
-        ReturnType operator()(const CostDataBase<CostDataDerived, PhaseSpec> &cost_data) const
+        template <typename CostDataType>
+        ReturnType operator()(const CostDataBase<CostDataType, PhaseSpec> &cost_data) const
         {
             return cost_data.Lx();
         }
@@ -255,8 +256,8 @@ namespace galileo
     {
         using ReturnType = typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lu_t;
 
-        template <typename CostDataDerived>
-        ReturnType operator()(const CostDataBase<CostDataDerived, PhaseSpec> &cost_data) const
+        template <typename CostDataType>
+        ReturnType operator()(const CostDataBase<CostDataType, PhaseSpec> &cost_data) const
         {
             return cost_data.Lu();
         }
@@ -279,8 +280,8 @@ namespace galileo
     {
         using ReturnType = typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lxx_t;
 
-        template <typename CostDataDerived>
-        ReturnType operator()(const CostDataBase<CostDataDerived, PhaseSpec> &cost_data) const
+        template <typename CostDataType>
+        ReturnType operator()(const CostDataBase<CostDataType, PhaseSpec> &cost_data) const
         {
             return cost_data.Lxx();
         }
@@ -303,8 +304,8 @@ namespace galileo
     {
         using ReturnType = typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lxu_t;
 
-        template <typename CostDataDerived>
-        ReturnType operator()(const CostDataBase<CostDataDerived, PhaseSpec> &cost_data) const
+        template <typename CostDataType>
+        ReturnType operator()(const CostDataBase<CostDataType, PhaseSpec> &cost_data) const
         {
             return cost_data.Lxu();
         }
@@ -327,8 +328,8 @@ namespace galileo
     {
         using ReturnType = typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Luu_t;
 
-        template <typename CostDataDerived>
-        ReturnType operator()(const CostDataBase<CostDataDerived, PhaseSpec> &cost_data) const
+        template <typename CostDataType>
+        ReturnType operator()(const CostDataBase<CostDataType, PhaseSpec> &cost_data) const
         {
             return cost_data.Luu();
         }

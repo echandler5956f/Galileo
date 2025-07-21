@@ -1,6 +1,7 @@
 #ifndef __galileo_multibody_contacts_contact_visitors_hxx__
 #define __galileo_multibody_contacts_contact_visitors_hxx__
 
+#include <stdexcept>
 #include <vector>
 
 #include "galileo/multibody/contacts/contact-unary-visitor.hpp"
@@ -16,41 +17,6 @@ namespace galileo
     // Contact model visitors
 
     template <typename PhaseSpec,
-              template <typename> class ContactCollectionTpl,
-              typename DataCollector>
-    struct CreateContactData : boost::static_visitor<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
-    {
-        using ContactCollection_t = ContactCollectionTpl<PhaseSpec>;
-        using ContactModelVariant_t = ContactCollection_t::ModelVariant_t;
-        using ContactDataVariant_t = ContactDataTpl<PhaseSpec, ContactCollectionTpl>;
-
-        DataCollector *const collector_;
-        CreateContactData(DataCollector *const collector) : collector_(collector) {}
-
-        template <typename ContactModelDerived>
-        ContactDataVariant_t operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
-        {
-            return ContactDataVariant_t(contact_model.createData(collector_));
-        }
-
-        static ContactDataVariant_t run(const ContactModelVariant_t &contact_model,
-                                        DataCollector *const collector)
-        {
-            return boost::apply_visitor(CreateContactData<PhaseSpec, ContactCollectionTpl, DataCollector>(collector), contact_model);
-        }
-    };
-
-    template <typename PhaseSpec,
-              template <typename> class ContactCollectionTpl,
-              typename DataCollector>
-    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl>
-    contact_create_data(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-                        DataCollector *const collector)
-    {
-        return CreateContactData<PhaseSpec, ContactCollectionTpl, DataCollector>::run(contact_model, collector);
-    }
-
-    template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl,
               typename StateVectorType>
     struct ContactCalcZerothOrderVisitor
@@ -58,10 +24,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<const Eigen::MatrixBase<StateVectorType> &>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModel>::Data_t, PhaseSpec> &contact_data,
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
+            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<StateVectorType> &x)
         {
             contact_model.calc(contact_data.derived(), x.derived());
@@ -89,10 +55,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<const Eigen::MatrixBase<StateVectorType> &>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModel>::Data_t, PhaseSpec> &contact_data,
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
+            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<StateVectorType> &x)
         {
             contact_model.calcDiff(contact_data.derived(), x.derived());
@@ -120,10 +86,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<const Eigen::MatrixBase<ForceVectorType> &>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModel>::Data_t, PhaseSpec> &contact_data,
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
+            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<ForceVectorType> &force)
         {
             contact_model.updateForce(contact_data.derived(), force.derived());
@@ -152,10 +118,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<const Eigen::MatrixBase<MatrixNcNdxType> &, const Eigen::MatrixBase<MatrixNcNuType> &>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModel>::Data_t, PhaseSpec> &contact_data,
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
+            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
             const Eigen::MatrixBase<MatrixNcNuType> &df_du)
         {
@@ -185,10 +151,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModel>::Data_t, PhaseSpec> &contact_data)
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
+            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data)
         {
             contact_model.setZeroForce(contact_data);
         }
@@ -212,10 +178,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModel>::Data_t, PhaseSpec> &contact_data)
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
+            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data)
         {
             contact_model.setZeroForceDiff(contact_data);
         }
@@ -233,13 +199,43 @@ namespace galileo
     }
 
     template <typename PhaseSpec,
+              template <typename> class ContactCollectionTpl>
+    struct ContactCreateDataVisitor
+        : fusion::ContactUnaryVisitorBase<ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl>,
+                                          ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
+    {
+        using ArgsType = boost::fusion::vector<typename PhaseSpec::RobotData_t *const>;
+        using ContactCollection_t = ContactCollectionTpl<PhaseSpec>;
+        using ContactModelVariant_t = ContactCollection_t::ContactModelVariant_t;
+        using ContactDataVariant_t = ContactDataTpl<PhaseSpec, ContactCollectionTpl>;
+
+        template <typename ContactModelType>
+        static ContactDataVariant_t algo(
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
+            typename PhaseSpec::RobotData_t *const robot)
+        {
+            return ContactDataVariant_t(contact_model.createData(robot));
+        }
+    };
+
+    template <typename PhaseSpec,
+              template <typename> class ContactCollectionTpl>
+    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        typename PhaseSpec::RobotData_t *const robot)
+    {
+        typedef ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl> Algo;
+        return Algo::run(contact_model, typename Algo::ArgsType(robot));
+    }
+
+    template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct ContactGetRobotVisitor : boost::static_visitor<const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::RobotModel_t &>
     {
         using ReturnType = const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::RobotModel_t &;
 
-        template <typename ContactModelDerived>
-        ReturnType operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
+        template <typename ContactModelType>
+        ReturnType operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
         {
             return contact_model.get_robot();
         }
@@ -265,8 +261,8 @@ namespace galileo
 
         using ReturnType = const PhaseSpec &;
 
-        template <typename ContactModelDerived>
-        ReturnType operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
+        template <typename ContactModelType>
+        ReturnType operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
         {
             return contact_model.get_ps();
         }
@@ -289,8 +285,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t;
 
-        template <typename ContactModelDerived>
-        ReturnType operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
+        template <typename ContactModelType>
+        ReturnType operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
         {
             return contact_model.get_id();
         }
@@ -315,9 +311,9 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t &>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
             const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t &id)
         {
             contact_model.set_id(id);
@@ -341,8 +337,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t;
 
-        template <typename ContactModelDerived>
-        ReturnType operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
+        template <typename ContactModelType>
+        ReturnType operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
         {
             return contact_model.get_type();
         }
@@ -367,9 +363,9 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t &>;
 
-        template <typename ContactModel>
+        template <typename ContactModelType>
         static void algo(
-            const ContactModelBase<ContactModel, PhaseSpec> &contact_model,
+            const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
             const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t &type)
         {
             contact_model.set_type(type);
@@ -391,8 +387,8 @@ namespace galileo
               template <typename PS> class ContactCollectionTpl>
     struct ContactGetNcDimVisitor : boost::static_visitor<const DimensionTpl<Eigen::Dynamic> &>
     {
-        template <typename ContactModelDerived>
-        const DimensionTpl<Eigen::Dynamic> &operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
+        template <typename ContactModelType>
+        const DimensionTpl<Eigen::Dynamic> &operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
         {
             return contact_model.get_nc_dim();
         }
@@ -414,8 +410,8 @@ namespace galileo
               template <typename PS> class ContactCollectionTpl>
     struct ContactGetNcVisitor : boost::static_visitor<int>
     {
-        template <typename ContactModelDerived>
-        int operator()(const ContactModelBase<ContactModelDerived, PhaseSpec> &contact_model) const
+        template <typename ContactModelType>
+        int operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
         {
             return contact_model.get_nc();
         }
@@ -442,8 +438,8 @@ namespace galileo
 
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::RobotData_t *;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.robot();
         }
@@ -468,8 +464,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.frame();
         }
@@ -494,8 +490,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.type();
         }
@@ -520,8 +516,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::SE3_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.jMf();
         }
@@ -546,8 +542,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNv_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.Jc();
         }
@@ -572,8 +568,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::Force_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.f();
         }
@@ -598,8 +594,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::Force_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.fext();
         }
@@ -624,8 +620,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNdx_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.df_dx();
         }
@@ -650,8 +646,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNu_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.df_du();
         }
@@ -677,8 +673,8 @@ namespace galileo
 
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::ActionMatrix_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.fXj();
         }
@@ -703,8 +699,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::VectorNc_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.a0();
         }
@@ -730,8 +726,8 @@ namespace galileo
 
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNdx_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.da0_dx();
         }
@@ -756,8 +752,8 @@ namespace galileo
     {
         using ReturnType = typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNv_t;
 
-        template <typename ContactDataDerived>
-        ReturnType operator()(const ContactDataBase<ContactDataDerived, PhaseSpec> &contact_data) const
+        template <typename ContactDataType>
+        ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const
         {
             return contact_data.dtau_dq();
         }

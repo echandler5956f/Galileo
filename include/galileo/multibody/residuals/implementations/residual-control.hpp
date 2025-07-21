@@ -118,8 +118,10 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
+
+        template <typename ControlVectorType>
         ResidualModelControlTpl(const PS &ps,
-                                const VectorNu_t &u_ref)
+                                const Eigen::MatrixBase<ControlVectorType> &u_ref)
             : Base(ps, DimNR_t()),
               u_ref_(u_ref)
         {

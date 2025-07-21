@@ -29,13 +29,15 @@ namespace galileo
         using DimNC_t = DimensionTpl<>;
         static constexpr int NC = DimNC_t::Value;
 
+        using DimNU_t = traits<typename PS::NodeMeta_t>::DimNU_t;
+
         // Traits required by ForceDataBase
         using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNV_t::Value, PS::Options,
                                             6, PS::DimNV_t::Value>;
         using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNDX_t::Value, PS::Options,
                                              6, PS::DimNDX_t::Value>;
-        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::DimNU_t::Value, PS::Options,
-                                            6, PS::DimNU_t::Value>;
+        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, DimNU_t::Value, PS::Options,
+                                            6, DimNU_t::Value>;
 
         // Traits required by ContactDataBase
         using VectorNc_t = Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options, 6, 1>;
@@ -206,6 +208,8 @@ namespace galileo
 
         using PS = PhaseSpec;
 
+        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -215,8 +219,6 @@ namespace galileo
         using ModelVariant_t = typename Collection_t::ContactModelVariant_t;
 
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
-
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
         ContactModelTpl()
             : ModelVariant_t()
@@ -230,7 +232,8 @@ namespace galileo
 
         template <typename ModelDerived>
         ContactModelTpl(const ContactModelBase<ModelDerived, PhaseSpec> &model)
-            : ModelVariant_t((ModelVariant_t)model.derived())
+            : Base(model.get_ps(), model.get_id(), model.get_type(), DimNC_t(model.get_nc())),
+              ModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
         }
@@ -259,10 +262,9 @@ namespace galileo
             galileo::contact_calc_first_order(*this, data, x);
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(RobotData_t *const robot) const
         {
-            return galileo::contact_create_data(*this, collector);
+            return galileo::contact_create_data(*this, robot);
         }
 
         template <typename ForceVectorType>

@@ -85,10 +85,10 @@ namespace galileo
 
         template <typename DataCollector>
         ConstraintDataResidualTpl(const Model_t &model, DataCollector *const collector)
-            : residual(model.get_residual().createData(collector),
-                       H(model.get_nh()),
-                       Hx(model.get_nh(), model.get_ps().get_ndx()),
-                       Hu(model.get_nh(), model.get_ps().get_nu()))
+            : residual(model.get_residual().createData(collector)),
+              H(model.get_nh()),
+              Hx(model.get_nh(), model.get_ps().get_ndx()),
+              Hu(model.get_nh(), model.get_ps().get_nu())
         {
             H.setZero();
             Hx.setZero();

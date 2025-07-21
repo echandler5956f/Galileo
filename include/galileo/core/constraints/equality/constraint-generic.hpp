@@ -112,11 +112,11 @@ namespace galileo
         {
         }
 
-        template <typename DataDerived>
-        ConstraintDataTpl(const ConstraintDataBase<DataDerived, PhaseSpec> &data)
+        template <typename ConstraintDataType>
+        ConstraintDataTpl(const ConstraintDataBase<ConstraintDataType, PhaseSpec> &data)
             : Collection_t::ConstraintDataVariant_t((DataVariant_t)data.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, ConstraintDataType>));
         }
 
         GENERIC_ACCESSOR(H_t, H);
@@ -165,11 +165,12 @@ namespace galileo
         {
         }
 
-        template <typename ModelDerived>
-        ConstraintModelTpl(const ConstraintModelBase<ModelDerived, PhaseSpec> &model)
-            : Collection_t::ConstraintModelVariant_t((ModelVariant_t)model.derived())
+        template <typename ConstraintModelType>
+        ConstraintModelTpl(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &model)
+            : Base(model.get_ps(), DimNH_t(model.get_nh())),
+              Collection_t::ConstraintModelVariant_t((ModelVariant_t)model.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ConstraintModelType>));
         }
 
         template <typename DataCollector>

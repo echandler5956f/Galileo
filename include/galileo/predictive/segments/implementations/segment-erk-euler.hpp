@@ -90,7 +90,7 @@ namespace galileo
               XNext(model.get_ps().get_nx()),
               XNextx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
               XNextw(model.get_ps().get_ndx(), model.get_ps().get_nw()),
-              L(0.),
+              L(L_t(0.)),
               Lx(model.get_ps().get_ndx()),
               Lw(model.get_ps().get_nw()),
               Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),

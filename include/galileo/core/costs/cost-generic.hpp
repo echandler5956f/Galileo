@@ -128,11 +128,11 @@ namespace galileo
         {
         }
 
-        template <typename DataDerived>
-        CostDataTpl(const CostDataBase<DataDerived, PhaseSpec> &data)
+        template <typename CostDataType>
+        CostDataTpl(const CostDataBase<CostDataType, PhaseSpec> &data)
             : Collection_t::CostDataVariant_t((DataVariant_t)data.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, CostDataType>));
         }
 
         GENERIC_ACCESSOR(L_t, L);
@@ -172,11 +172,12 @@ namespace galileo
         {
         }
 
-        template <typename ModelDerived>
-        CostModelTpl(const CostModelBase<ModelDerived, PhaseSpec> &model)
-            : Collection_t::CostModelVariant_t((ModelVariant_t)model.derived())
+        template <typename CostModelType>
+        CostModelTpl(const CostModelBase<CostModelType, PhaseSpec> &model)
+            : Base(model.get_ps()),
+              Collection_t::CostModelVariant_t((ModelVariant_t)model.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, CostModelType>));
         }
 
         ModelVariant_t &toVariant()

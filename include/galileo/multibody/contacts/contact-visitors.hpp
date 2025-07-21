@@ -11,13 +11,6 @@ namespace galileo
     // Contact model visitors
 
     template <typename PhaseSpec,
-              template <typename> class ContactCollectionTpl,
-              typename DataCollector>
-    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
-        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-        DataCollector *const collector);
-
-    template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl,
               typename StateVectorType>
     inline void contact_calc_zeroth_order(
@@ -62,6 +55,12 @@ namespace galileo
     inline void contact_set_zero_force_diff(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
         ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        typename PhaseSpec::RobotData_t *const robot);
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     inline const PhaseSpec &contact_get_ps(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);

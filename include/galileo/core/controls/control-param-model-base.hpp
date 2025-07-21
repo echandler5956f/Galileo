@@ -132,8 +132,8 @@ namespace galileo
         }
 
         inline ControlParamModelBase(const ControlParamModelBase &clone)
+            : ps_(clone.ps_)
         {
-            *this = clone;
         }
 
         inline ControlParamModelBase &operator=(const ControlParamModelBase &clone)

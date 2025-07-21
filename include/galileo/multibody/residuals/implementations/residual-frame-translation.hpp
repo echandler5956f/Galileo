@@ -132,9 +132,10 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
+        template <typename Vector3Type>
         ResidualModelFrameTranslationTpl(const PS &ps,
                                          const FrameIndex_t frame_id,
-                                         const Vector3_t &x_ref)
+                                         const Eigen::MatrixBase<Vector3Type> &x_ref)
             : Base(ps, DimNR_t()),
               frame_id_(frame_id), x_ref_(x_ref)
         {

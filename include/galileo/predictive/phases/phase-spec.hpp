@@ -197,13 +197,13 @@ namespace galileo
 
         using ConstraintManagerMeta_t = ConstraintManagerTpl<PS>;
         using ConstraintCollection_t = typename traits<ConstraintManagerMeta_t>::Collection_t;
-        using ConstraintModelManager_t = typename traits<ConstraintManagerMeta_t>::Model_t;
-        using ConstraintDataManager_t = typename traits<ConstraintManagerMeta_t>::Data_t;
+        using ConstraintModelManager_t = typename traits<ConstraintManagerMeta_t>::ModelManager_t;
+        using ConstraintDataManager_t = typename traits<ConstraintManagerMeta_t>::DataManager_t;
 
         using CostManagerMeta_t = CostManagerTpl<PS>;
         using CostCollection_t = typename traits<CostManagerMeta_t>::Collection_t;
-        using CostModelManager_t = typename traits<CostManagerMeta_t>::Model_t;
-        using CostDataManager_t = typename traits<CostManagerMeta_t>::Data_t;
+        using CostModelManager_t = typename traits<CostManagerMeta_t>::ModelManager_t;
+        using CostDataManager_t = typename traits<CostManagerMeta_t>::DataManager_t;
 
         /* ---------------------------------------------------------------- */
         /* An assortment of Eigen types (primarily for use in Segments) */

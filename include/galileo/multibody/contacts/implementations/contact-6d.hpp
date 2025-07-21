@@ -123,10 +123,9 @@ namespace galileo
         Matrix6_t rMf_Jlog6;
         Matrix6Nv_t fJf_df;
 
-        template <typename DataCollector>
-        ContactData6dTpl(const Model_t &model, DataCollector *const collector)
-            : robot(collector->robot),
-              frame(0),
+        ContactData6dTpl(const Model_t &model, RobotData_t *const robot)
+            : robot(robot),
+              frame(model.get_id()),
               type(model.get_type()),
               jMf(SE3_t::Identity()),
               Jc(model.get_nc(), model.get_ps().get_nv()),
@@ -154,7 +153,6 @@ namespace galileo
             a0.setZero();
             da0_dx.setZero();
             dtau_dq.setZero();
-            frame = model.get_id();
             jMf = model.get_robot().frames[frame].placement;
             fXj = jMf.inverse().toActionMatrix();
             da0_local_dx.setZero();
@@ -300,10 +298,9 @@ namespace galileo
             }
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(RobotData_t *const robot) const
         {
-            return Data_t(*this, collector);
+            return Data_t(*this, robot);
         }
 
         template <typename ForceVectorType>

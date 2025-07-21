@@ -49,7 +49,7 @@ namespace galileo
         // using Jstatic_t = Eigen::GMatrix<VarScalar, PS::NV, NU + NC>;
         using Kinv_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
         using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>;
-        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNU_t::Value>;
+        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, DimNU_t::Value>;
         using Jstatic_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, Eigen::Dynamic>;
 
         using MatrixNvNc_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, Eigen::Dynamic>;
@@ -75,8 +75,8 @@ namespace galileo
         using PS = PhaseSpec;
 
         using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using NodeData_t = typename traits<Meta_t>::NodeData_t;
-        using NodeModel_t = typename traits<Meta_t>::NodeModel_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
     };
 
     template <typename PhaseSpec,
@@ -156,7 +156,6 @@ namespace galileo
         Gu_t &Gu_accessor() { return constraints.Hu; }
         const Gu_t &Gu_accessor() const { return constraints.Hu; }
 
-        template <typename DataCollector>
         NodeDataContactFwdDynTpl(const Model_t &model)
             : XAcc(model.get_ps().get_nv()),
               XAccx(model.get_ps().get_nv(), model.get_ps().get_ndx()),
@@ -166,6 +165,8 @@ namespace galileo
               joint(JointData_t(model.get_ps())),
               contacts(model.get_contacts().createData(&robot)),
               data_collector(&robot, &actuation, &joint, &contacts),
+              costs(model.get_costs().createData(&data_collector)),
+              constraints(model.get_constraints().createData(&data_collector)),
               Kinv(model.get_ps().get_nv() +
                        model.get_contacts().get_nc_total(),
                    model.get_ps().get_nv() +
@@ -181,8 +182,6 @@ namespace galileo
             XAccx.setZero();
             XAccu.setZero();
             joint.dtau_du.diagonal().setOnes();
-            constraints = model.get_constraints().createData(&data_collector);
-            costs = model.get_costs().createData(&data_collector);
             Kinv.setZero();
             df_dx.setZero();
             df_du.setZero();
@@ -468,10 +467,10 @@ namespace galileo
         using Base::set_u_ub;
 
     protected:
-        std::reference_wrapper<CostModelManager_t> costs_;
-        std::reference_wrapper<ConstraintModelManager_t> constraints_;
-        std::reference_wrapper<ContactModelManager_t> contacts_;
-        std::reference_wrapper<ActuationModel_t> actuation_;
+        std::reference_wrapper<const CostModelManager_t> costs_;
+        std::reference_wrapper<const ConstraintModelManager_t> constraints_;
+        std::reference_wrapper<const ContactModelManager_t> contacts_;
+        std::reference_wrapper<const ActuationModel_t> actuation_;
 
         bool with_armature_ = true;
         VectorNv_t armature_;

@@ -87,8 +87,8 @@ namespace galileo
         }
 
         inline ActuationModelBase(const ActuationModelBase &clone)
+            : state_(clone.state_)
         {
-            *this = clone;
         }
 
         inline ActuationModelBase &operator=(const ActuationModelBase &clone)

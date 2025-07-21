@@ -233,8 +233,8 @@ namespace galileo
         }
 
         inline ResidualModelBase(const ResidualModelBase &clone)
+            : ps_(clone.ps_), nr_dim_(clone.nr_dim_)
         {
-            *this = clone;
         }
 
         inline ResidualModelBase &operator=(const ResidualModelBase &clone)

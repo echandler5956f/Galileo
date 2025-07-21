@@ -21,10 +21,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
 
-        template <typename ConstraintModel>
+        template <typename ConstraintModelType>
         static void algo(
-            const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -53,10 +53,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
 
-        template <typename ConstraintModel>
+        template <typename ConstraintModelType>
         static void algo(
-            const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
@@ -84,10 +84,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
 
-        template <typename ConstraintModel>
+        template <typename ConstraintModelType>
         static void algo(
-            const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
@@ -116,10 +116,10 @@ namespace galileo
     {
         using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
 
-        template <typename ConstraintModel>
+        template <typename ConstraintModelType>
         static void algo(
-            const ConstraintModelBase<ConstraintModel, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModel::ConstraintDataDerived, PhaseSpec> &constraint_data,
+            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
@@ -145,16 +145,17 @@ namespace galileo
               template <typename> class ConstraintCollectionTpl,
               typename DataCollector>
     struct ConstraintCreateDataVisitor
-        : fusion::ConstraintUnaryVisitorBase<ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector>>
+        : fusion::ConstraintUnaryVisitorBase<ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector>,
+                                             ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using ArgsType = boost::fusion::vector<DataCollector *const>;
         using ConstraintCollection_t = ConstraintCollectionTpl<PhaseSpec>;
-        using ConstraintModelVariant_t = ConstraintCollection_t::ModelVariant_t;
+        using ConstraintModelVariant_t = ConstraintCollection_t::ConstraintModelVariant_t;
         using ConstraintDataVariant_t = ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>;
 
-        template <typename ConstraintModelDerived>
+        template <typename ConstraintModelType>
         static ConstraintDataVariant_t algo(
-            const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model,
+            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
             DataCollector *const collector)
         {
             return ConstraintDataVariant_t(constraint_model.createData(collector));
@@ -180,8 +181,8 @@ namespace galileo
 
         using ReturnType = const PhaseSpec &;
 
-        template <typename ConstraintModelDerived>
-        ReturnType operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
+        template <typename ConstraintModelType>
+        ReturnType operator()(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model) const
         {
             return constraint_model.get_ps();
         }
@@ -205,10 +206,16 @@ namespace galileo
 
         using ReturnType = const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t &;
 
-        template <typename ConstraintModelDerived>
-        ReturnType operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
+        template <typename ConstraintModelType>
+        ReturnType operator()(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model) const
         {
             return constraint_model.get_nh_dim();
+        }
+
+        ReturnType operator()(const ConstraintModelVoid &) const
+        {
+            static const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t zero_dim(0);
+            return zero_dim;
         }
 
         static ReturnType run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
@@ -230,10 +237,15 @@ namespace galileo
 
         using ReturnType = int;
 
-        template <typename ConstraintModelDerived>
-        ReturnType operator()(const ConstraintModelBase<ConstraintModelDerived, PhaseSpec> &constraint_model) const
+        template <typename ConstraintModelType>
+        ReturnType operator()(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model) const
         {
             return constraint_model.get_nh();
+        }
+
+        ReturnType operator()(const ConstraintModelVoid &) const
+        {
+            return 0;
         }
 
         static ReturnType run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
@@ -257,8 +269,8 @@ namespace galileo
 
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t;
 
-        template <typename ConstraintDataDerived>
-        ReturnType operator()(const ConstraintDataBase<ConstraintDataDerived, PhaseSpec> &constraint_data) const
+        template <typename ConstraintDataType>
+        ReturnType operator()(const ConstraintDataBase<ConstraintDataType, PhaseSpec> &constraint_data) const
         {
             return constraint_data.H();
         }
@@ -305,8 +317,8 @@ namespace galileo
     {
         using ReturnType = typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t;
 
-        template <typename ConstraintDataDerived>
-        ReturnType operator()(const ConstraintDataBase<ConstraintDataDerived, PhaseSpec> &constraint_data) const
+        template <typename ConstraintDataType>
+        ReturnType operator()(const ConstraintDataBase<ConstraintDataType, PhaseSpec> &constraint_data) const
         {
             return constraint_data.Hu();
         }

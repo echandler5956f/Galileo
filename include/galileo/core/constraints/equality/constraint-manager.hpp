@@ -177,7 +177,7 @@ namespace galileo
             }
             else if (active)
             {
-                nh_dim_ += model.get_nh_dim();
+                nh_dim_ = nh_dim_ + model.get_nh();
                 active_set_.insert(name);
             }
             else if (!active)
@@ -191,7 +191,7 @@ namespace galileo
             typename ModelContainer_t::iterator it = constraints_.find(name);
             if (it != constraints_.end())
             {
-                nh_dim_ -= it->second.model.get_nh_dim();
+                nh_dim_ = nh_dim_ - it->second.model.get_nh();
                 constraints_.erase(it);
                 inactive_set_.erase(name);
             }
@@ -209,14 +209,14 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    nh_dim_ += it->second.model.get_nh_dim();
+                    nh_dim_ = nh_dim_ + it->second.model.get_nh();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    nh_dim_ -= it->second.model.get_nh_dim();
+                    nh_dim_ = nh_dim_ - it->second.model.get_nh();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -332,17 +332,28 @@ namespace galileo
             }
         }
 
-        const std::set<std::string> &getActiveSet() const
+        template <typename DataCollector>
+        DataManager_t createData(DataCollector *const collector) const
+        {
+            return DataManager_t(*this, collector);
+        }
+
+        const ModelContainer_t &get_constraints() const
+        {
+            return constraints_;
+        }
+
+        const std::set<std::string> &get_active_set() const
         {
             return active_set_;
         }
 
-        const std::set<std::string> &getInactiveSet() const
+        const std::set<std::string> &get_inactive_set() const
         {
             return inactive_set_;
         }
 
-        bool getConstraintStatus(const std::string &name) const
+        bool get_constraint_status(const std::string &name) const
         {
             typename ModelContainer_t::const_iterator it =
                 constraints_.find(name);

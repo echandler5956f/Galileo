@@ -126,8 +126,9 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
+        template <typename StateVectorType>
         ResidualModelStateTpl(const PS &ps,
-                              const VectorNx_t &x_ref)
+                              const Eigen::MatrixBase<StateVectorType> &x_ref)
             : Base(ps, DimNR_t()),
               x_ref_(x_ref)
         {
