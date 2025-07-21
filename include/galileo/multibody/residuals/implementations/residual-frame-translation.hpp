@@ -146,7 +146,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            pinocchio::updateFramePlacement(get_ps().get_robot(), *data.robot, frame_id_);
+            pinocchio::updateFramePlacement(get_ps().get_state().get_robot(), *data.robot, frame_id_);
             data.R = data.robot->oMf[frame_id_].translation() - x_ref_;
         }
 
@@ -156,7 +156,7 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             pinocchio::getFrameJacobian(
-                get_ps().get_robot(),
+                get_ps().get_state().get_robot(),
                 *data.robot,
                 frame_id_,
                 pinocchio::ReferenceFrame::LOCAL,

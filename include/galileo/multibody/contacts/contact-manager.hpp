@@ -280,7 +280,7 @@ namespace galileo
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
                     const Item_t &m_i = it_m->second;
-                    auto nc_dim_i = m_i.model.get_nc_dim();
+                    auto nc_dim_i = m_i.model.get_nc();
                     if (m_i.active)
                     {
                         Data_t &d_i = it_d->second;
@@ -309,7 +309,7 @@ namespace galileo
                         Data_t &d_i = it_d->second;
 
                         m_i.model.calc(d_i, x.derived());
-                        auto nc_dim_i = m_i.model.get_nc_dim();
+                        auto nc_dim_i = m_i.model.get_nc();
                         segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
                         block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
                         nc_accum_i = nc_accum_i + nc_dim_i;
@@ -331,7 +331,7 @@ namespace galileo
                      it_m != end_m || it_d != end_d; ++it_m, ++it_d)
                 {
                     const Item_t &m_i = it_m->second;
-                    auto nc_dim_i = m_i.model.get_nc_dim();
+                    auto nc_dim_i = m_i.model.get_nc();
                     if (m_i.active)
                     {
                         Data_t &d_i = it_d->second;
@@ -358,7 +358,7 @@ namespace galileo
                         Data_t &d_i = it_d->second;
 
                         m_i.model.calcDiff(d_i, x.derived());
-                        auto nc_dim_i = m_i.model.get_nc_dim();
+                        auto nc_dim_i = m_i.model.get_nc();
                         block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
                         nc_accum_i = nc_accum_i + nc_dim_i;
                     }
@@ -391,7 +391,7 @@ namespace galileo
                 {
                     const Item_t &m_i = it_m->second;
                     Data_t &d_i = it_d->second;
-                    auto nc_dim_i = m_i.model.get_nc_dim();
+                    auto nc_dim_i = m_i.model.get_nc();
                     if (m_i.active)
                     {
                         const Eigen::VectorBlock<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
@@ -418,7 +418,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
                     if (m_i.active)
                     {
-                        auto nc_dim_i = m_i.model.get_nc_dim();
+                        auto nc_dim_i = m_i.model.get_nc();
                         const Eigen::VectorBlock<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
                             segment(force, nc_accum_i, nc_dim_i);
                         m_i.model.updateForce(d_i, force_i);
@@ -455,7 +455,7 @@ namespace galileo
                 {
                     const Item_t &m_i = it_m->second;
                     Data_t &d_i = it_d->second;
-                    auto nc_dim_i = m_i.model.get_nc_dim();
+                    auto nc_dim_i = m_i.model.get_nc();
                     if (m_i.active)
                     {
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>> df_dx_i =
@@ -481,7 +481,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
                     if (m_i.active)
                     {
-                        auto nc_dim_i = m_i.model.get_nc_dim();
+                        auto nc_dim_i = m_i.model.get_nc();
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>> df_dx_i =
                             block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNU_t::Value>> df_du_i =

@@ -56,38 +56,38 @@ namespace galileo
         DataCollector *const collector);
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl>
-    inline const PhaseSpec &cost_get_ps(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
+    inline PhaseSpec cost_get_ps(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
 
     // Cost data visitors
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl>
-    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::L_t &cost_L(
+    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::L_t cost_L(
         const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data);
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl>
-    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lx_t &cost_Lx(
+    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lx_t cost_Lx(
         const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data);
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl>
-    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lu_t &cost_Lu(
+    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lu_t cost_Lu(
         const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data);
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl>
-    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lxx_t &cost_Lxx(
+    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lxx_t cost_Lxx(
         const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data);
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl>
-    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lxu_t &cost_Lxu(
+    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Lxu_t cost_Lxu(
         const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data);
 
     template <typename PhaseSpec,
               template <typename> class CostCollectionTpl>
-    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Luu_t &cost_Luu(
+    inline typename CostDataTpl<PhaseSpec, CostCollectionTpl>::Luu_t cost_Luu(
         const CostDataTpl<PhaseSpec, CostCollectionTpl> &cost_data);
 
 } // namespace galileo

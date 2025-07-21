@@ -19,7 +19,7 @@ namespace galileo
     struct ConstraintCalcZerothOrderVisitor
         : fusion::ConstraintUnaryVisitorBase<ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
         template <typename ConstraintModelType>
         static void algo(
@@ -28,7 +28,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
-            constraint_model.calc(constraint_data, x.derived(), u.derived());
+            constraint_model.calc(constraint_data.derived(), x.derived(), u.derived());
         }
     };
 
@@ -44,14 +44,14 @@ namespace galileo
     {
         typedef ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType> Algo;
 
-        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x, u));
+        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x.derived(), u.derived()));
     }
 
     template <typename PhaseSpec, typename StateVectorType>
     struct ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, Blank>
         : fusion::ConstraintUnaryVisitorBase<ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, Blank>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, Blank>;
 
         template <typename ConstraintModelType>
         static void algo(
@@ -60,7 +60,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
-            constraint_model.calc(constraint_data, x.derived());
+            constraint_model.calc(constraint_data.derived(), x.derived());
         }
     };
 
@@ -75,14 +75,14 @@ namespace galileo
     {
         typedef ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, Blank> Algo;
 
-        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x, blank));
+        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x.derived(), blank));
     }
 
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct ConstraintCalcFirstOrderVisitor
         : fusion::ConstraintUnaryVisitorBase<ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
         template <typename ConstraintModelType>
         static void algo(
@@ -91,7 +91,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
-            constraint_model.calcDiff(constraint_data, x.derived(), u.derived());
+            constraint_model.calcDiff(constraint_data.derived(), x.derived(), u.derived());
         }
     };
 
@@ -107,14 +107,14 @@ namespace galileo
     {
         typedef ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType> Algo;
 
-        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x, u));
+        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x.derived(), u.derived()));
     }
 
     template <typename PhaseSpec, typename StateVectorType>
     struct ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, Blank>
         : fusion::ConstraintUnaryVisitorBase<ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, Blank>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, Blank>;
 
         template <typename ConstraintModelType>
         static void algo(
@@ -123,7 +123,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
-            constraint_model.calcDiff(constraint_data, x.derived());
+            constraint_model.calcDiff(constraint_data.derived(), x.derived());
         }
     };
 
@@ -138,7 +138,7 @@ namespace galileo
     {
         typedef ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, Blank> Algo;
 
-        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x, blank));
+        Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x.derived(), blank));
     }
 
     template <typename PhaseSpec,
@@ -179,7 +179,7 @@ namespace galileo
         : boost::static_visitor<const PhaseSpec &>
     {
 
-        using ReturnType = const PhaseSpec &;
+        using ReturnType = PhaseSpec;
 
         template <typename ConstraintModelType>
         ReturnType operator()(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model) const
@@ -194,40 +194,9 @@ namespace galileo
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline const PhaseSpec &constraint_get_ps(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
+    inline PhaseSpec constraint_get_ps(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
     {
         return ConstraintGetPhaseSpecVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_model);
-    }
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintGetNHDimVisitor
-        : boost::static_visitor<const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t &>
-    {
-
-        using ReturnType = const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t &;
-
-        template <typename ConstraintModelType>
-        ReturnType operator()(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model) const
-        {
-            return constraint_model.get_nh_dim();
-        }
-
-        ReturnType operator()(const ConstraintModelVoid &) const
-        {
-            static const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t zero_dim(0);
-            return zero_dim;
-        }
-
-        static ReturnType run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-        {
-            return boost::apply_visitor(ConstraintGetNHDimVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t &constraint_get_nh_dim(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-    {
-        return ConstraintGetNHDimVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_model);
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>

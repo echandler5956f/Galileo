@@ -56,10 +56,7 @@ namespace galileo
         DataCollector *const collector);
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline const PhaseSpec &constraint_get_ps(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline const typename ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>::DimNH_t &constraint_get_nh_dim(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
+    inline PhaseSpec constraint_get_ps(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     inline int constraint_get_nh(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
@@ -68,17 +65,17 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t &constraint_H(
+    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t constraint_H(
         const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
 
     template <typename PhaseSpec,
               template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t &constraint_Hx(
+    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t constraint_Hx(
         const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
 
     template <typename PhaseSpec,
               template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t &constraint_Hu(
+    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t constraint_Hu(
         const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
 
 } // namespace galileo

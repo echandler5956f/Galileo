@@ -212,16 +212,10 @@ namespace galileo
         using Base::get_ps;
 
         using Base::get_nh;
-        using Base::get_nh_dim;
 
         const PS &get_ps_impl() const
         {
             return galileo::constraint_get_ps(*this);
-        }
-
-        const DimNH_t &get_nh_dim_impl() const
-        {
-            return galileo::constraint_get_nh_dim(*this);
         }
 
         int get_nh_impl() const

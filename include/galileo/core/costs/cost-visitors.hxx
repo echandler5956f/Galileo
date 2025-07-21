@@ -19,7 +19,7 @@ namespace galileo
     struct CostCalcZerothOrderVisitor
         : fusion::CostUnaryVisitorBase<CostCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
         template <typename CostModelType>
         static void algo(
@@ -28,7 +28,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
-            cost_model.calc(cost_data, x.derived(), u.derived());
+            cost_model.calc(cost_data.derived(), x.derived(), u.derived());
         }
     };
 
@@ -44,14 +44,14 @@ namespace galileo
     {
         typedef CostCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType> Algo;
 
-        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x, u));
+        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x.derived(), u.derived()));
     }
 
     template <typename PhaseSpec, typename StateVectorType>
     struct CostCalcZerothOrderVisitor<PhaseSpec, StateVectorType, Blank>
         : fusion::CostUnaryVisitorBase<CostCalcZerothOrderVisitor<PhaseSpec, StateVectorType, Blank>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, Blank>;
 
         template <typename CostModelType>
         static void algo(
@@ -60,7 +60,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
-            cost_model.calc(cost_data, x.derived());
+            cost_model.calc(cost_data.derived(), x.derived());
         }
     };
 
@@ -75,14 +75,14 @@ namespace galileo
     {
         typedef CostCalcZerothOrderVisitor<PhaseSpec, StateVectorType, Blank> Algo;
 
-        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x, blank));
+        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x.derived(), blank));
     }
 
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct CostCalcFirstOrderVisitor
         : fusion::CostUnaryVisitorBase<CostCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Eigen::MatrixBase<ControlVectorType>>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
         template <typename CostModelType>
         static void algo(
@@ -91,7 +91,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Eigen::MatrixBase<ControlVectorType> &u)
         {
-            cost_model.calcDiff(cost_data, x.derived(), u.derived());
+            cost_model.calcDiff(cost_data.derived(), x.derived(), u.derived());
         }
     };
 
@@ -107,14 +107,14 @@ namespace galileo
     {
         typedef CostCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType> Algo;
 
-        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x, u));
+        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x.derived(), u.derived()));
     }
 
     template <typename PhaseSpec, typename StateVectorType>
     struct CostCalcFirstOrderVisitor<PhaseSpec, StateVectorType, Blank>
         : fusion::CostUnaryVisitorBase<CostCalcFirstOrderVisitor<PhaseSpec, StateVectorType, Blank>>
     {
-        using ArgsType = boost::fusion::vector<Eigen::MatrixBase<StateVectorType>, Blank>;
+        using ArgsType = boost::fusion::vector<const StateVectorType &, Blank>;
 
         template <typename CostModelType>
         static void algo(
@@ -123,7 +123,7 @@ namespace galileo
             const Eigen::MatrixBase<StateVectorType> &x,
             const Blank blank)
         {
-            cost_model.calcDiff(cost_data, x.derived());
+            cost_model.calcDiff(cost_data.derived(), x.derived());
         }
     };
 
@@ -138,7 +138,7 @@ namespace galileo
     {
         typedef CostCalcFirstOrderVisitor<PhaseSpec, StateVectorType, Blank> Algo;
 
-        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x, blank));
+        Algo::run(cost_model, cost_data, typename Algo::ArgsType(x.derived(), blank));
     }
 
     template <typename PhaseSpec,
@@ -179,7 +179,7 @@ namespace galileo
         : boost::static_visitor<const PhaseSpec &>
     {
 
-        using ReturnType = const PhaseSpec &;
+        using ReturnType = PhaseSpec;
 
         template <typename CostModelType>
         ReturnType operator()(const CostModelBase<CostModelType, PhaseSpec> &cost_model) const
@@ -194,7 +194,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl>
-    inline const PhaseSpec &cost_get_ps(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
+    inline PhaseSpec cost_get_ps(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
     {
         return CostGetPhaseSpecVisitor<PhaseSpec, CostCollectionTpl>::run(cost_model);
     }

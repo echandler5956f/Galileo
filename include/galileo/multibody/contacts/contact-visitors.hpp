@@ -63,39 +63,34 @@ namespace galileo
         typename PhaseSpec::RobotData_t *const robot);
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
-    inline const PhaseSpec &contact_get_ps(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+    inline PhaseSpec contact_get_ps(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::RobotModel_t &contact_get_robot(
+    inline typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::RobotModel_t contact_get_robot(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t contact_get_id(
+    inline typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t contact_get_id(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     inline void contact_set_id(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-        const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t &id);
+        const typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t &id);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t contact_get_type(
+    inline typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::ReferenceFrame_t contact_get_type(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     inline void contact_set_type(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
-        const typename traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t &type);
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    inline DimensionTpl<Eigen::Dynamic> contact_get_nc_dim(
-        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+        const typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::ReferenceFrame_t &type);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
@@ -106,67 +101,67 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::RobotDataPointer_t contact_robot_data(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotDataPointer_t contact_robot_data(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::FrameIndex_t contact_frame(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t contact_frame(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::ReferenceFrame_t contact_type_data(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::ReferenceFrame_t contact_type_data(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::SE3_t contact_jMf(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::SE3_t contact_jMf(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNv_t contact_Jc(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNv_t contact_Jc(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::Force_t contact_f(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::Force_t contact_f(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::Force_t contact_fext(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::Force_t contact_fext(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNdx_t contact_df_dx(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNdx_t contact_df_dx(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNu_t contact_df_du(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNu_t contact_df_du(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::ActionMatrix_t contact_fXj(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::ActionMatrix_t contact_fXj(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::VectorNc_t contact_a0(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::VectorNc_t contact_a0(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNcNdx_t contact_da0_dx(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNdx_t contact_da0_dx(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    inline typename traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>::MatrixNv_t contact_dtau_dq(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNv_t contact_dtau_dq(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
 } // namespace galileo

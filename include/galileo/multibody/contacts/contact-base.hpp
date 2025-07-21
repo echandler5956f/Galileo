@@ -98,6 +98,36 @@ namespace galileo
             return std::move(*static_cast<Derived *>(this));
         }
 
+        // Fulfill the contract for ForceDataBase and forward calls to the next derived class.
+        // This uses the overridden derived() method to find the grandchild (e.g., ContactDataTpl).
+
+        auto &robot_accessor() { return this->derived().robot_accessor(); }
+        const auto &robot_accessor() const { return this->derived().robot_accessor(); }
+
+        auto &frame_accessor() { return this->derived().frame_accessor(); }
+        const auto &frame_accessor() const { return this->derived().frame_accessor(); }
+
+        auto &type_accessor() { return this->derived().type_accessor(); }
+        const auto &type_accessor() const { return this->derived().type_accessor(); }
+
+        auto &jMf_accessor() { return this->derived().jMf_accessor(); }
+        const auto &jMf_accessor() const { return this->derived().jMf_accessor(); }
+
+        auto &f_accessor() { return this->derived().f_accessor(); }
+        const auto &f_accessor() const { return this->derived().f_accessor(); }
+
+        auto &fext_accessor() { return this->derived().fext_accessor(); }
+        const auto &fext_accessor() const { return this->derived().fext_accessor(); }
+
+        auto &Jc_accessor() { return this->derived().Jc_accessor(); }
+        const auto &Jc_accessor() const { return this->derived().Jc_accessor(); }
+
+        auto &df_dx_accessor() { return this->derived().df_dx_accessor(); }
+        const auto &df_dx_accessor() const { return this->derived().df_dx_accessor(); }
+
+        auto &df_du_accessor() { return this->derived().df_du_accessor(); }
+        const auto &df_du_accessor() const { return this->derived().df_du_accessor(); }
+
     protected:
         inline ContactDataBase()
         {

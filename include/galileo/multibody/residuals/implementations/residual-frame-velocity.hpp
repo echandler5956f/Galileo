@@ -141,7 +141,7 @@ namespace galileo
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             data.R = (pinocchio::getFrameVelocity(
-                          get_ps().get_robot(),
+                          get_ps().get_state().get_robot(),
                           *data.robot,
                           frame_id_,
                           type_) -
@@ -155,7 +155,7 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             pinocchio::getFrameVelocityDerivatives(
-                get_ps().get_robot(),
+                get_ps().get_state().get_robot(),
                 *data.robot,
                 frame_id_,
                 type_,

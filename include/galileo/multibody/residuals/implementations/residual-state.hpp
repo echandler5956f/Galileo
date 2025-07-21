@@ -156,7 +156,7 @@ namespace galileo
                               const ActivationDataType &adata) const
         {
             const PS &ps = get_ps();
-            const RobotModel_t &robot = get_ps().get_robot();
+            const RobotModel_t &robot = get_ps().get_state().get_robot();
             typedef Eigen::Block<MatrixX_t> MatrixBlock;
 
             // trust

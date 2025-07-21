@@ -310,7 +310,6 @@ namespace galileo
         using Base::set_type;
 
         using Base::get_nc;
-        using Base::get_nc_dim;
 
         const PS &get_ps_impl() const
         {
@@ -335,11 +334,6 @@ namespace galileo
         void set_type_impl(const ReferenceFrame_t &type)
         {
             galileo::contact_set_type(*this, type);
-        }
-
-        const DimNC_t &get_nc_dim_impl() const
-        {
-            return galileo::contact_get_nc_dim(*this);
         }
 
         int get_nc_impl() const
