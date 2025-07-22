@@ -10,8 +10,8 @@
 #include <pinocchio/algorithm/kinematics.hpp>
 
 #include "galileo/multibody/robot-spec.hpp"
-#include "galileo/multibody/states/implementations/state-multibody.hpp"
-#include "galileo/multibody/actuations/implementations/actuation-floating-base.hpp"
+#include "galileo/core/states/implementations/state-multibody.hpp"
+#include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
 #include "utils/resource_finder.hpp"
 
 namespace galileo

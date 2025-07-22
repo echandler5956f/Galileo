@@ -4,11 +4,11 @@
 
 #include "galileo/predictive/phases/phase-spec.hpp"
 
-#include "galileo/multibody/actuations/implementations/actuation-floating-base.hpp"
-#include "galileo/multibody/states/implementations/state-multibody.hpp"
+#include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
+#include "galileo/core/states/implementations/state-multibody.hpp"
 
 #include "galileo/core/activations/implementations/activation-quadratic.hpp"
-#include "galileo/multibody/residuals/implementations/residual-frame-translation.hpp"
+#include "galileo/core/residuals/implementations/residual-frame-translation.hpp"
 
 #include "galileo/core/costs/cost-manager.hpp"
 #include "galileo/core/costs/fwd.hpp"

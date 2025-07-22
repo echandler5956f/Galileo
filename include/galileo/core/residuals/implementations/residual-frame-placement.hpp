@@ -1,35 +1,36 @@
-#ifndef __galileo_multibody_residuals_residual_state_hpp__
-#define __galileo_multibody_residuals_residual_state_hpp__
+#ifndef __galileo_core_residuals_residual_frame_placement_hpp__
+#define __galileo_core_residuals_residual_frame_placement_hpp__
 
 #include <pinocchio/multibody/fwd.hpp>
 #include <pinocchio/spatial/motion.hpp>
 
-#include <pinocchio/algorithm/joint-configuration.hpp>
+#include <pinocchio/algorithm/frames-derivatives.hpp>
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/kinematics-derivatives.hpp>
 
+#include "galileo/core/residuals/fwd.hpp"
 #include "galileo/core/residuals/residual-base.hpp"
-#include "galileo/core/states/state-base.hpp"
-#include "galileo/multibody/residuals/fwd.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
 
     template <typename PhaseSpec>
-    struct ResidualStateTpl;
+    struct ResidualFramePlacementTpl;
 
     template <typename PhaseSpec>
-    struct traits<ResidualStateTpl<PhaseSpec>>
+    struct traits<ResidualFramePlacementTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ResidualStateTpl<PS>;
-        using Model_t = ResidualModelStateTpl<PS>;
-        using Data_t = ResidualDataStateTpl<PS>;
+        using Meta_t = ResidualFramePlacementTpl<PS>;
+        using Model_t = ResidualModelFramePlacementTpl<PS>;
+        using Data_t = ResidualDataFramePlacementTpl<PS>;
 
-        using DimNR_t = typename PS::DimNDX_t;
+        using DimNR_t = DimensionTpl<6>;
 
         static constexpr bool QDependent = true;
-        static constexpr bool VDependent = true;
+        static constexpr bool VDependent = false;
         static constexpr bool UDependent = false;
 
         using R_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
@@ -40,28 +41,28 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct traits<ResidualDataStateTpl<PhaseSpec>>
+    struct traits<ResidualDataFramePlacementTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ResidualStateTpl<PS>;
+        using Meta_t = ResidualFramePlacementTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec>
-    struct traits<ResidualModelStateTpl<PhaseSpec>>
+    struct traits<ResidualModelFramePlacementTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = ResidualStateTpl<PS>;
+        using Meta_t = ResidualFramePlacementTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
     template <typename PhaseSpec>
-    struct ResidualDataStateTpl
-        : public ResidualDataBase<ResidualDataStateTpl<PhaseSpec>, PhaseSpec>
+    struct ResidualDataFramePlacementTpl
+        : public ResidualDataBase<ResidualDataFramePlacementTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -70,10 +71,10 @@ namespace galileo
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using Meta_t = ResidualStateTpl<PS>;
+        using Meta_t = ResidualFramePlacementTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ResidualDataBase<ResidualDataStateTpl<PS>, PS>;
+        using Base = ResidualDataBase<ResidualDataFramePlacementTpl<PS>, PS>;
 
         GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
 
@@ -84,18 +85,22 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
         template <typename DataCollector>
-        ResidualDataStateTpl(const Model_t &model, DataCollector *const collector)
+        ResidualDataFramePlacementTpl(const Model_t &model, DataCollector *const collector)
             : robot(collector->robot),
               R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
-              Arr_Ru(model.get_nr(), model.get_ps().get_nu())
+              Arr_Ru(model.get_nr(), model.get_ps().get_nu()),
+              rJf(6, 6), fJf(6, model.get_ps().get_nv())
         {
             R.setZero();
             Rx.setZero();
             Ru.setZero();
             Arr_Rx.setZero();
             Arr_Ru.setZero();
+
+            rJf.setZero();
+            fJf.setZero();
         }
 
         RobotData_t *robot;
@@ -106,11 +111,15 @@ namespace galileo
         Arr_Rx_t Arr_Rx;
         Arr_Ru_t Arr_Ru;
 
-    }; // class ResidualDataStateTpl
+        SE3_t rMf;
+        Matrix6_t rJf;
+        Matrix6Nv_t fJf;
+
+    }; // class ResidualDataFramePlacementTpl
 
     template <typename PhaseSpec>
-    class ResidualModelStateTpl
-        : public ResidualModelBase<ResidualModelStateTpl<PhaseSpec>, PhaseSpec>
+    class ResidualModelFramePlacementTpl
+        : public ResidualModelBase<ResidualModelFramePlacementTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -119,18 +128,18 @@ namespace galileo
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using Meta_t = ResidualStateTpl<PS>;
+        using Meta_t = ResidualFramePlacementTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ResidualModelBase<ResidualModelStateTpl<PS>, PS>;
+        using Base = ResidualModelBase<ResidualModelFramePlacementTpl<PS>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
-        template <typename StateVectorType>
-        ResidualModelStateTpl(const PS &ps,
-                              const Eigen::MatrixBase<StateVectorType> &x_ref)
+        ResidualModelFramePlacementTpl(const PS &ps,
+                                       const FrameIndex_t frame_id,
+                                       const SE3_t &p_ref)
             : Base(ps, DimNR_t()),
-              x_ref_(x_ref)
+              frame_id_(frame_id), p_ref_(p_ref), oMf_inv_(p_ref.inverse())
         {
         }
 
@@ -139,7 +148,9 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            get_ps().get_state()->diff(x_ref_, x, data.R);
+            pinocchio::updateFramePlacement(get_ps().get_state().get_robot(), *data.robot, frame_id_);
+            data.rMf = oMf_inv_ * data.robot->oMf[frame_id_];
+            data.R = pinocchio::log6(data.rMf).toVector();
         }
 
         template <typename StateVectorType>
@@ -154,7 +165,14 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            get_ps().get_state()->Jdiff(x_ref_, x, data.Rx, data.Rx, Jcomponent::second);
+            pinocchio::Jlog6(data.rMf, data.rJf);
+            pinocchio::getFrameJacobian(
+                get_ps().get_state().get_robot(),
+                *data.robot,
+                frame_id_,
+                pinocchio::ReferenceFrame::LOCAL,
+                data.fJf);
+            leftCols(data.Rx, get_ps().get_nv_dim()).noalias() = data.rJf * data.fJf;
         }
 
         template <typename StateVectorType>
@@ -162,36 +180,6 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
-        }
-
-        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
-        void calcCostDiffImpl(CostDataType &cdata,
-                              Data_t &rdata,
-                              const ActivationDataType &adata) const
-        {
-            const PS &ps = get_ps();
-            const RobotModel_t &robot = get_ps().get_state().get_robot();
-            typedef Eigen::Block<MatrixX_t> MatrixBlock;
-
-            // trust
-            for (pinocchio::JointIndex i = 1;
-                 i < (pinocchio::JointIndex)robot.njoints; ++i)
-            {
-                const MatrixBlock &RxBlock = block(rdata.Rx, robot.idx_vs[i], robot.idx_vs[i],
-                                                   robot.nvs[i], robot.nvs[i]);
-                segment(cdata.Lx, robot.idx_vs[i], robot.nvs[i]).noalias() =
-                    RxBlock.transpose() *
-                    segment(adata.Ar, robot.idx_vs[i], robot.nvs[i]);
-
-                block(cdata.Lxx, robot.idx_vs[i], robot.idx_vs[i], robot.nvs[i], robot.nvs[i])
-                    .noalias() = RxBlock.transpose() *
-                                 segment(adata.Arr.diagonal(), robot.idx_vs[i], robot.nvs[i])
-                                     .asDiagonal() *
-                                 RxBlock;
-            }
-            tail(cdata.Lx, ps.get_nv_dim()) = tail(adata.Ar, ps.get_nv_dim());
-            tail(cdata.Lxx.diagonal(), ps.get_nv_dim()) =
-                tail(adata.Arr.diagonal(), ps.get_nv_dim());
         }
 
         template <typename DataCollector>
@@ -210,10 +198,12 @@ namespace galileo
         using Base::get_v_dependent;
 
     protected:
-        VectorNx_t x_ref_;
+        FrameIndex_t frame_id_;
+        SE3_t p_ref_;
+        SE3_t oMf_inv_;
 
-    }; // class ResidualModelStateTpl
+    }; // class ResidualModelFramePlacementTpl
 
 } // namespace galileo
 
-#endif // __galileo_multibody_residuals_residual_state_hpp__
+#endif // __galileo_core_residuals_residual_frame_placement_hpp__

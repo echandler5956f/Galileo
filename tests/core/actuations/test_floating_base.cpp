@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include "galileo/multibody/actuations/implementations/actuation-floating-base.hpp"
+#include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
 #include "galileo/core/states/implementations/state-euclidean.hpp"
 #include "galileo/core/basic-spec.hpp"
 #include "galileo/multibody/robot-spec.hpp"
