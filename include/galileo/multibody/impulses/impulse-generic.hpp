@@ -150,14 +150,9 @@ namespace galileo
             return galileo::impulse_fXj(*this);
         }
 
-        VectorNc_t a0() const
+        MatrixNcNv_t dv0_dq() const
         {
-            return galileo::impulse_a0(*this);
-        }
-
-        MatrixNcNdx_t da0_dx() const
-        {
-            return galileo::impulse_da0_dx(*this);
+            return galileo::impulse_dv0_dq(*this);
         }
 
         MatrixNv_t dtau_dq() const
@@ -193,8 +188,7 @@ namespace galileo
         GENERIC_ACCESSOR(MatrixNcNu_t, df_du);
 
         GENERIC_ACCESSOR(ActionMatrix_t, fXj);
-        GENERIC_ACCESSOR(VectorNc_t, a0);
-        GENERIC_ACCESSOR(MatrixNcNdx_t, da0_dx);
+        GENERIC_ACCESSOR(MatrixNcNv_t, dv0_dq);
         GENERIC_ACCESSOR(MatrixNv_t, dtau_dq);
     };
 
@@ -278,12 +272,11 @@ namespace galileo
         using Base::setZeroForceDiff;
         using Base::updateForceDiff;
 
-        template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        template <typename MatrixNcNdxType>
         void updateForceDiffImpl(Data_t &data,
-                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx) const
         {
-            galileo::impulse_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
+            galileo::impulse_update_force_diff(*this, data, df_dx.derived());
         }
 
         void setZeroForceImpl(Data_t &data) const

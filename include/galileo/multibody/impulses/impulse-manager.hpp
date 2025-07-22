@@ -8,8 +8,8 @@
 
 #include "galileo/multibody/impulses/fwd.hpp"
 
-#include "galileo/multibody/impulses/impulse-base.hpp"
 #include "galileo/multibody/force-base.hpp"
+#include "galileo/multibody/impulses/impulse-base.hpp"
 
 #include "galileo/multibody/impulses/impulse-generic.hpp"
 
@@ -64,10 +64,9 @@ namespace galileo
         using DataContainer_t = std::map<std::string, Data_t>;
 
         using Jc_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNV_t::Value, PS::Options>;
-        using a0_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1, PS::Options>;
-        using da0_dx_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value, PS::Options>;
-        using dv_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, 1, PS::Options>;
-        using ddv_dx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, PS::DimNDX_t::Value, PS::Options>;
+        using dv0_dq_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNv_t::Value, PS::Options>;
+        using vnext_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, 1, PS::Options>;
+        using dnext_dx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, PS::DimNDX_t::Value, PS::Options>;
 
         using Force_t = typename PS::Force_t;
         using ForceVector_t = GALILEO_ALIGNED_STD_VECTOR(Force_t);
@@ -121,10 +120,9 @@ namespace galileo
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
         using Jc_t = typename traits<MetaManager_t>::Jc_t;
-        using a0_t = typename traits<MetaManager_t>::a0_t;
-        using da0_dx_t = typename traits<MetaManager_t>::da0_dx_t;
-        using dv_t = typename traits<MetaManager_t>::dv_t;
-        using ddv_dx_t = typename traits<MetaManager_t>::ddv_dx_t;
+        using dv0_dq_t = typename traits<MetaManager_t>::dv0_dq_t;
+        using vnext_t = typename traits<MetaManager_t>::vnext_t;
+        using dnext_dx_t = typename traits<MetaManager_t>::dnext_dx_t;
         using Force_t = typename traits<MetaManager_t>::Force_t;
         using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
 
@@ -133,16 +131,14 @@ namespace galileo
         ImpulseDataManagerTpl(const ModelManager_t &model_manager, RobotData_t *const robot)
             : fext(model_manager.get_state().get_robot().njoints, Force_t::Zero()),
               Jc(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
-              a0(model_manager.get_nc_total()),
-              da0_dx(model_manager.get_nc_total(), model_manager.get_ps().get_ndx()),
-              dv(model_manager.get_ps().get_nv()),
-              ddv_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
+              dv0_dq(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
+              vnext(model_manager.get_ps().get_nv()),
+              dnext_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
         {
             Jc.setZero();
-            a0.setZero();
-            da0_dx.setZero();
-            dv.setZero();
-            ddv_dx.setZero();
+            dv0_dq.setZero();
+            vnext.setZero();
+            dnext_dx.setZero();
             for (typename ModelContainer_t::const_iterator
                      it = model_manager.get_impulses().begin();
                  it != model_manager.get_impulses().end(); ++it)
@@ -157,10 +153,9 @@ namespace galileo
         ForceVector_t fext;
 
         Jc_t Jc;
-        a0_t a0;
-        da0_dx_t da0_dx;
-        dv_t dv;
-        ddv_dx_t ddv_dx;
+        dv0_dq_t dv0_dq;
+        vnext_t vnext;
+        dnext_dx_t dnext_dx;
 
     }; // class ImpulseDataManagerTpl
 
@@ -194,8 +189,7 @@ namespace galileo
 
         ImpulseModelManagerTpl(const PS &ps)
             : ps_(ps), state_(ps.get_state()),
-              nc_active_dim_(DimensionTpl<Eigen::Dynamic>(0)), nc_total_dim_(DimensionTpl<Eigen::Dynamic>(0)),
-              compute_all_impulses_(true)
+              nc_active_dim_(DimensionTpl<Eigen::Dynamic>(0)), nc_total_dim_(DimensionTpl<Eigen::Dynamic>(0))
         {
         }
 
@@ -273,47 +267,19 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            if (compute_all_impulses_)
+            for (it_m = impulses_.begin(), end_m = impulses_.end(),
+                it_d = data.impulses.begin(), end_d = data.impulses.end();
+                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+                const Item_t &m_i = it_m->second;
+                auto nc_dim_i = m_i.model.get_nc();
+                if (m_i.active)
                 {
-                    const Item_t &m_i = it_m->second;
-                    auto nc_dim_i = m_i.model.get_nc();
-                    if (m_i.active)
-                    {
-                        Data_t &d_i = it_d->second;
+                    Data_t &d_i = it_d->second;
 
-                        m_i.model.calc(d_i, x);
-                        segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
-                        block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
-                    }
-                    else
-                    {
-                        segment(data.a0, nc_accum_i, nc_dim_i).setZero();
-                        block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()).setZero();
-                    }
+                    m_i.model.calc(d_i, x);
+                    block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
                     nc_accum_i += nc_dim_i;
-                }
-            }
-            else
-            {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
-                {
-                    const Item_t &m_i = it_m->second;
-                    if (m_i.active)
-                    {
-                        Data_t &d_i = it_d->second;
-
-                        m_i.model.calc(d_i, x);
-                        auto nc_dim_i = m_i.model.get_nc();
-                        segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
-                        block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
-                        nc_accum_i += nc_dim_i;
-                    }
                 }
             }
         }
@@ -324,52 +290,27 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            if (compute_all_impulses_)
+            for (it_m = impulses_.begin(), end_m = impulses_.end(),
+                it_d = data.impulses.begin(), end_d = data.impulses.end();
+                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+                const Item_t &m_i = it_m->second;
+                auto nc_dim_i = m_i.model.get_nc();
+                if (m_i.active)
                 {
-                    const Item_t &m_i = it_m->second;
-                    auto nc_dim_i = m_i.model.get_nc();
-                    if (m_i.active)
-                    {
-                        Data_t &d_i = it_d->second;
+                    Data_t &d_i = it_d->second;
 
-                        m_i.model.calcDiff(d_i, x);
-                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
-                    }
-                    else
-                    {
-                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()).setZero();
-                    }
+                    m_i.model.calcDiff(d_i, x);
+                    block(data.dv0_dq, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.dv0_dq();
                     nc_accum_i += nc_dim_i;
-                }
-            }
-            else
-            {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
-                {
-                    const Item_t &m_i = it_m->second;
-                    if (m_i.active)
-                    {
-                        Data_t &d_i = it_d->second;
-
-                        m_i.model.calcDiff(d_i, x);
-                        auto nc_dim_i = m_i.model.get_nc();
-                        block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
-                        nc_accum_i += nc_dim_i;
-                    }
                 }
             }
         }
 
         template <typename VectorNvType>
-        void updateAcceleration(DataManager_t &data, const Eigen::MatrixBase<VectorNvType> &dv) const
+        void updateVelocity(DataManager_t &data, const Eigen::MatrixBase<VectorNvType> &vnext) const
         {
-            data.dv = dv;
+            data.vnext = vnext;
         }
 
         template <typename ForceVectorType>
@@ -383,110 +324,57 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            if (compute_all_impulses_)
+            for (it_m = impulses_.begin(), end_m = impulses_.end(),
+                it_d = data.impulses.begin(), end_d = data.impulses.end();
+                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+                const Item_t &m_i = it_m->second;
+                Data_t &d_i = it_d->second;
+                auto nc_dim_i = m_i.model.get_nc();
+                if (m_i.active)
                 {
-                    const Item_t &m_i = it_m->second;
-                    Data_t &d_i = it_d->second;
-                    auto nc_dim_i = m_i.model.get_nc();
-                    if (m_i.active)
-                    {
-                        const auto force_i = segment(force, nc_accum_i, nc_dim_i);
-                        m_i.model.updateForce(d_i, force_i);
-                        const pinocchio::JointIndex joint =
-                            get_state().get_robot().frames[d_i.frame()].parentJoint;
-                        data.fext[joint] = d_i.fext();
-                    }
-                    else
-                    {
-                        m_i.model.setZeroForce(d_i);
-                    }
+                    const auto force_i = segment(force, nc_accum_i, nc_dim_i);
+                    m_i.model.updateForce(d_i, force_i);
+                    const pinocchio::JointIndex joint =
+                        get_state().get_robot().frames[d_i.frame()].parentJoint;
+                    data.fext[joint] = d_i.fext();
                     nc_accum_i += nc_dim_i;
                 }
-            }
-            else
-            {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+                else
                 {
-                    const Item_t &m_i = it_m->second;
-                    Data_t &d_i = it_d->second;
-                    if (m_i.active)
-                    {
-                        auto nc_dim_i = m_i.model.get_nc();
-                        const auto force_i = segment(force, nc_accum_i, nc_dim_i);
-                        m_i.model.updateForce(d_i, force_i);
-                        const pinocchio::JointIndex joint =
-                            get_state().get_robot().frames[d_i.frame()].parentJoint;
-                        data.fext[joint] = d_i.fext();
-                        nc_accum_i += nc_dim_i;
-                    }
-                    else
-                    {
-                        m_i.model.setZeroForce(d_i);
-                    }
+                    m_i.model.setZeroForce(d_i);
                 }
             }
         }
 
         template <typename MatrixNvNdxType>
-        void updateAccelerationDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNvNdxType> &ddv_dx) const
+        void updateVelocityDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNvNdxType> &dnext_dx) const
         {
-            data.ddv_dx = ddv_dx;
+            data.dnext_dx = dnext_dx;
         }
 
-        template <typename MatrixNcNdxType, typename MatrixNcNduType>
-        void updateForceDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNcNdxType> &df_dx, const Eigen::MatrixBase<MatrixNcNduType> &df_du) const
+        template <typename MatrixNcNdxType>
+        void updateForceDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNcNdxType> &df_dx) const
         {
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            if (compute_all_impulses_)
+            for (it_m = impulses_.begin(), end_m = impulses_.end(),
+                it_d = data.impulses.begin(), end_d = data.impulses.end();
+                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+                const Item_t &m_i = it_m->second;
+                Data_t &d_i = it_d->second;
+                auto nc_dim_i = m_i.model.get_nc();
+                if (m_i.active)
                 {
-                    const Item_t &m_i = it_m->second;
-                    Data_t &d_i = it_d->second;
-                    auto nc_dim_i = m_i.model.get_nc();
-                    if (m_i.active)
-                    {
-                        const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
-                        const auto df_du_i = block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
-                        m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
-                    }
-                    else
-                    {
-                        m_i.model.setZeroForceDiff(d_i);
-                    }
+                    const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
+                    m_i.model.updateForceDiff(d_i, df_dx_i);
                     nc_accum_i += nc_dim_i;
                 }
-            }
-            else
-            {
-                for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                    it_d = data.impulses.begin(), end_d = data.impulses.end();
-                     it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+                else
                 {
-                    const Item_t &m_i = it_m->second;
-                    Data_t &d_i = it_d->second;
-                    if (m_i.active)
-                    {
-                        auto nc_dim_i = m_i.model.get_nc();
-                        const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
-                        const auto df_du_i = block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
-                        m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
-                        nc_accum_i += nc_dim_i;
-                    }
-                    else
-                    {
-                        m_i.model.setZeroForceDiff(d_i);
-                    }
+                    m_i.model.setZeroForceDiff(d_i);
                 }
             }
         }
@@ -566,8 +454,6 @@ namespace galileo
 
         DimensionTpl<Eigen::Dynamic> nc_active_dim_;
         DimensionTpl<Eigen::Dynamic> nc_total_dim_;
-
-        bool compute_all_impulses_;
 
     }; // class ImpulseModelManagerTpl
 

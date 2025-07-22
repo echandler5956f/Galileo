@@ -36,13 +36,11 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl,
-              typename MatrixNcNdxType,
-              typename MatrixNcNuType>
+              typename MatrixNcNdxType>
     inline void impulse_update_force_diff(
         const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model,
         ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data,
-        const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-        const Eigen::MatrixBase<MatrixNcNuType> &df_du);
+        const Eigen::MatrixBase<MatrixNcNdxType> &df_dx);
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
@@ -151,12 +149,7 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
-    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::VectorNc_t impulse_a0(
-        const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data);
-
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
-    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNdx_t impulse_da0_dx(
+    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNv_t impulse_dv0_dq(
         const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data);
 
     template <typename PhaseSpec,

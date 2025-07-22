@@ -111,37 +111,33 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl,
-              typename MatrixNcNdxType,
-              typename MatrixNcNuType>
+              typename MatrixNcNdxType>
     struct ImpulseUpdateForceDiffVisitor
-        : fusion::ImpulseUnaryVisitorBase<ImpulseUpdateForceDiffVisitor<PhaseSpec, ImpulseCollectionTpl, MatrixNcNdxType, MatrixNcNuType>>
+        : fusion::ImpulseUnaryVisitorBase<ImpulseUpdateForceDiffVisitor<PhaseSpec, ImpulseCollectionTpl, MatrixNcNdxType>>
     {
-        using ArgsType = boost::fusion::vector<const MatrixNcNdxType &, const MatrixNcNuType &>;
+        using ArgsType = boost::fusion::vector<const MatrixNcNdxType &>;
 
         template <typename ImpulseModelType>
         static void algo(
             const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
             ImpulseDataBase<typename traits<ImpulseModelType>::Data_t, PhaseSpec> &impulse_data,
-            const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-            const Eigen::MatrixBase<MatrixNcNuType> &df_du)
+            const Eigen::MatrixBase<MatrixNcNdxType> &df_dx)
         {
-            impulse_model.updateForceDiff(impulse_data.derived(), df_dx.derived(), df_du.derived());
+            impulse_model.updateForceDiff(impulse_data.derived(), df_dx.derived());
         }
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl,
-              typename MatrixNcNdxType,
-              typename MatrixNcNuType>
+              typename MatrixNcNdxType>
     inline void impulse_update_force_diff(
         const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model,
         ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data,
-        const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-        const Eigen::MatrixBase<MatrixNcNuType> &df_du)
+        const Eigen::MatrixBase<MatrixNcNdxType> &df_dx)
     {
-        typedef ImpulseUpdateForceDiffVisitor<PhaseSpec, ImpulseCollectionTpl, MatrixNcNdxType, MatrixNcNuType> Algo;
+        typedef ImpulseUpdateForceDiffVisitor<PhaseSpec, ImpulseCollectionTpl, MatrixNcNdxType> Algo;
 
-        Algo::run(impulse_model, impulse_data, typename Algo::ArgsType(df_dx.derived(), df_du.derived()));
+        Algo::run(impulse_model, impulse_data, typename Algo::ArgsType(df_dx.derived()));
     }
 
     template <typename PhaseSpec,
@@ -672,55 +668,29 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
-    struct ImpulseA0Visitor : boost::static_visitor<typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::VectorNc_t>
+    struct ImpulseDV0dQVisitor : boost::static_visitor<typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNv_t>
     {
-        using ReturnType = typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::VectorNc_t;
+
+        using ReturnType = typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNv_t;
 
         template <typename ImpulseDataType>
         ReturnType operator()(const ImpulseDataBase<ImpulseDataType, PhaseSpec> &impulse_data) const
         {
-            return impulse_data.a0();
+            return impulse_data.dv0_dq();
         }
 
         static ReturnType run(const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data)
         {
-            return boost::apply_visitor(ImpulseA0Visitor<PhaseSpec, ImpulseCollectionTpl>(), impulse_data);
+            return boost::apply_visitor(ImpulseDV0dQVisitor<PhaseSpec, ImpulseCollectionTpl>(), impulse_data);
         }
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
-    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::VectorNc_t impulse_a0(
+    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNv_t impulse_dv0_dq(
         const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data)
     {
-        return ImpulseA0Visitor<PhaseSpec, ImpulseCollectionTpl>::run(impulse_data);
-    }
-
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
-    struct ImpulseDA0dXVisitor : boost::static_visitor<typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNdx_t>
-    {
-
-        using ReturnType = typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNdx_t;
-
-        template <typename ImpulseDataType>
-        ReturnType operator()(const ImpulseDataBase<ImpulseDataType, PhaseSpec> &impulse_data) const
-        {
-            return impulse_data.da0_dx();
-        }
-
-        static ReturnType run(const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data)
-        {
-            return boost::apply_visitor(ImpulseDA0dXVisitor<PhaseSpec, ImpulseCollectionTpl>(), impulse_data);
-        }
-    };
-
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
-    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::MatrixNcNdx_t impulse_da0_dx(
-        const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data)
-    {
-        return ImpulseDA0dXVisitor<PhaseSpec, ImpulseCollectionTpl>::run(impulse_data);
+        return ImpulseDV0dQVisitor<PhaseSpec, ImpulseCollectionTpl>::run(impulse_data);
     }
 
     template <typename PhaseSpec,
