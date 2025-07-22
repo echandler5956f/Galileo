@@ -132,8 +132,8 @@ namespace galileo
         Matrix6X_t fXjda_dv;
         Matrix3X_t fJf_df;
 
-        ContactData3dTpl(const Model_t &model, RobotData_t *const robot)
-            : robot(robot),
+        ContactData3dTpl(const Model_t &model, RobotData_t *const robot_data)
+            : robot(robot_data),
               frame(model.get_id()),
               type(model.get_type()),
               jMf(SE3_t::Identity()),

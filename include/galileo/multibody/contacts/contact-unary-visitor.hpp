@@ -131,8 +131,8 @@ namespace galileo
             {
                 using ContactData = typename traits<ContactModel>::Data_t;
 
-                InternalVisitorModelAndData(ContactData &contact_data, ArgType args)
-                    : contact_data(contact_data), args(args)
+                InternalVisitorModelAndData(ContactData &contact_data_, ArgType args_)
+                    : contact_data(contact_data_), args(args_)
                 {
                 }
 
@@ -163,8 +163,8 @@ namespace galileo
             {
                 using ContactData = typename traits<ContactModel>::Data_t;
 
-                InternalVisitorModelAndData(ContactData &contact_data)
-                    : contact_data(contact_data)
+                InternalVisitorModelAndData(ContactData &contact_data_)
+                    : contact_data(contact_data_)
                 {
                 }
 
@@ -185,8 +185,8 @@ namespace galileo
             template <typename ArgType, typename Dummy = void>
             struct InternalVisitorModel : public boost::static_visitor<ReturnType>
             {
-                InternalVisitorModel(ArgType args)
-                    : args(args)
+                InternalVisitorModel(ArgType args_)
+                    : args(args_)
                 {
                 }
 

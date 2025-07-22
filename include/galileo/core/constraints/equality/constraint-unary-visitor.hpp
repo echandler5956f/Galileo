@@ -131,8 +131,8 @@ namespace galileo
             {
                 using ConstraintData = typename traits<ConstraintModel>::Data_t;
 
-                InternalVisitorModelAndData(ConstraintData &constraint_data, ArgType args)
-                    : constraint_data(constraint_data), args(args)
+                InternalVisitorModelAndData(ConstraintData &constraint_data_, ArgType args_)
+                    : constraint_data(constraint_data_), args(args_)
                 {
                 }
 
@@ -163,8 +163,8 @@ namespace galileo
             {
                 using ConstraintData = typename traits<ConstraintModel>::Data_t;
 
-                InternalVisitorModelAndData(ConstraintData &constraint_data)
-                    : constraint_data(constraint_data)
+                InternalVisitorModelAndData(ConstraintData &constraint_data_)
+                    : constraint_data(constraint_data_)
                 {
                 }
 
@@ -190,8 +190,8 @@ namespace galileo
             template <typename ArgType, typename Dummy = void>
             struct InternalVisitorModel : public boost::static_visitor<ReturnType>
             {
-                InternalVisitorModel(ArgType args)
-                    : args(args)
+                InternalVisitorModel(ArgType args_)
+                    : args(args_)
                 {
                 }
 

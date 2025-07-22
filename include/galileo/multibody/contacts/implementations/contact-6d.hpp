@@ -123,8 +123,8 @@ namespace galileo
         Matrix6_t rMf_Jlog6;
         Matrix6Nv_t fJf_df;
 
-        ContactData6dTpl(const Model_t &model, RobotData_t *const robot)
-            : robot(robot),
+        ContactData6dTpl(const Model_t &model, RobotData_t *const robot_data)
+            : robot(robot_data),
               frame(model.get_id()),
               type(model.get_type()),
               jMf(SE3_t::Identity()),

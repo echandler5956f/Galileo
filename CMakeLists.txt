@@ -40,7 +40,7 @@ option(GALILEO_BUILD_EXAMPLES "Build the examples for galileo" ON)
 add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization
                     -Wno-sign-conversion -Wformat=2 -Winit-self
                     -Wmissing-include-dirs -Woverloaded-virtual -Wshadow
-                    -Wsign-promo)
+                    -Wsign-promo -Wno-unused-parameter)
 
 if(ENABLE_VECTORIZATION_SUPPORT)
     add_definitions(-march=native)

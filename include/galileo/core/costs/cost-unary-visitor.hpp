@@ -131,8 +131,8 @@ namespace galileo
             {
                 using CostData = typename traits<CostModel>::Data_t;
 
-                InternalVisitorModelAndData(CostData &cost_data, ArgType args)
-                    : cost_data(cost_data), args(args)
+                InternalVisitorModelAndData(CostData &cost_data_, ArgType args_)
+                    : cost_data(cost_data_), args(args_)
                 {
                 }
 
@@ -163,8 +163,8 @@ namespace galileo
             {
                 using CostData = typename traits<CostModel>::Data_t;
 
-                InternalVisitorModelAndData(CostData &cost_data)
-                    : cost_data(cost_data)
+                InternalVisitorModelAndData(CostData &cost_data_)
+                    : cost_data(cost_data_)
                 {
                 }
 
@@ -190,8 +190,8 @@ namespace galileo
             template <typename ArgType, typename Dummy = void>
             struct InternalVisitorModel : public boost::static_visitor<ReturnType>
             {
-                InternalVisitorModel(ArgType args)
-                    : args(args)
+                InternalVisitorModel(ArgType args_)
+                    : args(args_)
                 {
                 }
 
