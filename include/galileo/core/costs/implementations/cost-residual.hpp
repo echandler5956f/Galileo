@@ -199,7 +199,7 @@ namespace galileo
             residual_.calcDiff(data.residual, x, u);
             activation_.calcDiff(data.activation, data.residual.R);
 
-            residual_.calcCostDiff<true>(data, data.residual, data.activation);
+            residual_.template calcCostDiff<true>(data, data.residual, data.activation);
         }
 
         template <typename StateVectorType>
@@ -217,7 +217,7 @@ namespace galileo
                 residual_.calcDiff(data.residual, x);
                 activation_.calcDiff(data.activation, data.residual.R);
 
-                residual_.calcCostDiff<false>(data, data.residual, data.activation);
+                residual_.template calcCostDiff<false>(data, data.residual, data.activation);
             }
         }
 

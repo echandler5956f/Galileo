@@ -247,12 +247,12 @@ namespace galileo
             return ps_;
         }
 
-        const FrameIndex_t &get_id() const
+        FrameIndex_t get_id() const
         {
             return this->derived().get_id_impl();
         }
 
-        const FrameIndex_t &get_id_impl() const
+        FrameIndex_t get_id_impl() const
         {
             return id_;
         }
@@ -267,12 +267,12 @@ namespace galileo
             id_ = id;
         }
 
-        const ReferenceFrame_t &get_type() const
+        ReferenceFrame_t get_type() const
         {
             return this->derived().get_type_impl();
         }
 
-        const ReferenceFrame_t &get_type_impl() const
+        ReferenceFrame_t get_type_impl() const
         {
             return type_;
         }

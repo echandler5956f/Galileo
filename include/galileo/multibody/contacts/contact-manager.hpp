@@ -394,8 +394,7 @@ namespace galileo
                     auto nc_dim_i = m_i.model.get_nc();
                     if (m_i.active)
                     {
-                        const Eigen::VectorBlock<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
-                            segment(force, nc_accum_i, nc_dim_i);
+                        const auto force_i = segment(force, nc_accum_i, nc_dim_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
                             get_state().get_robot().frames[d_i.frame()].parentJoint;
@@ -419,8 +418,7 @@ namespace galileo
                     if (m_i.active)
                     {
                         auto nc_dim_i = m_i.model.get_nc();
-                        const Eigen::VectorBlock<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1>, Eigen::Dynamic> force_i =
-                            segment(force, nc_accum_i, nc_dim_i);
+                        const auto force_i = segment(force, nc_accum_i, nc_dim_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
                             get_state().get_robot().frames[d_i.frame()].parentJoint;
@@ -458,10 +456,8 @@ namespace galileo
                     auto nc_dim_i = m_i.model.get_nc();
                     if (m_i.active)
                     {
-                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>> df_dx_i =
-                            block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
-                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNU_t::Value>> df_du_i =
-                            block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
+                        const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
+                        const auto df_du_i = block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
                         m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
                     }
                     else
@@ -482,10 +478,8 @@ namespace galileo
                     if (m_i.active)
                     {
                         auto nc_dim_i = m_i.model.get_nc();
-                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>> df_dx_i =
-                            block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
-                        const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNU_t::Value>> df_du_i =
-                            block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
+                        const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
+                        const auto df_du_i = block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
                         m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
                         nc_accum_i += nc_dim_i;
                     }

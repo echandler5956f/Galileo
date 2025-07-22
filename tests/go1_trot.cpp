@@ -229,8 +229,8 @@ int main(int argc, char *argv[])
     Eigen::VectorXd w = Eigen::VectorXd::Zero(ps.get_nw());
     segment.calc(segment_data, x, w);
     std::cout << "segment calc done" << std::endl;
-    // segment.calcDiff(segment_data, x, w);
-    // std::cout << "segment calc diff done" << std::endl;
+    segment.calcDiff(segment_data, x, w);
+    std::cout << "segment calc diff done" << std::endl;
 
     return 0;
 }

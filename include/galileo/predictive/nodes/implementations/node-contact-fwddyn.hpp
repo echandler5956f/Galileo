@@ -301,20 +301,9 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            if constexpr (StateVectorType::RowsAtCompileTime == Eigen::Dynamic)
-            {
-                const auto q = head(x, get_ps().get_nq_dim());
-                const auto v = tail(x, get_ps().get_nv_dim());
-                pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
-            }
-            else
-            {
-                const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNQ_t::Value> q =
-                    head(x, get_ps().get_nq_dim());
-                const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNV_t::Value> v =
-                    tail(x, get_ps().get_nv_dim());
-                pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
-            }
+            const auto q = head(x, get_ps().get_nq_dim());
+            const auto v = tail(x, get_ps().get_nv_dim());
+            pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
             pinocchio::computeCentroidalMomentum(get_robot(), data.robot);
             get_costs().calc(data.costs, x);
             data.L_accessor() = data.costs.L;
@@ -331,10 +320,8 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             auto nc_active_dim = get_contacts().get_nc_active_dim();
-            const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNQ_t::Value> q =
-                head(x, get_ps().get_nq_dim());
-            const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNV_t::Value> v =
-                tail(x, get_ps().get_nv_dim());
+            const auto q = head(x, get_ps().get_nq_dim());
+            const auto v = tail(x, get_ps().get_nv_dim());
 
             // Computing the dynamics derivatives
             // We resize the Kinv matrix because Eigen cannot call block operations
@@ -350,10 +337,10 @@ namespace galileo
             get_actuation().calcDiff(data.actuation, x, u);
             get_contacts().calcDiff(data.contacts, x);
 
-            const Eigen::Block<MatrixNv_t> a_partial_dtau = topLeftCorner(data.Kinv, get_ps().get_nv_dim(), get_ps().get_nv_dim());
-            const Eigen::Block<MatrixNvNc_t> a_partial_da = topRightCorner(data.Kinv, get_ps().get_nv_dim(), nc_active_dim);
-            const Eigen::Block<MatrixNcNv_t> f_partial_dtau = bottomLeftCorner(data.Kinv, nc_active_dim, get_ps().get_nv_dim());
-            const Eigen::Block<MatrixNc_t> f_partial_da = bottomRightCorner(data.Kinv, nc_active_dim, nc_active_dim);
+            const auto a_partial_dtau = topLeftCorner(data.Kinv, get_ps().get_nv_dim(), get_ps().get_nv_dim());
+            const auto a_partial_da = topRightCorner(data.Kinv, get_ps().get_nv_dim(), nc_active_dim);
+            const auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_active_dim, get_ps().get_nv_dim());
+            const auto f_partial_da = bottomRightCorner(data.Kinv, nc_active_dim, nc_active_dim);
 
             leftCols(data.XAccx, get_ps().get_nv_dim()).noalias() = -a_partial_dtau * data.robot.dtau_dq;
             rightCols(data.XAccx, get_ps().get_nv_dim()).noalias() = -a_partial_dtau * data.robot.dtau_dv;

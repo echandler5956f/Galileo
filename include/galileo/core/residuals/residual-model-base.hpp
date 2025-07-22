@@ -65,15 +65,15 @@ namespace galileo
             this->derived().calcDiff(data, x);
         }
 
-        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
+        template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
         void calcCostDiff(CostDataType &cdata,
                           Data_t &rdata,
                           const ActivationDataType &adata) const
         {
-            this->derived().calcCostDiffImpl<UpdateU>(cdata, rdata, adata);
+            this->derived().template calcCostDiffImpl<UpdateU>(cdata, rdata, adata);
         }
 
-        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
+        template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
         void calcCostDiffImpl(CostDataType &cdata,
                               Data_t &rdata,
                               const ActivationDataType &adata) const
