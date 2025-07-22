@@ -103,24 +103,27 @@ namespace galileo
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const
         {
+            static constexpr int A_ROWS = InputMatrixType::RowsAtCompileTime;
+            DimensionTpl<A_ROWS> A_rows_dim(A.rows());
+
             switch (op)
             {
             case setto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, 0, i * get_nu(), get_nw_dim(), get_nu_dim()) = data.du_dw(0, i * get_nu()) * A;
+                    block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim()) = A * block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
                 }
                 break;
             case addto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, 0, i * get_nu(), get_nw_dim(), get_nu_dim()) += data.du_dw(0, i * get_nu()) * A;
+                    block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim()) += A * block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
                 }
                 break;
             case rmfrom:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, 0, i * get_nu(), get_nw_dim(), get_nu_dim()) -= data.du_dw(0, i * get_nu()) * A;
+                    block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim()) -= A * block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
                 }
                 break;
             default:
@@ -135,24 +138,27 @@ namespace galileo
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const
         {
+            static constexpr int A_COLS = InputMatrixType::ColsAtCompileTime;
+            DimensionTpl<A_COLS> A_cols_dim(A.cols());
+
             switch (op)
             {
             case setto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, i * get_nu(), 0, get_nu_dim(), get_nw_dim()) = data.du_dw(0, i * get_nu()) * A;
+                    block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim) = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim()).transpose() * A;
                 }
                 break;
             case addto:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, i * get_nu(), 0, get_nu_dim(), get_nw_dim()) += data.du_dw(0, i * get_nu()) * A;
+                    block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim) += block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim()).transpose() * A;
                 }
                 break;
             case rmfrom:
                 for (int i = 0; i < get_norder(); ++i)
                 {
-                    block(out, i * get_nu(), 0, get_nu_dim(), get_nw_dim()) -= data.du_dw(0, i * get_nu()) * A;
+                    block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim) -= block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim()).transpose() * A;
                 }
                 break;
             default:
