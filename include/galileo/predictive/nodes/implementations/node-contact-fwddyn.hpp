@@ -9,6 +9,8 @@
 #include <pinocchio/algorithm/rnea-derivatives.hpp>
 #include <pinocchio/algorithm/rnea.hpp>
 
+#include "galileo/common/math/matrix-decomposition.hpp"
+
 #include "galileo/predictive/nodes/node-base.hpp"
 
 #include "galileo/multibody/contacts/contact-manager.hpp"
@@ -391,8 +393,7 @@ namespace galileo
                          Eigen::MatrixBase<ControlVectorType> &u,
                          const int maxiter, const NumScalar tol) const
         {
-            const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNQ_t::Value> q =
-                head(x, get_ps().get_nq_dim());
+            const auto q = head(x, get_ps().get_nq_dim());
             auto nc_active_dim = get_contacts().get_nc_active_dim();
 
             head(data.tmp_xstatic, get_ps().get_nq_dim()) = q;

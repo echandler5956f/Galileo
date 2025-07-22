@@ -252,14 +252,14 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            galileo::contact_calc_zeroth_order(*this, data, x);
+            galileo::contact_calc_zeroth_order(*this, data, x.derived());
         }
 
         template <typename StateVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            galileo::contact_calc_first_order(*this, data, x);
+            galileo::contact_calc_first_order(*this, data, x.derived());
         }
 
         Data_t createData(RobotData_t *const robot) const

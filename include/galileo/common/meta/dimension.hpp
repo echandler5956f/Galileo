@@ -4,6 +4,7 @@
 #include "galileo/common/meta/macros.hpp"
 
 #include <cmath>
+#include <iostream>
 #include <type_traits>
 
 namespace galileo
@@ -305,6 +306,20 @@ namespace galileo
 
             runtime_value_ = new_runtime_value;
             return *this;
+        }
+
+        // Stream output operator
+        friend std::ostream &operator<<(std::ostream &os, const DimensionTpl &dim)
+        {
+            if constexpr (IsFixed)
+            {
+                os << "Dimension<" << Value << ">{" << dim.runtime_value_ << "}";
+            }
+            else
+            {
+                os << "Dimension<Dynamic>{" << dim.runtime_value_ << "}";
+            }
+            return os;
         }
     }; // class Dimension
 

@@ -150,6 +150,13 @@ namespace galileo
             data.R = data.robot->oMf[frame_id_].translation() - x_ref_;
         }
 
+        template <typename StateVectorType>
+        void calc(Data_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
@@ -164,6 +171,13 @@ namespace galileo
 
             leftCols(data.Rx, get_ps().get_nv_dim()).noalias() =
                 data.robot->oMf[frame_id_].rotation() * topRows(data.fJf, 3);
+        }
+
+        template <typename StateVectorType>
+        void calcDiff(Data_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
 
         template <typename DataCollector>

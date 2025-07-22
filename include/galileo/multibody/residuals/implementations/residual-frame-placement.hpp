@@ -152,6 +152,13 @@ namespace galileo
             data.R = pinocchio::log6(data.rMf).toVector();
         }
 
+        template <typename StateVectorType>
+        void calc(Data_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
@@ -165,6 +172,13 @@ namespace galileo
                 pinocchio::ReferenceFrame::LOCAL,
                 data.fJf);
             leftCols(data.Rx, get_ps().get_nv_dim()).noalias() = data.rJf * data.fJf;
+        }
+
+        template <typename StateVectorType>
+        void calcDiff(Data_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
 
         template <typename DataCollector>

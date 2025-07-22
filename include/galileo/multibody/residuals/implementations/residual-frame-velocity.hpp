@@ -149,6 +149,13 @@ namespace galileo
                          .toVector();
         }
 
+        template <typename StateVectorType>
+        void calc(Data_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
@@ -161,6 +168,13 @@ namespace galileo
                 type_,
                 leftCols(data.Rx, get_ps().get_nv_dim()),
                 rightCols(data.Rx, get_ps().get_nv_dim()));
+        }
+
+        template <typename StateVectorType>
+        void calcDiff(Data_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
 
         template <typename DataCollector>

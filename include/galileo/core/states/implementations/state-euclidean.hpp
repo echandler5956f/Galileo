@@ -25,7 +25,7 @@ namespace galileo
             : Base(rs), lb_(lb), ub_(ub)
         {
             GALILEO_ASSERT(IsValidRobotSpec(rs), "StateEuclideanTpl: Invalid robot spec");
-            GALILEO_ASSERT(get_nx() == get_ndx(), "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
+            GALILEO_ASSERT(IsValidEuclidean(*this), "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
         }
 
         VectorNx_t zero() const
@@ -184,11 +184,31 @@ namespace galileo
         using Base::get_nua;
         using Base::get_nua_dim;
 
+        /**
+         * @brief Display Euclidean state information to output stream
+         */
+        void disp(std::ostream &os) const
+        {
+            os << "StateEuclidean{\n";
+            os << "  RobotSpec: " << get_rs() << "\n";
+            os << "  State Bounds:\n";
+            os << "    Lower bounds: " << lb_.transpose() << "\n";
+            os << "    Upper bounds: " << ub_.transpose() << "\n";
+            os << "  Configuration: " << (IsValidEuclidean(*this) ? "VALID" : "INVALID") << "\n";
+            os << "}";
+        }
+
     protected:
         VectorNx_t lb_;
         VectorNx_t ub_;
 
     }; // class StateEuclideanTpl
+
+    template <typename RS>
+    bool IsValidEuclidean(const StateEuclideanTpl<RS> &state)
+    {
+        return state.get_nx() == state.get_ndx();
+    }
 
 } // namespace galileo
 

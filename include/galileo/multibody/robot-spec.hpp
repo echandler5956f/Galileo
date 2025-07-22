@@ -317,6 +317,31 @@ namespace galileo
         DimNX_t nx_dim_;
         DimNDX_t ndx_dim_;
         DimNUa_t nua_dim_;
+
+        // Stream output operator
+        friend std::ostream &operator<<(std::ostream &os, const RobotSpecTpl &rs)
+        {
+            os << "RobotSpec{\n";
+            os << "  BasicSpec: " << BS{} << "\n";
+            os << "  Robot Dimensions:\n";
+            os << "    Base Configuration:\n";
+            os << "      NQb (Base generalized coordinates): " << rs.nqb_dim_ << "\n";
+            os << "      NVb (Base generalized velocities):  " << rs.nvb_dim_ << "\n";
+            os << "    Joint Configuration:\n";
+            os << "      NQj (Joint generalized coordinates): " << rs.nqj_dim_ << "\n";
+            os << "      NVj (Joint generalized velocities):  " << rs.nvj_dim_ << "\n";
+            os << "    Actuation:\n";
+            os << "      NRotors (Number of rotors): " << rs.nrotors_dim_ << "\n";
+            os << "      NUa (Actuated inputs):      " << rs.nua_dim_ << "\n";
+            os << "    Combined Dimensions:\n";
+            os << "      NQ (Total generalized coordinates): " << rs.nq_dim_ << "\n";
+            os << "      NV (Total generalized velocities):  " << rs.nv_dim_ << "\n";
+            os << "      NX (State dimension):                " << rs.nx_dim_ << "\n";
+            os << "      NDX (State tangent dimension):       " << rs.ndx_dim_ << "\n";
+            os << "  Configuration: " << (IsValidRobotSpec(rs) ? "VALID" : "INVALID") << "\n";
+            os << "}";
+            return os;
+        }
     };
 
     // Helper function to validate if a robot spec is in a valid configuration at runtime

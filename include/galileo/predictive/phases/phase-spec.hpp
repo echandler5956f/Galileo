@@ -472,6 +472,23 @@ namespace galileo
         {
         }
 
+        // Stream output operator
+        friend std::ostream &operator<<(std::ostream &os, const PhaseSpecTpl &ps)
+        {
+            os << "PhaseSpec{\n";
+            os << "  State: " << ps.get_state() << "\n";
+            os << "  Phase-Specific Dimensions:\n";
+            os << "    Control:\n";
+            os << "      NU (Control dimension):         " << ps.nu_dim_ << "\n";
+            os << "      NOrder (Control order):         " << ps.norder_dim_ << "\n";
+            os << "      NW (Control parameters):        " << ps.nw_dim_ << "\n";
+            os << "    Integration:\n";
+            os << "      NStages (Runge-Kutta stages):   " << ps.nstages_dim_ << "\n";
+            os << "  Configuration: " << (IsValidPhaseSpec(ps) ? "VALID" : "INVALID") << "\n";
+            os << "}";
+            return os;
+        }
+
     protected:
         /* ---------------------------------------------------------------- */
         /*Actual storage of dimensions */

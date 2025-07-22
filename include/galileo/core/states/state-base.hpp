@@ -323,6 +323,11 @@ namespace galileo
             return Jacs;
         }
 
+        const RS &get_rs() const
+        {
+            return rs_;
+        }
+
         RS &get_rs()
         {
             return rs_;
@@ -490,6 +495,25 @@ namespace galileo
         void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
             this->derived().set_ub(ub);
+        }
+
+        /**
+         * @brief Display state information to output stream
+         * @param os Output stream
+         *
+         * This method must be implemented by derived classes to provide
+         * state-specific display information.
+         */
+        void disp(std::ostream &os) const
+        {
+            this->derived().disp(os);
+        }
+
+        // Stream output operator
+        friend std::ostream &operator<<(std::ostream &os, const StateBase &state)
+        {
+            state.derived().disp(os);
+            return os;
         }
 
     protected:

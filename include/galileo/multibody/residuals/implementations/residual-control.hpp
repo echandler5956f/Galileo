@@ -150,6 +150,13 @@ namespace galileo
             // The Jacobian has constant values which were set in createData
         }
 
+        template <typename StateVectorType>
+        void calcDiff(Data_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            // The Jacobian has constant values which were set in createData
+        }
+
         template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
         void calcCostDiffImpl(CostDataType &cdata,
                               Data_t &rdata,

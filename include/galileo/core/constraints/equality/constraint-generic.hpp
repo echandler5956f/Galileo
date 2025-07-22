@@ -191,7 +191,7 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            galileo::constraint_calc_zeroth_order(*this, data, x.derived());
+            galileo::constraint_calc_zeroth_order(*this, data, x.derived(), Blank());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -206,7 +206,7 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            galileo::constraint_calc_first_order(*this, data, x.derived());
+            galileo::constraint_calc_first_order(*this, data, x.derived(), Blank());
         }
 
         using Base::get_ps;

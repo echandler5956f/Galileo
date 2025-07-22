@@ -328,6 +328,26 @@ namespace galileo
         using Base::get_nua;
         using Base::get_nua_dim;
 
+        /**
+         * @brief Display multibody state information to output stream
+         */
+        void disp(std::ostream &os) const
+        {
+            os << "StateMultibody{\n";
+            os << "  RobotSpec: " << get_rs() << "\n";
+            os << "  Pinocchio Model:\n";
+            os << "    Model name: " << model_.name << "\n";
+            os << "    Number of joints: " << model_.njoints << "\n";
+            os << "    Number of bodies: " << model_.nbodies << "\n";
+            os << "    Number of frames: " << model_.nframes << "\n";
+            os << "    Has floating base: " << (get_nqb() > 0 ? "Yes" : "No") << "\n";
+            os << "  State Bounds:\n";
+            os << "    Lower bounds: " << lb_.transpose() << "\n";
+            os << "    Upper bounds: " << ub_.transpose() << "\n";
+            os << "    Default state: " << x0_.transpose() << "\n";
+            os << "}";
+        }
+
     protected:
         void initialize()
         {

@@ -3,6 +3,8 @@
 
 #include "galileo/core/fwd.hpp"
 
+#include <typeinfo>
+
 #define GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(BasicSpec) \
     using VarScalar = typename BasicSpec::VarScalar;  \
     using NumScalar = typename BasicSpec::NumScalar;  \
@@ -70,6 +72,15 @@ namespace galileo
 
         using VectorX_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, 1, Options>;
         using MatrixX_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Options>;
+
+        // Stream output operator
+        friend std::ostream& operator<<(std::ostream& os, const BasicSpecTpl& spec)
+        {
+            os << "BasicSpec{VarScalar: " << typeid(VarScalar).name()
+               << ", NumScalar: " << typeid(NumScalar).name()
+               << ", Options: " << Options << "}";
+            return os;
+        }
     };
 
 } // namespace galileo

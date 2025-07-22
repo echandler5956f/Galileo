@@ -142,12 +142,26 @@ namespace galileo
             get_ps().get_state()->diff(x_ref_, x, data.R);
         }
 
+        template <typename StateVectorType>
+        void calc(Data_t &data,
+                  const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
+        }
+
         template <typename StateVectorType, typename ControlVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             get_ps().get_state()->Jdiff(x_ref_, x, data.Rx, data.Rx, Jcomponent::second);
+        }
+
+        template <typename StateVectorType>
+        void calcDiff(Data_t &data,
+                      const Eigen::MatrixBase<StateVectorType> &x) const
+        {
+            calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
 
         template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
