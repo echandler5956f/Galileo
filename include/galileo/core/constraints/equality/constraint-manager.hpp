@@ -177,7 +177,7 @@ namespace galileo
             }
             else if (active)
             {
-                nh_dim_ = nh_dim_ + model.get_nh();
+                nh_dim_ += model.get_nh();
                 active_set_.insert(name);
             }
             else if (!active)
@@ -191,7 +191,7 @@ namespace galileo
             typename ModelContainer_t::iterator it = constraints_.find(name);
             if (it != constraints_.end())
             {
-                nh_dim_ = nh_dim_ - it->second.model.get_nh();
+                nh_dim_ -= it->second.model.get_nh();
                 constraints_.erase(it);
                 inactive_set_.erase(name);
             }
@@ -209,14 +209,14 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    nh_dim_ = nh_dim_ + it->second.model.get_nh();
+                    nh_dim_ += it->second.model.get_nh();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    nh_dim_ = nh_dim_ - it->second.model.get_nh();
+                    nh_dim_ -= it->second.model.get_nh();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -250,7 +250,7 @@ namespace galileo
                     m_i.model.calc(d_i, x, u);
                     auto nh_dim_i = m_i.model.get_nh();
                     segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
-                    nh_accum_i = nh_accum_i + nh_dim_i;
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }
@@ -275,7 +275,7 @@ namespace galileo
                     m_i.model.calc(d_i, x);
                     auto nh_dim_i = m_i.model.get_nh();
                     segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
-                    nh_accum_i = nh_accum_i + nh_dim_i;
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }
@@ -302,7 +302,7 @@ namespace galileo
                     auto nh_dim_i = m_i.model.get_nh();
                     block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     block(data.Hu, nh_accum_i, 0, nh_dim_i, get_ps().get_nu_dim()) = d_i.Hu();
-                    nh_accum_i = nh_accum_i + nh_dim_i;
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }
@@ -327,7 +327,7 @@ namespace galileo
                     m_i.model.calcDiff(d_i, x);
                     auto nh_dim_i = m_i.model.get_nh();
                     block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
-                    nh_accum_i = nh_accum_i + nh_dim_i;
+                    nh_accum_i += nh_dim_i;
                 }
             }
         }

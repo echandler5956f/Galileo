@@ -211,13 +211,13 @@ namespace galileo
             }
             else if (active)
             {
-                nc_active_dim_ = nc_active_dim_ + model.get_nc();
-                nc_total_dim_ = nc_total_dim_ + model.get_nc();
+                nc_active_dim_ += model.get_nc();
+                nc_total_dim_ += model.get_nc();
                 active_set_.insert(name);
             }
             else if (!active)
             {
-                nc_total_dim_ = nc_total_dim_ + model.get_nc();
+                nc_total_dim_ += model.get_nc();
                 inactive_set_.insert(name);
             }
         }
@@ -227,8 +227,8 @@ namespace galileo
             typename ModelContainer_t::iterator it = contacts_.find(name);
             if (it != contacts_.end())
             {
-                nc_active_dim_ = nc_active_dim_ - it->second.model.get_nc();
-                nc_total_dim_ = nc_total_dim_ - it->second.model.get_nc();
+                nc_active_dim_ -= it->second.model.get_nc();
+                nc_total_dim_ -= it->second.model.get_nc();
                 contacts_.erase(it);
                 inactive_set_.erase(name);
             }
@@ -246,14 +246,14 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    nc_active_dim_ = nc_active_dim_ + it->second.model.get_nc();
+                    nc_active_dim_ += it->second.model.get_nc();
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    nc_active_dim_ = nc_active_dim_ - it->second.model.get_nc();
+                    nc_active_dim_ -= it->second.model.get_nc();
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -294,7 +294,7 @@ namespace galileo
                         segment(data.a0, nc_accum_i, nc_dim_i).setZero();
                         block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()).setZero();
                     }
-                    nc_accum_i = nc_accum_i + nc_dim_i;
+                    nc_accum_i += nc_dim_i;
                 }
             }
             else
@@ -312,7 +312,7 @@ namespace galileo
                         auto nc_dim_i = m_i.model.get_nc();
                         segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
                         block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
-                        nc_accum_i = nc_accum_i + nc_dim_i;
+                        nc_accum_i += nc_dim_i;
                     }
                 }
             }
@@ -343,7 +343,7 @@ namespace galileo
                     {
                         block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()).setZero();
                     }
-                    nc_accum_i = nc_accum_i + nc_dim_i;
+                    nc_accum_i += nc_dim_i;
                 }
             }
             else
@@ -360,7 +360,7 @@ namespace galileo
                         m_i.model.calcDiff(d_i, x);
                         auto nc_dim_i = m_i.model.get_nc();
                         block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
-                        nc_accum_i = nc_accum_i + nc_dim_i;
+                        nc_accum_i += nc_dim_i;
                     }
                 }
             }
@@ -405,7 +405,7 @@ namespace galileo
                     {
                         m_i.model.setZeroForce(d_i);
                     }
-                    nc_accum_i = nc_accum_i + nc_dim_i;
+                    nc_accum_i += nc_dim_i;
                 }
             }
             else
@@ -425,7 +425,7 @@ namespace galileo
                         const pinocchio::JointIndex joint =
                             get_state().get_robot().frames[d_i.frame()].parentJoint;
                         data.fext[joint] = d_i.fext();
-                        nc_accum_i = nc_accum_i + nc_dim_i;
+                        nc_accum_i += nc_dim_i;
                     }
                     else
                     {
@@ -468,7 +468,7 @@ namespace galileo
                     {
                         m_i.model.setZeroForceDiff(d_i);
                     }
-                    nc_accum_i = nc_accum_i + nc_dim_i;
+                    nc_accum_i += nc_dim_i;
                 }
             }
             else
@@ -487,7 +487,7 @@ namespace galileo
                         const Eigen::Block<const Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNU_t::Value>> df_du_i =
                             block(df_du, nc_accum_i, 0, nc_dim_i, get_ps().get_nu_dim());
                         m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);
-                        nc_accum_i = nc_accum_i + nc_dim_i;
+                        nc_accum_i += nc_dim_i;
                     }
                     else
                     {
