@@ -17,17 +17,30 @@ namespace galileo
     {
         using Scalar = typename MatrixLike::Scalar;
         using RealScalar = typename MatrixLike::RealScalar;
+        // Pseudoinverse transposes dimensions: m×n matrix becomes n×m pseudoinverse
+        using PseudoInverseType = Eigen::Matrix<Scalar,
+                                                MatrixLike::ColsAtCompileTime,
+                                                MatrixLike::RowsAtCompileTime,
+                                                MatrixLike::Options>;
 
-        static MatrixLike run(const Eigen::MatrixBase<MatrixLike> &a,
+        static PseudoInverseType run(const Eigen::MatrixBase<MatrixLike> &a,
                               const RealScalar &epsilon)
         {
             using std::max;
-            Eigen::JacobiSVD<MatrixLike> svd(a,
-                                             Eigen::ComputeThinU | Eigen::ComputeThinV);
+            // Convert to fully dynamic matrix to avoid Eigen's internal fixed-size workspace issues
+            // while preserving the thin U/V optimization when possible
+            using DynamicMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+            DynamicMatrix a_dynamic = a;
+
+            constexpr unsigned int computationFlags =
+                (MatrixLike::ColsAtCompileTime == Eigen::Dynamic) ?
+                    (Eigen::ComputeThinU | Eigen::ComputeThinV) :
+                    (Eigen::ComputeFullU | Eigen::ComputeFullV);
+            Eigen::JacobiSVD<DynamicMatrix> svd(a_dynamic, computationFlags);
             RealScalar tolerance = epsilon *
                                    static_cast<Scalar>(max(a.cols(), a.rows())) *
                                    svd.singularValues().array().abs()(0);
-            // FIX: Replace select() with a lambda function
+
             Eigen::Matrix<typename MatrixLike::Scalar, Eigen::Dynamic, 1>
                 invSingularValues =
                     svd.singularValues().unaryExpr([&](const Scalar &x)
@@ -42,16 +55,21 @@ namespace galileo
     {
         using Scalar = typename MatrixLike::Scalar;
         using RealScalar = typename MatrixLike::RealScalar;
+        // Pseudoinverse transposes dimensions: m×n matrix becomes n×m pseudoinverse
+        using PseudoInverseType = Eigen::Matrix<Scalar,
+                                                MatrixLike::ColsAtCompileTime,
+                                                MatrixLike::RowsAtCompileTime,
+                                                MatrixLike::Options>;
 
-        static MatrixLike run(const Eigen::MatrixBase<MatrixLike> &a,
+        static PseudoInverseType run(const Eigen::MatrixBase<MatrixLike> &a,
                               const RealScalar &)
         {
-            return Eigen::MatrixBase<MatrixLike>::Zero(a.rows(), a.cols());
+            return PseudoInverseType::Zero(a.cols(), a.rows());
         }
     };
 
     template <typename MatrixLike>
-    MatrixLike pseudoInverse(
+    auto pseudoInverse(
         const Eigen::MatrixBase<MatrixLike> &a,
         const typename MatrixLike::RealScalar &epsilon =
             Eigen::NumTraits<typename MatrixLike::Scalar>::dummy_precision())

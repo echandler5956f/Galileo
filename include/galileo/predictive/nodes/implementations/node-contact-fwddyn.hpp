@@ -415,7 +415,8 @@ namespace galileo
             data.tmp_Jstatic.leftCols(get_ps().get_nu()) = data.actuation.dtau_du;
             rightCols(data.tmp_Jstatic, nc_active_dim) =
                 topRows(data.contacts.Jc, nc_active_dim).transpose();
-            u.noalias() = head(pseudoInverse(data.tmp_Jstatic) * data.robot.tau, get_ps().get_nu());
+
+            u.noalias() = head(pseudoInverse(data.tmp_Jstatic) * data.robot.tau, get_ps().get_nu_dim());
             data.robot.tau.setZero();
         }
 

@@ -220,8 +220,6 @@ int main(int argc, char *argv[])
     BarycentricInterpolator_t interpolator = BarycentricInterpolator_t(nodes);
     ControlParamModel_t control_param = ControlParamModel_t(ps, interpolator);
 
-    std::cout << "rs: " << ps.get_state().get_rs() << std::endl;
-
     std::cout << "ps: " << ps << std::endl;
 
     NumScalar period = 1.0;
@@ -233,22 +231,15 @@ int main(int argc, char *argv[])
     auto x = state.rand();
     Eigen::VectorXd w = Eigen::VectorXd::Zero(ps.get_nw());
     segment.calc(segment_data1, x, w);
-    std::cout << "segment calc done" << std::endl;
     segment.calcDiff(segment_data1, x, w);
-    std::cout << "segment calc diff done" << std::endl;
 
     segment.calc(segment_data2, x);
-    std::cout << "segment calc done" << std::endl;
     segment.calcDiff(segment_data2, x);
-    std::cout << "segment calc diff done" << std::endl;
 
     Eigen::VectorXd w_out = Eigen::VectorXd::Zero(ps.get_nw());
     segment.calc(segment_data3, x, w);
-    std::cout << "segment calc done" << std::endl;
     segment.calcDiff(segment_data3, x, w);
-    std::cout << "segment calc diff done" << std::endl;
     segment.quasiStatic(segment_data3, x, w_out, 100, 1e-6);
-    std::cout << "segment quasi static done" << std::endl;
 
     return 0;
 }
