@@ -299,8 +299,8 @@ namespace galileo
         using Base::get_state;
 
     protected:
-        ControlParamModel_t control_;
         NodeModel_t node_;
+        ControlParamModel_t control_;
 
         NumScalar period_;
         NumScalar period_squared_;

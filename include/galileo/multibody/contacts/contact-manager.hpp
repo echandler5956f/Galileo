@@ -131,12 +131,12 @@ namespace galileo
         using RobotData_t = typename PS::RobotData_t;
 
         ContactDataManagerTpl(const ModelManager_t &model_manager, RobotData_t *const robot)
-            : Jc(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
+            : fext(model_manager.get_state().get_robot().njoints, Force_t::Zero()),
+              Jc(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
               a0(model_manager.get_nc_total()),
               da0_dx(model_manager.get_nc_total(), model_manager.get_ps().get_ndx()),
               dv(model_manager.get_ps().get_nv()),
-              ddv_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx()),
-              fext(model_manager.get_state().get_robot().njoints, Force_t::Zero())
+              ddv_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
         {
             Jc.setZero();
             a0.setZero();

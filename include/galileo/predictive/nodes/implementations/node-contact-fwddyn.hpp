@@ -247,10 +247,10 @@ namespace galileo
               constraints_(constraints),
               contacts_(contacts),
               actuation_(actuation),
-              JMinvJt_damping_(fabs(JMinvJt_damping)),
-              enable_force_(enable_force),
               with_armature_(true),
-              armature_(get_ps().get_nv())
+              armature_(get_ps().get_nv()),
+              JMinvJt_damping_(fabs(JMinvJt_damping)),
+              enable_force_(enable_force)
         {
             int nua = get_ps().get_nua();
             get_ps().set_nu(nua);

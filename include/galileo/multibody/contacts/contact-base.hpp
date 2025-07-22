@@ -309,7 +309,7 @@ namespace galileo
 
     protected:
         inline ContactModelBase(const PS &ps, const FrameIndex_t &id, const ReferenceFrame_t &type, const DimNC_t &nc_dim)
-            : ps_(ps), id_(id), type_(type), nc_dim_(nc_dim)
+            : ps_(ps), nc_dim_(nc_dim), id_(id), type_(type)
         {
         }
 
