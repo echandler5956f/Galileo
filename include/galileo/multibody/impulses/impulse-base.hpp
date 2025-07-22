@@ -75,8 +75,7 @@ namespace galileo
 
         // Accessors required by ImpulseDataBase
         FORWARD_ACCESSOR(typename PS::ActionMatrix_t, fXj);
-        FORWARD_ACCESSOR(VectorNc_t, a0);
-        FORWARD_ACCESSOR(MatrixNcNdx_t, da0_dx);
+        FORWARD_ACCESSOR(MatrixNcNv_t, dv0_dq);
         FORWARD_ACCESSOR(typename PS::MatrixNv_t, dtau_dq);
 
         // We have to override the CRTP derived() method that ForceDataBase inherits from internal::CRTP so that
@@ -188,21 +187,18 @@ namespace galileo
             this->derived().updateForce(data, force);
         }
 
-        template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        template <typename MatrixNcNdxType>
         void updateForceDiff(Data_t &data,
-                             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-                             const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+                             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx) const
         {
-            this->derived().updateForceDiffImpl(data, df_dx, df_du);
+            this->derived().updateForceDiffImpl(data, df_dx);
         }
 
-        template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        template <typename MatrixNcNdxType>
         void updateForceDiffImpl(Data_t &data,
-                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx) const
         {
             data.df_dx = df_dx;
-            data.df_du = df_du;
         }
 
         void setZeroForce(Data_t &data) const
@@ -224,7 +220,6 @@ namespace galileo
         void setZeroForceDiffImpl(Data_t &data) const
         {
             data.df_dx.setZero();
-            data.df_du.setZero();
         }
 
         Data_t createData(RobotData_t *const robot) const

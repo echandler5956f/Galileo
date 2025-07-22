@@ -136,7 +136,7 @@ namespace galileo
             : robot(robot_data),
               frame(model.get_id()),
               type(model.get_type()),
-              jMf(SE3_t::Identity()),
+              jMf(model.get_robot().frames[frame].placement),
               Jc(model.get_nc(), model.get_ps().get_nv()),
               f(Force_t::Zero()),
               fext(Force_t::Zero()),
@@ -165,8 +165,6 @@ namespace galileo
             a0.setZero();
             da0_dx.setZero();
             dtau_dq.setZero();
-            jMf = model.get_robot().frames[frame].placement;
-            fXj = jMf.inverse().toActionMatrix();
             a0_local.setZero();
             dp.setZero();
             dp_local.setZero();
@@ -330,11 +328,6 @@ namespace galileo
             }
         }
 
-        Data_t createData(RobotData_t *const robot) const
-        {
-            return Data_t(*this, robot);
-        }
-
         template <typename ForceVectorType>
         void updateForce(Data_t &data,
                          const Eigen::MatrixBase<ForceVectorType> &force) const
@@ -359,6 +352,11 @@ namespace galileo
                     -topRows(data.fJf, get_nc_dim()).transpose() * data.fJf_df;
                 break;
             }
+        }
+
+        Data_t createData(RobotData_t *const robot) const
+        {
+            return Data_t(*this, robot);
         }
 
         using Base::setZeroForce;

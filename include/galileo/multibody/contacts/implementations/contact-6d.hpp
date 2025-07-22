@@ -127,7 +127,7 @@ namespace galileo
             : robot(robot_data),
               frame(model.get_id()),
               type(model.get_type()),
-              jMf(SE3_t::Identity()),
+              jMf(model.get_robot().frames[frame].placement),
               Jc(model.get_nc(), model.get_ps().get_nv()),
               f(Force_t::Zero()),
               fext(Force_t::Zero()),
@@ -153,8 +153,6 @@ namespace galileo
             a0.setZero();
             da0_dx.setZero();
             dtau_dq.setZero();
-            jMf = model.get_robot().frames[frame].placement;
-            fXj = jMf.inverse().toActionMatrix();
             da0_local_dx.setZero();
             fJf.setZero();
             v_partial_dq.setZero();

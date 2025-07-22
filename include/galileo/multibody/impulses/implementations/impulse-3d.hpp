@@ -98,93 +98,63 @@ namespace galileo
 
         // Members required by ImpulseDataBase
         ActionMatrix_t fXj;
-        VectorNc_t a0;
-        MatrixNcNdx_t da0_dx;
+        MatrixNcNv_t dv0_dq;
         MatrixNv_t dtau_dq;
 
         // Accessor implementations required by ImpulseDataBase
         DEFAULT_ACCESSOR(ActionMatrix_t, fXj);
-        DEFAULT_ACCESSOR(VectorNc_t, a0);
-        DEFAULT_ACCESSOR(MatrixNcNdx_t, da0_dx);
+        DEFAULT_ACCESSOR(MatrixNcNv_t, dv0_dq);
         DEFAULT_ACCESSOR(MatrixNv_t, dtau_dq);
 
         // Members used for ImpulseModel3dTpl
         // Notice that we do not need to expose accessors for these because they are specific to the 3D impulse model
-        Motion_t v;
-        Vector3_t a0_local;
-        Vector3_t dp;
-        Vector3_t dp_local;
+        Vector3_t v0;
         Force_t f_local;
-        MatrixNcNdx_t da0_local_dx;
-        Matrix6X_t fJf;
-        Matrix6X_t v_partial_dq;
-        Matrix6X_t a_partial_dq;
-        Matrix6X_t a_partial_dv;
-        Matrix6X_t a_partial_da;
-        Matrix3_t vv_skew;
-        Matrix3_t vw_skew;
-        Matrix3_t a0_skew;
-        Matrix3_t a0_world_skew;
-        Matrix3_t dp_skew;
+        Matrix3Nv_t dv0_local_dq;
+        Matrix6Nv_t fJf;
+        Matrix6Nv_t v_partial_dq;
+        Matrix6Nv_t v_partial_dv;
+        Matrix3_t v0_skew;
+        Matrix3_t v0_world_skew;
         Matrix3_t f_skew;
-        Matrix6X_t fXjdv_dq;
-        Matrix6X_t fXjda_dq;
-        Matrix6X_t fXjda_dv;
-        Matrix3X_t fJf_df;
+        Matrix3Nv_t fJf_df;
 
         ImpulseData3dTpl(const Model_t &model, RobotData_t *const robot_data)
             : robot(robot_data),
               frame(model.get_id()),
               type(model.get_type()),
-              jMf(SE3_t::Identity()),
+              jMf(model.get_robot().frames[frame].placement),
               Jc(model.get_nc(), model.get_ps().get_nv()),
               f(Force_t::Zero()),
               fext(Force_t::Zero()),
               df_dx(model.get_nc(), model.get_ps().get_ndx()),
-              df_du(model.get_nc(), model.get_ps().get_nu()),
               fXj(jMf.inverse().toActionMatrix()),
-              a0(model.get_nc()),
-              da0_dx(model.get_nc(), model.get_ps().get_ndx()),
+              dv0_dq(model.get_nc(), model.get_ps().get_nv()),
               dtau_dq(model.get_ps().get_nv(), model.get_ps().get_nv()),
-              v(Motion_t::Zero()),
+              v0(model.get_nc(), model.get_nc()),
               f_local(Force_t::Zero()),
-              da0_local_dx(model.get_nc(), model.get_ps().get_ndx()),
+              dv0_local_dq(model.get_nc(), model.get_ps().get_nv()),
               fJf(6, model.get_ps().get_nv()),
               v_partial_dq(6, model.get_ps().get_nv()),
-              a_partial_dq(6, model.get_ps().get_nv()),
-              a_partial_dv(6, model.get_ps().get_nv()),
-              a_partial_da(6, model.get_ps().get_nv()),
-              fXjdv_dq(6, model.get_ps().get_nv()),
-              fXjda_dq(6, model.get_ps().get_nv()),
-              fXjda_dv(6, model.get_ps().get_nv()),
+              v_partial_dv(6, model.get_ps().get_nv()),
+              v0_skew(model.get_nc(), model.get_nc()),
+              v0_world_skew(model.get_nc(), model.get_nc()),
+              f_skew(model.get_nc(), model.get_nc()),
               fJf_df(model.get_nc(), model.get_ps().get_nv())
         {
             Jc.setZero();
             df_dx.setZero();
-            df_du.setZero();
-            a0.setZero();
-            da0_dx.setZero();
+            dv0_dq.setZero();
             dtau_dq.setZero();
-            jMf = model.get_robot().frames[frame].placement;
-            fXj = jMf.inverse().toActionMatrix();
-            a0_local.setZero();
-            dp.setZero();
-            dp_local.setZero();
-            da0_local_dx.setZero();
+            v0.setZero();
+            f_local.setZero();
+            dv0_local_dq.setZero();
             fJf.setZero();
             v_partial_dq.setZero();
-            a_partial_dq.setZero();
-            a_partial_dv.setZero();
-            a_partial_da.setZero();
-            vv_skew.setZero();
-            vw_skew.setZero();
-            a0_skew.setZero();
-            a0_world_skew.setZero();
-            dp_skew.setZero();
+            v_partial_dv.setZero();
+            v0_skew.setZero();
+            v0_world_skew.setZero();
             f_skew.setZero();
-            fXjdv_dq.setZero();
-            fXjda_dq.setZero();
-            fXjda_dv.setZero();
             fJf_df.setZero();
         }
     };
@@ -207,16 +177,11 @@ namespace galileo
 
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
-        template <typename Vector3Type, typename Vector2Type>
         ImpulseModel3dTpl(const PS &ps,
                           const FrameIndex_t id,
-                          const ReferenceFrame_t &type,
-                          const Eigen::MatrixBase<Vector3Type> &xref,
-                          const Eigen::MatrixBase<Vector2Type> &gains)
+                          const ReferenceFrame_t &type)
             : Base(ps, id, type, DimNC_t()),
-              robot_(ps.get_state().get_robot()),
-              xref_(xref),
-              gains_(gains)
+              robot_(ps.get_state().get_robot())
         {
         }
 
@@ -226,33 +191,15 @@ namespace galileo
         {
             pinocchio::updateFramePlacement(get_robot(), *data.robot, get_id());
             pinocchio::getFrameJacobian(get_robot(), *data.robot, get_id(), pinocchio::LOCAL, data.fJf);
-            data.v = pinocchio::getFrameVelocity(get_robot(), *data.robot, get_id());
-            data.a0_local =
-                pinocchio::getFrameClassicalAcceleration(
-                    get_robot(), *data.robot, get_id(), pinocchio::LOCAL)
-                    .linear();
 
-            const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
-            if (gains_[0] != 0.)
-            {
-                data.dp = data.robot->oMf[get_id()].translation() - xref_;
-                data.dp_local.noalias() = oRf.transpose() * data.dp;
-                data.a0_local += gains_[0] * data.dp_local;
-            }
-            if (gains_[1] != 0.)
-            {
-                data.a0_local += gains_[1] * data.v.linear();
-            }
             switch (get_type())
             {
             case pinocchio::ReferenceFrame::LOCAL:
                 data.Jc = topRows(data.fJf, get_nc_dim());
-                data.a0 = data.a0_local;
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                data.Jc.noalias() = oRf * topRows(data.fJf, get_nc_dim());
-                data.a0.noalias() = oRf * data.a0_local;
+                data.Jc.noalias() = data.robot->oMf[get_id()].rotation() * topRows(data.fJf, get_nc_dim());
                 break;
             }
         }
@@ -261,78 +208,29 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            const pinocchio::JointIndex joint =
-                get_robot().frames[data.frame].parentJoint;
-            pinocchio::getJointAccelerationDerivatives(
-                get_robot(), *data.robot, joint, pinocchio::LOCAL,
-                data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
-            pinocchio::skew(data.v.linear(), data.vv_skew);
-            pinocchio::skew(data.v.angular(), data.vw_skew);
-            data.fXjdv_dq.noalias() = data.fXj * data.v_partial_dq;
-            data.fXjda_dq.noalias() = data.fXj * data.a_partial_dq;
-            data.fXjda_dv.noalias() = data.fXj * data.a_partial_dv;
-            leftCols(data.da0_local_dx, get_ps().get_nv_dim()) = topRows(data.fXjda_dq, get_nc_dim());
-            leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                data.vw_skew * topRows(data.fXjdv_dq, get_nc_dim());
-            leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() -=
-                data.vv_skew * bottomRows(data.fXjdv_dq, get_nc_dim());
-            rightCols(data.da0_local_dx, get_ps().get_nv_dim()) = topRows(data.fXjda_dv, get_nc_dim());
-            rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                data.vw_skew * topRows(data.fJf, get_nc_dim());
-            rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() -=
-                data.vv_skew * bottomRows(data.fJf, get_nc_dim());
-            const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
+            const pinocchio::JointIndex joint = get_robot().frames[data.frame].parentJoint;
+            pinocchio::getJointVelocityDerivatives(get_robot(), *data.robot,
+                                                   joint, pinocchio::LOCAL,
+                                                   data.v_partial_dq, data.v_partial_dv);
+            data.dv0_local_dq.noalias() = topRows(data.fXj, get_nc_dim()) * data.v_partial_dq;
 
-            if (gains_[0] != 0.)
-            {
-                pinocchio::skew(data.dp_local, data.dp_skew);
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[0] * data.dp_skew * bottomRows(data.fJf, get_nc_dim());
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[0] * topRows(data.fJf, get_nc_dim());
-            }
-            if (gains_[1] != 0.)
-            {
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[1] * topRows(data.fXjdv_dq, get_nc_dim());
-                rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[1] * topRows(data.fJf, get_nc_dim());
-            }
             switch (get_type())
             {
             case pinocchio::ReferenceFrame::LOCAL:
-                data.da0_dx = data.da0_local_dx;
+                data.dv0_dq = data.dv0_local_dq;
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                // Recalculate the constrained accelerations after imposing impulse
-                // constraints. This is necessary for the forward-dynamics case.
-                data.a0_local = pinocchio::getFrameClassicalAcceleration(
-                                    get_robot(), *data.robot, get_id(),
-                                    pinocchio::LOCAL)
-                                    .linear();
-                if (gains_[0] != 0.)
-                {
-                    data.a0_local += gains_[0] * data.dp_local;
-                }
-                if (gains_[1] != 0.)
-                {
-                    data.a0_local += gains_[1] * data.v.linear();
-                }
-                data.a0.noalias() = oRf * data.a0_local;
-
-                pinocchio::skew(head(data.a0, get_nc_dim()), data.a0_skew);
-                data.a0_world_skew.noalias() = data.a0_skew * oRf;
-                data.da0_dx.noalias() = oRf * data.da0_local_dx;
-                leftCols(data.da0_dx, get_ps().get_nv_dim()).noalias() -=
-                    data.a0_world_skew * bottomRows(data.fJf, get_nc_dim());
+                auto oRf = data.robot->oMf[get_id()].rotation();
+                data.v0 = pinocchio::getFrameVelocity(get_robot(), *data.robot, get_id(),
+                                                      pinocchio::LOCAL_WORLD_ALIGNED)
+                              .linear();
+                pinocchio::skew(data.v0, data.v0_skew);
+                data.v0_world_skew.noalias() = data.v0_skew * oRf;
+                data.dv0_dq.noalias() = oRf * data.dv0_local_dq;
+                data.dv0_dq.noalias() -= data.v0_world_skew * bottomRows(data.fJf, get_nc_dim());
                 break;
             }
-        }
-
-        Data_t createData(RobotData_t *const robot) const
-        {
-            return Data_t(*this, robot);
         }
 
         template <typename ForceVectorType>
@@ -349,7 +247,7 @@ namespace galileo
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
+                auto oRf = data.robot->oMf[get_id()].rotation();
                 data.f_local.linear().noalias() = oRf.transpose() * force;
                 data.f_local.angular().setZero();
                 data.fext = data.jMf.act(data.f_local);
@@ -359,6 +257,11 @@ namespace galileo
                     -topRows(data.fJf, get_nc_dim()).transpose() * data.fJf_df;
                 break;
             }
+        }
+
+        Data_t createData(RobotData_t *const robot) const
+        {
+            return Data_t(*this, robot);
         }
 
         using Base::setZeroForce;
@@ -383,8 +286,6 @@ namespace galileo
 
     protected:
         std::reference_wrapper<const RobotModel_t> robot_;
-        Vector3_t xref_;
-        Vector2_t gains_;
 
     }; // struct ImpulseModel3dTpl
 
