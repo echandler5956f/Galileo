@@ -220,14 +220,17 @@ int main(int argc, char *argv[])
     BarycentricInterpolator_t interpolator = BarycentricInterpolator_t(nodes);
     ControlParamModel_t control_param = ControlParamModel_t(ps, interpolator);
 
-    NumScalar period = 0.0;
+    NumScalar period = 1.0;
     SegmentModel_t segment = SegmentModel_t(ps, node, control_param, period);
 
     SegmentData_t segment_data = segment.createData();
 
-    Eigen::VectorXd x = state.rand();
+    auto x = state.rand();
     Eigen::VectorXd w = Eigen::VectorXd::Zero(ps.get_nw());
     segment.calc(segment_data, x, w);
+    std::cout << "segment calc done" << std::endl;
+    // segment.calcDiff(segment_data, x, w);
+    // std::cout << "segment calc diff done" << std::endl;
 
     return 0;
 }

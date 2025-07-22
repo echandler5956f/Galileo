@@ -321,7 +321,7 @@ namespace galileo
         {
             typename PS::ControlParamData_t &w0_data = data.controls[0];
             w0_data.u *= 0.;
-            node_.quasiStatic(data.nodes[0], w0_data.u, x.derived(), maxiter, tol);
+            node_.quasiStatic(data.nodes[0], w0_data.u, x, maxiter, tol);
             control_.params(w0_data, 0., w0_data.u);
             w = w0_data.w;
         }

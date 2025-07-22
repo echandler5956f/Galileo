@@ -35,14 +35,14 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            this->derived().calc(data, x.derived(), u.derived());
+            this->derived().calc(data, x, u);
         }
 
         template <typename StateVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            this->derived().calc(data, x.derived());
+            this->derived().calc(data, x);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -50,14 +50,14 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            this->derived().calcDiff(data, x.derived(), u.derived());
+            this->derived().calcDiff(data, x, u);
         }
 
         template <typename StateVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            this->derived().calcDiff(data, x.derived());
+            this->derived().calcDiff(data, x);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -66,7 +66,7 @@ namespace galileo
                          Eigen::MatrixBase<ControlVectorType> &u,
                          const int maxiter, const NumScalar tol) const
         {
-            this->derived().quasiStatic(data, x.derived(), u.derived(), maxiter, tol);
+            this->derived().quasiStatic(data, x, u, maxiter, tol);
         }
 
         Data_t createData() const

@@ -43,7 +43,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVector2> &x1,
                   Eigen::MatrixBase<StateTangentVector> &dxout) const
         {
-            dxout = x1.derived() - x0.derived();
+            dxout = x1 - x0;
         }
 
         template <typename StateVector1, typename StateTangentVector, typename StateVector2>
@@ -51,7 +51,7 @@ namespace galileo
                        const Eigen::MatrixBase<StateTangentVector> &dx,
                        Eigen::MatrixBase<StateVector2> &xout) const
         {
-            xout = x.derived() + dx.derived();
+            xout = x + dx;
         }
 
         template <typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
@@ -138,13 +138,13 @@ namespace galileo
         template <typename StateVector>
         void set_lb(const Eigen::MatrixBase<StateVector> &lb)
         {
-            lb_ = lb.derived();
+            lb_ = lb;
         }
 
         template <typename StateVector>
         void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
-            ub_ = ub.derived();
+            ub_ = ub;
         }
 
         using Base::diff_dx;

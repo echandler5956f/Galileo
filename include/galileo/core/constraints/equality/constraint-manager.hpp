@@ -247,7 +247,7 @@ namespace galileo
                 {
                     Data_t &d_i = it_d->second;
 
-                    m_i.model.calc(d_i, x.derived(), u.derived());
+                    m_i.model.calc(d_i, x, u);
                     auto nh_dim_i = m_i.model.get_nh();
                     segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
                     nh_accum_i = nh_accum_i + nh_dim_i;
@@ -272,7 +272,7 @@ namespace galileo
                 {
                     Data_t &d_i = it_d->second;
 
-                    m_i.model.calc(d_i, x.derived());
+                    m_i.model.calc(d_i, x);
                     auto nh_dim_i = m_i.model.get_nh();
                     segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
                     nh_accum_i = nh_accum_i + nh_dim_i;
@@ -298,7 +298,7 @@ namespace galileo
                 {
                     Data_t &d_i = it_d->second;
 
-                    m_i.model.calcDiff(d_i, x.derived(), u.derived());
+                    m_i.model.calcDiff(d_i, x, u);
                     auto nh_dim_i = m_i.model.get_nh();
                     block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     block(data.Hu, nh_accum_i, 0, nh_dim_i, get_ps().get_nu_dim()) = d_i.Hu();
@@ -324,7 +324,7 @@ namespace galileo
                 {
                     Data_t &d_i = it_d->second;
 
-                    m_i.model.calcDiff(d_i, x.derived());
+                    m_i.model.calcDiff(d_i, x);
                     auto nh_dim_i = m_i.model.get_nh();
                     block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     nh_accum_i = nh_accum_i + nh_dim_i;

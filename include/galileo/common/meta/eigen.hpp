@@ -71,18 +71,18 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<LenType>)
         {
-            return vec.segment(start, len);
+            return vec.derived().segment(start, len);
         }
         else
         {
             // DimensionTpl case
             if constexpr (LenType::IsDynamic)
             {
-                return vec.segment(start, len.value());
+                return vec.derived().segment(start, len.value());
             }
             else
             {
-                return vec.template segment<LenType::Value>(start);
+                return vec.derived().template segment<LenType::Value>(start);
             }
         }
     }
@@ -93,7 +93,7 @@ namespace galileo
                         Eigen::Index start)
     {
         constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
-        return vec.template segment<compile_time_len>(start);
+        return vec.derived().template segment<compile_time_len>(start);
     }
 
     template <auto Len, typename Derived>
@@ -102,7 +102,7 @@ namespace galileo
                         Eigen::Index start)
     {
         constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
-        return vec.template segment<compile_time_len>(start);
+        return vec.derived().template segment<compile_time_len>(start);
     }
 
     template <typename Derived, typename LenType>
@@ -129,17 +129,17 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<LenType>)
         {
-            return vec.head(len);
+            return vec.derived().head(len);
         }
         else
         {
             if constexpr (LenType::IsDynamic)
             {
-                return vec.head(len.value());
+                return vec.derived().head(len.value());
             }
             else
             {
-                return vec.template head<LenType::Value>();
+                return vec.derived().template head<LenType::Value>();
             }
         }
     }
@@ -149,7 +149,7 @@ namespace galileo
     static auto head(Eigen::MatrixBase<Derived> &vec)
     {
         constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
-        return vec.template head<compile_time_len>();
+        return vec.derived().template head<compile_time_len>();
     }
 
     template <auto Len, typename Derived>
@@ -157,7 +157,7 @@ namespace galileo
     static auto head(const Eigen::MatrixBase<Derived> &vec)
     {
         constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
-        return vec.template head<compile_time_len>();
+        return vec.derived().template head<compile_time_len>();
     }
 
     template <typename Derived, typename LenType>
@@ -180,17 +180,17 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<LenType>)
         {
-            return vec.tail(len);
+            return vec.derived().tail(len);
         }
         else
         {
             if constexpr (LenType::IsDynamic)
             {
-                return vec.tail(len.value());
+                return vec.derived().tail(len.value());
             }
             else
             {
-                return vec.template tail<LenType::Value>();
+                return vec.derived().template tail<LenType::Value>();
             }
         }
     }
@@ -200,7 +200,7 @@ namespace galileo
     static auto tail(Eigen::MatrixBase<Derived> &vec)
     {
         constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
-        return vec.template tail<compile_time_len>();
+        return vec.derived().template tail<compile_time_len>();
     }
 
     template <auto Len, typename Derived>
@@ -208,7 +208,7 @@ namespace galileo
     static auto tail(const Eigen::MatrixBase<Derived> &vec)
     {
         constexpr int compile_time_len = extract_compile_time_value<Len>::Value;
-        return vec.template tail<compile_time_len>();
+        return vec.derived().template tail<compile_time_len>();
     }
 
     template <typename Derived, typename LenType>
@@ -232,47 +232,47 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
-            return mat.block(start_row, start_col, row_size, col_size);
+            return mat.derived().block(start_row, start_col, row_size, col_size);
         }
         else if constexpr (std::is_integral_v<RowSizeType> && !std::is_integral_v<ColSizeType>)
         {
             if constexpr (ColSizeType::IsDynamic)
             {
-                return mat.block(start_row, start_col, row_size, col_size.value());
+                return mat.derived().block(start_row, start_col, row_size, col_size.value());
             }
             else
             {
-                return mat.template block<Eigen::Dynamic, ColSizeType::Value>(start_row, start_col, row_size, ColSizeType::Value);
+                return mat.derived().template block<Eigen::Dynamic, ColSizeType::Value>(start_row, start_col, row_size, ColSizeType::Value);
             }
         }
         else if constexpr (!std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
             if constexpr (RowSizeType::IsDynamic)
             {
-                return mat.block(start_row, start_col, row_size.value(), col_size);
+                return mat.derived().block(start_row, start_col, row_size.value(), col_size);
             }
             else
             {
-                return mat.template block<RowSizeType::Value, Eigen::Dynamic>(start_row, start_col, RowSizeType::Value, col_size);
+                return mat.derived().template block<RowSizeType::Value, Eigen::Dynamic>(start_row, start_col, RowSizeType::Value, col_size);
             }
         }
         else
         {
             if constexpr (RowSizeType::IsDynamic && ColSizeType::IsDynamic)
             {
-                return mat.block(start_row, start_col, row_size.value(), col_size.value());
+                return mat.derived().block(start_row, start_col, row_size.value(), col_size.value());
             }
             else if constexpr (RowSizeType::IsDynamic && ColSizeType::IsFixed)
             {
-                return mat.template block<Eigen::Dynamic, ColSizeType::Value>(start_row, start_col, row_size.value(), ColSizeType::Value);
+                return mat.derived().template block<Eigen::Dynamic, ColSizeType::Value>(start_row, start_col, row_size.value(), ColSizeType::Value);
             }
             else if constexpr (RowSizeType::IsFixed && ColSizeType::IsDynamic)
             {
-                return mat.template block<RowSizeType::Value, Eigen::Dynamic>(start_row, start_col, RowSizeType::Value, col_size.value());
+                return mat.derived().template block<RowSizeType::Value, Eigen::Dynamic>(start_row, start_col, RowSizeType::Value, col_size.value());
             }
             else
             {
-                return mat.template block<RowSizeType::Value, ColSizeType::Value>(start_row, start_col);
+                return mat.derived().template block<RowSizeType::Value, ColSizeType::Value>(start_row, start_col);
             }
         }
     }
@@ -282,7 +282,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template block<compile_time_rows, compile_time_cols>(start_row, start_col);
+        return mat.derived().template block<compile_time_rows, compile_time_cols>(start_row, start_col);
     }
 
     template <auto RowSize, auto ColSize, typename Derived>
@@ -290,7 +290,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template block<compile_time_rows, compile_time_cols>(start_row, start_col);
+        return mat.derived().template block<compile_time_rows, compile_time_cols>(start_row, start_col);
     }
 
     template <typename Derived, typename RowSizeType, typename ColSizeType>
@@ -313,47 +313,47 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
-            return mat.topLeftCorner(row_size, col_size);
+            return mat.derived().topLeftCorner(row_size, col_size);
         }
         else if constexpr (std::is_integral_v<RowSizeType> && !std::is_integral_v<ColSizeType>)
         {
             if constexpr (ColSizeType::IsDynamic)
             {
-                return mat.topLeftCorner(row_size, col_size.value());
+                return mat.derived().topLeftCorner(row_size, col_size.value());
             }
             else
             {
-                return mat.template topLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
+                return mat.derived().template topLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
             }
         }
         else if constexpr (!std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
             if constexpr (RowSizeType::IsDynamic)
             {
-                return mat.topLeftCorner(row_size.value(), col_size);
+                return mat.derived().topLeftCorner(row_size.value(), col_size);
             }
             else
             {
-                return mat.template topLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
+                return mat.derived().template topLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
             }
         }
         else
         {
             if constexpr (RowSizeType::IsDynamic && ColSizeType::IsDynamic)
             {
-                return mat.topLeftCorner(row_size.value(), col_size.value());
+                return mat.derived().topLeftCorner(row_size.value(), col_size.value());
             }
             else if constexpr (RowSizeType::IsDynamic && ColSizeType::IsFixed)
             {
-                return mat.template topLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
+                return mat.derived().template topLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
             }
             else if constexpr (RowSizeType::IsFixed && ColSizeType::IsDynamic)
             {
-                return mat.template topLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
+                return mat.derived().template topLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
             }
             else
             {
-                return mat.template topLeftCorner<RowSizeType::Value, ColSizeType::Value>();
+                return mat.derived().template topLeftCorner<RowSizeType::Value, ColSizeType::Value>();
             }
         }
     }
@@ -363,7 +363,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template topLeftCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template topLeftCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <auto RowSize, auto ColSize, typename Derived>
@@ -371,7 +371,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template topLeftCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template topLeftCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <typename Derived, typename RowSizeType, typename ColSizeType>
@@ -392,47 +392,47 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
-            return mat.topRightCorner(row_size, col_size);
+            return mat.derived().topRightCorner(row_size, col_size);
         }
         else if constexpr (std::is_integral_v<RowSizeType> && !std::is_integral_v<ColSizeType>)
         {
             if constexpr (ColSizeType::IsDynamic)
             {
-                return mat.topRightCorner(row_size, col_size.value());
+                return mat.derived().topRightCorner(row_size, col_size.value());
             }
             else
             {
-                return mat.template topRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
+                return mat.derived().template topRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
             }
         }
         else if constexpr (!std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
             if constexpr (RowSizeType::IsDynamic)
             {
-                return mat.topRightCorner(row_size.value(), col_size);
+                return mat.derived().topRightCorner(row_size.value(), col_size);
             }
             else
             {
-                return mat.template topRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
+                return mat.derived().template topRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
             }
         }
         else
         {
             if constexpr (RowSizeType::IsDynamic && ColSizeType::IsDynamic)
             {
-                return mat.topRightCorner(row_size.value(), col_size.value());
+                return mat.derived().topRightCorner(row_size.value(), col_size.value());
             }
             else if constexpr (RowSizeType::IsDynamic && ColSizeType::IsFixed)
             {
-                return mat.template topRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
+                return mat.derived().template topRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
             }
             else if constexpr (RowSizeType::IsFixed && ColSizeType::IsDynamic)
             {
-                return mat.template topRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
+                return mat.derived().template topRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
             }
             else
             {
-                return mat.template topRightCorner<RowSizeType::Value, ColSizeType::Value>();
+                return mat.derived().template topRightCorner<RowSizeType::Value, ColSizeType::Value>();
             }
         }
     }
@@ -442,7 +442,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template topRightCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template topRightCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <auto RowSize, auto ColSize, typename Derived>
@@ -450,7 +450,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template topRightCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template topRightCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <typename Derived, typename RowSizeType, typename ColSizeType>
@@ -471,47 +471,47 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
-            return mat.bottomLeftCorner(row_size, col_size);
+            return mat.derived().bottomLeftCorner(row_size, col_size);
         }
         else if constexpr (std::is_integral_v<RowSizeType> && !std::is_integral_v<ColSizeType>)
         {
             if constexpr (ColSizeType::IsDynamic)
             {
-                return mat.bottomLeftCorner(row_size, col_size.value());
+                return mat.derived().bottomLeftCorner(row_size, col_size.value());
             }
             else
             {
-                return mat.template bottomLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
+                return mat.derived().template bottomLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
             }
         }
         else if constexpr (!std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
             if constexpr (RowSizeType::IsDynamic)
             {
-                return mat.bottomLeftCorner(row_size.value(), col_size);
+                return mat.derived().bottomLeftCorner(row_size.value(), col_size);
             }
             else
             {
-                return mat.template bottomLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
+                return mat.derived().template bottomLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
             }
         }
         else
         {
             if constexpr (RowSizeType::IsDynamic && ColSizeType::IsDynamic)
             {
-                return mat.bottomLeftCorner(row_size.value(), col_size.value());
+                return mat.derived().bottomLeftCorner(row_size.value(), col_size.value());
             }
             else if constexpr (RowSizeType::IsDynamic && ColSizeType::IsFixed)
             {
-                return mat.template bottomLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
+                return mat.derived().template bottomLeftCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
             }
             else if constexpr (RowSizeType::IsFixed && ColSizeType::IsDynamic)
             {
-                return mat.template bottomLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
+                return mat.derived().template bottomLeftCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
             }
             else
             {
-                return mat.template bottomLeftCorner<RowSizeType::Value, ColSizeType::Value>();
+                return mat.derived().template bottomLeftCorner<RowSizeType::Value, ColSizeType::Value>();
             }
         }
     }
@@ -521,7 +521,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template bottomLeftCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template bottomLeftCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <auto RowSize, auto ColSize, typename Derived>
@@ -529,7 +529,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template bottomLeftCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template bottomLeftCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <typename Derived, typename RowSizeType, typename ColSizeType>
@@ -550,47 +550,47 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
-            return mat.bottomRightCorner(row_size, col_size);
+            return mat.derived().bottomRightCorner(row_size, col_size);
         }
         else if constexpr (std::is_integral_v<RowSizeType> && !std::is_integral_v<ColSizeType>)
         {
             if constexpr (ColSizeType::IsDynamic)
             {
-                return mat.bottomRightCorner(row_size, col_size.value());
+                return mat.derived().bottomRightCorner(row_size, col_size.value());
             }
             else
             {
-                return mat.template bottomRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
+                return mat.derived().template bottomRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size, ColSizeType::Value);
             }
         }
         else if constexpr (!std::is_integral_v<RowSizeType> && std::is_integral_v<ColSizeType>)
         {
             if constexpr (RowSizeType::IsDynamic)
             {
-                return mat.bottomRightCorner(row_size.value(), col_size);
+                return mat.derived().bottomRightCorner(row_size.value(), col_size);
             }
             else
             {
-                return mat.template bottomRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
+                return mat.derived().template bottomRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size);
             }
         }
         else
         {
             if constexpr (RowSizeType::IsDynamic && ColSizeType::IsDynamic)
             {
-                return mat.bottomRightCorner(row_size.value(), col_size.value());
+                return mat.derived().bottomRightCorner(row_size.value(), col_size.value());
             }
             else if constexpr (RowSizeType::IsDynamic && ColSizeType::IsFixed)
             {
-                return mat.template bottomRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
+                return mat.derived().template bottomRightCorner<Eigen::Dynamic, ColSizeType::Value>(row_size.value(), ColSizeType::Value);
             }
             else if constexpr (RowSizeType::IsFixed && ColSizeType::IsDynamic)
             {
-                return mat.template bottomRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
+                return mat.derived().template bottomRightCorner<RowSizeType::Value, Eigen::Dynamic>(RowSizeType::Value, col_size.value());
             }
             else
             {
-                return mat.template bottomRightCorner<RowSizeType::Value, ColSizeType::Value>();
+                return mat.derived().template bottomRightCorner<RowSizeType::Value, ColSizeType::Value>();
             }
         }
     }
@@ -600,7 +600,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template bottomRightCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template bottomRightCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <auto RowSize, auto ColSize, typename Derived>
@@ -608,7 +608,7 @@ namespace galileo
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template bottomRightCorner<compile_time_rows, compile_time_cols>();
+        return mat.derived().template bottomRightCorner<compile_time_rows, compile_time_cols>();
     }
 
     template <typename Derived, typename RowSizeType, typename ColSizeType>
@@ -629,17 +629,17 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<RowSizeType>)
         {
-            return mat.topRows(row_size);
+            return mat.derived().topRows(row_size);
         }
         else
         {
             if constexpr (RowSizeType::IsDynamic)
             {
-                return mat.topRows(row_size.value());
+                return mat.derived().topRows(row_size.value());
             }
             else
             {
-                return mat.template topRows<RowSizeType::Value>();
+                return mat.derived().template topRows<RowSizeType::Value>();
             }
         }
     }
@@ -648,14 +648,14 @@ namespace galileo
     static auto topRows(Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
-        return mat.template topRows<compile_time_rows>();
+        return mat.derived().template topRows<compile_time_rows>();
     }
 
     template <auto RowSize, typename Derived>
     static auto topRows(const Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
-        return mat.template topRows<compile_time_rows>();
+        return mat.derived().template topRows<compile_time_rows>();
     }
 
     template <typename Derived, typename RowSizeType>
@@ -675,17 +675,17 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<RowSizeType>)
         {
-            return mat.bottomRows(row_size);
+            return mat.derived().bottomRows(row_size);
         }
         else
         {
             if constexpr (RowSizeType::IsDynamic)
             {
-                return mat.bottomRows(row_size.value());
+                return mat.derived().bottomRows(row_size.value());
             }
             else
             {
-                return mat.template bottomRows<RowSizeType::Value>();
+                return mat.derived().template bottomRows<RowSizeType::Value>();
             }
         }
     }
@@ -694,14 +694,14 @@ namespace galileo
     static auto bottomRows(Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
-        return mat.template bottomRows<compile_time_rows>();
+        return mat.derived().template bottomRows<compile_time_rows>();
     }
 
     template <auto RowSize, typename Derived>
     static auto bottomRows(const Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_rows = extract_compile_time_value<RowSize>::Value;
-        return mat.template bottomRows<compile_time_rows>();
+        return mat.derived().template bottomRows<compile_time_rows>();
     }
 
     template <typename Derived, typename RowSizeType>
@@ -721,17 +721,17 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<ColSizeType>)
         {
-            return mat.leftCols(col_size);
+            return mat.derived().leftCols(col_size);
         }
         else
         {
             if constexpr (ColSizeType::IsDynamic)
             {
-                return mat.leftCols(col_size.value());
+                return mat.derived().leftCols(col_size.value());
             }
             else
             {
-                return mat.template leftCols<ColSizeType::Value>();
+                return mat.derived().template leftCols<ColSizeType::Value>();
             }
         }
     }
@@ -740,14 +740,14 @@ namespace galileo
     static auto leftCols(Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template leftCols<compile_time_cols>();
+        return mat.derived().template leftCols<compile_time_cols>();
     }
 
     template <auto ColSize, typename Derived>
     static auto leftCols(const Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template leftCols<compile_time_cols>();
+        return mat.derived().template leftCols<compile_time_cols>();
     }
 
     template <typename Derived, typename ColSizeType>
@@ -767,17 +767,17 @@ namespace galileo
     {
         if constexpr (std::is_integral_v<ColSizeType>)
         {
-            return mat.rightCols(col_size);
+            return mat.derived().rightCols(col_size);
         }
         else
         {
             if constexpr (ColSizeType::IsDynamic)
             {
-                return mat.rightCols(col_size.value());
+                return mat.derived().rightCols(col_size.value());
             }
             else
             {
-                return mat.template rightCols<ColSizeType::Value>();
+                return mat.derived().template rightCols<ColSizeType::Value>();
             }
         }
     }
@@ -786,14 +786,14 @@ namespace galileo
     static auto rightCols(Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template rightCols<compile_time_cols>();
+        return mat.derived().template rightCols<compile_time_cols>();
     }
 
     template <auto ColSize, typename Derived>
     static auto rightCols(const Eigen::MatrixBase<Derived> &mat)
     {
         constexpr int compile_time_cols = extract_compile_time_value<ColSize>::Value;
-        return mat.template rightCols<compile_time_cols>();
+        return mat.derived().template rightCols<compile_time_cols>();
     }
 
     template <typename Derived, typename ColSizeType>

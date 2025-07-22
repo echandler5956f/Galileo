@@ -168,7 +168,7 @@ namespace galileo
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             std::cout << "residual calc" << std::endl;
-            residual_.calc(data.residual, x.derived(), u.derived());
+            residual_.calc(data.residual, x, u);
             std::cout << "residual calc done" << std::endl;
             activation_.calc(data.activation, data.residual.R);
             std::cout << "activation calc done" << std::endl;
@@ -188,7 +188,7 @@ namespace galileo
             }
             else
             {
-                residual_.calc(data.residual, x.derived());
+                residual_.calc(data.residual, x);
                 activation_.calc(data.activation, data.residual.R);
 
                 data.L = data.activation.A;
@@ -200,7 +200,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            residual_.calcDiff(data.residual, x.derived(), u.derived());
+            residual_.calcDiff(data.residual, x, u);
             activation_.calcDiff(data.activation, data.residual.R);
 
             residual_.calcCostDiff<true>(data, data.residual, data.activation);
@@ -218,7 +218,7 @@ namespace galileo
             }
             else
             {
-                residual_.calcDiff(data.residual, x.derived());
+                residual_.calcDiff(data.residual, x);
                 activation_.calcDiff(data.activation, data.residual.R);
 
                 residual_.calcCostDiff<false>(data, data.residual, data.activation);

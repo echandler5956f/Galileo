@@ -170,21 +170,21 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            this->derived().calc(data, x.derived());
+            this->derived().calc(data, x);
         }
 
         template <typename StateVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            this->derived().calcDiff(data, x.derived());
+            this->derived().calcDiff(data, x);
         }
 
         template <typename ForceVectorType>
         void updateForce(Data_t &data,
                          const Eigen::MatrixBase<ForceVectorType> &force) const
         {
-            this->derived().updateForce(data, force.derived());
+            this->derived().updateForce(data, force);
         }
 
         template <typename MatrixNcNdxType, typename MatrixNcNuType>
@@ -192,7 +192,7 @@ namespace galileo
                              const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
                              const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
         {
-            this->derived().updateForceDiffImpl(data, df_dx.derived(), df_du.derived());
+            this->derived().updateForceDiffImpl(data, df_dx, df_du);
         }
 
         template <typename MatrixNcNdxType, typename MatrixNcNuType>

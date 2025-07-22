@@ -68,7 +68,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVector2> &x1,
                   Eigen::MatrixBase<StateTangentVector> &dxout) const
         {
-            this->derived().diff(x0.derived(), x1.derived(), dxout.derived());
+            this->derived().diff(x0, x1, dxout);
         }
 
         /**
@@ -92,7 +92,7 @@ namespace galileo
                        const Eigen::MatrixBase<StateTangentVector> &dx,
                        Eigen::MatrixBase<StateVector2> &xout) const
         {
-            this->derived().integrate(x.derived(), dx.derived(), xout.derived());
+            this->derived().integrate(x, dx, xout);
         }
 
         /**
@@ -142,7 +142,7 @@ namespace galileo
                    Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond,
                    const Jcomponent firstsecond = both) const
         {
-            this->derived().Jdiff(x0.derived(), x1.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond);
+            this->derived().Jdiff(x0, x1, Jfirst, Jsecond, firstsecond);
         }
 
         /**
@@ -192,7 +192,7 @@ namespace galileo
                         const Jcomponent firstsecond = both,
                         const AssignmentOp op = setto) const
         {
-            this->derived().Jintegrate(x.derived(), dx.derived(), Jfirst.derived(), Jsecond.derived(), firstsecond, op);
+            this->derived().Jintegrate(x, dx, Jfirst, Jsecond, firstsecond, op);
         }
 
         /**
@@ -215,7 +215,7 @@ namespace galileo
                                  Eigen::MatrixBase<JMatrix> &Jin,
                                  const Jcomponent firstsecond) const
         {
-            this->derived().JintegrateTransport(x.derived(), dx.derived(), Jin.derived(), firstsecond);
+            this->derived().JintegrateTransport(x, dx, Jin, firstsecond);
         }
 
         /**
@@ -231,7 +231,7 @@ namespace galileo
                             const Eigen::MatrixBase<StateVector2> &x1) const
         {
             VectorNdx_t dx = VectorNdx_t::Zero(get_ndx());
-            this->derived().diff(x0.derived(), x1.derived(), dx);
+            this->derived().diff(x0, x1, dx);
             return dx;
         }
 
@@ -247,7 +247,7 @@ namespace galileo
                                const Eigen::MatrixBase<StateTangentVector> &dx) const
         {
             VectorNx_t xout = VectorNx_t::Zero(get_nx());
-            this->derived().integrate(x.derived(), dx.derived(), xout);
+            this->derived().integrate(x, dx, xout);
             return xout;
         }
 
@@ -480,7 +480,7 @@ namespace galileo
         template <typename StateVector>
         void set_lb(const Eigen::MatrixBase<StateVector> &lb)
         {
-            this->derived().set_lb(lb.derived());
+            this->derived().set_lb(lb);
         }
 
         /**
@@ -489,7 +489,7 @@ namespace galileo
         template <typename StateVector>
         void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
-            this->derived().set_ub(ub.derived());
+            this->derived().set_ub(ub);
         }
 
     protected:

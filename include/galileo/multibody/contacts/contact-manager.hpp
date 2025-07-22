@@ -285,7 +285,7 @@ namespace galileo
                     {
                         Data_t &d_i = it_d->second;
 
-                        m_i.model.calc(d_i, x.derived());
+                        m_i.model.calc(d_i, x);
                         segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
                         block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
                     }
@@ -308,7 +308,7 @@ namespace galileo
                     {
                         Data_t &d_i = it_d->second;
 
-                        m_i.model.calc(d_i, x.derived());
+                        m_i.model.calc(d_i, x);
                         auto nc_dim_i = m_i.model.get_nc();
                         segment(data.a0, nc_accum_i, nc_dim_i) = d_i.a0();
                         block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
@@ -336,7 +336,7 @@ namespace galileo
                     {
                         Data_t &d_i = it_d->second;
 
-                        m_i.model.calcDiff(d_i, x.derived());
+                        m_i.model.calcDiff(d_i, x);
                         block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
                     }
                     else
@@ -357,7 +357,7 @@ namespace galileo
                     {
                         Data_t &d_i = it_d->second;
 
-                        m_i.model.calcDiff(d_i, x.derived());
+                        m_i.model.calcDiff(d_i, x);
                         auto nc_dim_i = m_i.model.get_nc();
                         block(data.da0_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
                         nc_accum_i = nc_accum_i + nc_dim_i;
@@ -369,7 +369,7 @@ namespace galileo
         template <typename VectorNvType>
         void updateAcceleration(DataManager_t &data, const Eigen::MatrixBase<VectorNvType> &dv) const
         {
-            data.dv = dv.derived();
+            data.dv = dv;
         }
 
         template <typename ForceVectorType>
@@ -438,7 +438,7 @@ namespace galileo
         template <typename MatrixNvNdxType>
         void updateAccelerationDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNvNdxType> &ddv_dx) const
         {
-            data.ddv_dx = ddv_dx.derived();
+            data.ddv_dx = ddv_dx;
         }
 
         template <typename MatrixNcNdxType, typename MatrixNcNduType>

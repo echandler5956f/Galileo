@@ -192,12 +192,120 @@ namespace galileo
         }
 
         // Comparison operations
-        bool operator==(const DimensionTpl &other) const { return value() == other.value(); }
-        bool operator!=(const DimensionTpl &other) const { return value() != other.value(); }
-        bool operator<(const DimensionTpl &other) const { return value() < other.value(); }
-        bool operator<=(const DimensionTpl &other) const { return value() <= other.value(); }
-        bool operator>(const DimensionTpl &other) const { return value() > other.value(); }
-        bool operator>=(const DimensionTpl &other) const { return value() >= other.value(); }
+        template <int OtherValue>
+        bool operator==(const DimensionTpl<OtherValue> &other) const
+        {
+            return value() == other.value();
+        }
+
+        template <int OtherValue>
+        bool operator!=(const DimensionTpl<OtherValue> &other) const
+        {
+            return value() != other.value();
+        }
+
+        template <int OtherValue>
+        bool operator<(const DimensionTpl<OtherValue> &other) const
+        {
+            return value() < other.value();
+        }
+
+        template <int OtherValue>
+        bool operator<=(const DimensionTpl<OtherValue> &other) const
+        {
+            return value() <= other.value();
+        }
+
+        template <int OtherValue>
+        bool operator>(const DimensionTpl<OtherValue> &other) const
+        {
+            return value() > other.value();
+        }
+
+        template <int OtherValue>
+        bool operator>=(const DimensionTpl<OtherValue> &other) const
+        {
+            return value() >= other.value();
+        }
+
+        // Compound assignment operations
+        template <int OtherValue>
+        auto &operator+=(const DimensionTpl<OtherValue> &other)
+        {
+            int new_runtime_value = value() + other.value();
+            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension += resulted in negative runtime value");
+
+            if constexpr (IsFixed)
+            {
+                // For fixed dimensions, the result must still match the compile-time value
+                constexpr int expected_result = detail::add<Value, OtherValue>::Value;
+                if constexpr (expected_result != detail::Dynamic)
+                {
+                    GALILEO_ASSERT(expected_result == Value,
+                                   "DimensionTpl: += operation would change fixed dimension compile-time value");
+                }
+                GALILEO_ASSERT(new_runtime_value == Value,
+                               "DimensionTpl: += result does not match fixed compile-time dimension");
+            }
+
+            runtime_value_ = new_runtime_value;
+            return *this;
+        }
+
+        template <int OtherValue>
+        auto &operator-=(const DimensionTpl<OtherValue> &other)
+            requires(IsDynamic || OtherValue == detail::Dynamic || Value >= OtherValue)
+        {
+            int new_runtime_value = value() - other.value();
+            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension -= resulted in negative runtime value");
+
+            if constexpr (IsFixed)
+            {
+                // For fixed dimensions, the result must still match the compile-time value
+                constexpr int expected_result = detail::sub<Value, OtherValue>::Value;
+                if constexpr (expected_result != detail::Dynamic)
+                {
+                    GALILEO_ASSERT(expected_result == Value,
+                                   "DimensionTpl: -= operation would change fixed dimension compile-time value");
+                }
+                GALILEO_ASSERT(new_runtime_value == Value,
+                               "DimensionTpl: -= result does not match fixed compile-time dimension");
+            }
+
+            runtime_value_ = new_runtime_value;
+            return *this;
+        }
+
+        // Scalar compound assignment operations
+        auto &operator+=(int scalar)
+        {
+            int new_runtime_value = value() + scalar;
+            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension scalar += resulted in negative runtime value");
+
+            if constexpr (IsFixed)
+            {
+                GALILEO_ASSERT(new_runtime_value == Value,
+                               "DimensionTpl: scalar += result does not match fixed compile-time dimension");
+            }
+
+            runtime_value_ = new_runtime_value;
+            return *this;
+        }
+
+        auto &operator-=(int scalar)
+        {
+            int new_runtime_value = value() - scalar;
+            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension scalar -= resulted in negative runtime value");
+
+            if constexpr (IsFixed)
+            {
+                GALILEO_ASSERT(new_runtime_value == Value,
+                               "DimensionTpl: scalar -= result does not match fixed compile-time dimension");
+            }
+
+            runtime_value_ = new_runtime_value;
+            return *this;
+        }
     }; // class Dimension
 
     // Maximum and minimum operations

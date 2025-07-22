@@ -268,26 +268,11 @@ namespace galileo
             std::cout << "node calc" << std::endl;
             auto nc_active_dim = get_contacts().get_nc_active_dim();
 
-            if constexpr (StateVectorType::RowsAtCompileTime == Eigen::Dynamic)
-            {
-                std::cout << "node calc dynamic" << std::endl;
-                const auto q = head(x, get_ps().get_nq_dim());
-                std::cout << "q: " << q.transpose() << std::endl;
-                const auto v = tail(x, get_ps().get_nv_dim());
-                std::cout << "v: " << v.transpose() << std::endl;
-                pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
-            }
-            else
-            {
-                std::cout << "node calc static" << std::endl;
-                const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNQ_t::Value> q =
-                    head(x, get_ps().get_nq_dim());
-                std::cout << "q: " << q.transpose() << std::endl;
-                const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, PS::DimNV_t::Value> v =
-                    tail(x, get_ps().get_nv_dim());
-                std::cout << "v: " << v.transpose() << std::endl;
-                pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
-            }
+            const auto q = head(x, get_ps().get_nq_dim());
+            std::cout << "q: " << q.transpose() << std::endl;
+            const auto v = tail(x, get_ps().get_nv_dim());
+            std::cout << "v: " << v.transpose() << std::endl;
+            pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
             std::cout << "computeAllTerms done" << std::endl;
 
             pinocchio::computeCentroidalMomentum(get_robot(), data.robot);
@@ -297,9 +282,9 @@ namespace galileo
             {
                 data.robot.M.diagonal() += armature_;
             }
-            get_actuation().calc(data.actuation, x.derived(), u.derived());
+            get_actuation().calc(data.actuation, x, u);
             std::cout << "actuation calc done" << std::endl;
-            get_contacts().calc(data.contacts, x.derived());
+            get_contacts().calc(data.contacts, x);
             std::cout << "contacts calc done" << std::endl;
             pinocchio::forwardDynamics(
                 get_robot(), data.robot, data.actuation.tau,
@@ -317,14 +302,14 @@ namespace galileo
             std::cout << "joint.a: " << data.joint.a.transpose() << std::endl;
             data.joint.tau = u;
             std::cout << "joint.tau: " << data.joint.tau.transpose() << std::endl;
-            get_costs().calc(data.costs, x.derived(), u.derived());
+            get_costs().calc(data.costs, x, u);
             std::cout << "costs calc done" << std::endl;
             data.L_accessor() = data.costs.L;
             std::cout << "L: " << data.L_accessor() << std::endl;
             if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
             {
                 // data.constraints.resize(this, data);
-                get_constraints().calc(data.constraints, x.derived(), u.derived());
+                get_constraints().calc(data.constraints, x, u);
                 std::cout << "constraints calc done" << std::endl;
             }
         }
@@ -348,12 +333,12 @@ namespace galileo
                 pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
             }
             pinocchio::computeCentroidalMomentum(get_robot(), data.robot);
-            get_costs().calc(data.costs, x.derived());
+            get_costs().calc(data.costs, x);
             data.L_accessor() = data.costs.L;
             if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
             {
                 // data.constraints.resize(this, data);
-                get_constraints().calc(data.constraints, x.derived());
+                get_constraints().calc(data.constraints, x);
             }
         }
 
@@ -379,8 +364,8 @@ namespace galileo
             pinocchio::getKKTContactDynamicMatrixInverse(
                 get_robot(), data.robot, topRows(data.contacts.Jc, nc_active_dim), data.Kinv);
 
-            get_actuation().calcDiff(data.actuation, x.derived(), u.derived());
-            get_contacts().calcDiff(data.contacts, x.derived());
+            get_actuation().calcDiff(data.actuation, x, u);
+            get_contacts().calcDiff(data.contacts, x);
 
             const Eigen::Block<MatrixNv_t> a_partial_dtau = topLeftCorner(data.Kinv, get_ps().get_nv_dim(), get_ps().get_nv_dim());
             const Eigen::Block<MatrixNvNc_t> a_partial_da = topRightCorner(data.Kinv, get_ps().get_nv_dim(), nc_active_dim);
@@ -413,10 +398,10 @@ namespace galileo
                 get_contacts().updateForceDiff(data.contacts, topRows(data.df_dx, nc_active_dim),
                                                topRows(data.df_du, nc_active_dim));
             }
-            get_costs().calcDiff(data.costs, x.derived(), u.derived());
+            get_costs().calcDiff(data.costs, x, u);
             if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
             {
-                get_constraints().calcDiff(data.constraints, x.derived(), u.derived());
+                get_constraints().calcDiff(data.constraints, x, u);
             }
         }
 
@@ -424,10 +409,10 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            get_costs().calcDiff(data.costs, x.derived());
+            get_costs().calcDiff(data.costs, x);
             if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
             {
-                get_constraints().calcDiff(data.constraints, x.derived());
+                get_constraints().calcDiff(data.constraints, x);
             }
         }
 
@@ -450,8 +435,8 @@ namespace galileo
             pinocchio::rnea(get_robot(), data.robot, q,
                             tail(data.tmp_xstatic, get_ps().get_nv_dim()),
                             tail(data.tmp_xstatic, get_ps().get_nv_dim()));
-            get_actuation().calc(data.actuation, data.tmp_xstatic, u.derived());
-            get_actuation().calcDiff(data.actuation, data.tmp_xstatic, u.derived());
+            get_actuation().calc(data.actuation, data.tmp_xstatic, u);
+            get_actuation().calcDiff(data.actuation, data.tmp_xstatic, u);
             get_contacts().calc(data.contacts, data.tmp_xstatic);
 
             // Allocates memory

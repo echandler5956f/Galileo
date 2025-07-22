@@ -25,14 +25,14 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
-            this->derived().calc(data, r.derived());
+            this->derived().calc(data, r);
         }
 
         template <typename ResidualVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
-            this->derived().calcDiff(data, r.derived());
+            this->derived().calcDiff(data, r);
         }
 
         Data_t createData() const

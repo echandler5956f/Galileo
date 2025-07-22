@@ -282,13 +282,13 @@ namespace galileo
         template <typename StateVector>
         void set_lb(const Eigen::MatrixBase<StateVector> &lb)
         {
-            lb_ = lb.derived();
+            lb_ = lb;
         }
 
         template <typename StateVector>
         void set_ub(const Eigen::MatrixBase<StateVector> &ub)
         {
-            ub_ = ub.derived();
+            ub_ = ub;
         }
 
         using Base::diff_dx;

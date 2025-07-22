@@ -267,7 +267,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     std::cout << "got data" << std::endl;
-                    m_i.model.calc(d_i, x.derived(), u.derived());
+                    m_i.model.calc(d_i, x, u);
                     std::cout << "cost active calc done" << std::endl;
                     data.L += m_i.weight * d_i.L();
                     std::cout << "data.L: " << data.L << std::endl;
@@ -293,7 +293,7 @@ namespace galileo
                 {
                     Data_t &d_i = it_d->second;
 
-                    m_i.model.calc(d_i, x.derived());
+                    m_i.model.calc(d_i, x);
                     data.L += m_i.weight * d_i.L();
                 }
             }
@@ -321,7 +321,7 @@ namespace galileo
                 {
                     Data_t &d_i = it_d->second;
 
-                    m_i.model.calcDiff(d_i, x.derived(), u.derived());
+                    m_i.model.calcDiff(d_i, x, u);
                     data.Lx += m_i.weight * d_i.Lx();
                     data.Lu += m_i.weight * d_i.Lu();
                     data.Lxx += m_i.weight * d_i.Lxx();
@@ -349,7 +349,7 @@ namespace galileo
                 {
                     Data_t &d_i = it_d->second;
 
-                    m_i.model.calcDiff(d_i, x.derived());
+                    m_i.model.calcDiff(d_i, x);
                     data.Lx += m_i.weight * d_i.Lx();
                     data.Lxx += m_i.weight * d_i.Lxx();
                 }

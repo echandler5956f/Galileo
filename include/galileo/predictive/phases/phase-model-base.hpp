@@ -24,7 +24,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateMatrixType> &xs,
                   const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
-            this->derived().calc(data, xs.derived(), ws.derived());
+            this->derived().calc(data, xs, ws);
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
@@ -32,7 +32,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateMatrixType> &xs,
                       const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
-            this->derived().calcDiff(data, xs.derived(), ws.derived());
+            this->derived().calcDiff(data, xs, ws);
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
@@ -40,7 +40,7 @@ namespace galileo
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
                          const int maxiter, const typename PS::NumScalar &tol) const
         {
-            this->derived().quasiStatic(data, xs.derived(), ws.derived(), maxiter, tol);
+            this->derived().quasiStatic(data, xs, ws, maxiter, tol);
         }
 
         template <typename DataCollector>

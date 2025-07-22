@@ -63,14 +63,14 @@ namespace galileo
         void calc(Data_t &data, const NumScalar &t,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            interpolator_.calc(t, w.reshaped(get_nu(), get_norder()), data.u.derived());
+            interpolator_.calc(t, w.reshaped(get_nu(), get_norder()), data.u);
         }
 
         template <typename ControlParamVectorType>
         void calcDiff(Data_t &data, const NumScalar &t,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            interpolator_.calcDiff(t, w.reshaped(get_nu(), get_norder()), data.du_dw.derived());
+            interpolator_.calcDiff(t, w.reshaped(get_nu(), get_norder()), data.du_dw);
         }
 
         template <typename ControlVectorType>

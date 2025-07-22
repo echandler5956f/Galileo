@@ -30,21 +30,21 @@ namespace galileo
         void calc(Data_t &data, const NumScalar t,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            this->derived().calc(data, t, w.derived());
+            this->derived().calc(data, t, w);
         }
 
         template <typename ControlParamVectorType>
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            this->derived().calcDiff(data, w.derived());
+            this->derived().calcDiff(data, w);
         }
 
         template <typename ControlVectorType>
         void params(Data_t &data, const NumScalar t,
                     const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            this->derived().params(data, t, u.derived());
+            this->derived().params(data, t, u);
         }
 
         template <typename ControlBoundVectorType, typename ControlParamBoundVectorType>
@@ -53,7 +53,7 @@ namespace galileo
                            const Eigen::MatrixBase<ControlParamBoundVectorType> &w_lb,
                            const Eigen::MatrixBase<ControlParamBoundVectorType> &w_ub) const
         {
-            this->derived().convertBounds(u_lb.derived(), u_ub.derived(), w_lb.derived(), w_ub.derived());
+            this->derived().convertBounds(u_lb, u_ub, w_lb, w_ub);
         }
 
         template <typename InputMatrixType, typename OutputMatrixType>
@@ -63,7 +63,7 @@ namespace galileo
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const
         {
-            this->derived().multiplyByJacobian(data, A.derived(), out.derived(), op);
+            this->derived().multiplyByJacobian(data, A, out, op);
         }
 
         template <typename InputMatrixType, typename OutputMatrixType>
@@ -73,7 +73,7 @@ namespace galileo
             Eigen::MatrixBase<OutputMatrixType> &out,
             const AssignmentOp op = setto) const
         {
-            this->derived().multiplyJacobianTransposeBy(data, A.derived(), out.derived(), op);
+            this->derived().multiplyJacobianTransposeBy(data, A, out, op);
         }
 
         Data_t createData() const

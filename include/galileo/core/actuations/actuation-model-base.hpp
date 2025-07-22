@@ -29,7 +29,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            this->derived().calc(data, x.derived(), u.derived());
+            this->derived().calc(data, x, u);
         }
 
         template <typename StateVectorType>
@@ -44,7 +44,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            this->derived().calcDiff(data, x.derived(), u.derived());
+            this->derived().calcDiff(data, x, u);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -59,7 +59,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            this->derived().commands(data, x.derived(), tau.derived());
+            this->derived().commands(data, x, tau);
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -67,7 +67,7 @@ namespace galileo
                              const Eigen::MatrixBase<StateVectorType> &x,
                              const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            this->derived().torqueTransform(data, x.derived(), u.derived());
+            this->derived().torqueTransform(data, x, u);
         }
 
         Data_t createData()

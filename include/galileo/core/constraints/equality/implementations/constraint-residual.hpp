@@ -135,7 +135,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            residual_.calc(data.residual, x.derived(), u.derived());
+            residual_.calc(data.residual, x, u);
             data.H = data.residual.R;
         }
 
@@ -143,7 +143,7 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            residual_.calc(data.residual, x.derived());
+            residual_.calc(data.residual, x);
             data.H = data.residual.R;
         }
 
@@ -152,7 +152,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            residual_.calcDiff(data.residual, x.derived(), u.derived());
+            residual_.calcDiff(data.residual, x, u);
             data.Hx = data.residual.Rx;
             data.Hu = data.residual.Ru;
         }
@@ -161,7 +161,7 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            residual_.calcDiff(data.residual, x.derived());
+            residual_.calcDiff(data.residual, x);
             data.Hx = data.residual.Rx;
             data.Hu = data.residual.Ru;
         }

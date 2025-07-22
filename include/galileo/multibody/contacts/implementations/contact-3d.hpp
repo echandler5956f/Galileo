@@ -215,8 +215,8 @@ namespace galileo
                           const Eigen::MatrixBase<Vector2Type> &gains)
             : Base(ps, id, type, DimNC_t()),
               robot_(ps.get_state().get_robot()),
-              xref_(xref.derived()),
-              gains_(gains.derived())
+              xref_(xref),
+              gains_(gains)
         {
         }
 

@@ -183,39 +183,22 @@ namespace galileo
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
             std::cout << "calc" << std::endl;
-            auto compute_dx = [&](const auto &v)
-            {
-                std::cout << "control calc" << std::endl;
-                control_.calc(data.control, NumScalar(0.), w.derived());
-                std::cout << "control calc done" << std::endl;
-                node_.calc(data.node, x.derived(), data.control.u);
-                std::cout << "node calc done" << std::endl;
-                const VectorNv_t &a = data.node.XAcc_accessor();
-                std::cout << "a: " << a.transpose() << std::endl;
-                head(data.dx, get_ps().get_nv_dim()).noalias() = v * period_ + a * period_squared_;
-                std::cout << "dx: " << data.dx.transpose() << std::endl;
-                tail(data.dx, get_ps().get_nv_dim()).noalias() = a * period_;
-                std::cout << "dx done" << std::endl;
-            };
-
-            if constexpr (StateVectorType::RowsAtCompileTime == Eigen::Dynamic)
-            {
-                std::cout << "calc dynamic" << std::endl;
-                const auto v = tail(x, get_ps().get_nv_dim());
-                std::cout << "v: " << v.transpose() << std::endl;
-                compute_dx(v);
-            }
-            else
-            {
-                std::cout << "calc static" << std::endl;
-                const Eigen::VectorBlock<const Eigen::Ref<const VectorNx_t>, DimNV_t::Value> v =
-                    tail(x, get_ps().get_nv_dim());
-                std::cout << "v: " << v.transpose() << std::endl;
-                compute_dx(v);
-            }
+            const auto v = tail(x, get_ps().get_nv_dim());
+            std::cout << "v: " << v.transpose() << std::endl;
+            std::cout << "control calc" << std::endl;
+            control_.calc(data.control, NumScalar(0.), w);
+            std::cout << "control calc done" << std::endl;
+            node_.calc(data.node, x, data.control.u);
+            std::cout << "node calc done" << std::endl;
+            const VectorNv_t &a = data.node.XAcc_accessor();
+            std::cout << "a: " << a.transpose() << std::endl;
+            head(data.dx, get_ps().get_nv_dim()).noalias() = v * period_ + a * period_squared_;
+            std::cout << "dx: " << data.dx.transpose() << std::endl;
+            tail(data.dx, get_ps().get_nv_dim()).noalias() = a * period_;
+            std::cout << "dx done" << std::endl;
 
             std::cout << "integrate" << std::endl;
-            get_state().integrate(x.derived(), data.dx, data.XNext);
+            get_state().integrate(x, data.dx, data.XNext);
             std::cout << "integrate done" << std::endl;
             data.L = period_ * data.node.L_accessor();
             std::cout << "L: " << data.L << std::endl;
@@ -229,7 +212,7 @@ namespace galileo
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            node_.calc(data.node, x.derived());
+            node_.calc(data.node, x);
             data.dx.setZero();
             data.XNext = x;
             data.L = data.node.L_accessor();
@@ -242,19 +225,19 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            control_.calc(data.control, NumScalar(0.), w.derived());
-            node_.calcDiff(data.node, x.derived(), data.control.u);
+            control_.calc(data.control, NumScalar(0.), w);
+            node_.calcDiff(data.node, x, data.control.u);
             const MatrixNvNdx_t &da_dx = data.node.XAccx_accessor();
             const MatrixNvNw_t &da_du = data.node.XAccu_accessor();
             control_.multiplyByJacobian(data.control, da_du, data.da_dw);
             topRows(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_squared_;
-            tail(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_;
+            bottomRows(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_;
             topRightCorner(data.XNextx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).diagonal().array() += VarScalar(period_);
             topRows(data.XNextw, get_ps().get_nv_dim()).noalias() = period_squared_ * data.da_dw;
-            tail(data.XNextw, get_ps().get_nv_dim()).noalias() = period_ * data.da_dw;
-            get_state().JintegrateTransport(x.derived(), data.dx, data.XNextx, second);
-            get_state().Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx, first, addto);
-            get_state().JintegrateTransport(x.derived(), data.dx, data.XNextw, second);
+            bottomRows(data.XNextw, get_ps().get_nv_dim()).noalias() = period_ * data.da_dw;
+            get_state().JintegrateTransport(x, data.dx, data.XNextx, second);
+            get_state().Jintegrate(x, data.dx, data.XNextx, data.XNextx, first, addto);
+            get_state().JintegrateTransport(x, data.dx, data.XNextw, second);
 
             data.Lx.noalias() = period_ * data.node.Lx_accessor();
             control_.multiplyJacobianTransposeBy(data.control, data.node.Lu_accessor(), data.Lw);
@@ -277,8 +260,8 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            node_.calcDiff(data.node, x.derived());
-            get_state().Jintegrate(x.derived(), data.dx, data.XNextx, data.XNextx);
+            node_.calcDiff(data.node, x);
+            get_state().Jintegrate(x, data.dx, data.XNextx, data.XNextx);
             data.Lx = data.node.Lx_accessor();
             data.Lxx = data.node.Lxx_accessor();
             data.Gx = data.node.Gx_accessor();
@@ -292,7 +275,7 @@ namespace galileo
                          const int maxiter, const NumScalar tol) const
         {
             data.control.u.setZero();
-            node_.quasiStatic(data.node, x.derived(), data.control.u, maxiter, tol);
+            node_.quasiStatic(data.node, x, data.control.u, maxiter, tol);
             control_.params(data.control, NumScalar(0.), data.control.u);
             w = data.control.w;
         }
