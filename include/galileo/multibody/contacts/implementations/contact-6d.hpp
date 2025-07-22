@@ -137,7 +137,10 @@ namespace galileo
               a0(model.get_nc()),
               da0_dx(model.get_nc(), model.get_ps().get_ndx()),
               dtau_dq(model.get_ps().get_nv(), model.get_ps().get_nv()),
+              rMf(SE3_t::Identity()),
+              lwaMl(SE3_t::Identity()),
               v(Motion_t::Zero()),
+              a0_local(model.get_nc()),
               f_local(Force_t::Zero()),
               da0_local_dx(model.get_nc(), model.get_ps().get_ndx()),
               fJf(6, model.get_ps().get_nv()),
@@ -282,7 +285,7 @@ namespace galileo
                 }
                 data.a0.noalias() = data.lwaMl.act(data.a0_local).toVector();
 
-                const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
+                const auto oRf = data.robot->oMf[get_id()].rotation();
                 pinocchio::skew(head(data.a0, 3), data.av_skew);
                 pinocchio::skew(tail(data.a0, 3), data.aw_skew);
                 data.av_world_skew.noalias() = data.av_skew * oRf;

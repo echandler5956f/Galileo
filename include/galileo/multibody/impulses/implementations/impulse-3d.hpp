@@ -128,6 +128,7 @@ namespace galileo
               f(Force_t::Zero()),
               fext(Force_t::Zero()),
               df_dx(model.get_nc(), model.get_ps().get_ndx()),
+              df_du(model.get_nc(), model.get_ps().get_nu()),
               fXj(jMf.inverse().toActionMatrix()),
               dv0_dq(model.get_nc(), model.get_ps().get_nv()),
               dtau_dq(model.get_ps().get_nv(), model.get_ps().get_nv()),
@@ -137,13 +138,11 @@ namespace galileo
               fJf(6, model.get_ps().get_nv()),
               v_partial_dq(6, model.get_ps().get_nv()),
               v_partial_dv(6, model.get_ps().get_nv()),
-              v0_skew(model.get_nc(), model.get_nc()),
-              v0_world_skew(model.get_nc(), model.get_nc()),
-              f_skew(model.get_nc(), model.get_nc()),
               fJf_df(model.get_nc(), model.get_ps().get_nv())
         {
             Jc.setZero();
             df_dx.setZero();
+            df_du.setZero();
             dv0_dq.setZero();
             dtau_dq.setZero();
             v0.setZero();
