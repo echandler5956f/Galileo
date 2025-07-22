@@ -398,7 +398,7 @@ namespace galileo
                             segment(force, nc_accum_i, nc_dim_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            get_state().get_robot().frames[d_i.frame()].parent;
+                            get_state().get_robot().frames[d_i.frame()].parentJoint;
                         data.fext[joint] = d_i.fext();
                     }
                     else
@@ -423,7 +423,7 @@ namespace galileo
                             segment(force, nc_accum_i, nc_dim_i);
                         m_i.model.updateForce(d_i, force_i);
                         const pinocchio::JointIndex joint =
-                            get_state().get_robot().frames[d_i.frame()].parent;
+                            get_state().get_robot().frames[d_i.frame()].parentJoint;
                         data.fext[joint] = d_i.fext();
                         nc_accum_i = nc_accum_i + nc_dim_i;
                     }

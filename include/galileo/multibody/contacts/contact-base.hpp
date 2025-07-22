@@ -134,6 +134,7 @@ namespace galileo
         }
 
         inline ContactDataBase(const ContactDataBase &clone)
+            : Base(clone)
         {
             *this = clone;
         }

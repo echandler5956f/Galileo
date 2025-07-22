@@ -245,7 +245,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const pinocchio::JointIndex joint =
-                get_robot().frames[data.frame].parent;
+                get_robot().frames[data.frame].parentJoint;
             pinocchio::getJointAccelerationDerivatives(
                 get_robot(), *data.robot, joint, pinocchio::LOCAL,
                 data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
