@@ -211,17 +211,17 @@ namespace galileo
             return nr_dim_.value();
         }
 
-        bool get_q_dependent() const
+        static constexpr bool get_q_dependent()
         {
             return QDependent;
         }
 
-        bool get_v_dependent() const
+        static constexpr bool get_v_dependent()
         {
             return VDependent;
         }
 
-        bool get_u_dependent() const
+        static constexpr bool get_u_dependent()
         {
             return UDependent;
         }

@@ -172,7 +172,7 @@ namespace galileo
                     name, Item_t(name, model, active)));
             if (ret.second == false)
             {
-                std::cout << "Warning: we couldn't add the " << name
+                std::cerr << "Warning: we couldn't add the " << name
                           << " constraint item, it already existed." << std::endl;
             }
             else if (active)
@@ -197,7 +197,7 @@ namespace galileo
             }
             else
             {
-                std::cout << "Warning: we couldn't remove the " << name
+                std::cerr << "Warning: we couldn't remove the " << name
                           << " constraint item, it doesn't exist." << std::endl;
             }
         }
@@ -224,7 +224,7 @@ namespace galileo
             }
             else
             {
-                std::cout << "Warning: we couldn't change the status of the " << name
+                std::cerr << "Warning: we couldn't change the status of the " << name
                           << " constraint item, it doesn't exist." << std::endl;
             }
         }
@@ -363,7 +363,7 @@ namespace galileo
             }
             else
             {
-                std::cout << "Warning: we couldn't get the status of the " << name
+                std::cerr << "Warning: we couldn't get the status of the " << name
                           << " constraint item, it doesn't exist." << std::endl;
                 return false;
             }

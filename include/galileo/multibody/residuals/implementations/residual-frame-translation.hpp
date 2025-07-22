@@ -146,18 +146,8 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            std::cout << "residual frame translation calc" << std::endl;
-            std::cout << "frame_id_: " << frame_id_ << std::endl;
-            // print if data.robot is null
-            if (data.robot == nullptr)
-            {
-                std::cout << "data.robot is null" << std::endl;
-            }
-
             pinocchio::updateFramePlacement(get_ps().get_state().get_robot(), *data.robot, frame_id_);
-            std::cout << "updateFramePlacement done" << std::endl;
             data.R = data.robot->oMf[frame_id_].translation() - x_ref_;
-            std::cout << "data.R: " << data.R.transpose() << std::endl;
         }
 
         template <typename StateVectorType, typename ControlVectorType>

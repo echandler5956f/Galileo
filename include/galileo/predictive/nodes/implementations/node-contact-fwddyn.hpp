@@ -265,52 +265,35 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            std::cout << "node calc" << std::endl;
             auto nc_active_dim = get_contacts().get_nc_active_dim();
 
             const auto q = head(x, get_ps().get_nq_dim());
-            std::cout << "q: " << q.transpose() << std::endl;
             const auto v = tail(x, get_ps().get_nv_dim());
-            std::cout << "v: " << v.transpose() << std::endl;
             pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
-            std::cout << "computeAllTerms done" << std::endl;
-
             pinocchio::computeCentroidalMomentum(get_robot(), data.robot);
-            std::cout << "computeCentroidalMomentum done" << std::endl;
 
             if (!with_armature_)
             {
                 data.robot.M.diagonal() += armature_;
             }
             get_actuation().calc(data.actuation, x, u);
-            std::cout << "actuation calc done" << std::endl;
             get_contacts().calc(data.contacts, x);
-            std::cout << "contacts calc done" << std::endl;
             pinocchio::forwardDynamics(
                 get_robot(), data.robot, data.actuation.tau,
                 topRows(data.contacts.Jc, nc_active_dim),
                 head(data.contacts.a0, nc_active_dim),
                 JMinvJt_damping_);
-            std::cout << "forwardDynamics done" << std::endl;
             data.XAcc = data.robot.ddq;
-            std::cout << "XAcc: " << data.XAcc.transpose() << std::endl;
             get_contacts().updateAcceleration(data.contacts, data.robot.ddq);
-            std::cout << "updateAcceleration done" << std::endl;
             get_contacts().updateForce(data.contacts, data.robot.lambda_c);
-            std::cout << "updateForce done" << std::endl;
             data.joint.a = data.robot.ddq;
-            std::cout << "joint.a: " << data.joint.a.transpose() << std::endl;
             data.joint.tau = u;
-            std::cout << "joint.tau: " << data.joint.tau.transpose() << std::endl;
             get_costs().calc(data.costs, x, u);
-            std::cout << "costs calc done" << std::endl;
             data.L_accessor() = data.costs.L;
-            std::cout << "L: " << data.L_accessor() << std::endl;
             if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
             {
                 // data.constraints.resize(this, data);
                 get_constraints().calc(data.constraints, x, u);
-                std::cout << "constraints calc done" << std::endl;
             }
         }
 
