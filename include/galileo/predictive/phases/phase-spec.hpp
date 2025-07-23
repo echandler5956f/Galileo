@@ -34,8 +34,8 @@
     using PhaseData_t = typename PhaseSpec::PhaseData_t;                           \
     using PhaseDataVector_t = typename PhaseSpec::PhaseDataVector_t;
 
-#define GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PhaseSpec) \
-    GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(PhaseSpec::RS);
+#define GALILEO_PHASE_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec) \
+    GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec::RS);
 
 #define GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec) \
     GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(PhaseSpec::RS);
@@ -115,7 +115,7 @@
 
 #define GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec)           \
     GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec);                \
-    GALILEO_PHASE_SPEC_PINOCCIO_TYPES_TYPEDEF(PhaseSpec);      \
+    GALILEO_PHASE_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec);      \
     GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec);             \
     GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec);           \
     GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec);          \

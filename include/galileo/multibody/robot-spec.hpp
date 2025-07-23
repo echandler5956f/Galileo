@@ -17,7 +17,7 @@
     using ActuationModel_t = typename RobotSpec::ActuationModel_t; \
     using ActuationData_t = typename RobotSpec::ActuationData_t;
 
-#define GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(RobotSpec)       \
+#define GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(RobotSpec)       \
     using RobotModel_t = typename RobotSpec::RobotModel_t;         \
     using RobotData_t = typename RobotSpec::RobotData_t;           \
     using FrameIndex_t = typename RobotSpec::FrameIndex_t;         \
@@ -80,7 +80,7 @@
 
 #define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)      \
     GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec);           \
-    GALILEO_ROBOT_SPEC_PINOCCIO_TYPES_TYPEDEF(RobotSpec); \
+    GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(RobotSpec); \
     GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec);        \
     GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec);      \
     GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec);
