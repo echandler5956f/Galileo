@@ -51,8 +51,6 @@ namespace galileo
         : public SegmentERKDataBase<SegmentERKDataEulerTpl<PhaseSpec>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = SegmentERKEulerTpl<PS>;
@@ -155,8 +153,6 @@ namespace galileo
         : public SegmentERKModelBase<SegmentERKModelEulerTpl<PhaseSpec>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);

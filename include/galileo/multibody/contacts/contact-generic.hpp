@@ -75,8 +75,6 @@ namespace galileo
                             ContactCollectionTpl<PhaseSpec>::ContactDataVariant_t
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
@@ -204,8 +202,6 @@ namespace galileo
                              ContactCollectionTpl<PhaseSpec>::ContactModelVariant_t
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);

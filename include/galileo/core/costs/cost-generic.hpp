@@ -65,8 +65,6 @@ namespace galileo
         : public CostDataBase<CostDataTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
           CostCollectionTpl<PhaseSpec>::CostDataVariant_t
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = CostTpl<PS, CostCollectionTpl>;
@@ -150,8 +148,6 @@ namespace galileo
         : public CostModelBase<CostModelTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
           CostCollectionTpl<PhaseSpec>::CostModelVariant_t
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = CostTpl<PS, CostCollectionTpl>;

@@ -12,8 +12,6 @@ namespace galileo
         : public StateBase<StateEuclideanTpl<RobotSpec>, RobotSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using RS = RobotSpec;
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);

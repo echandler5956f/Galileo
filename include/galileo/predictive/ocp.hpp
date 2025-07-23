@@ -12,8 +12,6 @@ namespace galileo
     class OptimalControlProblem
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using VarScalar = _VarScalar;
         using NumScalar = _NumScalar;
         static constexpr int Options = _Options;

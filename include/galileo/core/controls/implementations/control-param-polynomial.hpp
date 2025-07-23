@@ -39,8 +39,6 @@ namespace galileo
         : public ControlParamModelBase<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;

@@ -62,8 +62,6 @@ namespace galileo
         : public ActivationDataBase<ActivationDataWeightedQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
@@ -100,8 +98,6 @@ namespace galileo
         : public ActivationModelBase<ActivationModelWeightedQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;

@@ -19,8 +19,6 @@ namespace galileo
         : public internal::CRTP<Derived>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = typename traits<Derived>::Meta_t;

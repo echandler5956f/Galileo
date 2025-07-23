@@ -7,8 +7,6 @@ namespace galileo
     template <typename PhaseSpec>
     struct JointDataTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         typename PS::VectorNua_t tau;        // Joint torques
@@ -40,8 +38,6 @@ namespace galileo
     template <typename Derived, typename PhaseSpec>
     struct JointDataMixinTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         JointDataTpl<PS> *joint;

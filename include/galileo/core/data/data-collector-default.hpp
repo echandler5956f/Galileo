@@ -18,8 +18,6 @@ namespace galileo
                                      public JointDataMixinTpl<DataCollectorDefaultTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
                                      public ContactDataMixinTpl<DataCollectorDefaultTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec, ContactCollectionTpl>
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using ContactManagerMeta_t = ContactManagerTpl<PS, ContactCollectionTpl>;

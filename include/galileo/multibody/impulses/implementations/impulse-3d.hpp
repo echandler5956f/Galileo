@@ -61,8 +61,6 @@ namespace galileo
         : public ImpulseDataBase<ImpulseData3dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
@@ -163,8 +161,6 @@ namespace galileo
         : public ImpulseModelBase<ImpulseModel3dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);

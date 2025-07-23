@@ -74,8 +74,6 @@ namespace galileo
         : public CostDataBase<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
@@ -137,8 +135,6 @@ namespace galileo
         : public CostModelBase<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;

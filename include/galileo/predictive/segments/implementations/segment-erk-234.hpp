@@ -17,8 +17,6 @@ namespace galileo
     struct SegmentERKData234Tpl : public SegmentERKDataBase<SegmentERKData234Tpl<PhaseSpec, _RKType>>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         typename PS::NodeDataVector_t nodes;
@@ -74,8 +72,6 @@ namespace galileo
     class SegmentERKModel234Tpl : public SegmentERKModelBase<SegmentERKModel234Tpl<PhaseSpec, _RKType>>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         template <typename StateVectorType, typename ControlParamVectorType>

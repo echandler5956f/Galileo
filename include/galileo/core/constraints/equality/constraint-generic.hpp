@@ -64,8 +64,6 @@ namespace galileo
         : public ConstraintDataBase<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
           ConstraintCollectionTpl<PhaseSpec>::ConstraintDataVariant_t
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = ConstraintTpl<PS, ConstraintCollectionTpl>;
@@ -131,8 +129,6 @@ namespace galileo
         : public ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
           ConstraintCollectionTpl<PhaseSpec>::ConstraintModelVariant_t
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = ConstraintTpl<PS, ConstraintCollectionTpl>;

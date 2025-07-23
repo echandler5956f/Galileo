@@ -20,8 +20,6 @@ namespace galileo
               template <typename PS> class ConstraintCollectionTpl>
     struct ConstraintItemTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = ConstraintManagerTpl<PS, ConstraintCollectionTpl>;
@@ -93,8 +91,6 @@ namespace galileo
     class ConstraintDataManagerTpl
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = ConstraintManagerTpl<PS, ConstraintCollectionTpl>;
@@ -142,8 +138,6 @@ namespace galileo
     class ConstraintModelManagerTpl
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = ConstraintManagerTpl<PS, ConstraintCollectionTpl>;

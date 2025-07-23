@@ -58,8 +58,6 @@ namespace galileo
     struct PhaseDataTpl : public PhaseDataBase<PhaseDataTpl<PhaseSpec, PhaseCollectionTpl>, PhaseSpec>,
                           PhaseCollectionTpl<PhaseSpec>::DataVariant_t
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
@@ -111,8 +109,6 @@ namespace galileo
     struct PhaseModelTpl : public PhaseModelBase<PhaseModelTpl<PhaseSpec, PhaseCollectionTpl>, PhaseSpec>,
                            PhaseCollectionTpl<PhaseSpec>::ModelVariant_t
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;

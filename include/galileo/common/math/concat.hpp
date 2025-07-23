@@ -10,8 +10,6 @@ namespace galileo
     struct VConMat
     {
     private:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         static constexpr int R1 = Eigen::MatrixBase<M1>::RowsAtCompileTime;
         static constexpr int C1 = Eigen::MatrixBase<M1>::ColsAtCompileTime;
         static constexpr int R2 = Eigen::MatrixBase<M2>::RowsAtCompileTime;
@@ -39,8 +37,6 @@ namespace galileo
     struct VConVec
     {
     private:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         static constexpr int R1 = Eigen::MatrixBase<V1>::RowsAtCompileTime;
         static constexpr int R2 = Eigen::MatrixBase<V2>::RowsAtCompileTime;
 

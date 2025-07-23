@@ -35,8 +35,6 @@ namespace galileo
         : public ActuationModelBase<ActuationModelFloatingBaseTpl<RobotSpec>, RobotSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using RS = RobotSpec;
 
         using Meta_t = typename RS::ActuationMeta_t;

@@ -24,8 +24,6 @@ namespace galileo
         : public internal::CRTP<Derived>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using RS = RobotSpec;
 
         GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);

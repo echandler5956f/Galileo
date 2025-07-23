@@ -10,8 +10,6 @@ namespace galileo
     struct DataCollectorBase
         : public internal::CRTP<Derived>
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
     protected:
         inline DataCollectorBase()
         {

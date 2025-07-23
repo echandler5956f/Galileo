@@ -61,8 +61,6 @@ namespace galileo
         : public ForceDataBase<ContactDataBase<Derived, PhaseSpec>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = typename traits<Derived>::Meta_t;
@@ -151,8 +149,6 @@ namespace galileo
         : public internal::CRTP<Derived>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         // ContactModelBase is one level up in the hierarchy from ContactDataBase

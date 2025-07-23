@@ -26,8 +26,6 @@ namespace galileo
               template <typename PS> class ImpulseCollectionTpl>
     struct ImpulseItemTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = ImpulseManagerTpl<PS, ImpulseCollectionTpl>;
@@ -101,8 +99,6 @@ namespace galileo
     class ImpulseDataManagerTpl
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = ImpulseManagerTpl<PS, ImpulseCollectionTpl>;
@@ -164,8 +160,6 @@ namespace galileo
     class ImpulseModelManagerTpl
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);

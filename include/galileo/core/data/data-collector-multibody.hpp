@@ -8,8 +8,6 @@ namespace galileo
     template <typename Derived, typename PhaseSpec>
     struct MultibodyDataMixinTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using RobotData_t = typename PS::RobotData_t;

@@ -64,8 +64,6 @@ namespace galileo
         : public ConstraintDataBase<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl>;
@@ -109,8 +107,6 @@ namespace galileo
         : public ConstraintModelBase<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl>;

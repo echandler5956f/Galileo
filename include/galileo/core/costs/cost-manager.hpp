@@ -23,8 +23,6 @@ namespace galileo
               template <typename PS> class CostCollectionTpl>
     struct CostItemTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = CostManagerTpl<PS, CostCollectionTpl>;
@@ -100,8 +98,6 @@ namespace galileo
     class CostDataManagerTpl
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = CostManagerTpl<PS, CostCollectionTpl>;
@@ -157,8 +153,6 @@ namespace galileo
     class CostModelManagerTpl
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using MetaManager_t = CostManagerTpl<PS, CostCollectionTpl>;

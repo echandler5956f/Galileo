@@ -12,8 +12,6 @@ namespace galileo
               template <typename PS> class ContactCollectionTpl>
     struct ContactDataMixinTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         using ContactManagerMeta_t = ContactManagerTpl<PS, ContactCollectionTpl>;

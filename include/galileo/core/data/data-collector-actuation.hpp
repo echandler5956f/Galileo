@@ -10,8 +10,6 @@ namespace galileo
     template <typename Derived, typename PhaseSpec>
     struct ActuationDataMixinTpl
     {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
         using RS = typename PS::RS;
 

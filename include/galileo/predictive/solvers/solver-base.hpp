@@ -32,8 +32,6 @@ namespace galileo
     class SolverBase : public internal::CRTP<Derived>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using SolverDerived = typename traits<Derived>::SolverDerived;
         GALILEO_SOLVER_BASIC_TYPEDEF(SolverDerived);
         GALILEO_SOLVER_TYPEDEF(SolverDerived);

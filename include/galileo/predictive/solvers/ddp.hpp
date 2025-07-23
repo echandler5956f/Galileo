@@ -34,8 +34,6 @@ namespace galileo
     class SolverDDP : SolverBase<SolverDDP<_VarScalar, _NumScalar, _Options, _FeasibilityNorm, PhaseCollectionTpl>>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using SolverDerived = SolverDDP<_VarScalar, _NumScalar, _Options, _FeasibilityNorm, PhaseCollectionTpl>;
         GALILEO_SOLVER_BASIC_TYPEDEF(SolverDerived);
         GALILEO_SOLVER_TYPEDEF(SolverDerived);

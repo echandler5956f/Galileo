@@ -65,8 +65,6 @@ namespace galileo
         : public ResidualDataBase<ResidualDataFrameTranslationTpl<PhaseSpec>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
@@ -119,8 +117,6 @@ namespace galileo
         : public ResidualModelBase<ResidualModelFrameTranslationTpl<PhaseSpec>, PhaseSpec>
     {
     public:
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
