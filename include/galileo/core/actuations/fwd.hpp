@@ -9,6 +9,9 @@ namespace galileo
     template <typename RobotSpec>
     class ActuationModelFloatingBaseTpl;
 
+    template <typename RobotSpec>
+    class ActuationModelFullTpl;
+
 } // namespace galileo
 
 #endif // __galileo_core_actuations_fwd_hpp__
