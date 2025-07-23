@@ -263,7 +263,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            auto nc_active_dim = get_contacts().get_nc_active_dim();
+            const auto nc_dim = get_contacts().get_nc_active_dim();
 
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
@@ -278,8 +278,8 @@ namespace galileo
             get_contacts().calc(data.contacts, x);
             pinocchio::forwardDynamics(
                 get_robot(), data.robot, data.actuation.tau,
-                topRows(data.contacts.Jc, nc_active_dim),
-                head(data.contacts.a0, nc_active_dim),
+                topRows(data.contacts.Jc, nc_dim),
+                head(data.contacts.a0, nc_dim),
                 JMinvJt_damping_);
             data.XAcc = data.robot.ddq;
             get_contacts().updateAcceleration(data.contacts, data.robot.ddq);
@@ -317,7 +317,8 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            auto nc_active_dim = get_contacts().get_nc_active_dim();
+            const auto nv_dim = get_ps().get_nv_dim();
+            const auto nc_dim = get_contacts().get_nc_active_dim();
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
 
@@ -325,24 +326,24 @@ namespace galileo
             // We resize the Kinv matrix because Eigen cannot call block operations
             // recursively: https://eigen.tuxfamily.org/bz/show_bug.cgi?id=408. Therefore,
             // it is not possible to pass data.Kinv.topLeftCorner(nv + nc, nv + nc)
-            data.Kinv.resize(get_ps().get_nv() + nc_active_dim.value(), get_ps().get_nv() + nc_active_dim.value());
+            data.Kinv.resize(get_ps().get_nv() + nc_dim.value(), nv_dim.value() + nc_dim.value());
             pinocchio::computeRNEADerivatives(get_robot(), data.robot, q, v, data.XAcc,
                                               data.contacts.fext);
             get_contacts().updateRneaDiff(data.contacts, data.robot);
             pinocchio::getKKTContactDynamicMatrixInverse(
-                get_robot(), data.robot, topRows(data.contacts.Jc, nc_active_dim), data.Kinv);
+                get_robot(), data.robot, topRows(data.contacts.Jc, nc_dim), data.Kinv);
 
             get_actuation().calcDiff(data.actuation, x, u);
             get_contacts().calcDiff(data.contacts, x);
 
-            const auto a_partial_dtau = topLeftCorner(data.Kinv, get_ps().get_nv_dim(), get_ps().get_nv_dim());
-            const auto a_partial_da = topRightCorner(data.Kinv, get_ps().get_nv_dim(), nc_active_dim);
-            const auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_active_dim, get_ps().get_nv_dim());
-            const auto f_partial_da = bottomRightCorner(data.Kinv, nc_active_dim, nc_active_dim);
+            const auto a_partial_dtau = topLeftCorner(data.Kinv, nv_dim, nv_dim);
+            const auto a_partial_da = topRightCorner(data.Kinv, nv_dim, nc_dim);
+            const auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_dim, nv_dim);
+            const auto f_partial_da = bottomRightCorner(data.Kinv, nc_dim, nc_dim);
 
-            leftCols(data.XAccx, get_ps().get_nv_dim()).noalias() = -a_partial_dtau * data.robot.dtau_dq;
-            rightCols(data.XAccx, get_ps().get_nv_dim()).noalias() = -a_partial_dtau * data.robot.dtau_dv;
-            data.XAccx.noalias() -= a_partial_da * topRows(data.contacts.da0_dx, nc_active_dim);
+            leftCols(data.XAccx, nv_dim).noalias() = -a_partial_dtau * data.robot.dtau_dq;
+            rightCols(data.XAccx, nv_dim).noalias() = -a_partial_dtau * data.robot.dtau_dv;
+            data.XAccx.noalias() -= a_partial_da * topRows(data.contacts.da0_dx, nc_dim);
             data.XAccx.noalias() += a_partial_dtau * data.actuation.dtau_dx;
             data.XAccu.noalias() = a_partial_dtau * data.actuation.dtau_du;
             data.joint.da_dx = data.XAccx;
@@ -351,20 +352,20 @@ namespace galileo
             // Computing the cost derivatives
             if (enable_force_)
             {
-                topLeftCorner(data.df_dx, nc_active_dim, get_ps().get_nv_dim()).noalias() =
+                topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() =
                     f_partial_dtau * data.robot.dtau_dq;
-                topRightCorner(data.df_dx, nc_active_dim, get_ps().get_nv_dim()).noalias() =
+                topRightCorner(data.df_dx, nc_dim, nv_dim).noalias() =
                     f_partial_dtau * data.robot.dtau_dv;
-                topRows(data.df_dx, nc_active_dim).noalias() +=
-                    f_partial_da * topRows(data.contacts.da0_dx, nc_active_dim);
-                topRows(data.df_dx, nc_active_dim).noalias() -=
+                topRows(data.df_dx, nc_dim).noalias() +=
+                    f_partial_da * topRows(data.contacts.da0_dx, nc_dim);
+                topRows(data.df_dx, nc_dim).noalias() -=
                     f_partial_dtau * data.actuation.dtau_dx;
-                topRows(data.df_du, nc_active_dim).noalias() =
+                topRows(data.df_du, nc_dim).noalias() =
                     -f_partial_dtau * data.actuation.dtau_du;
                 get_contacts().updateAccelerationDiff(data.contacts,
-                                                      bottomRows(data.XAccx, get_ps().get_nv_dim()));
-                get_contacts().updateForceDiff(data.contacts, topRows(data.df_dx, nc_active_dim),
-                                               topRows(data.df_du, nc_active_dim));
+                                                      bottomRows(data.XAccx, nv_dim));
+                get_contacts().updateForceDiff(data.contacts, topRows(data.df_dx, nc_dim),
+                                               topRows(data.df_du, nc_dim));
             }
             get_costs().calcDiff(data.costs, x, u);
             if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
@@ -389,28 +390,29 @@ namespace galileo
                          Eigen::MatrixBase<ControlVectorType> &u,
                          const int maxiter, const NumScalar tol) const
         {
+            const auto nv_dim = get_ps().get_nv_dim();
+            const auto nc_dim = get_contacts().get_nc_active_dim();
             const auto q = head(x, get_ps().get_nq_dim());
-            auto nc_active_dim = get_contacts().get_nc_active_dim();
 
             head(data.tmp_xstatic, get_ps().get_nq_dim()) = q;
-            tail(data.tmp_xstatic, get_ps().get_nv_dim()).setZero();
+            tail(data.tmp_xstatic, nv_dim).setZero();
             u.setZero();
 
             pinocchio::computeAllTerms(get_robot(), data.robot, q,
-                                       tail(data.tmp_xstatic, get_ps().get_nv_dim()));
+                                       tail(data.tmp_xstatic, nv_dim));
             pinocchio::computeJointJacobians(get_robot(), data.robot, q);
             pinocchio::rnea(get_robot(), data.robot, q,
-                            tail(data.tmp_xstatic, get_ps().get_nv_dim()),
-                            tail(data.tmp_xstatic, get_ps().get_nv_dim()));
+                            tail(data.tmp_xstatic, nv_dim),
+                            tail(data.tmp_xstatic, nv_dim));
             get_actuation().calc(data.actuation, data.tmp_xstatic, u);
             get_actuation().calcDiff(data.actuation, data.tmp_xstatic, u);
             get_contacts().calc(data.contacts, data.tmp_xstatic);
 
             // Allocates memory
-            data.tmp_Jstatic.conservativeResize(get_ps().get_nv(), get_ps().get_nu() + nc_active_dim.value());
-            data.tmp_Jstatic.leftCols(get_ps().get_nu()) = data.actuation.dtau_du;
-            rightCols(data.tmp_Jstatic, nc_active_dim) =
-                topRows(data.contacts.Jc, nc_active_dim).transpose();
+            data.tmp_Jstatic.conservativeResize(get_ps().get_nv(), get_ps().get_nu() + nc_dim.value());
+            leftCols(data.tmp_Jstatic, get_ps().get_nu_dim()) = data.actuation.dtau_du;
+            rightCols(data.tmp_Jstatic, nc_dim) =
+                topRows(data.contacts.Jc, nc_dim).transpose();
 
             u.noalias() = head(pseudoInverse(data.tmp_Jstatic) * data.robot.tau, get_ps().get_nu_dim());
             data.robot.tau.setZero();

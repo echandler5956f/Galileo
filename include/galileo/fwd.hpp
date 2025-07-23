@@ -15,6 +15,7 @@ namespace galileo
 #include <memory>
 #include <type_traits>
 
+#include "galileo/common/meta/concepts.hpp"
 #include "galileo/common/meta/dimension.hpp"
 #include "galileo/common/meta/eigen.hpp"
 #include "galileo/common/meta/macros.hpp"

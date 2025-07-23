@@ -52,73 +52,57 @@ namespace galileo
             xout = x + dx;
         }
 
-        template <typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc = BOTH,
+                  typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
         void Jdiff(const Eigen::MatrixBase<StateVector1> &x0,
                    const Eigen::MatrixBase<StateVector2> &x1,
-                   Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond,
-                   const Jcomponent firstsecond = both) const
+                   Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            if (firstsecond == first || firstsecond == both)
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
                 Jfirst.setZero();
                 Jfirst.diagonal() = VectorNdx_t::Constant(get_ndx(), VarScalar(-1.));
             }
-            if (firstsecond == second || firstsecond == both)
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
             {
                 Jsecond.setZero();
                 Jsecond.diagonal() = VectorNdx_t::Constant(get_ndx(), VarScalar(1.));
             }
         }
 
-        template <typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc = BOTH, AssignmentOp op = SETTO,
+                  typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
         void Jintegrate(const Eigen::MatrixBase<StateVector> &x,
                         const Eigen::MatrixBase<StateTangentVector> &dx,
                         Eigen::MatrixBase<JMatrix1> &Jfirst,
-                        Eigen::MatrixBase<JMatrix2> &Jsecond,
-                        const Jcomponent firstsecond = both,
-                        const AssignmentOp op = setto) const
+                        Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            if (firstsecond == first || firstsecond == both)
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
-                switch (op)
-                {
-                case setto:
+                if constexpr (IsSetTo<op>)
                     Jfirst.diagonal().array() = VarScalar(1.);
-                    break;
-                case addto:
+                else if constexpr (IsAddTo<op>)
                     Jfirst.diagonal().array() += VarScalar(1.);
-                    break;
-                case rmfrom:
+                else if constexpr (IsRmFrom<op>)
                     Jfirst.diagonal().array() -= VarScalar(1.);
-                    break;
-                default:
-                    break;
-                }
             }
-            if (firstsecond == second || firstsecond == both)
+
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
             {
-                switch (op)
-                {
-                case setto:
+                if constexpr (IsSetTo<op>)
                     Jsecond.diagonal().array() = VarScalar(1.);
-                    break;
-                case addto:
+                else if constexpr (IsAddTo<op>)
                     Jsecond.diagonal().array() += VarScalar(1.);
-                    break;
-                case rmfrom:
+                else if constexpr (IsRmFrom<op>)
                     Jsecond.diagonal().array() -= VarScalar(1.);
-                    break;
-                default:
-                    break;
-                }
             }
         }
 
-        template <typename StateVector, typename StateTangentVector, typename JMatrix>
+        template <Jcomponent jc,
+                  typename StateVector, typename StateTangentVector, typename JMatrix>
         void JintegrateTransport(const Eigen::MatrixBase<StateVector> &x,
                                  const Eigen::MatrixBase<StateTangentVector> &dx,
-                                 Eigen::MatrixBase<JMatrix> &Jin,
-                                 const Jcomponent firstsecond) const
+                                 Eigen::MatrixBase<JMatrix> &Jin) const
         {
             // Nothing to do
         }

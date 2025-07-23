@@ -7,18 +7,6 @@
 namespace galileo
 {
 
-    enum Jcomponent
-    {
-        both = 0,
-        first = 1,
-        second = 2
-    }; // enum Jcomponent
-
-    inline bool is_a_Jcomponent(Jcomponent firstsecond)
-    {
-        return (firstsecond == first || firstsecond == second || firstsecond == both);
-    }
-
     template <typename Derived, typename RobotSpec>
     class StateBase
         : public internal::CRTP<Derived>
@@ -131,16 +119,15 @@ namespace galileo
          * the previous state point (size `ndx`\f$\times\f$`ndx`)
          * @param[out] Jsecond     Jacobian of the difference operation relative to
          * the current state point (size `ndx`\f$\times\f$`ndx`)
-         * @param[in] firstsecond  Argument (either x0 and / or x1) with respect to
-         * which the differentiation is performed.
          */
-        template <typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc,
+                  typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
         void Jdiff(const Eigen::MatrixBase<StateVector1> &x0,
                    const Eigen::MatrixBase<StateVector2> &x1,
-                   Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond,
-                   const Jcomponent firstsecond = both) const
+                   Eigen::MatrixBase<JMatrix1> &Jfirst,
+                   Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            this->derived().Jdiff(x0, x1, Jfirst, Jsecond, firstsecond);
+            this->derived().template Jdiff<jc>(x0, x1, Jfirst, Jsecond);
         }
 
         /**
@@ -177,20 +164,15 @@ namespace galileo
          * the state point (size `ndx`\f$\times\f$`ndx`)
          * @param[out] Jsecond     Jacobian of the integration operation relative to
          * the velocity vector (size `ndx`\f$\times\f$`ndx`)
-         * @param[in] firstsecond  Argument (either x and / or dx) with respect to
-         * which the differentiation is performed
-         * @param[in] op           Assignment operator which sets, adds, or removes
-         * the given Jacobian matrix
          */
-        template <typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc = BOTH, AssignmentOp op = SETTO,
+                  typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
         void Jintegrate(const Eigen::MatrixBase<StateVector> &x,
                         const Eigen::MatrixBase<StateTangentVector> &dx,
                         Eigen::MatrixBase<JMatrix1> &Jfirst,
-                        Eigen::MatrixBase<JMatrix2> &Jsecond,
-                        const Jcomponent firstsecond = both,
-                        const AssignmentOp op = setto) const
+                        Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            this->derived().Jintegrate(x, dx, Jfirst, Jsecond, firstsecond, op);
+            this->derived().template Jintegrate<jc, op>(x, dx, Jfirst, Jsecond);
         }
 
         /**
@@ -204,16 +186,14 @@ namespace galileo
          * @param[in]  x           State point (size `nx`).
          * @param[in]  dx          Velocity vector (size `ndx`)
          * @param[out] Jin         Input matrix (number of rows = `nv`, number of columns = `ndx`)
-         * @param[in] firstsecond  Argument (either x or dx) with respect to which the
-         * differentiation of Jintegrate is performed.
          */
-        template <typename StateVector, typename StateTangentVector, typename JMatrix>
+        template <Jcomponent jc,
+                  typename StateVector, typename StateTangentVector, typename JMatrix>
         void JintegrateTransport(const Eigen::MatrixBase<StateVector> &x,
                                  const Eigen::MatrixBase<StateTangentVector> &dx,
-                                 Eigen::MatrixBase<JMatrix> &Jin,
-                                 const Jcomponent firstsecond) const
+                                 Eigen::MatrixBase<JMatrix> &Jin) const
         {
-            this->derived().JintegrateTransport(x, dx, Jin, firstsecond);
+            this->derived().template JintegrateTransport<jc>(x, dx, Jin);
         }
 
         /**
@@ -256,32 +236,20 @@ namespace galileo
          * @param[in]  x1     Current state point (size `nx`)
          * @return  Jacobians
          */
-        template <typename StateVector1, typename StateVector2>
+        template <Jcomponent jc = BOTH,
+                  typename StateVector1, typename StateVector2>
         std::vector<MatrixNdx_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
-                                          const Eigen::MatrixBase<StateVector2> &x1,
-                                          const Jcomponent firstsecond = both) const
+                                          const Eigen::MatrixBase<StateVector2> &x1) const
         {
             MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
             MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
             std::vector<MatrixNdx_t> Jacs;
-            Jdiff(x0, x1, Jfirst, Jsecond, firstsecond);
-            switch (firstsecond)
-            {
-            case both:
+            Jdiff<jc>(x0, x1, Jfirst, Jsecond);
+
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
                 Jacs.push_back(Jfirst);
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
                 Jacs.push_back(Jsecond);
-                break;
-            case first:
-                Jacs.push_back(Jfirst);
-                break;
-            case second:
-                Jacs.push_back(Jsecond);
-                break;
-            default:
-                Jacs.push_back(Jfirst);
-                Jacs.push_back(Jsecond);
-                break;
-            }
             return Jacs;
         }
 
@@ -292,32 +260,21 @@ namespace galileo
          * @param[in]  dx    Velocity vector (size `ndx`)
          * @return  Jacobians
          */
-        template <typename StateVector, typename StateTangentVector>
+        template <Jcomponent jc = BOTH,
+                  typename StateVector, typename StateTangentVector>
         std::vector<MatrixNdx_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
-                                               const Eigen::MatrixBase<StateTangentVector> &dx,
-                                               const Jcomponent firstsecond = both) const
+                                               const Eigen::MatrixBase<StateTangentVector> &dx) const
         {
             MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
             MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
             std::vector<MatrixNdx_t> Jacs;
-            Jintegrate(x, dx, Jfirst, Jsecond, firstsecond, setto);
-            switch (firstsecond)
-            {
-            case both:
+            Jintegrate<jc, SETTO>(x, dx, Jfirst, Jsecond);
+
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
                 Jacs.push_back(Jfirst);
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
                 Jacs.push_back(Jsecond);
-                break;
-            case first:
-                Jacs.push_back(Jfirst);
-                break;
-            case second:
-                Jacs.push_back(Jsecond);
-                break;
-            default:
-                Jacs.push_back(Jfirst);
-                Jacs.push_back(Jsecond);
-                break;
-            }
+
             return Jacs;
         }
 

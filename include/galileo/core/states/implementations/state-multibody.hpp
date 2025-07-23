@@ -126,134 +126,110 @@ namespace galileo
             tail(xout, get_nv_dim()) = tail(x, get_nv_dim()) + tail(dx, get_nv_dim());
         }
 
-        template <typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc = BOTH,
+                  typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
         void Jdiff(const Eigen::MatrixBase<StateVector1> &x0,
                    const Eigen::MatrixBase<StateVector2> &x1,
-                   Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond,
-                   const Jcomponent firstsecond = both) const
+                   Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            if (firstsecond == first || firstsecond == both)
-            {
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
                 Jfirst.setZero();
-            }
-            if (firstsecond == second || firstsecond == both)
-            {
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
                 Jsecond.setZero();
-            }
 
-            if (firstsecond == first)
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
                 pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
                                        topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0);
                 bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(-1.);
             }
-            else if (firstsecond == second)
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
             {
                 pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
                                        topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1);
-                bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
-            }
-            else
-            { // computing both
-                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
-                                       topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0);
-                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
-                                       topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1);
-                bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(-1.);
                 bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
             }
         }
 
-        template <typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc = BOTH, AssignmentOp op = SETTO,
+                  typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
         void Jintegrate(const Eigen::MatrixBase<StateVector> &x,
                         const Eigen::MatrixBase<StateTangentVector> &dx,
                         Eigen::MatrixBase<JMatrix1> &Jfirst,
-                        Eigen::MatrixBase<JMatrix2> &Jsecond,
-                        const Jcomponent firstsecond = both,
-                        const AssignmentOp op = setto) const
+                        Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            if (op == setto)
-            {
-                if (firstsecond == first || firstsecond == both)
-                    Jfirst.setZero();
-                if (firstsecond == second || firstsecond == both)
-                    Jsecond.setZero();
-            }
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
+                Jfirst.setZero();
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
+                Jsecond.setZero();
 
-            if (firstsecond == first || firstsecond == both)
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
-                switch (op)
+                if constexpr (IsSetTo<op>)
                 {
-                case setto:
                     pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
                                           topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
                                           pinocchio::SETTO);
                     bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
-                    break;
-                case addto:
+                }
+                else if constexpr (IsAddTo<op>)
+                {
                     pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
                                           topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
                                           pinocchio::ADDTO);
                     bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() += VarScalar(1.);
-                    break;
-                case rmfrom:
+                }
+                else if constexpr (IsRmFrom<op>)
+                {
                     pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
                                           topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
                                           pinocchio::RMTO);
                     bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() -= VarScalar(1.);
-                    break;
-                default:
-                    break;
                 }
             }
-            if (firstsecond == second || firstsecond == both)
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
             {
-                switch (op)
+                if constexpr (IsSetTo<op>)
                 {
-                case setto:
                     pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
                                           topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
                                           pinocchio::SETTO);
                     bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
-                    break;
-                case addto:
+                }
+                else if constexpr (IsAddTo<op>)
+                {
                     pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
                                           topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
                                           pinocchio::ADDTO);
                     bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() += VarScalar(1.);
-                    break;
-                case rmfrom:
+                }
+                else if constexpr (IsRmFrom<op>)
+                {
                     pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
                                           topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
                                           pinocchio::RMTO);
                     bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() -= VarScalar(1.);
-                    break;
-                default:
-                    break;
                 }
             }
         }
 
-        template <typename StateVector, typename StateTangentVector, typename JMatrix>
+        template <Jcomponent jc,
+                  typename StateVector, typename StateTangentVector, typename JMatrix>
         void JintegrateTransport(const Eigen::MatrixBase<StateVector> &x,
                                  const Eigen::MatrixBase<StateTangentVector> &dx,
-                                 Eigen::MatrixBase<JMatrix> &Jin,
-                                 const Jcomponent firstsecond) const
+                                 Eigen::MatrixBase<JMatrix> &Jin) const
         {
-            switch (firstsecond)
+            if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
-            case first:
                 pinocchio::dIntegrateTransport(model_, head(x, get_nq_dim()),
                                                head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()),
                                                pinocchio::ARG0);
-                break;
-            case second:
+            }
+            if constexpr (IsSecond<jc> || IsBoth<jc>)
+            {
                 pinocchio::dIntegrateTransport(model_, head(x, get_nq_dim()),
                                                head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()),
                                                pinocchio::ARG1);
-                break;
-            default:
-                break;
             }
         }
 

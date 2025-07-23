@@ -348,7 +348,7 @@ TEST_CASE("StateMultibodyTpl - Jacobian Operations", "[multibody][jacobians]")
         typename RS::MatrixNdx_t Jsecond(fixture.state->get_ndx(), fixture.state->get_ndx());
 
         // Test both mode
-        fixture.state->Jdiff(x0, x1, Jfirst, Jsecond, both);
+        fixture.state->Jdiff(x0, x1, Jfirst, Jsecond);
 
         // Test individual modes
         SECTION("First component only")
@@ -357,7 +357,7 @@ TEST_CASE("StateMultibodyTpl - Jacobian Operations", "[multibody][jacobians]")
             typename RS::MatrixNdx_t J2(fixture.state->get_ndx(), fixture.state->get_ndx());
             J2.setZero();
 
-            fixture.state->Jdiff(x0, x1, J1, J2, first);
+            fixture.state->Jdiff<FIRST>(x0, x1, J1, J2);
 
             // J1 should match Jfirst, J2 should be zero
             for (int i = 0; i < J1.rows(); ++i)
@@ -380,7 +380,7 @@ TEST_CASE("StateMultibodyTpl - Jacobian Operations", "[multibody][jacobians]")
         typename RS::MatrixNdx_t Jsecond(fixture.state->get_ndx(), fixture.state->get_ndx());
 
         // Test setto mode
-        fixture.state->Jintegrate(x, dx, Jfirst, Jsecond, both, setto);
+        fixture.state->Jintegrate(x, dx, Jfirst, Jsecond);
 
         // Test addto mode
         SECTION("Addto operation")
@@ -388,7 +388,7 @@ TEST_CASE("StateMultibodyTpl - Jacobian Operations", "[multibody][jacobians]")
             typename RS::MatrixNdx_t J1_add = RS::MatrixNdx_t::Ones(fixture.state->get_ndx(), fixture.state->get_ndx());
             typename RS::MatrixNdx_t J2_add = RS::MatrixNdx_t::Ones(fixture.state->get_ndx(), fixture.state->get_ndx());
 
-            fixture.state->Jintegrate(x, dx, J1_add, J2_add, both, addto);
+            fixture.state->Jintegrate<BOTH, ADDTO>(x, dx, J1_add, J2_add);
 
             // Should be original + Jacobian
             for (int i = 0; i < J1_add.rows(); ++i)
@@ -407,7 +407,7 @@ TEST_CASE("StateMultibodyTpl - Jacobian Operations", "[multibody][jacobians]")
             typename RS::MatrixNdx_t J1_rm = RS::MatrixNdx_t::Ones(fixture.state->get_ndx(), fixture.state->get_ndx());
             typename RS::MatrixNdx_t J2_rm = RS::MatrixNdx_t::Ones(fixture.state->get_ndx(), fixture.state->get_ndx());
 
-            fixture.state->Jintegrate(x, dx, J1_rm, J2_rm, both, rmfrom);
+            fixture.state->Jintegrate<BOTH, RMFROM>(x, dx, J1_rm, J2_rm);
 
             // Should be original - Jacobian
             for (int i = 0; i < J1_rm.rows(); ++i)
@@ -431,7 +431,7 @@ TEST_CASE("StateMultibodyTpl - Jacobian Operations", "[multibody][jacobians]")
         typename RS::MatrixNv6_t Jin_copy = Jin;
 
         // Transport for first argument
-        fixture.state->JintegrateTransport(x, dx, Jin, first);
+        fixture.state->JintegrateTransport<FIRST>(x, dx, Jin);
 
         // Verify transport operation via Pinocchio
         typename RS::MatrixNv6_t Jin_expected = Jin_copy;
@@ -640,21 +640,21 @@ TEST_CASE("StateMultibodyTpl - Convenience Methods", "[multibody][convenience]")
         typename RS::VectorNx_t x1 = fixture.random_state();
 
         // Test both mode
-        std::vector<typename RS::MatrixNdx_t> jacs_both = fixture.state->Jdiff_Js(x0, x1, both);
+        std::vector<typename RS::MatrixNdx_t> jacs_both = fixture.state->Jdiff_Js(x0, x1);
         REQUIRE(jacs_both.size() == 2);
 
         // Test first mode
-        std::vector<typename RS::MatrixNdx_t> jacs_first = fixture.state->Jdiff_Js(x0, x1, first);
+        std::vector<typename RS::MatrixNdx_t> jacs_first = fixture.state->Jdiff_Js<FIRST>(x0, x1);
         REQUIRE(jacs_first.size() == 1);
 
         // Test second mode
-        std::vector<typename RS::MatrixNdx_t> jacs_second = fixture.state->Jdiff_Js(x0, x1, second);
+        std::vector<typename RS::MatrixNdx_t> jacs_second = fixture.state->Jdiff_Js<SECOND>(x0, x1);
         REQUIRE(jacs_second.size() == 1);
 
         // Verify consistency
         typename RS::MatrixNdx_t J1(fixture.state->get_ndx(), fixture.state->get_ndx());
         typename RS::MatrixNdx_t J2(fixture.state->get_ndx(), fixture.state->get_ndx());
-        fixture.state->Jdiff(x0, x1, J1, J2, both);
+        fixture.state->Jdiff(x0, x1, J1, J2);
 
         for (int i = 0; i < J1.rows(); ++i)
         {
@@ -671,13 +671,13 @@ TEST_CASE("StateMultibodyTpl - Convenience Methods", "[multibody][convenience]")
         typename RS::VectorNx_t x = fixture.random_state();
         typename RS::VectorNdx_t dx = fixture.random_velocity();
 
-        std::vector<typename RS::MatrixNdx_t> jacs = fixture.state->Jintegrate_Js(x, dx, both);
+        std::vector<typename RS::MatrixNdx_t> jacs = fixture.state->Jintegrate_Js(x, dx);
         REQUIRE(jacs.size() == 2);
 
         // Verify against direct call
         typename RS::MatrixNdx_t J1(fixture.state->get_ndx(), fixture.state->get_ndx());
         typename RS::MatrixNdx_t J2(fixture.state->get_ndx(), fixture.state->get_ndx());
-        fixture.state->Jintegrate(x, dx, J1, J2, both, setto);
+        fixture.state->Jintegrate(x, dx, J1, J2);
 
         for (int i = 0; i < J1.rows(); ++i)
         {

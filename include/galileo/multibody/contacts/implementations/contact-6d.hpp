@@ -241,24 +241,25 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
+            const auto nv_dim = get_ps().get_nv_dim();
             const pinocchio::JointIndex joint =
                 get_robot().frames[data.frame].parentJoint;
             pinocchio::getJointAccelerationDerivatives(
                 get_robot(), *data.robot, joint, pinocchio::LOCAL,
                 data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
-            leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() = data.fXj * data.a_partial_dq;
-            rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() = data.fXj * data.a_partial_dv;
+            leftCols(data.da0_local_dx, nv_dim).noalias() = data.fXj * data.a_partial_dq;
+            rightCols(data.da0_local_dx, nv_dim).noalias() = data.fXj * data.a_partial_dv;
 
             if (gains_[0] != 0.)
             {
                 pinocchio::Jlog6(data.rMf, data.rMf_Jlog6);
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() += gains_[0] * data.rMf_Jlog6 * data.fJf;
+                leftCols(data.da0_local_dx, nv_dim).noalias() += gains_[0] * data.rMf_Jlog6 * data.fJf;
             }
             if (gains_[1] != 0.)
             {
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
+                leftCols(data.da0_local_dx, nv_dim).noalias() +=
                     gains_[1] * data.fXj * data.v_partial_dq;
-                rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() += gains_[1] * data.fJf;
+                rightCols(data.da0_local_dx, nv_dim).noalias() += gains_[1] * data.fJf;
             }
             switch (get_type())
             {
@@ -282,15 +283,15 @@ namespace galileo
                 data.a0.noalias() = data.lwaMl.act(data.a0_local).toVector();
 
                 const auto oRf = data.robot->oMf[get_id()].rotation();
-                pinocchio::skew(head(data.a0, 3), data.av_skew);
-                pinocchio::skew(tail(data.a0, 3), data.aw_skew);
+                pinocchio::skew(head<3>(data.a0), data.av_skew);
+                pinocchio::skew(tail<3>(data.a0), data.aw_skew);
                 data.av_world_skew.noalias() = data.av_skew * oRf;
                 data.aw_world_skew.noalias() = data.aw_skew * oRf;
                 data.da0_dx.noalias() = data.lwaMl.toActionMatrix() * data.da0_local_dx;
-                topRows(leftCols(data.da0_dx, get_ps().get_nv_dim()), 3).noalias() -=
-                    data.av_world_skew * bottomRows(data.fJf, 3);
-                bottomRows(leftCols(data.da0_dx, get_ps().get_nv_dim()), 3).noalias() -=
-                    data.aw_world_skew * bottomRows(data.fJf, 3);
+                topRows<3>(leftCols(data.da0_dx, nv_dim)).noalias() -=
+                    data.av_world_skew * bottomRows<3>(data.fJf);
+                bottomRows<3>(leftCols(data.da0_dx, nv_dim)).noalias() -=
+                    data.aw_world_skew * bottomRows<3>(data.fJf);
                 break;
             }
         }
@@ -317,10 +318,10 @@ namespace galileo
                 data.fext = data.jMf.act(data.f_local);
                 pinocchio::skew(data.f_local.linear(), data.fv_skew);
                 pinocchio::skew(data.f_local.angular(), data.fw_skew);
-                topRows(data.fJf_df, 3).noalias() =
-                    data.fv_skew * bottomRows(data.fJf, 3);
-                bottomRows(data.fJf_df, 3).noalias() =
-                    data.fw_skew * bottomRows(data.fJf, 3);
+                topRows<3>(data.fJf_df).noalias() =
+                    data.fv_skew * bottomRows<3>(data.fJf);
+                bottomRows<3>(data.fJf_df).noalias() =
+                    data.fw_skew * bottomRows<3>(data.fJf);
                 data.dtau_dq.noalias() = -data.fJf.transpose() * data.fJf_df;
                 break;
             }

@@ -178,12 +178,13 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlParamVectorType> &w) const
         {
-            const auto v = tail(x, get_ps().get_nv_dim());
+            const auto nv_dim = get_ps().get_nv_dim();
+            const auto v = tail(x, nv_dim);
             control_.calc(data.control, NumScalar(0.), w);
             node_.calc(data.node, x, data.control.u);
             const VectorNv_t &a = data.node.XAcc_accessor();
-            head(data.dx, get_ps().get_nv_dim()).noalias() = v * period_ + a * period_squared_;
-            tail(data.dx, get_ps().get_nv_dim()).noalias() = a * period_;
+            head(data.dx, nv_dim).noalias() = v * period_ + a * period_squared_;
+            tail(data.dx, nv_dim).noalias() = a * period_;
 
             get_state().integrate(x, data.dx, data.XNext);
             data.L = period_ * data.node.L_accessor();
@@ -213,14 +214,18 @@ namespace galileo
             const MatrixNvNdx_t &da_dx = data.node.XAccx_accessor();
             const MatrixNvNw_t &da_du = data.node.XAccu_accessor();
             control_.multiplyByJacobian(data.control, da_du, data.da_dw);
-            topRows(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_squared_;
-            bottomRows(data.XNextx, get_ps().get_nv_dim()).noalias() = da_dx * period_;
-            topRightCorner(data.XNextx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).diagonal().array() += VarScalar(period_);
-            topRows(data.XNextw, get_ps().get_nv_dim()).noalias() = period_squared_ * data.da_dw;
-            bottomRows(data.XNextw, get_ps().get_nv_dim()).noalias() = period_ * data.da_dw;
-            get_state().JintegrateTransport(x, data.dx, data.XNextx, second);
-            get_state().Jintegrate(x, data.dx, data.XNextx, data.XNextx, first, addto);
-            get_state().JintegrateTransport(x, data.dx, data.XNextw, second);
+
+            const auto nv_dim = get_ps().get_nv_dim();
+            topRows(data.XNextx, nv_dim).noalias() = da_dx * period_squared_;
+            bottomRows(data.XNextx, nv_dim).noalias() = da_dx * period_;
+            topRightCorner(data.XNextx, nv_dim, nv_dim).diagonal().array() += VarScalar(period_);
+            topRows(data.XNextw, nv_dim).noalias() = period_squared_ * data.da_dw;
+            bottomRows(data.XNextw, nv_dim).noalias() = period_ * data.da_dw;
+
+            const auto state = get_state();
+            state.template JintegrateTransport<SECOND>(x, data.dx, data.XNextx);
+            state.template Jintegrate<FIRST, ADDTO>(x, data.dx, data.XNextx, data.XNextx);
+            state.template JintegrateTransport<SECOND>(x, data.dx, data.XNextw);
 
             data.Lx.noalias() = period_ * data.node.Lx_accessor();
             control_.multiplyJacobianTransposeBy(data.control, data.node.Lu_accessor(), data.Lw);
@@ -231,6 +236,7 @@ namespace galileo
             control_.multiplyByJacobian(data.control, data.node.Luu_accessor(), data.Luw);
             control_.multiplyJacobianTransposeBy(data.control, data.Luw, data.Lww);
             data.Lww *= period_;
+
             data.Gx = data.node.Gx_accessor();
             data.Hx = data.node.Hx_accessor();
             data.Gw.conservativeResize(node_.get_constraints().get_nh(), get_ps().get_nw());

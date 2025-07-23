@@ -229,7 +229,7 @@ namespace galileo
                     get_robot(), *data.robot, get_id(), pinocchio::LOCAL)
                     .linear();
 
-            const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
+            const auto oRf = data.robot->oMf[get_id()].rotation();
             if (gains_[0] != 0.)
             {
                 data.dp = data.robot->oMf[get_id()].translation() - xref_;
@@ -243,12 +243,12 @@ namespace galileo
             switch (get_type())
             {
             case pinocchio::ReferenceFrame::LOCAL:
-                data.Jc = topRows(data.fJf, get_nc_dim());
+                data.Jc = topRows<3>(data.fJf);
                 data.a0 = data.a0_local;
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                data.Jc.noalias() = oRf * topRows(data.fJf, get_nc_dim());
+                data.Jc.noalias() = oRf * topRows<3>(data.fJf);
                 data.a0.noalias() = oRf * data.a0_local;
                 break;
             }
@@ -258,6 +258,7 @@ namespace galileo
         void calcDiff(Data_t &data,
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
+            const auto nv_dim = get_ps().get_nv_dim();
             const pinocchio::JointIndex joint =
                 get_robot().frames[data.frame].parentJoint;
             pinocchio::getJointAccelerationDerivatives(
@@ -268,32 +269,32 @@ namespace galileo
             data.fXjdv_dq.noalias() = data.fXj * data.v_partial_dq;
             data.fXjda_dq.noalias() = data.fXj * data.a_partial_dq;
             data.fXjda_dv.noalias() = data.fXj * data.a_partial_dv;
-            leftCols(data.da0_local_dx, get_ps().get_nv_dim()) = topRows(data.fXjda_dq, get_nc_dim());
-            leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                data.vw_skew * topRows(data.fXjdv_dq, get_nc_dim());
-            leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() -=
-                data.vv_skew * bottomRows(data.fXjdv_dq, get_nc_dim());
-            rightCols(data.da0_local_dx, get_ps().get_nv_dim()) = topRows(data.fXjda_dv, get_nc_dim());
-            rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                data.vw_skew * topRows(data.fJf, get_nc_dim());
-            rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() -=
-                data.vv_skew * bottomRows(data.fJf, get_nc_dim());
-            const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
+            leftCols(data.da0_local_dx, nv_dim) = topRows<3>(data.fXjda_dq);
+            leftCols(data.da0_local_dx, nv_dim).noalias() +=
+                data.vw_skew * topRows<3>(data.fXjdv_dq);
+            leftCols(data.da0_local_dx, nv_dim).noalias() -=
+                data.vv_skew * bottomRows<3>(data.fXjdv_dq);
+            rightCols(data.da0_local_dx, nv_dim) = topRows<3>(data.fXjda_dv);
+            rightCols(data.da0_local_dx, nv_dim).noalias() +=
+                data.vw_skew * topRows<3>(data.fJf);
+            rightCols(data.da0_local_dx, nv_dim).noalias() -=
+                data.vv_skew * bottomRows<3>(data.fJf);
+            const auto oRf = data.robot->oMf[get_id()].rotation();
 
             if (gains_[0] != 0.)
             {
                 pinocchio::skew(data.dp_local, data.dp_skew);
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[0] * data.dp_skew * bottomRows(data.fJf, get_nc_dim());
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[0] * topRows(data.fJf, get_nc_dim());
+                leftCols(data.da0_local_dx, nv_dim).noalias() +=
+                    gains_[0] * data.dp_skew * bottomRows<3>(data.fJf);
+                leftCols(data.da0_local_dx, nv_dim).noalias() +=
+                    gains_[0] * topRows<3>(data.fJf);
             }
             if (gains_[1] != 0.)
             {
-                leftCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[1] * topRows(data.fXjdv_dq, get_nc_dim());
-                rightCols(data.da0_local_dx, get_ps().get_nv_dim()).noalias() +=
-                    gains_[1] * topRows(data.fJf, get_nc_dim());
+                leftCols(data.da0_local_dx, nv_dim).noalias() +=
+                    gains_[1] * topRows<3>(data.fXjdv_dq);
+                rightCols(data.da0_local_dx, nv_dim).noalias() +=
+                    gains_[1] * topRows<3>(data.fJf);
             }
             switch (get_type())
             {
@@ -318,11 +319,11 @@ namespace galileo
                 }
                 data.a0.noalias() = oRf * data.a0_local;
 
-                pinocchio::skew(head(data.a0, get_nc_dim()), data.a0_skew);
+                pinocchio::skew(head<3>(data.a0), data.a0_skew);
                 data.a0_world_skew.noalias() = data.a0_skew * oRf;
                 data.da0_dx.noalias() = oRf * data.da0_local_dx;
-                leftCols(data.da0_dx, get_ps().get_nv_dim()).noalias() -=
-                    data.a0_world_skew * bottomRows(data.fJf, get_nc_dim());
+                leftCols(data.da0_dx, nv_dim).noalias() -=
+                    data.a0_world_skew * bottomRows<3>(data.fJf);
                 break;
             }
         }
@@ -341,14 +342,14 @@ namespace galileo
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                const Eigen::Ref<const Matrix3_t> oRf = data.robot->oMf[get_id()].rotation();
+                const auto oRf = data.robot->oMf[get_id()].rotation();
                 data.f_local.linear().noalias() = oRf.transpose() * force;
                 data.f_local.angular().setZero();
                 data.fext = data.jMf.act(data.f_local);
                 pinocchio::skew(data.f_local.linear(), data.f_skew);
-                data.fJf_df.noalias() = data.f_skew * bottomRows(data.fJf, get_nc_dim());
+                data.fJf_df.noalias() = data.f_skew * bottomRows<3>(data.fJf);
                 data.dtau_dq.noalias() =
-                    -topRows(data.fJf, get_nc_dim()).transpose() * data.fJf_df;
+                    -topRows<3>(data.fJf).transpose() * data.fJf_df;
                 break;
             }
         }

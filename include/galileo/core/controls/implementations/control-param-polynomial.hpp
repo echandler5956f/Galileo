@@ -76,9 +76,7 @@ namespace galileo
                     const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             for (int i = 0; i < get_norder(); ++i)
-            {
                 segment(data.w, i * get_nu(), get_nu_dim()) = u;
-            }
         }
 
         template <typename ControlBoundVectorType, typename ControlParamBoundVectorType>
@@ -94,73 +92,45 @@ namespace galileo
             }
         }
 
-        template <typename InputMatrixType, typename OutputMatrixType>
+        template <AssignmentOp op = SETTO,
+                  typename InputMatrixType, typename OutputMatrixType>
         void multiplyByJacobian(
             Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
-            Eigen::MatrixBase<OutputMatrixType> &out,
-            const AssignmentOp op = setto) const
+            Eigen::MatrixBase<OutputMatrixType> &out) const
         {
-            static constexpr int A_ROWS = InputMatrixType::RowsAtCompileTime;
-            DimensionTpl<A_ROWS> A_rows_dim(A.rows());
-
-            switch (op)
+            DimensionTpl<InputMatrixType::RowsAtCompileTime> A_rows_dim(A.rows());
+            for (int i = 0; i < get_norder(); ++i)
             {
-            case setto:
-                for (int i = 0; i < get_norder(); ++i)
-                {
-                    block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim()) = A * block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
-                }
-                break;
-            case addto:
-                for (int i = 0; i < get_norder(); ++i)
-                {
-                    block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim()) += A * block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
-                }
-                break;
-            case rmfrom:
-                for (int i = 0; i < get_norder(); ++i)
-                {
-                    block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim()) -= A * block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
-                }
-                break;
-            default:
-                break;
+                auto out_block_i = block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim());
+                auto du_dw_block_i = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
+                if constexpr (IsSetTo<op>)
+                    out_block_i = A * du_dw_block_i;
+                else if constexpr (IsAddTo<op>)
+                    out_block_i += A * du_dw_block_i;
+                else if constexpr (IsRmFrom<op>)
+                    out_block_i -= A * du_dw_block_i;
             }
         }
 
-        template <typename InputMatrixType, typename OutputMatrixType>
+        template <AssignmentOp op = SETTO,
+                  typename InputMatrixType, typename OutputMatrixType>
         void multiplyJacobianTransposeBy(
             Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
-            Eigen::MatrixBase<OutputMatrixType> &out,
-            const AssignmentOp op = setto) const
+            Eigen::MatrixBase<OutputMatrixType> &out) const
         {
-            static constexpr int A_COLS = InputMatrixType::ColsAtCompileTime;
-            DimensionTpl<A_COLS> A_cols_dim(A.cols());
-
-            switch (op)
+            DimensionTpl<InputMatrixType::ColsAtCompileTime> A_cols_dim(A.cols());
+            for (int i = 0; i < get_norder(); ++i)
             {
-            case setto:
-                for (int i = 0; i < get_norder(); ++i)
-                {
-                    block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim) = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim()).transpose() * A;
-                }
-                break;
-            case addto:
-                for (int i = 0; i < get_norder(); ++i)
-                {
-                    block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim) += block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim()).transpose() * A;
-                }
-                break;
-            case rmfrom:
-                for (int i = 0; i < get_norder(); ++i)
-                {
-                    block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim) -= block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim()).transpose() * A;
-                }
-                break;
-            default:
-                break;
+                auto out_block_i = block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim);
+                auto du_dw_block_i = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
+                if constexpr (IsSetTo<op>)
+                    out_block_i = du_dw_block_i.transpose() * A;
+                else if constexpr (IsAddTo<op>)
+                    out_block_i += du_dw_block_i.transpose() * A;
+                else if constexpr (IsRmFrom<op>)
+                    out_block_i -= du_dw_block_i.transpose() * A;
             }
         }
 
@@ -181,7 +151,7 @@ namespace galileo
         using Base::get_nw_dim;
 
     protected:
-        BarycentricInterpolatorTpl<NumScalar, PS::NOrder, PS::Options> interpolator_;
+        BarycentricInterpolator_t interpolator_;
 
     }; // class ControlParamModelPolynomialTpl
 

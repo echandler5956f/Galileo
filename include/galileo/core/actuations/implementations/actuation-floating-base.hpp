@@ -88,9 +88,7 @@ namespace galileo
             data.dtau_du.diagonal(-get_state().get_nvb()).setOnes();
             data.Mtau.diagonal(get_state().get_nvb()).setOnes();
             for (int i = 0; i < get_state().get_nvb(); ++i)
-            {
                 data.tau_set(i) = false;
-            }
             return data;
         }
 

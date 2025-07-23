@@ -190,11 +190,11 @@ namespace galileo
             switch (get_type())
             {
             case pinocchio::ReferenceFrame::LOCAL:
-                data.Jc = topRows(data.fJf, get_nc_dim());
+                data.Jc = topRows<3>(data.fJf);
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                data.Jc.noalias() = data.robot->oMf[get_id()].rotation() * topRows(data.fJf, get_nc_dim());
+                data.Jc.noalias() = data.robot->oMf[get_id()].rotation() * topRows<3>(data.fJf);
                 break;
             }
         }
@@ -207,7 +207,7 @@ namespace galileo
             pinocchio::getJointVelocityDerivatives(get_robot(), *data.robot,
                                                    joint, pinocchio::LOCAL,
                                                    data.v_partial_dq, data.v_partial_dv);
-            data.dv0_local_dq.noalias() = topRows(data.fXj, get_nc_dim()) * data.v_partial_dq;
+            data.dv0_local_dq.noalias() = topRows<3>(data.fXj) * data.v_partial_dq;
 
             switch (get_type())
             {
@@ -216,14 +216,14 @@ namespace galileo
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                auto oRf = data.robot->oMf[get_id()].rotation();
+                const auto oRf = data.robot->oMf[get_id()].rotation();
                 data.v0 = pinocchio::getFrameVelocity(get_robot(), *data.robot, get_id(),
                                                       pinocchio::LOCAL_WORLD_ALIGNED)
                               .linear();
                 pinocchio::skew(data.v0, data.v0_skew);
                 data.v0_world_skew.noalias() = data.v0_skew * oRf;
                 data.dv0_dq.noalias() = oRf * data.dv0_local_dq;
-                data.dv0_dq.noalias() -= data.v0_world_skew * bottomRows(data.fJf, get_nc_dim());
+                data.dv0_dq.noalias() -= data.v0_world_skew * bottomRows<3>(data.fJf);
                 break;
             }
         }
@@ -242,14 +242,14 @@ namespace galileo
                 break;
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-                auto oRf = data.robot->oMf[get_id()].rotation();
+                const auto oRf = data.robot->oMf[get_id()].rotation();
                 data.f_local.linear().noalias() = oRf.transpose() * force;
                 data.f_local.angular().setZero();
                 data.fext = data.jMf.act(data.f_local);
                 pinocchio::skew(data.f_local.linear(), data.f_skew);
-                data.fJf_df.noalias() = data.f_skew * bottomRows(data.fJf, get_nc_dim());
+                data.fJf_df.noalias() = data.f_skew * bottomRows<3>(data.fJf);
                 data.dtau_dq.noalias() =
-                    -topRows(data.fJf, get_nc_dim()).transpose() * data.fJf_df;
+                    -topRows<3>(data.fJf).transpose() * data.fJf_df;
                 break;
             }
         }

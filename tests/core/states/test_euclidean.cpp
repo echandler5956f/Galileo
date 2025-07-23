@@ -290,7 +290,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jfirst = RS::MatrixNdx_t::Zero(24, 24);
         RS::MatrixNdx_t Jsecond = RS::MatrixNdx_t::Zero(24, 24);
 
-        state.Jdiff(x0, x1, Jfirst, Jsecond, both);
+        state.Jdiff(x0, x1, Jfirst, Jsecond);
 
         // For Euclidean space, Jdiff should be identity matrices with appropriate signs
         for (int i = 0; i < 24; ++i) {
@@ -309,7 +309,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jfirst_only = RS::MatrixNdx_t::Zero(24, 24);
         RS::MatrixNdx_t Jsecond_only = RS::MatrixNdx_t::Zero(24, 24);
 
-        state.Jdiff(x0, x1, Jfirst_only, Jsecond_only, first);
+        state.Jdiff<FIRST>(x0, x1, Jfirst_only, Jsecond_only);
 
         for (int i = 0; i < 24; ++i) {
             for (int j = 0; j < 24; ++j) {
@@ -324,7 +324,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         }
 
         // Test Jdiff_Js convenience method
-        std::vector<typename RS::MatrixNdx_t> Jacs = state.Jdiff_Js(x0, x1, both);
+        std::vector<typename RS::MatrixNdx_t> Jacs = state.Jdiff_Js(x0, x1);
         REQUIRE(Jacs.size() == 2);
         REQUIRE(Jacs[0].rows() == 24);
         REQUIRE(Jacs[0].cols() == 24);
@@ -351,7 +351,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jfirst = RS::MatrixNdx_t::Zero(4, 4);
         RS::MatrixNdx_t Jsecond = RS::MatrixNdx_t::Zero(4, 4);
 
-        state.Jintegrate(x, dx, Jfirst, Jsecond, both, setto);
+        state.Jintegrate(x, dx, Jfirst, Jsecond);
 
         // For Euclidean space, Jintegrate should be identity matrices
         for (int i = 0; i < 4; ++i) {
@@ -370,7 +370,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jfirst_add = RS::MatrixNdx_t::Ones(4, 4);
         RS::MatrixNdx_t Jsecond_add = RS::MatrixNdx_t::Ones(4, 4);
 
-        state.Jintegrate(x, dx, Jfirst_add, Jsecond_add, both, addto);
+        state.Jintegrate<BOTH, ADDTO>(x, dx, Jfirst_add, Jsecond_add);
 
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
@@ -388,7 +388,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jfirst_sub = RS::MatrixNdx_t::Ones(4, 4);
         RS::MatrixNdx_t Jsecond_sub = RS::MatrixNdx_t::Ones(4, 4);
 
-        state.Jintegrate(x, dx, Jfirst_sub, Jsecond_sub, both, rmfrom);
+        state.Jintegrate<BOTH, RMFROM>(x, dx, Jfirst_sub, Jsecond_sub);
 
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
@@ -403,7 +403,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         }
 
         // Test Jintegrate_Js convenience method
-        std::vector<typename RS::MatrixNdx_t> Jacs = state.Jintegrate_Js(x, dx, both);
+        std::vector<typename RS::MatrixNdx_t> Jacs = state.Jintegrate_Js(x, dx);
         REQUIRE(Jacs.size() == 2);
         REQUIRE(Jacs[0].rows() == 4);
         REQUIRE(Jacs[0].cols() == 4);
@@ -429,7 +429,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jin_copy = Jin;
 
         // For Euclidean space, JintegrateTransport should do nothing
-        state.JintegrateTransport(x, dx, Jin, first);
+        state.JintegrateTransport<FIRST>(x, dx, Jin);
 
         // Matrix should be unchanged
         for (int i = 0; i < 4; ++i) {
@@ -475,7 +475,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jfirst = RS::MatrixNdx_t::Zero(8, 8);
         RS::MatrixNdx_t Jsecond = RS::MatrixNdx_t::Zero(8, 8);
 
-        state.Jdiff(x0, x1, Jfirst, Jsecond, both);
+        state.Jdiff(x0, x1, Jfirst, Jsecond);
 
         // Should still be identity matrices with appropriate signs
         for (int i = 0; i < 8; ++i) {
@@ -487,7 +487,7 @@ TEST_CASE("StateEuclideanTpl - Jacobian Operations", "[euclidean][jacobians]")
         RS::MatrixNdx_t Jfirst_int = RS::MatrixNdx_t::Zero(8, 8);
         RS::MatrixNdx_t Jsecond_int = RS::MatrixNdx_t::Zero(8, 8);
 
-        state.Jintegrate(x, dx, Jfirst_int, Jsecond_int, both, setto);
+        state.Jintegrate(x, dx, Jfirst_int, Jsecond_int);
 
         // Should be identity matrices
         for (int i = 0; i < 8; ++i) {

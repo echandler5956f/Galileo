@@ -54,24 +54,24 @@ namespace galileo
             this->derived().convertBounds(u_lb, u_ub, w_lb, w_ub);
         }
 
-        template <typename InputMatrixType, typename OutputMatrixType>
+        template <AssignmentOp op = SETTO,
+                  typename InputMatrixType, typename OutputMatrixType>
         void multiplyByJacobian(
             Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
-            Eigen::MatrixBase<OutputMatrixType> &out,
-            const AssignmentOp op = setto) const
+            Eigen::MatrixBase<OutputMatrixType> &out) const
         {
-            this->derived().multiplyByJacobian(data, A, out, op);
+            this->derived().template multiplyByJacobian<op>(data, A, out);
         }
 
-        template <typename InputMatrixType, typename OutputMatrixType>
+        template <AssignmentOp op = SETTO,
+                  typename InputMatrixType, typename OutputMatrixType>
         void multiplyJacobianTransposeBy(
             Data_t &data,
             const Eigen::MatrixBase<InputMatrixType> &A,
-            Eigen::MatrixBase<OutputMatrixType> &out,
-            const AssignmentOp op = setto) const
+            Eigen::MatrixBase<OutputMatrixType> &out) const
         {
-            this->derived().multiplyJacobianTransposeBy(data, A, out, op);
+            this->derived().template multiplyJacobianTransposeBy<op>(data, A, out);
         }
 
         Data_t createData() const
