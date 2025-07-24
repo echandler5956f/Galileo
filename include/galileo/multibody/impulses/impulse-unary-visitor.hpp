@@ -1,7 +1,7 @@
 #ifndef __galileo_multibody_impulses_impulse_unary_visitor_hpp__
 #define __galileo_multibody_impulses_impulse_unary_visitor_hpp__
 
-#include "galileo/common/meta/unary-visitor.hpp"
+#include "galileo/common/visitors/unary-visitor.hpp"
 #include "galileo/multibody/impulses/impulse-base.hpp"
 
 namespace galileo

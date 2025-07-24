@@ -1,7 +1,7 @@
 #ifndef __galileo_core_constraints_equality_constraint_unary_visitor_hpp__
 #define __galileo_core_constraints_equality_constraint_unary_visitor_hpp__
 
-#include "galileo/common/meta/unary-visitor.hpp"
+#include "galileo/common/visitors/unary-visitor.hpp"
 #include "galileo/core/constraints/equality/constraint-base.hpp"
 
 namespace galileo

@@ -1,7 +1,7 @@
 #ifndef __galileo_multibody_contacts_contact_unary_visitor_hpp__
 #define __galileo_multibody_contacts_contact_unary_visitor_hpp__
 
-#include "galileo/common/meta/unary-visitor.hpp"
+#include "galileo/common/visitors/unary-visitor.hpp"
 #include "galileo/multibody/contacts/contact-base.hpp"
 
 namespace galileo
