@@ -1,245 +1,36 @@
 #ifndef __galileo_predictive_phases_phase_unary_visitor_hpp__
 #define __galileo_predictive_phases_phase_unary_visitor_hpp__
 
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/get.hpp>
-
-#include "galileo/common/meta/fusion.hpp"
+#include "galileo/common/visitors/unary-visitor.hpp"
 #include "galileo/predictive/phases/phase-base.hpp"
 
 namespace galileo
 {
     namespace fusion
     {
+        // Family tag for phases
+        struct PhaseFamily {};
 
-        // Base structure for Unary visitation of a PhaseModel.
-        // This structure provides runners to call the right visitor according to the number of
-        // arguments.
-        template <typename PhaseVisitorDerived, typename ReturnType = void>
-        struct PhaseUnaryVisitorBase
+        // Trait specialization for Phase family
+        template <>
+        struct UnaryVisitorFamilyTraits<PhaseFamily>
         {
-            template <
-                typename PhaseSpec,
-                template <typename PS> class PhaseCollectionTpl,
-                typename ArgsTmp>
-            static ReturnType run(
-                const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model,
-                PhaseDataTpl<PhaseSpec, PhaseCollectionTpl> &phase_data,
-                ArgsTmp args)
-            {
-                InternalVisitorModelAndData<PhaseModelTpl<PhaseSpec, PhaseCollectionTpl>, ArgsTmp>
-                    visitor(phase_data, args);
-                return boost::apply_visitor(visitor, phase_model);
-            }
+            template <typename PS, template <typename> class CollectionTpl>
+            using ModelTpl = PhaseModelTpl<PS, CollectionTpl>;
 
-            template <typename PhaseSpec, template <typename PS> class PhaseCollectionTpl>
-            static ReturnType run(
-                const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model,
-                PhaseDataTpl<PhaseSpec, PhaseCollectionTpl> &phase_data)
-            {
-                InternalVisitorModelAndData<PhaseModelTpl<PhaseSpec, PhaseCollectionTpl>, NoArg>
-                    visitor(phase_data);
-                return boost::apply_visitor(visitor, phase_model);
-            }
+            template <typename PS, template <typename> class CollectionTpl>
+            using DataTpl = PhaseDataTpl<PS, CollectionTpl>;
 
-            template <typename PhaseModelDerived, typename ArgsTmp>
-            static ReturnType run(
-                const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model,
-                typename PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS>::PhaseDataDerived &phase_data,
-                ArgsTmp args)
-            {
-                InternalVisitorModelAndData<PhaseModelDerived, ArgsTmp> visitor(phase_data, args);
-                return visitor(phase_model.derived());
-            }
+            template <typename ModelType, typename PS>
+            using ModelBase = PhaseModelBase<ModelType, PS>;
 
-            template <typename PhaseModelDerived>
-            static ReturnType run(
-                const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model,
-                typename PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS>::PhaseDataDerived &phase_data)
-            {
-                InternalVisitorModelAndData<PhaseModelDerived, NoArg> visitor(phase_data);
-                return visitor(phase_model.derived());
-            }
+            template <typename DataType, typename PS>
+            using DataBase = PhaseDataBase<DataType, PS>;
+        };
 
-            template <
-                typename PhaseSpec,
-                template <typename PS> class PhaseCollectionTpl,
-                typename ArgsTmp>
-            static ReturnType
-            run(const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model, ArgsTmp args)
-            {
-                InternalVisitorModel<ArgsTmp> visitor(args);
-                return boost::apply_visitor(visitor, phase_model);
-            }
-
-            template <
-                typename PhaseSpec,
-                template <typename PS> class PhaseCollectionTpl,
-                typename ArgsTmp>
-            static ReturnType
-            run(const PhaseDataTpl<PhaseSpec, PhaseCollectionTpl> &phase_data, ArgsTmp args)
-            {
-                InternalVisitorModel<ArgsTmp> visitor(args);
-                return boost::apply_visitor(visitor, phase_data);
-            }
-
-            template <typename PhaseSpec, template <typename PS> class PhaseCollectionTpl>
-            static ReturnType run(const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model)
-            {
-                InternalVisitorModel<NoArg> visitor;
-                return boost::apply_visitor(visitor, phase_model);
-            }
-
-            template <typename PhaseSpec, template <typename PS> class PhaseCollectionTpl>
-            static ReturnType run(const PhaseDataTpl<PhaseSpec, PhaseCollectionTpl> &phase_data)
-            {
-                InternalVisitorModel<NoArg> visitor;
-                return boost::apply_visitor(visitor, phase_data);
-            }
-
-            template <typename PhaseModelDerived, typename ArgsTmp>
-            static ReturnType run(const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model, ArgsTmp args)
-            {
-                InternalVisitorModel<ArgsTmp> visitor(args);
-                return visitor(phase_model.derived());
-            }
-
-            template <typename PhaseDataDerived, typename ArgsTmp>
-            static ReturnType run(const PhaseDataBase<PhaseDataDerived, typename traits<PhaseDataDerived>::PS> &phase_data, ArgsTmp args)
-            {
-                InternalVisitorModel<ArgsTmp> visitor(args);
-                return visitor(phase_data.derived());
-            }
-
-            template <typename PhaseModelDerived>
-            static ReturnType run(const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model)
-            {
-                InternalVisitorModel<NoArg> visitor;
-                return visitor(phase_model.derived());
-            }
-
-            template <typename PhaseDataDerived>
-            static ReturnType run(const PhaseDataBase<PhaseDataDerived, typename traits<PhaseDataDerived>::PS> &phase_data)
-            {
-                InternalVisitorModel<NoArg> visitor;
-                return visitor(phase_data.derived());
-            }
-
-        private:
-            template <typename PhaseModel, typename ArgType>
-            struct InternalVisitorModelAndData : public boost::static_visitor<ReturnType>
-            {
-                using PhaseData = typename traits<PhaseModel>::PhaseDataDerived;
-
-                InternalVisitorModelAndData(PhaseData &phase_data, ArgType args)
-                    : phase_data(phase_data), args(args)
-                {
-                }
-
-                template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model) const
-                {
-                    return bf::invoke(
-                        &PhaseVisitorDerived::template algo<PhaseModelDerived>,
-                        gf::append(
-                            boost::ref(phase_model.derived()),
-                            boost::ref(
-                                boost::get<typename PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS>::PhaseDataDerived>(phase_data)),
-                            args));
-                }
-
-                ReturnType operator()(const PhaseModelVoid)
-                {
-                    return;
-                }
-
-                PhaseData &phase_data;
-                ArgType args;
-            };
-
-            template <typename PhaseModel>
-            struct InternalVisitorModelAndData<PhaseModel, NoArg>
-                : public boost::static_visitor<ReturnType>
-            {
-                using PhaseData = typename traits<PhaseModel>::PhaseDataDerived;
-
-                InternalVisitorModelAndData(PhaseData &phase_data)
-                    : phase_data(phase_data)
-                {
-                }
-
-                template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model) const
-                {
-                    return bf::invoke(
-                        &PhaseVisitorDerived::template algo<PhaseModelDerived>,
-                        bf::make_vector(
-                            boost::ref(phase_model.derived()),
-                            boost::ref(
-                                boost::get<typename PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS>::PhaseDataDerived>(phase_data))));
-                }
-
-                ReturnType operator()(const PhaseModelVoid)
-                {
-                    return;
-                }
-
-                PhaseData &phase_data;
-            };
-
-            template <typename ArgType, typename Dummy = void>
-            struct InternalVisitorModel : public boost::static_visitor<ReturnType>
-            {
-                InternalVisitorModel(ArgType args)
-                    : args(args)
-                {
-                }
-
-                template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model) const
-                {
-                    return bf::invoke(
-                        &PhaseVisitorDerived::template algo<PhaseModelDerived>,
-                        gf::append(boost::ref(phase_model.derived()), args));
-                }
-
-                template <typename PhaseDataDerived>
-                ReturnType operator()(const PhaseDataBase<PhaseDataDerived, typename traits<PhaseDataDerived>::PS> &phase_data) const
-                {
-                    return bf::invoke(
-                        &PhaseVisitorDerived::template algo<PhaseDataDerived>,
-                        gf::append(boost::ref(phase_data.derived()), args));
-                }
-
-                ReturnType operator()(const PhaseModelVoid)
-                {
-                    return;
-                }
-
-                ArgType args;
-            };
-
-            template <typename Dummy>
-            struct InternalVisitorModel<NoArg, Dummy> : public boost::static_visitor<ReturnType>
-            {
-                InternalVisitorModel()
-                {
-                }
-
-                template <typename PhaseModelDerived>
-                ReturnType operator()(const PhaseModelBase<PhaseModelDerived, typename traits<PhaseModelDerived>::PS> &phase_model) const
-                {
-                    return PhaseVisitorDerived::template algo<PhaseModelDerived>(phase_model.derived());
-                }
-
-                template <typename PhaseDataDerived>
-                ReturnType operator()(const PhaseDataBase<PhaseDataDerived, typename traits<PhaseDataDerived>::PS> &phase_data) const
-                {
-                    return PhaseVisitorDerived::template algo<PhaseDataDerived>(phase_data.derived());
-                }
-            };
-
-        }; // struct PhaseUnaryVisitorBase
+        // Phase-specific unary visitor base
+        template <typename PhaseVisitorDerived, typename ReturnType = void>
+        using PhaseUnaryVisitorBase = UnaryVisitorBase<PhaseFamily, PhaseVisitorDerived, ReturnType>;
 
     } // namespace fusion
 

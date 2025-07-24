@@ -2,13 +2,13 @@
 #define __galileo_predictive_phases_phase_model_base_hpp__
 
 #include "galileo/predictive/phases/phase-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class PhaseModelBase : public internal::CRTP<Derived>
+    class PhaseModelBase
+        : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -36,181 +36,46 @@ namespace galileo
         template <typename StateMatrixType, typename ControlParamMatrixType>
         void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
-                         const int maxiter, const typename PS::NumScalar &tol) const
+                         const int maxiter, const typename PS::NumScalar tol) const
         {
             this->derived().quasiStatic(data, xs, ws, maxiter, tol);
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector)
+        Data_t createData(DataCollector *const collector) const
         {
             return this->derived().createData(collector);
         }
 
-        const typename PS::SegmentModel_t &segment() const
+        const PS &get_ps() const
         {
-            return this->derived().segment();
+            return this->derived().get_ps_impl();
         }
 
-        const typename PS::NumScalar &period() const
+        const PS &get_ps_impl() const
         {
-            return this->derived().period();
-        }
-
-        int NQb() const
-        {
-            return this->derived().NQb_impl();
-        }
-
-        int NQb_impl() const
-        {
-            return PS::NQb;
-        }
-
-        int NQj() const
-        {
-            return this->derived().NQj_impl();
-        }
-
-        int NQj_impl() const
-        {
-            return PS::NQj;
-        }
-
-        int NVb() const
-        {
-            return this->derived().NVb_impl();
-        }
-
-        int NVb_impl() const
-        {
-            return PS::NVb;
-        }
-
-        int NVj() const
-        {
-            return this->derived().NVj_impl();
-        }
-
-        int NVj_impl() const
-        {
-            return PS::NVj;
-        }
-
-        int NRotors() const
-        {
-            return this->derived().NRotors_impl();
-        }
-
-        int NRotors_impl() const
-        {
-            return PS::NRotors;
-        }
-
-        int NQ() const
-        {
-            return this->derived().NQ_impl();
-        }
-
-        int NQ_impl() const
-        {
-            return PS::NQ;
-        }
-
-        int NV() const
-        {
-            return this->derived().NV_impl();
-        }
-
-        int NV_impl() const
-        {
-            return PS::NV;
-        }
-
-        int NX() const
-        {
-            return this->derived().NX_impl();
-        }
-
-        int NX_impl() const
-        {
-            return PS::NX;
-        }
-
-        int NDX() const
-        {
-            return this->derived().NDX_impl();
-        }
-
-        int NDX_impl() const
-        {
-            return PS::NDX;
-        }
-
-        int NUa() const
-        {
-            return this->derived().NUa_impl();
-        }
-
-        int NUa_impl() const
-        {
-            return PS::NUa;
-        }
-
-        int NU() const
-        {
-            return this->derived().NU_impl();
-        }
-
-        int NU_impl() const
-        {
-            return PS::NU;
-        }
-
-        int NOrder() const
-        {
-            return this->derived().NOrder_impl();
-        }
-
-        int NOrder_impl() const
-        {
-            return PS::NOrder;
-        }
-
-        int NW() const
-        {
-            return this->derived().NW_impl();
-        }
-
-        int NW_impl() const
-        {
-            return PS::NW;
-        }
-
-        int NStages() const
-        {
-            return this->derived().NStages_impl();
-        }
-
-        int NStages_impl() const
-        {
-            return PS::NStages;
+            return ps_.get();
         }
 
     protected:
-        inline PhaseModelBase()
+        inline PhaseModelBase(const PS &ps)
+            : ps_(ps)
         {
         }
 
         inline PhaseModelBase(const PhaseModelBase &clone)
+            : ps_(clone.ps_)
         {
             *this = clone;
         }
 
         inline PhaseModelBase &operator=(const PhaseModelBase &clone)
         {
+            ps_ = clone.ps_;
             return *this;
         }
+
+        std::reference_wrapper<const PS> ps_;
 
     }; // class PhaseModelBase
 

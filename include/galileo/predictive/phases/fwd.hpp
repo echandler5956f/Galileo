@@ -14,9 +14,6 @@ namespace galileo
     {
     }; // struct PhaseDataVoid
 
-    template <typename PhaseSpec>
-    struct PhaseCollectionDefaultTpl;
-
     template <
         typename PhaseSpec,
         template <typename PS> class PhaseCollectionTpl>
