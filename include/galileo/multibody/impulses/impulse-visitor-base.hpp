@@ -1,5 +1,5 @@
-#ifndef __galileo_multibody_impulses_impulse_unary_visitor_hpp__
-#define __galileo_multibody_impulses_impulse_unary_visitor_hpp__
+#ifndef __galileo_multibody_impulses_impulse_visitor_base_hpp__
+#define __galileo_multibody_impulses_impulse_visitor_base_hpp__
 
 #include "galileo/common/visitors/unary-visitor.hpp"
 #include "galileo/multibody/impulses/impulse-base.hpp"
@@ -36,4 +36,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_impulses_impulse_unary_visitor_hpp__
+#endif // __galileo_multibody_impulses_impulse_visitor_base_hpp__

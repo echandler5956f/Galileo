@@ -1,7 +1,8 @@
-#ifndef __galileo_predictive_phases_phase_unary_visitor_hpp__
-#define __galileo_predictive_phases_phase_unary_visitor_hpp__
+#ifndef __galileo_predictive_phases_phase_visitor_base_hpp__
+#define __galileo_predictive_phases_phase_visitor_base_hpp__
 
 #include "galileo/common/visitors/unary-visitor.hpp"
+#include "galileo/common/visitors/binary-visitor.hpp"
 #include "galileo/predictive/phases/phase-base.hpp"
 
 namespace galileo
@@ -32,8 +33,11 @@ namespace galileo
         template <typename PhaseVisitorDerived, typename ReturnType = void>
         using PhaseUnaryVisitorBase = UnaryVisitorBase<PhaseFamily, PhaseVisitorDerived, ReturnType>;
 
+        template <typename PhaseVisitorDerived, typename ReturnType = void>
+        using PhaseBinaryVisitorBase = BinaryVisitorBase<PhaseFamily, PhaseVisitorDerived, ReturnType>;
+
     } // namespace fusion
 
 } // namespace galileo
 
-#endif // __galileo_predictive_phases_phase_unary_visitor_hpp__
+#endif // __galileo_predictive_phases_phase_visitor_base_hpp__

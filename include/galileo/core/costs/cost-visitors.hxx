@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "galileo/core/costs/cost-unary-visitor.hpp"
+#include "galileo/core/costs/cost-visitor-base.hpp"
 #include <boost/fusion/container/generation/make_vector.hpp>
 
 #include "galileo/core/costs/cost-visitors.hpp"

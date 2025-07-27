@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "galileo/multibody/impulses/impulse-unary-visitor.hpp"
+#include "galileo/multibody/impulses/impulse-visitor-base.hpp"
 #include <boost/fusion/container/generation/make_vector.hpp>
 
 #include "galileo/multibody/impulses/impulse-visitors.hpp"

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "galileo/core/constraints/equality/constraint-unary-visitor.hpp"
+#include "galileo/core/constraints/equality/constraint-visitor-base.hpp"
 #include <boost/fusion/container/generation/make_vector.hpp>
 
 #include "galileo/core/constraints/equality/constraint-visitors.hpp"

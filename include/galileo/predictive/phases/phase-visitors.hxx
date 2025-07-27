@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "galileo/predictive/phases/phase-unary-visitor.hpp"
+#include "galileo/predictive/phases/phase-visitor-base.hpp"
 #include <boost/fusion/container/generation/make_vector.hpp>
 
 #include "galileo/predictive/phases/phase-visitors.hpp"

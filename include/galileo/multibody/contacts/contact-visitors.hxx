@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "galileo/multibody/contacts/contact-unary-visitor.hpp"
+#include "galileo/multibody/contacts/contact-visitor-base.hpp"
 #include <boost/fusion/container/generation/make_vector.hpp>
 
 #include "galileo/multibody/contacts/contact-visitors.hpp"

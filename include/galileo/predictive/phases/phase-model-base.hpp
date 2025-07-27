@@ -17,6 +17,8 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
+        using NumScalar = typename PS::NumScalar;
+
         template <typename StateMatrixType, typename ControlParamMatrixType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateMatrixType> &xs,
@@ -36,7 +38,7 @@ namespace galileo
         template <typename StateMatrixType, typename ControlParamMatrixType>
         void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
-                         const int maxiter, const typename PS::NumScalar tol) const
+                         const int maxiter, const NumScalar &tol) const
         {
             this->derived().quasiStatic(data, xs, ws, maxiter, tol);
         }

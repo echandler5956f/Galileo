@@ -1,5 +1,5 @@
-#ifndef __galileo_multibody_contacts_contact_unary_visitor_hpp__
-#define __galileo_multibody_contacts_contact_unary_visitor_hpp__
+#ifndef __galileo_multibody_contacts_contact_visitor_base_hpp__
+#define __galileo_multibody_contacts_contact_visitor_base_hpp__
 
 #include "galileo/common/visitors/unary-visitor.hpp"
 #include "galileo/multibody/contacts/contact-base.hpp"
@@ -36,4 +36,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_multibody_contacts_contact_unary_visitor_hpp__
+#endif // __galileo_multibody_contacts_contact_visitor_base_hpp__
