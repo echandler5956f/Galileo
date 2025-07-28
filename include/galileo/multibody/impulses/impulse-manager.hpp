@@ -1,16 +1,9 @@
 #ifndef __galileo_multibody_impulses_impulse_manager_hpp__
 #define __galileo_multibody_impulses_impulse_manager_hpp__
 
-#include <iostream>
-#include <map>
-#include <set>
-#include <string>
+#include "galileo/common/container/manager-base.hpp"
 
-#include "galileo/multibody/impulses/fwd.hpp"
-
-#include "galileo/multibody/force-base.hpp"
 #include "galileo/multibody/impulses/impulse-base.hpp"
-
 #include "galileo/multibody/impulses/impulse-generic.hpp"
 
 #include "galileo/common/container/aligned-vector.hpp"
@@ -25,21 +18,20 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
     struct ImpulseItemTpl
+        : public ManagerItemTpl<ImpulseItemTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using Base = ManagerItemTpl<ImpulseItemTpl<PhaseSpec, ImpulseCollectionTpl>>;
 
-        using MetaManager_t = ImpulseManagerTpl<PS, ImpulseCollectionTpl>;
-        using Model_t = typename traits<MetaManager_t>::Model_t;
-        using Data_t = typename traits<MetaManager_t>::Data_t;
+        ImpulseItemTpl(const std::string &name, const Model_t &model, const bool active = true)
+            : Base(name, model, active)
+        {
+        }
 
-        ImpulseItemTpl() {}
-        ImpulseItemTpl(const std::string &name_, const Model_t &model_, const bool active_ = true)
-            : name(name_), model(model_), active(active_) {}
-
-        std::string name;
-        Model_t model;
-        bool active;
-    };
+        using Base::active;
+        using Base::model;
+        using Base::name;
+    }; // class ImpulseItemTpl
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
@@ -97,6 +89,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
     class ImpulseDataManagerTpl
+        : public ManagerDataBase<ImpulseDataManagerTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -105,6 +98,7 @@ namespace galileo
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
         using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
+        using Base = ManagerDataBase<ImpulseDataManagerTpl<PhaseSpec, ImpulseCollectionTpl>>;
 
         using Meta_t = typename traits<MetaManager_t>::Meta_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
@@ -125,9 +119,10 @@ namespace galileo
         using RobotData_t = typename PS::RobotData_t;
 
         ImpulseDataManagerTpl(const ModelManager_t &model_manager, RobotData_t *const robot)
-            : fext(model_manager.get_state().get_robot().njoints, Force_t::Zero()),
-              Jc(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
-              dv0_dq(model_manager.get_nc_total(), model_manager.get_ps().get_nv()),
+            : Base(model_manager, robot),
+              fext(model_manager.get_state().get_robot().njoints, Force_t::Zero()),
+              Jc(model_manager.get_n_total(), model_manager.get_ps().get_nv()),
+              dv0_dq(model_manager.get_n_total(), model_manager.get_ps().get_nv()),
               vnext(model_manager.get_ps().get_nv()),
               dnext_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
         {
@@ -135,19 +130,10 @@ namespace galileo
             dv0_dq.setZero();
             vnext.setZero();
             dnext_dx.setZero();
-            for (typename ModelContainer_t::const_iterator
-                     it = model_manager.get_impulses().begin();
-                 it != model_manager.get_impulses().end(); ++it)
-            {
-                const Item_t &item = it->second;
-                impulses.insert(
-                    std::make_pair(item.name, item.model.createData(robot)));
-            }
         }
 
-        DataContainer_t impulses;
+        using Base::items;
         ForceVector_t fext;
-
         Jc_t Jc;
         dv0_dq_t dv0_dq;
         vnext_t vnext;
@@ -158,6 +144,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
     class ImpulseModelManagerTpl
+        : public ManagerModelBase<ImpulseModelManagerTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -168,6 +155,7 @@ namespace galileo
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
         using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
+        using Base = ManagerModelBase<ImpulseModelManagerTpl<PhaseSpec, ImpulseCollectionTpl>>;
 
         using Meta_t = typename traits<MetaManager_t>::Meta_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
@@ -182,77 +170,9 @@ namespace galileo
         using ForceIterator_t = typename ForceVector_t::iterator;
 
         ImpulseModelManagerTpl(const PS &ps)
-            : ps_(ps), state_(ps.get_state()),
-              nc_active_dim_(DimensionTpl<Eigen::Dynamic>(0)), nc_total_dim_(DimensionTpl<Eigen::Dynamic>(0))
+            : Base(),
+              ps_(ps), state_(ps.get_state())
         {
-        }
-
-        void addImpulse(const std::string &name, const Model_t &model, bool active = true)
-        {
-            std::pair<typename ModelContainer_t::iterator, bool> ret =
-                impulses_.insert(std::make_pair(
-                    name, Item_t(name, model, active)));
-            if (ret.second == false)
-            {
-                std::cerr << "Warning: we couldn't add the " << name
-                          << " impulse item, it already existed." << std::endl;
-            }
-            else if (active)
-            {
-                nc_active_dim_ += model.get_nc();
-                nc_total_dim_ += model.get_nc();
-                active_set_.insert(name);
-            }
-            else if (!active)
-            {
-                nc_total_dim_ += model.get_nc();
-                inactive_set_.insert(name);
-            }
-        }
-
-        void removeImpulse(const std::string &name)
-        {
-            typename ModelContainer_t::iterator it = impulses_.find(name);
-            if (it != impulses_.end())
-            {
-                nc_active_dim_ -= it->second.model.get_nc();
-                nc_total_dim_ -= it->second.model.get_nc();
-                impulses_.erase(it);
-                inactive_set_.erase(name);
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't remove the " << name
-                          << " impulse item, it doesn't exist." << std::endl;
-            }
-        }
-
-        void changeImpulseStatus(const std::string &name, bool active)
-        {
-            typename ModelContainer_t::iterator it = impulses_.find(name);
-            if (it != impulses_.end())
-            {
-                if (active && !it->second.active)
-                {
-                    nc_active_dim_ += it->second.model.get_nc();
-                    active_set_.insert(name);
-                    inactive_set_.erase(name);
-                    it->second.active = active;
-                }
-                else if (!active && it->second.active)
-                {
-                    nc_active_dim_ -= it->second.model.get_nc();
-                    active_set_.erase(name);
-                    inactive_set_.insert(name);
-                    it->second.active = active;
-                }
-                it->second.active = active;
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't change the status of the " << name
-                          << " impulse item, it doesn't exist." << std::endl;
-            }
         }
 
         template <typename StateVectorType>
@@ -261,19 +181,19 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                it_d = data.impulses.begin(), end_d = data.impulses.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
-                auto nc_dim_i = m_i.model.get_nc();
+                auto nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x);
-                    block(data.Jc, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.Jc();
-                    nc_accum_i += nc_dim_i;
+                    block(data.Jc, nc_accum_i, 0, nc_i, get_ps().get_nv_dim()) = d_i.Jc();
+                    nc_accum_i += nc_i;
                 }
             }
         }
@@ -284,19 +204,19 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                it_d = data.impulses.begin(), end_d = data.impulses.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
-                auto nc_dim_i = m_i.model.get_nc();
+                auto nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x);
-                    block(data.dv0_dq, nc_accum_i, 0, nc_dim_i, get_ps().get_nv_dim()) = d_i.dv0_dq();
-                    nc_accum_i += nc_dim_i;
+                    block(data.dv0_dq, nc_accum_i, 0, nc_i, get_ps().get_nv_dim()) = d_i.dv0_dq();
+                    nc_accum_i += nc_i;
                 }
             }
         }
@@ -318,21 +238,21 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                it_d = data.impulses.begin(), end_d = data.impulses.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 Data_t &d_i = it_d->second;
-                auto nc_dim_i = m_i.model.get_nc();
+                auto nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
-                    const auto force_i = segment(force, nc_accum_i, nc_dim_i);
+                    const auto force_i = segment(force, nc_accum_i, nc_i);
                     m_i.model.updateForce(d_i, force_i);
                     const pinocchio::JointIndex joint =
                         get_state().get_robot().frames[d_i.frame()].parentJoint;
                     data.fext[joint] = d_i.fext();
-                    nc_accum_i += nc_dim_i;
+                    nc_accum_i += nc_i;
                 }
                 else
                 {
@@ -353,18 +273,18 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                it_d = data.impulses.begin(), end_d = data.impulses.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 Data_t &d_i = it_d->second;
-                auto nc_dim_i = m_i.model.get_nc();
+                auto nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
-                    const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_dim_i, get_ps().get_ndx_dim());
+                    const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_i, get_ps().get_ndx_dim());
                     m_i.model.updateForceDiff(d_i, df_dx_i);
-                    nc_accum_i += nc_dim_i;
+                    nc_accum_i += nc_i;
                 }
                 else
                 {
@@ -377,8 +297,8 @@ namespace galileo
         {
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = impulses_.begin(), end_m = impulses_.end(),
-                it_d = data.impulses.begin(), end_d = data.impulses.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -398,7 +318,8 @@ namespace galileo
             }
         }
 
-        DataManager_t createData(RobotData_t *const robot) const
+        template <typename RobotDataType>
+        DataManager_t createData(RobotDataType *const robot) const
         {
             return DataManager_t(*this, robot);
         }
@@ -413,41 +334,39 @@ namespace galileo
             return state_.get();
         }
 
-        const ModelContainer_t &get_impulses() const
-        {
-            return impulses_;
-        }
+        using Base::addItem;
+        using Base::removeItem;
 
-        const DimensionTpl<Eigen::Dynamic> &get_nc_active_dim() const
-        {
-            return nc_active_dim_;
-        }
+        using Base::changeItemStatus;
 
-        int get_nc_active() const
-        {
-            return nc_active_dim_.value();
-        }
+        using Base::get_active_set;
+        using Base::get_inactive_set;
+        using Base::get_items;
 
-        const DimensionTpl<Eigen::Dynamic> &get_nc_total_dim() const
-        {
-            return nc_total_dim_;
-        }
+        using Base::get_item_status;
 
-        int get_nc_total() const
-        {
-            return nc_total_dim_.value();
-        }
+        using Base::get_n_active;
+        using Base::get_n_active_dim;
+
+        using Base::get_n_total;
+        using Base::get_n_total_dim;
 
     protected:
+        int get_model_n(const Model_t &model) const
+        {
+            return model.get_nc();
+        }
+
+        using Base::items_;
+
+        using Base::active_set_;
+        using Base::inactive_set_;
+
+        using Base::active_dim_;
+        using Base::total_dim_;
+
         std::reference_wrapper<const PS> ps_;
         std::reference_wrapper<const State_t> state_;
-        ModelContainer_t impulses_;
-
-        std::set<std::string> active_set_;
-        std::set<std::string> inactive_set_;
-
-        DimensionTpl<Eigen::Dynamic> nc_active_dim_;
-        DimensionTpl<Eigen::Dynamic> nc_total_dim_;
 
     }; // class ImpulseModelManagerTpl
 

@@ -1,13 +1,12 @@
 #ifndef __galileo_core_constraints_equality_constraint_manager_hpp__
 #define __galileo_core_constraints_equality_constraint_manager_hpp__
 
-#include <iostream>
-#include <map>
-#include <set>
-#include <string>
+#include "galileo/common/container/manager-base.hpp"
 
+#include "galileo/core/constraints/equality/constraint-base.hpp"
 #include "galileo/core/constraints/equality/constraint-generic.hpp"
-#include "galileo/core/constraints/equality/fwd.hpp"
+
+#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {
@@ -19,21 +18,20 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
     struct ConstraintItemTpl
+        : public ManagerItemTpl<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using Base = ManagerItemTpl<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>;
 
-        using MetaManager_t = ConstraintManagerTpl<PS, ConstraintCollectionTpl>;
-        using Model_t = typename traits<MetaManager_t>::Model_t;
-        using Data_t = typename traits<MetaManager_t>::Data_t;
+        ConstraintItemTpl(const std::string &name, const Model_t &model, const bool active = true)
+            : Base(name, model, active)
+        {
+        }
 
-        ConstraintItemTpl() {}
-        ConstraintItemTpl(const std::string &name_, const Model_t &model_, bool active_ = true)
-            : name(name_), model(model_), active(active_) {}
-
-        std::string name;
-        Model_t model;
-        bool active;
-    };
+        using Base::active;
+        using Base::model;
+        using Base::name;
+    }; // class ConstraintItemTpl
 
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
@@ -89,6 +87,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
     class ConstraintDataManagerTpl
+        : public ManagerDataBase<ConstraintDataManagerTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -97,6 +96,7 @@ namespace galileo
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
         using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
+        using Base = ManagerDataBase<ConstraintDataManagerTpl<PhaseSpec, ConstraintCollectionTpl>>;
 
         using Meta_t = typename traits<MetaManager_t>::Meta_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
@@ -110,23 +110,17 @@ namespace galileo
 
         template <typename DataCollector>
         ConstraintDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
-            : H(model_manager.get_nh()),
-              Hx(model_manager.get_nh(), model_manager.get_ps().get_ndx()),
-              Hu(model_manager.get_nh(), model_manager.get_ps().get_nu())
+            : Base(model_manager, collector),
+              H(model_manager.get_n_total()),
+              Hx(model_manager.get_n_total(), model_manager.get_ps().get_ndx()),
+              Hu(model_manager.get_n_total(), model_manager.get_ps().get_nu())
         {
             H.setZero();
             Hx.setZero();
             Hu.setZero();
-            for (typename ModelManager_t::ModelContainer_t::const_iterator
-                     it = model_manager.get_constraints().begin();
-                 it != model_manager.get_constraints().end(); ++it)
-            {
-                const Item_t &item = it->second;
-                constraints.insert(std::make_pair(item.name, item.model.createData(collector)));
-            }
         }
 
-        DataContainer_t constraints;
+        using Base::items;
         H_t H;
         Hx_t Hx;
         Hu_t Hu;
@@ -136,6 +130,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
     class ConstraintModelManagerTpl
+        : public ManagerModelBase<ConstraintModelManagerTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -144,6 +139,7 @@ namespace galileo
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
         using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
+        using Base = ManagerModelBase<ConstraintModelManagerTpl<PhaseSpec, ConstraintCollectionTpl>>;
 
         using Meta_t = typename traits<MetaManager_t>::Meta_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
@@ -155,72 +151,9 @@ namespace galileo
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
         ConstraintModelManagerTpl(const PS &ps)
-            : ps_(ps), nh_dim_(0)
+            : Base(),
+              ps_(ps)
         {
-        }
-
-        void addConstraint(const std::string &name, const Model_t &model, const bool active = true)
-        {
-            std::pair<typename ModelContainer_t::iterator, bool> ret =
-                constraints_.insert(std::make_pair(
-                    name, Item_t(name, model, active)));
-            if (ret.second == false)
-            {
-                std::cerr << "Warning: we couldn't add the " << name
-                          << " constraint item, it already existed." << std::endl;
-            }
-            else if (active)
-            {
-                nh_dim_ += model.get_nh();
-                active_set_.insert(name);
-            }
-            else if (!active)
-            {
-                inactive_set_.insert(name);
-            }
-        }
-
-        void removeConstraint(const std::string &name)
-        {
-            typename ModelContainer_t::iterator it = constraints_.find(name);
-            if (it != constraints_.end())
-            {
-                nh_dim_ -= it->second.model.get_nh();
-                constraints_.erase(it);
-                inactive_set_.erase(name);
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't remove the " << name
-                          << " constraint item, it doesn't exist." << std::endl;
-            }
-        }
-
-        void changeConstraintStatus(const std::string &name, bool active)
-        {
-            typename ModelContainer_t::iterator it = constraints_.find(name);
-            if (it != constraints_.end())
-            {
-                if (active && !it->second.active)
-                {
-                    nh_dim_ += it->second.model.get_nh();
-                    active_set_.insert(name);
-                    inactive_set_.erase(name);
-                    it->second.active = active;
-                }
-                else if (!active && it->second.active)
-                {
-                    nh_dim_ -= it->second.model.get_nh();
-                    active_set_.erase(name);
-                    inactive_set_.insert(name);
-                    it->second.active = active;
-                }
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't change the status of the " << name
-                          << " constraint item, it doesn't exist." << std::endl;
-            }
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -232,8 +165,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = constraints_.begin(), end_m = constraints_.end(),
-                it_d = data.constraints.begin(), end_d = data.constraints.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -242,9 +175,9 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x, u);
-                    auto nh_dim_i = m_i.model.get_nh();
-                    segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
-                    nh_accum_i += nh_dim_i;
+                    auto nh_i = get_model_n(m_i.model);
+                    segment(data.H, nh_accum_i, nh_i) = d_i.H();
+                    nh_accum_i += nh_i;
                 }
             }
         }
@@ -257,8 +190,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = constraints_.begin(), end_m = constraints_.end(),
-                it_d = data.constraints.begin(), end_d = data.constraints.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -267,9 +200,9 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x);
-                    auto nh_dim_i = m_i.model.get_nh();
-                    segment(data.H, nh_accum_i, nh_dim_i) = d_i.H();
-                    nh_accum_i += nh_dim_i;
+                    auto nh_i = get_model_n(m_i.model);
+                    segment(data.H, nh_accum_i, nh_i) = d_i.H();
+                    nh_accum_i += nh_i;
                 }
             }
         }
@@ -283,8 +216,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = constraints_.begin(), end_m = constraints_.end(),
-                it_d = data.constraints.begin(), end_d = data.constraints.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -293,10 +226,10 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x, u);
-                    auto nh_dim_i = m_i.model.get_nh();
-                    block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
-                    block(data.Hu, nh_accum_i, 0, nh_dim_i, get_ps().get_nu_dim()) = d_i.Hu();
-                    nh_accum_i += nh_dim_i;
+                    auto nh_i = get_model_n(m_i.model);
+                    block(data.Hx, nh_accum_i, 0, nh_i, get_ps().get_ndx_dim()) = d_i.Hx();
+                    block(data.Hu, nh_accum_i, 0, nh_i, get_ps().get_nu_dim()) = d_i.Hu();
+                    nh_accum_i += nh_i;
                 }
             }
         }
@@ -309,8 +242,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = constraints_.begin(), end_m = constraints_.end(),
-                it_d = data.constraints.begin(), end_d = data.constraints.end();
+            for (it_m = items_.begin(), end_m = items_.end(),
+                it_d = data.items.begin(), end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -319,9 +252,9 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x);
-                    auto nh_dim_i = m_i.model.get_nh();
-                    block(data.Hx, nh_accum_i, 0, nh_dim_i, get_ps().get_ndx_dim()) = d_i.Hx();
-                    nh_accum_i += nh_dim_i;
+                    auto nh_i = get_model_n(m_i.model);
+                    block(data.Hx, nh_accum_i, 0, nh_i, get_ps().get_ndx_dim()) = d_i.Hx();
+                    nh_accum_i += nh_i;
                 }
             }
         }
@@ -332,60 +265,43 @@ namespace galileo
             return DataManager_t(*this, collector);
         }
 
-        const ModelContainer_t &get_constraints() const
-        {
-            return constraints_;
-        }
-
-        const std::set<std::string> &get_active_set() const
-        {
-            return active_set_;
-        }
-
-        const std::set<std::string> &get_inactive_set() const
-        {
-            return inactive_set_;
-        }
-
-        bool get_constraint_status(const std::string &name) const
-        {
-            typename ModelContainer_t::const_iterator it =
-                constraints_.find(name);
-            if (it != constraints_.end())
-            {
-                return it->second.active;
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't get the status of the " << name
-                          << " constraint item, it doesn't exist." << std::endl;
-                return false;
-            }
-        }
-
         const PS &get_ps() const
         {
             return ps_.get();
         }
 
-        const DimensionTpl<Eigen::Dynamic> &get_nh_dim() const
-        {
-            return nh_dim_;
-        }
+        using Base::addItem;
+        using Base::removeItem;
 
-        int get_nh() const
-        {
-            return nh_dim_.value();
-        }
+        using Base::changeItemStatus;
+
+        using Base::get_active_set;
+        using Base::get_inactive_set;
+        using Base::get_items;
+
+        using Base::get_item_status;
+
+        using Base::get_n_active;
+        using Base::get_n_active_dim;
+
+        using Base::get_n_total;
+        using Base::get_n_total_dim;
 
     protected:
+        int get_model_n(const Model_t &model) const
+        {
+            return model.get_nh();
+        }
+
+        using Base::items_;
+
+        using Base::active_set_;
+        using Base::inactive_set_;
+
+        using Base::active_dim_;
+        using Base::total_dim_;
+
         std::reference_wrapper<const PS> ps_;
-        ModelContainer_t constraints_;
-
-        std::set<std::string> active_set_;
-        std::set<std::string> inactive_set_;
-
-        DimensionTpl<Eigen::Dynamic> nh_dim_;
 
     }; // class ConstraintModelManagerTpl
 

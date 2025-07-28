@@ -1,13 +1,12 @@
 #ifndef __galileo_core_costs_cost_manager_hpp__
 #define __galileo_core_costs_cost_manager_hpp__
 
-#include <iostream>
-#include <map>
-#include <set>
-#include <string>
+#include "galileo/common/container/manager-base.hpp"
 
+#include "galileo/core/costs/cost-base.hpp"
 #include "galileo/core/costs/cost-generic.hpp"
-#include "galileo/core/costs/fwd.hpp"
+
+#include "galileo/common/container/aligned-vector.hpp"
 
 // Despite its name, this file only pertains to cost residuals,
 // not just any general costs derived from CostModelBase/CostDataBase
@@ -22,24 +21,24 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
     struct CostItemTpl
+        : public ManagerItemTpl<CostItemTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
-
-        using MetaManager_t = CostManagerTpl<PS, CostCollectionTpl>;
-        using Model_t = typename traits<MetaManager_t>::Model_t;
-        using Data_t = typename traits<MetaManager_t>::Data_t;
+        using Base = ManagerItemTpl<CostItemTpl<PhaseSpec, CostCollectionTpl>>;
 
         using NumScalar = typename PS::NumScalar;
 
-        CostItemTpl(const std::string &name_, const Model_t &model_,
-                    const NumScalar &weight_, bool active_ = true)
-            : name(name_), model(model_), weight(weight_), active(active_) {}
+        CostItemTpl(const std::string &name, const Model_t &model, const NumScalar &weight, const bool active = true)
+            : Base(name, model, active),
+              weight(weight)
+        {
+        }
 
-        std::string name;
-        Model_t model;
+        using Base::active;
+        using Base::model;
+        using Base::name;
         NumScalar weight;
-        bool active;
-    };
+    }; // class CostItemTpl
 
     template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
@@ -96,6 +95,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
     class CostDataManagerTpl
+        : public ManagerDataBase<CostDataManagerTpl<PhaseSpec, CostCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -104,6 +104,7 @@ namespace galileo
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
         using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
+        using Base = ManagerDataBase<CostDataManagerTpl<PhaseSpec, CostCollectionTpl>>;
 
         using Meta_t = typename traits<MetaManager_t>::Meta_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
@@ -117,7 +118,8 @@ namespace galileo
 
         template <typename DataCollector>
         CostDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
-            : L(0.),
+            : Base(model_manager, collector),
+              L(0.),
               Lx(model_manager.get_ps().get_ndx()),
               Lu(model_manager.get_ps().get_nu()),
               Lxx(model_manager.get_ps().get_ndx(), model_manager.get_ps().get_ndx()),
@@ -129,16 +131,9 @@ namespace galileo
             Lxx.setZero();
             Lxu.setZero();
             Luu.setZero();
-            for (typename ModelManager_t::ModelContainer_t::const_iterator
-                     it = model_manager.get_costs().begin();
-                 it != model_manager.get_costs().end(); ++it)
-            {
-                const Item_t &item = it->second;
-                costs.insert(std::make_pair(item.name, item.model.createData(collector)));
-            }
         }
 
-        DataContainer_t costs;
+        using Base::items;
         L_t L;
         Lx_t Lx;
         Lu_t Lu;
@@ -151,6 +146,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
     class CostModelManagerTpl
+        : public ManagerModelBase<CostModelManagerTpl<PhaseSpec, CostCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -159,6 +155,7 @@ namespace galileo
         using Collection_t = typename traits<MetaManager_t>::Collection_t;
         using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
+        using Base = ManagerModelBase<CostModelManagerTpl<PhaseSpec, CostCollectionTpl>>;
 
         using Meta_t = typename traits<MetaManager_t>::Meta_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
@@ -173,70 +170,9 @@ namespace galileo
         using VarScalar = typename PS::VarScalar;
 
         CostModelManagerTpl(const PS &ps)
-            : ps_(ps)
+            : Base(),
+              ps_(ps)
         {
-        }
-
-        void addCost(const std::string &name, const Model_t &model, const NumScalar &weight,
-                     const bool active = true)
-        {
-            std::pair<typename ModelContainer_t::iterator, bool> ret =
-                costs_.insert(std::make_pair(
-                    name, Item_t(name, model, weight, active)));
-            if (ret.second == false)
-            {
-                std::cerr << "Warning: we couldn't add the " << name
-                          << " cost item, it already existed." << std::endl;
-            }
-            else if (active)
-            {
-                active_set_.insert(name);
-            }
-            else if (!active)
-            {
-                inactive_set_.insert(name);
-            }
-        }
-
-        void removeCost(const std::string &name)
-        {
-            typename ModelContainer_t::iterator it = costs_.find(name);
-            if (it != costs_.end())
-            {
-                costs_.erase(it);
-                active_set_.erase(name);
-                inactive_set_.erase(name);
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't remove the " << name
-                          << " cost item, it doesn't exist." << std::endl;
-            }
-        }
-
-        void changeCostStatus(const std::string &name, bool active)
-        {
-            typename ModelContainer_t::iterator it = costs_.find(name);
-            if (it != costs_.end())
-            {
-                if (active && !it->second.active)
-                {
-                    active_set_.insert(name);
-                    inactive_set_.erase(name);
-                    it->second.active = active;
-                }
-                else if (!active && it->second.active)
-                {
-                    active_set_.erase(name);
-                    inactive_set_.insert(name);
-                    it->second.active = active;
-                }
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't change the status of the " << name
-                          << " cost item, it doesn't exist." << std::endl;
-            }
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -248,8 +184,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
-                end_d = data.costs.end();
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
+                end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -271,8 +207,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
-                end_d = data.costs.end();
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
+                end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -299,8 +235,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
-                end_d = data.costs.end();
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
+                end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -327,8 +263,8 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = costs_.begin(), end_m = costs_.end(), it_d = data.costs.begin(),
-                end_d = data.costs.end();
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
+                end_d = data.items.end();
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
@@ -354,43 +290,38 @@ namespace galileo
             return ps_.get();
         }
 
-        const ModelContainer_t &get_costs() const
-        {
-            return costs_;
-        }
+        using Base::addItem;
+        using Base::removeItem;
 
-        const std::set<std::string> &get_active_set() const
-        {
-            return active_set_;
-        }
+        using Base::changeItemStatus;
 
-        const std::set<std::string> &get_inactive_set() const
-        {
-            return inactive_set_;
-        }
+        using Base::get_active_set;
+        using Base::get_inactive_set;
+        using Base::get_items;
 
-        bool get_cost_status(const std::string &name) const
-        {
-            typename ModelContainer_t::const_iterator it =
-                costs_.find(name);
-            if (it != costs_.end())
-            {
-                return it->second.active;
-            }
-            else
-            {
-                std::cerr << "Warning: we couldn't get the status of the " << name
-                          << " cost item, it doesn't exist." << std::endl;
-                return false;
-            }
-        }
+        using Base::get_item_status;
+
+        using Base::get_n_active;
+        using Base::get_n_active_dim;
+
+        using Base::get_n_total;
+        using Base::get_n_total_dim;
 
     protected:
-        std::reference_wrapper<const PS> ps_;
-        ModelContainer_t costs_;
+        int get_model_n(const Model_t &model) const
+        {
+            return 0;
+        }
 
-        std::set<std::string> active_set_;
-        std::set<std::string> inactive_set_;
+        using Base::items_;
+
+        using Base::active_set_;
+        using Base::inactive_set_;
+
+        using Base::active_dim_;
+        using Base::total_dim_;
+
+        std::reference_wrapper<const PS> ps_;
 
     }; // class CostModelManagerTpl
 
