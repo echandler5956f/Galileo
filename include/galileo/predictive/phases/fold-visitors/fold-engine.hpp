@@ -218,7 +218,7 @@ namespace galileo
             // Get iterators for the container
             // Uses universal reference to avoid duplicating const vs non-const versions
             template <typename Container>
-            auto get_iterators(Container &&container)
+            static auto get_iterators(Container &&container)
             {
                 if constexpr (IsLeftFold)
                 {
