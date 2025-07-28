@@ -1,14 +1,8 @@
 #ifndef __galileo_core_constraints_equality_constraint_visitors_hxx__
 #define __galileo_core_constraints_equality_constraint_visitors_hxx__
 
-#include <vector>
-
 #include "galileo/core/constraints/equality/constraint-visitor-base.hpp"
-#include <boost/fusion/container/generation/make_vector.hpp>
-
 #include "galileo/core/constraints/equality/constraint-visitors.hpp"
-
-#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {

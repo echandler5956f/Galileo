@@ -1,15 +1,8 @@
 #ifndef __galileo_multibody_contacts_contact_visitors_hxx__
 #define __galileo_multibody_contacts_contact_visitors_hxx__
 
-#include <stdexcept>
-#include <vector>
-
 #include "galileo/multibody/contacts/contact-visitor-base.hpp"
-#include <boost/fusion/container/generation/make_vector.hpp>
-
 #include "galileo/multibody/contacts/contact-visitors.hpp"
-
-#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {

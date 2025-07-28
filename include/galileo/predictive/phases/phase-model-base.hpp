@@ -43,10 +43,9 @@ namespace galileo
             this->derived().quasiStatic(data, xs, ws, maxiter, tol);
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData() const
         {
-            return this->derived().createData(collector);
+            return this->derived().createData();
         }
 
         const PS &get_ps() const

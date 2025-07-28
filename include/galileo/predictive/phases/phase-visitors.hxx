@@ -1,14 +1,9 @@
 #ifndef __galileo_predictive_phases_phase_visitors_hxx__
 #define __galileo_predictive_phases_phase_visitors_hxx__
 
-#include <vector>
-
 #include "galileo/predictive/phases/phase-visitor-base.hpp"
-#include <boost/fusion/container/generation/make_vector.hpp>
-
 #include "galileo/predictive/phases/phase-visitors.hpp"
 
-#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {

@@ -1,15 +1,8 @@
 #ifndef __galileo_multibody_impulses_impulse_visitors_hxx__
 #define __galileo_multibody_impulses_impulse_visitors_hxx__
 
-#include <stdexcept>
-#include <vector>
-
 #include "galileo/multibody/impulses/impulse-visitor-base.hpp"
-#include <boost/fusion/container/generation/make_vector.hpp>
-
 #include "galileo/multibody/impulses/impulse-visitors.hpp"
-
-#include "galileo/common/container/aligned-vector.hpp"
 
 namespace galileo
 {
