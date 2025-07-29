@@ -34,8 +34,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 option(ENABLE_VECTORIZATION_SUPPORT
     "Enable vectorization and further processor-related optimizations" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
-option(GALILEO_BUILD_TESTS "Build the tests for galileo" ON)
-option(GALILEO_BUILD_EXAMPLES "Build the examples for galileo" ON)
+option(BUILD_TESTS "Build the tests for Galileo" ON)
+option(BUILD_EXAMPLES "Build the examples for Galileo" ON)
+option(BUILD_WITH_CANDLEWICK_SUPPORT "Build Galileo with Candlewick visualization support" OFF)
 
 add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization
                     -Wno-sign-conversion -Wformat=2 -Winit-self
@@ -57,6 +58,11 @@ find_package(pinocchio REQUIRED)
 find_package(mujoco REQUIRED)
 find_package(GLFW3 REQUIRED)
 find_package(Threads REQUIRED)
+
+if(BUILD_WITH_CANDLEWICK_SUPPORT)
+  find_package(candlewick REQUIRED)
+  message(STATUS "Galileo: Building with Candlewick visualization support")
+endif()
 
 include_directories(${GALILEO_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${mujoco_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -83,7 +89,7 @@ install(
 )
 
 # Install test resources if they exist
-if(GALILEO_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+if(BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources")
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/galileo/resources"
@@ -111,6 +117,11 @@ include(CMakePackageConfigHelpers)
 add_library(galileo INTERFACE)
 
 target_compile_definitions(galileo INTERFACE ${GALILEO_DEFINITIONS})
+
+if(BUILD_WITH_CANDLEWICK_SUPPORT)
+  target_compile_definitions(galileo INTERFACE GALILEO_WITH_CANDLEWICK)
+endif()
+
 target_include_directories(galileo INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
@@ -128,6 +139,10 @@ target_link_libraries(galileo INTERFACE
   mujoco
   glfw
 )
+
+if(BUILD_WITH_CANDLEWICK_SUPPORT)
+  target_link_libraries(galileo INTERFACE candlewick_multibody)
+endif()
 
 set_target_properties(galileo PROPERTIES EXPORT_NAME Galileo)
 
@@ -161,7 +176,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UseGalileo.cmake
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GalileoUninstall.cmake)
 
-if(GALILEO_BUILD_TESTS)
+if(BUILD_TESTS)
   enable_testing()
 
   include(FetchContent)
@@ -178,6 +193,6 @@ if(GALILEO_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
-if(GALILEO_BUILD_EXAMPLES)
+if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
