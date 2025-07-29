@@ -46,7 +46,7 @@
 
 #include "galileo/predictive/segments/implementations/segment-erk-euler.hpp"
 
-#include "galileo/predictive/phases/implementations/phase-multibody-contact.hpp"
+#include "galileo/predictive/phases/implementations/phase-multibody.hpp"
 
 #include "galileo/core/data/data-collector-default.hpp"
 
