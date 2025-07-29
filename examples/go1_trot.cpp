@@ -37,6 +37,7 @@
 #include "galileo/multibody/impulses/impulse-manager.hpp"
 
 #include "galileo/predictive/nodes/implementations/node-contact-fwddyn.hpp"
+#include "galileo/predictive/nodes/implementations/node-impulse-fwddyn.hpp"
 
 #include "galileo/common/math/barycentric-interpolator.hpp"
 #include "galileo/common/math/jacobi-roots.hpp"
