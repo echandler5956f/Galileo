@@ -4,8 +4,9 @@ if(BUILD_WITH_MUJOCO_SUPPORT)
 endif()
 
 if(BUILD_WITH_CANDLEWICK_SUPPORT)
+  find_package(example-robot-data REQUIRED)
   add_executable(candlewick_test candlewick_test.cpp)
-  target_link_libraries(candlewick_test PRIVATE galileo)
+  target_link_libraries(candlewick_test PRIVATE galileo example-robot-data::example-robot-data)
 endif()
 
 add_executable(go1_trot go1_trot.cpp)
