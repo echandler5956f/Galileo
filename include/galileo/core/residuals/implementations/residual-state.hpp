@@ -151,7 +151,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            get_ps().get_state()->Jdiff(x_ref_, x, data.Rx, data.Rx, Jcomponent::second);
+            get_ps().get_state()->Jdiff(x_ref_, x, data.Rx, data.Rx, SECOND);
         }
 
         template <typename StateVectorType>

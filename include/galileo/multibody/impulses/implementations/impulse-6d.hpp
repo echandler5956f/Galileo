@@ -102,7 +102,7 @@ namespace galileo
         SE3_t lwaMl;
         Motion_t v0;
         Force_t f_local;
-        Matrix6Nv_t dv0_local_dq;
+        MatrixNcNv_t dv0_local_dq;
         Matrix6Nv_t fJf;
         Matrix6Nv_t v_partial_dq;
         Matrix6Nv_t v_partial_dv;
@@ -112,7 +112,7 @@ namespace galileo
         Matrix3_t vw_world_skew;
         Matrix3_t fv_skew;
         Matrix3_t fw_skew;
-        Matrix6Nv_t fJf_df;
+        MatrixNcNv_t fJf_df;
 
         ImpulseData6dTpl(const Model_t &model, RobotData_t *const robot_data)
             : robot(robot_data),

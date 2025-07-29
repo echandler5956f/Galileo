@@ -5,22 +5,36 @@
 #include "galileo/predictive/phases/phase-spec.hpp"
 
 #include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
+#include "galileo/core/actuations/implementations/actuation-full.hpp"
+
+#include "galileo/core/states/implementations/state-euclidean.hpp"
 #include "galileo/core/states/implementations/state-multibody.hpp"
 
 #include "galileo/core/activations/implementations/activation-quadratic.hpp"
+#include "galileo/core/activations/implementations/activation-weighted-quadratic.hpp"
+
+#include "galileo/core/residuals/implementations/residual-com-position.hpp"
+#include "galileo/core/residuals/implementations/residual-control.hpp"
+#include "galileo/core/residuals/implementations/residual-frame-placement.hpp"
 #include "galileo/core/residuals/implementations/residual-frame-translation.hpp"
+#include "galileo/core/residuals/implementations/residual-frame-velocity.hpp"
+#include "galileo/core/residuals/implementations/residual-state.hpp"
 
 #include "galileo/core/costs/cost-manager.hpp"
-#include "galileo/core/costs/fwd.hpp"
 #include "galileo/core/costs/implementations/cost-residual.hpp"
 
 #include "galileo/core/constraints/equality/constraint-manager.hpp"
-#include "galileo/core/constraints/equality/fwd.hpp"
 #include "galileo/core/constraints/equality/implementations/constraint-residual.hpp"
 
-#include "galileo/multibody/contacts/contact-manager.hpp"
-#include "galileo/multibody/contacts/fwd.hpp"
 #include "galileo/multibody/contacts/implementations/contact-3d.hpp"
+#include "galileo/multibody/contacts/implementations/contact-6d.hpp"
+
+#include "galileo/multibody/contacts/contact-manager.hpp"
+
+#include "galileo/multibody/impulses/implementations/impulse-3d.hpp"
+#include "galileo/multibody/impulses/implementations/impulse-6d.hpp"
+
+#include "galileo/multibody/impulses/impulse-manager.hpp"
 
 #include "galileo/predictive/nodes/implementations/node-contact-fwddyn.hpp"
 
@@ -30,6 +44,8 @@
 #include "galileo/core/controls/implementations/control-param-polynomial.hpp"
 
 #include "galileo/predictive/segments/implementations/segment-erk-euler.hpp"
+
+#include "galileo/predictive/phases/implementations/phase-multibody-contact.hpp"
 
 #include "galileo/core/data/data-collector-default.hpp"
 
@@ -135,25 +151,9 @@ template <typename PhaseSpec>
 using SegmentTpl = galileo::SegmentERKEulerTpl<PhaseSpec>;
 
 template <typename PhaseSpec>
-struct DummyPhaseTpl;
-template <typename PhaseSpec>
-struct DummyPhaseModelTpl;
-template <typename PhaseSpec>
-struct DummyPhaseDataTpl;
+using PhaseTpl = galileo::PhaseMultibodyContactTpl<PhaseSpec>;
 
-namespace galileo
-{
-    template <typename PhaseSpec>
-    struct traits<DummyPhaseTpl<PhaseSpec>>
-    {
-        using PS = PhaseSpec;
-        using Meta_t = DummyPhaseTpl<PS>;
-        using Model_t = DummyPhaseModelTpl<PS>;
-        using Data_t = DummyPhaseDataTpl<PS>;
-    }; // traits<DummyPhaseTpl<PhaseSpec>>
-} // namespace galileo
-
-using PhaseSpec_t = galileo::PhaseSpecTpl<RobotSpec_t, ConstraintManagerTestTpl, CostManagerTestTpl, NodeTpl, ControlParamTpl, SegmentTpl, DummyPhaseTpl>;
+using PhaseSpec_t = galileo::PhaseSpecTpl<RobotSpec_t, ConstraintManagerTestTpl, CostManagerTestTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
 
 using RobotSpec_t = typename PhaseSpec_t::RS;
 

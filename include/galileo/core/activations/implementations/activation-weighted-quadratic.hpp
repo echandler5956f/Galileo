@@ -106,6 +106,7 @@ namespace galileo
         using Base = ActivationModelBase<ActivationModelWeightedQuadraticTpl<PS, ResidualTpl>, PS>;
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
+        using WeightVector_t = typename traits<Meta_t>::WeightVector_t;
 
         explicit ActivationModelWeightedQuadraticTpl(const PS &ps, const DimNR_t &nr_dim, const WeightVector_t &weights)
             : Base(ps, nr_dim),

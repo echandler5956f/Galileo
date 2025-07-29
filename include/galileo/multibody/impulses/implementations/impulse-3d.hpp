@@ -108,14 +108,14 @@ namespace galileo
         // Notice that we do not need to expose accessors for these because they are specific to the 3D impulse model
         Vector3_t v0;
         Force_t f_local;
-        Matrix3Nv_t dv0_local_dq;
+        MatrixNcNv_t dv0_local_dq;
         Matrix6Nv_t fJf;
         Matrix6Nv_t v_partial_dq;
         Matrix6Nv_t v_partial_dv;
         Matrix3_t v0_skew;
         Matrix3_t v0_world_skew;
         Matrix3_t f_skew;
-        Matrix3Nv_t fJf_df;
+        MatrixNcNv_t fJf_df;
 
         ImpulseData3dTpl(const Model_t &model, RobotData_t *const robot_data)
             : robot(robot_data),
