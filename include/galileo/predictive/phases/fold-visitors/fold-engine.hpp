@@ -81,7 +81,7 @@ namespace galileo
             {
                 FoldStateType current_state = initial_state;
 
-                auto model_iterators = get_iterators(phase_models);
+                const auto model_iterators = get_iterators(phase_models);
                 auto data_iterators = get_iterators(phase_data);
 
                 for (auto model_it = model_iterators.first, data_it = data_iterators.first;
@@ -91,7 +91,7 @@ namespace galileo
 
                     // In forward iteration (IsLeftFold = true): next_model/data points to the subsequent phase
                     // In backward iteration (IsLeftFold = false): next_model/data points to the previous phase
-                    auto next_model = std::next(model_it);
+                    const auto next_model = std::next(model_it);
                     auto next_data = std::next(data_it);
                     if (next_model != model_iterators.second)
                     {
@@ -119,7 +119,7 @@ namespace galileo
             {
                 FoldStateType current_state = initial_state;
 
-                auto model_iterators = get_iterators(phase_models);
+                const auto model_iterators = get_iterators(phase_models);
                 auto data_iterators = get_iterators(phase_data);
 
                 for (auto model_it = model_iterators.first, data_it = data_iterators.first;
@@ -129,7 +129,7 @@ namespace galileo
 
                     // In forward iteration (IsLeftFold = true): next_model/data points to the subsequent phase
                     // In backward iteration (IsLeftFold = false): next_model/data points to the previous phase
-                    auto next_model = std::next(model_it);
+                    const auto next_model = std::next(model_it);
                     auto next_data = std::next(data_it);
                     if (next_model != model_iterators.second)
                     {
@@ -190,9 +190,9 @@ namespace galileo
 
                     FoldStateType current_state = state;
 
-                    auto model_iterators = get_iterators(phase_model.derived().get_segments_models());
+                    const auto model_iterators = get_iterators(phase_model.derived().get_segments());
                     PhaseDataType &data = boost::get<PhaseDataType>(phase_data);
-                    auto data_iterators = get_iterators(data.get_segments_data());
+                    auto data_iterators = get_iterators(data.get_segments());
 
                     // In forward iteration (IsLeftFold = true): model_it/data_it points to the subsequent segment
                     // In backward iteration (IsLeftFold = false): model_it/data_it points to the previous segment
@@ -226,9 +226,9 @@ namespace galileo
 
                     FoldStateType current_state = state;
 
-                    auto model_iterators = get_iterators(phase_model.derived().get_segments_models());
+                    const auto model_iterators = get_iterators(phase_model.derived().get_segments());
                     PhaseDataType &data = boost::get<PhaseDataType>(phase_data);
-                    auto data_iterators = get_iterators(data.get_segments_data());
+                    auto data_iterators = get_iterators(data.get_segments());
 
                     // In forward iteration (IsLeftFold = true): model_it/data_it points to the subsequent segment
                     // In backward iteration (IsLeftFold = false): model_it/data_it points to the previous segment

@@ -808,6 +808,98 @@ namespace galileo
         return rightColsImpl(mat, col_size);
     }
 
+    template <typename MatType, typename ColIndexType>
+    static auto colImpl(MatType &&mat, const ColIndexType &col_index)
+    {
+        if constexpr (std::is_integral_v<ColIndexType>)
+        {
+            return mat.derived().col(col_index);
+        }
+        else
+        {
+            if constexpr (ColIndexType::IsDynamic)
+            {
+                return mat.derived().col(col_index.value());
+            }
+            else
+            {
+                return mat.derived().template col<ColIndexType::Value>();
+            }
+        }
+    }
+
+    template <auto ColIndex, typename Derived>
+    static auto col(Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_cols = extract_compile_time_value<ColIndex>::Value;
+        return mat.derived().template col<compile_time_cols>();
+    }
+
+    template <auto ColIndex, typename Derived>
+    static auto col(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_cols = extract_compile_time_value<ColIndex>::Value;
+        return mat.derived().template col<compile_time_cols>();
+    }
+
+    template <typename Derived, typename ColIndexType>
+    static auto col(Eigen::MatrixBase<Derived> &mat, const ColIndexType &col_index)
+    {
+        return colImpl(mat, col_index);
+    }
+
+    template <typename Derived, typename ColIndexType>
+    static auto col(const Eigen::MatrixBase<Derived> &mat, const ColIndexType &col_index)
+    {
+        return colImpl(mat, col_index);
+    }
+
+    template <typename MatType, typename RowIndexType>
+    static auto rowImpl(MatType &&mat, const RowIndexType &row_index)
+    {
+        if constexpr (std::is_integral_v<RowIndexType>)
+        {
+            return mat.derived().row(row_index);
+        }
+        else
+        {
+            if constexpr (RowIndexType::IsDynamic)
+            {
+                return mat.derived().row(row_index.value());
+            }
+            else
+            {
+                return mat.derived().template row<RowIndexType::Value>();
+            }
+        }
+    }
+
+    template <auto RowIndex, typename Derived>
+    static auto row(Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowIndex>::Value;
+        return mat.derived().template row<compile_time_rows>();
+    }
+
+    template <auto RowIndex, typename Derived>
+    static auto row(const Eigen::MatrixBase<Derived> &mat)
+    {
+        constexpr int compile_time_rows = extract_compile_time_value<RowIndex>::Value;
+        return mat.derived().template row<compile_time_rows>();
+    }
+
+    template <typename Derived, typename RowIndexType>
+    static auto row(Eigen::MatrixBase<Derived> &mat, const RowIndexType &row_index)
+    {
+        return rowImpl(mat, row_index);
+    }
+
+    template <typename Derived, typename RowIndexType>
+    static auto row(const Eigen::MatrixBase<Derived> &mat, const RowIndexType &row_index)
+    {
+        return rowImpl(mat, row_index);
+    }
+
 } // namespace galileo
 
 #endif // __galileo_common_meta_eigen_hpp__
