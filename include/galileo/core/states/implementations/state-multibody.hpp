@@ -158,10 +158,14 @@ namespace galileo
                         Eigen::MatrixBase<JMatrix1> &Jfirst,
                         Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            if constexpr (IsFirst<jc> || IsBoth<jc>)
-                Jfirst.setZero();
-            if constexpr (IsSecond<jc> || IsBoth<jc>)
-                Jsecond.setZero();
+            // Only zero the matrices for SETTO operations, not for ADDTO/RMFROM
+            if constexpr (IsSetTo<op>)
+            {
+                if constexpr (IsFirst<jc> || IsBoth<jc>)
+                    Jfirst.setZero();
+                if constexpr (IsSecond<jc> || IsBoth<jc>)
+                    Jsecond.setZero();
+            }
 
             if constexpr (IsFirst<jc> || IsBoth<jc>)
             {

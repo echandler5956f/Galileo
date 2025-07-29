@@ -36,6 +36,7 @@ option(ENABLE_VECTORIZATION_SUPPORT
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading support" OFF)
 option(BUILD_TESTS "Build the tests for Galileo" ON)
 option(BUILD_EXAMPLES "Build the examples for Galileo" ON)
+option(BUILD_WITH_MUJOCO_SUPPORT "Build Galileo with MuJoCo simulation support" OFF)
 option(BUILD_WITH_CANDLEWICK_SUPPORT "Build Galileo with Candlewick visualization support" OFF)
 
 add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization
@@ -55,9 +56,12 @@ endif()
 find_package(Eigen3 REQUIRED)
 find_package(pinocchio REQUIRED)
 
-find_package(mujoco REQUIRED)
-find_package(GLFW3 REQUIRED)
-find_package(Threads REQUIRED)
+if(BUILD_WITH_MUJOCO_SUPPORT)
+  find_package(mujoco REQUIRED)
+  find_package(GLFW3 REQUIRED)
+  find_package(Threads REQUIRED)
+  message(STATUS "Galileo: Building with MuJoCo simulation support")
+endif()
 
 if(BUILD_WITH_CANDLEWICK_SUPPORT)
   find_package(candlewick REQUIRED)
@@ -118,6 +122,10 @@ add_library(galileo INTERFACE)
 
 target_compile_definitions(galileo INTERFACE ${GALILEO_DEFINITIONS})
 
+if(BUILD_WITH_MUJOCO_SUPPORT)
+  target_compile_definitions(galileo INTERFACE GALILEO_WITH_MUJOCO)
+endif()
+
 if(BUILD_WITH_CANDLEWICK_SUPPORT)
   target_compile_definitions(galileo INTERFACE GALILEO_WITH_CANDLEWICK)
 endif()
@@ -135,10 +143,15 @@ target_link_libraries(galileo INTERFACE
   pinocchio_cppad
   pinocchio_cppadcg
   Eigen3::Eigen
-  Threads::Threads
-  mujoco
-  glfw
 )
+
+if(BUILD_WITH_MUJOCO_SUPPORT)
+  target_link_libraries(galileo INTERFACE
+    Threads::Threads
+    mujoco
+    glfw
+  )
+endif()
 
 if(BUILD_WITH_CANDLEWICK_SUPPORT)
   target_link_libraries(galileo INTERFACE candlewick_multibody)
