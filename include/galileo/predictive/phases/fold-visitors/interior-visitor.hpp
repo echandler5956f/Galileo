@@ -11,17 +11,20 @@ namespace galileo
     {
 
         // Interior propagator base for segment-level transformations (model-data pairs)
-        template <typename FoldStateType, typename VisitorDerived, typename ReturnType = FoldStateType>
+        template <typename VisitorDerived_>
         struct InteriorPropagatorBase
         {
         private:
             template <typename SegmentModelType>
             using SegmentModelBaseOf_t = SegmentERKModelBase<SegmentModelType, typename traits<SegmentModelType>::PS>;
-
             template <typename SegmentDataType>
             using SegmentDataBaseOf_t = SegmentERKDataBase<SegmentDataType, typename traits<SegmentDataType>::PS>;
 
         public:
+            using VisitorDerived = VisitorDerived_;
+            using FoldStateType = typename traits<VisitorDerived>::FoldStateType;
+            using ReturnType = typename traits<VisitorDerived>::ReturnType;
+
             // Segment model-data transformation with args
             template <typename SegmentModel, typename SegmentData, typename ArgsTmp>
             static ReturnType run(

@@ -187,15 +187,28 @@ using ControlParamModel_t = typename PhaseSpec_t::ControlParamModel_t;
 using SegmentModel_t = typename PhaseSpec_t::SegmentModel_t;
 using SegmentData_t = typename PhaseSpec_t::SegmentData_t;
 
+struct TestInteriorPropagator;
+namespace galileo
+{
+    template <>
+    struct traits<TestInteriorPropagator>
+    {
+        using FoldStateType = Eigen::VectorXd;
+        using ReturnType = Eigen::VectorXd;
+    };
+}
+
 // Example custom interior propagator
 struct TestInteriorPropagator
-    : galileo::fusion::InteriorPropagatorBase<Eigen::VectorXd, TestInteriorPropagator>
+    : galileo::fusion::InteriorPropagatorBase<TestInteriorPropagator>
 {
+    using FoldStateType = typename galileo::traits<TestInteriorPropagator>::FoldStateType;
+    using ReturnType = typename galileo::traits<TestInteriorPropagator>::ReturnType;
     using ArgsType = boost::fusion::vector<const Eigen::VectorXd &>;
 
     // Version with control parameters
     template <typename SegmentModel, typename SegmentData>
-    static Eigen::VectorXd algo(const SegmentModel &segment_model, SegmentData &segment_data, Eigen::VectorXd state, const Eigen::VectorXd &controls)
+    static ReturnType algo(const SegmentModel &segment_model, SegmentData &segment_data, FoldStateType state, const Eigen::VectorXd &controls)
     {
         std::cout << "Processing segment with controls..." << std::endl;
 
@@ -208,28 +221,43 @@ struct TestInteriorPropagator
 };
 
 template <typename SegmentModel, typename SegmentData>
-inline Eigen::VectorXd interior_propagate(const SegmentModel &segment_model, SegmentData &segment_data, Eigen::VectorXd state, const Eigen::VectorXd &controls)
+inline typename TestInteriorPropagator::ReturnType interior_propagate(const SegmentModel &segment_model, SegmentData &segment_data, typename TestInteriorPropagator::FoldStateType state, const Eigen::VectorXd &controls)
 {
     using Algo = TestInteriorPropagator;
     return Algo::run(segment_model, segment_data, state, typename Algo::ArgsType(controls));
 }
 
+struct TestBoundaryPropagator;
+namespace galileo
+{
+    template <>
+    struct traits<TestBoundaryPropagator>
+    {
+        using FoldStateType = Eigen::VectorXd;
+        static constexpr bool IsDirectionallyInvariant = false;
+        using ReturnType = Eigen::VectorXd;
+    };
+}
+
 // Example custom boundary propagator
 struct TestBoundaryPropagator
-    : galileo::fusion::BoundaryPropagatorBase<Eigen::VectorXd, TestBoundaryPropagator>
+    : galileo::fusion::BoundaryPropagatorBase<TestBoundaryPropagator>
 {
+    using FoldStateType = typename galileo::traits<TestBoundaryPropagator>::FoldStateType;
+    static constexpr bool IsDirectionallyInvariant = galileo::traits<TestBoundaryPropagator>::IsDirectionallyInvariant;
+    using ReturnType = typename galileo::traits<TestBoundaryPropagator>::ReturnType;
     using ArgsType = boost::fusion::vector<const Eigen::VectorXd &>;
 
     template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData>
-    static Eigen::VectorXd algo(const CurrentPhaseModel &current_phase_model, const CurrentPhaseData &current_phase_data,
-                                 const NextPhaseModel &next_phase_model, const NextPhaseData &next_phase_data,
-                                 Eigen::VectorXd state, const Eigen::VectorXd &controls)
+    static ReturnType algo(const CurrentPhaseModel &current_phase_model, const CurrentPhaseData &current_phase_data,
+                           const NextPhaseModel &next_phase_model, const NextPhaseData &next_phase_data,
+                           FoldStateType state, const Eigen::VectorXd &controls)
     {
         std::cout << "Applying boundary transformation between phases" << std::endl;
         std::cout << "  Input state norm: " << state.norm() << std::endl;
 
         // For this test, apply a simple scaling as a "reset map"
-        Eigen::VectorXd reset_state = state * 0.99; // Slight energy dissipation
+        ReturnType reset_state = state * 0.99; // Slight energy dissipation
 
         std::cout << "  Output state norm: " << reset_state.norm() << std::endl;
 
@@ -238,9 +266,9 @@ struct TestBoundaryPropagator
 };
 
 template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData>
-inline Eigen::VectorXd boundary_propagate(const CurrentPhaseModel &current_phase_model, const CurrentPhaseData &current_phase_data,
-                                          const NextPhaseModel &next_phase_model, const NextPhaseData &next_phase_data,
-                                          Eigen::VectorXd state, const Eigen::VectorXd &controls)
+inline typename TestBoundaryPropagator::ReturnType boundary_propagate(const CurrentPhaseModel &current_phase_model, const CurrentPhaseData &current_phase_data,
+                                                                      const NextPhaseModel &next_phase_model, const NextPhaseData &next_phase_data,
+                                                                      typename TestBoundaryPropagator::FoldStateType state, const Eigen::VectorXd &controls)
 {
     using Algo = TestBoundaryPropagator;
     return Algo::run(current_phase_model, current_phase_data, next_phase_model, next_phase_data, state, typename Algo::ArgsType(controls));
@@ -248,13 +276,11 @@ inline Eigen::VectorXd boundary_propagate(const CurrentPhaseModel &current_phase
 
 // Test propagators for both directions
 using TestPropagatorLeftFold = galileo::fusion::FoldTpl<
-    Eigen::VectorXd,
     TestInteriorPropagator,
     TestBoundaryPropagator,
-    true>;  // Left fold (forward)
+    true>; // Left fold (forward)
 
 using TestPropagatorRightFold = galileo::fusion::FoldTpl<
-    Eigen::VectorXd,
     TestInteriorPropagator,
     TestBoundaryPropagator,
     false>; // Right fold (backward)

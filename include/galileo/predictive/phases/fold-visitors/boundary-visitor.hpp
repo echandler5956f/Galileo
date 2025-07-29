@@ -10,7 +10,7 @@ namespace galileo
     {
 
         // Boundary propagator base for phase-to-phase transitions (model-model pairs)
-        template <typename FoldStateType, typename VisitorDerived, typename ReturnType = FoldStateType>
+        template <typename VisitorDerived_>
         struct BoundaryPropagatorBase
         {
         private:
@@ -25,6 +25,11 @@ namespace galileo
             using RightPhaseDataBaseOf_t = PhaseDataBase<RightPhaseDataType, typename traits<RightPhaseDataType>::PS>;
 
         public:
+            using VisitorDerived = VisitorDerived_;
+            using FoldStateType = typename traits<VisitorDerived>::FoldStateType;
+            static constexpr bool IsDirectionallyInvariant = traits<VisitorDerived>::IsDirectionallyInvariant;
+            using ReturnType = typename traits<VisitorDerived>::ReturnType;
+
             // Phase boundary transformation with args
             template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData, typename ArgsTmp>
             static ReturnType run(
