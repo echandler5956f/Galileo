@@ -280,18 +280,27 @@ int main()
     ResidualModel_t residual = ResidualModel_t(ps, frame_id, Eigen::Vector3d(0., 0., 0.));
     ActivationModel_t activation = ActivationModel_t(ps, residual.get_nr_dim());
 
+    std::cout << "Residual dimension: " << residual.get_nr_dim() << std::endl;
+
     CostModel_t cost = CostModel_t(ps, residual, activation);
+    std::cout << "Cost model created" << std::endl;
     CostModelManager_t cost_manager = CostModelManager_t(ps);
-    cost_manager.addCost("test_cost", cost, 1.0);
+    std::cout << "Cost model manager created" << std::endl;
+    cost_manager.addItem("test_cost", cost, 1.0);
+    std::cout << "Cost model added" << std::endl;
 
     ConstraintModel_t constraint = ConstraintModel_t(ps, residual);
     ConstraintModelManager_t constraint_manager = ConstraintModelManager_t(ps);
-    constraint_manager.addConstraint("test_constraint", constraint);
+    constraint_manager.addItem("test_constraint", constraint);
+
+    std::cout << "Constraint model created" << std::endl;
 
     pinocchio::FrameIndex frame_id_2 = model.getFrameId("LF_FOOT");
     ContactModel_t contact = ContactModel_t(ps, frame_id_2, pinocchio::LOCAL, Eigen::Vector3d(0., 0., 0.), Eigen::Vector2d(0., 0.));
     ContactModelManager_t contact_manager = ContactModelManager_t(ps);
-    contact_manager.addContact("test_contact", contact);
+    contact_manager.addItem("test_contact", contact);
+
+    std::cout << "Contact model created" << std::endl;
 
     // Setup basic node and control for segments
     NodeModel_t node = NodeModel_t(
@@ -303,9 +312,13 @@ int main()
         0.0,
         false);
 
+    std::cout << "Node model created" << std::endl;
+
     JacobiRoots_t jacobi_roots(1.0, 0.0);
     jacobi_roots.compute_roots();
     Eigen::VectorXd nodes = jacobi_roots.get_roots();
+
+    std::cout << "Jacobi roots created" << std::endl;
 
     BarycentricInterpolator_t interpolator(nodes);
     ControlParamModel_t control_param(ps, interpolator);

@@ -21,17 +21,35 @@ namespace galileo
         : public ManagerItemTpl<ContactItemTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
+
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
         using Base = ManagerItemTpl<ContactItemTpl<PhaseSpec, ContactCollectionTpl>>;
 
-        ContactItemTpl(const std::string &name, const Model_t &model, const bool active = true)
-            : Base(name, model, active)
+        using Meta_t = typename traits<MetaManager_t>::Meta_t;
+        using Model_t = typename traits<MetaManager_t>::Model_t;
+        using Data_t = typename traits<MetaManager_t>::Data_t;
+
+        ContactItemTpl(const std::string &name_, const Model_t &model_, const bool active_ = true)
+            : Base(name_, model_, active_)
         {
         }
 
         using Base::active;
         using Base::model;
         using Base::name;
-    }; // class ContactItemTpl
+
+    }; // struct ContactItemTpl
+
+    template <typename PhaseSpec,
+              template <typename PS> class ContactCollectionTpl>
+    struct traits<ContactItemTpl<PhaseSpec, ContactCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+        using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
+    };
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
@@ -176,8 +194,7 @@ namespace galileo
 
         ContactModelManagerTpl(const PS &ps)
             : Base(),
-              ps_(ps), state_(ps.get_state()),
-              nc_active_dim_(DimensionTpl<Eigen::Dynamic>(0)), nc_total_dim_(DimensionTpl<Eigen::Dynamic>(0))
+              ps_(ps), state_(ps.get_state())
         {
         }
 
@@ -347,6 +364,11 @@ namespace galileo
             return state_.get();
         }
 
+        int get_model_n(const Model_t &model) const
+        {
+            return model.get_nc();
+        }
+
         using Base::addItem;
         using Base::removeItem;
 
@@ -365,11 +387,6 @@ namespace galileo
         using Base::get_n_total_dim;
 
     protected:
-        int get_model_n(const Model_t &model) const
-        {
-            return model.get_nc();
-        }
-
         using Base::items_;
 
         using Base::active_set_;

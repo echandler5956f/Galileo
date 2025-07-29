@@ -21,17 +21,35 @@ namespace galileo
         : public ManagerItemTpl<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
+
+        using MetaManager_t = ConstraintManagerTpl<PS, ConstraintCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
         using Base = ManagerItemTpl<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>;
 
-        ConstraintItemTpl(const std::string &name, const Model_t &model, const bool active = true)
-            : Base(name, model, active)
+        using Meta_t = typename traits<MetaManager_t>::Meta_t;
+        using Model_t = typename traits<MetaManager_t>::Model_t;
+        using Data_t = typename traits<MetaManager_t>::Data_t;
+
+        ConstraintItemTpl(const std::string &name_, const Model_t &model_, const bool active_ = true)
+            : Base(name_, model_, active_)
         {
         }
 
         using Base::active;
         using Base::model;
         using Base::name;
-    }; // class ConstraintItemTpl
+
+    }; // struct ConstraintItemTpl
+
+    template <typename PhaseSpec,
+              template <typename PS> class ConstraintCollectionTpl>
+    struct traits<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+        using MetaManager_t = ConstraintManagerTpl<PS, ConstraintCollectionTpl>;
+    };
 
     template <typename PhaseSpec,
               template <typename PS> class ConstraintCollectionTpl>
@@ -270,6 +288,11 @@ namespace galileo
             return ps_.get();
         }
 
+        int get_model_n(const Model_t &model) const
+        {
+            return model.get_nh();
+        }
+
         using Base::addItem;
         using Base::removeItem;
 
@@ -288,11 +311,6 @@ namespace galileo
         using Base::get_n_total_dim;
 
     protected:
-        int get_model_n(const Model_t &model) const
-        {
-            return model.get_nh();
-        }
-
         using Base::items_;
 
         using Base::active_set_;

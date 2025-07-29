@@ -13,24 +13,24 @@ namespace galileo
 
     template <typename Derived>
     struct ManagerItemTpl
-        : public internal::CRTP<ManagerItemTpl<Derived>>
+        : public internal::CRTP<Derived>
     {
         using MetaManager_t = typename traits<Derived>::MetaManager_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
-        ManagerItemTpl() {}
-        ManagerItemTpl(const std::string &name_, const Model_t &model_, bool active_ = true)
+        ManagerItemTpl(const std::string &name_, const Model_t &model_, const bool active_ = true)
             : name(name_), model(model_), active(active_) {}
 
         std::string name;
         Model_t model;
         bool active;
-    }; // class ManagerItemTpl
+
+    }; // struct ManagerItemTpl
 
     template <typename Derived>
     class ManagerDataBase
-        : public internal::CRTP<ManagerDataBase<Derived>>
+        : public internal::CRTP<Derived>
     {
     public:
         using MetaManager_t = typename traits<Derived>::MetaManager_t;
@@ -78,7 +78,7 @@ namespace galileo
 
     template <typename Derived>
     class ManagerModelBase
-        : public internal::CRTP<ManagerModelBase<Derived>>
+        : public internal::CRTP<Derived>
     {
     public:
         using MetaManager_t = typename traits<Derived>::MetaManager_t;
@@ -131,16 +131,23 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        void addItem(const std::string &name, const Model_t &model, const bool active = true)
+        template <typename... Args>
+        void addItem(const std::string &name, const Model_t &model, Args &&...args)
         {
-            this->derived().addItemImpl(name, model, active);
+            this->derived().addItemImpl(name, model, std::forward<Args>(args)...);
         }
 
-        void addItemImpl(const std::string &name, const Model_t &model, const bool active = true)
+        template <typename... Args>
+        void addItemImpl(const std::string &name, const Model_t &model, Args &&...args)
         {
+            // Extract active status from constructed item.
+            // Allows us to keep the default active status but also support 'overloaded' addItemImpl methods that may
+            // have different Item constructor signatures
+            auto item = Item_t(name, model, std::forward<Args>(args)...);
+            const bool active = item.active;
+
             std::pair<typename ModelContainer_t::iterator, bool> ret =
-                items_.insert(std::make_pair(
-                    name, Item_t(name, model, active)));
+                items_.insert(std::make_pair(name, std::move(item)));
             if (ret.second == false)
             {
                 std::cerr << "Warning: we couldn't add the " << name
@@ -148,13 +155,14 @@ namespace galileo
             }
             else if (active)
             {
-                active_dim_ += this->get_model_dim(model);
-                total_dim_ += this->get_model_dim(model);
+                auto model_n = get_model_n(model);
+                active_dim_ += model_n;
+                total_dim_ += model_n;
                 active_set_.insert(name);
             }
             else if (!active)
             {
-                total_dim_ += this->get_model_dim(model);
+                total_dim_ += get_model_n(model);
                 inactive_set_.insert(name);
             }
         }
@@ -169,8 +177,8 @@ namespace galileo
             typename ModelContainer_t::iterator it = items_.find(name);
             if (it != items_.end())
             {
-                active_dim_ -= this->get_model_dim(it->second.model);
-                total_dim_ -= this->get_model_dim(it->second.model);
+                active_dim_ -= get_model_n(it->second.model);
+                total_dim_ -= get_model_n(it->second.model);
                 items_.erase(it);
                 inactive_set_.erase(name);
             }
@@ -193,14 +201,14 @@ namespace galileo
             {
                 if (active && !it->second.active)
                 {
-                    active_dim_ += this->get_model_dim(it->second.model);
+                    active_dim_ += get_model_n(it->second.model);
                     active_set_.insert(name);
                     inactive_set_.erase(name);
                     it->second.active = active;
                 }
                 else if (!active && it->second.active)
                 {
-                    active_dim_ -= this->get_model_dim(it->second.model);
+                    active_dim_ -= get_model_n(it->second.model);
                     active_set_.erase(name);
                     inactive_set_.insert(name);
                     it->second.active = active;
@@ -265,12 +273,12 @@ namespace galileo
             return total_dim_.value();
         }
 
-    protected:
         int get_model_n(const Model_t &model) const
         {
-            return this->derived().get_model_dim(model);
+            return this->derived().get_model_n(model);
         }
 
+    protected:
         inline ManagerModelBase()
         {
             items_.clear();

@@ -168,15 +168,15 @@ namespace galileo
               costs(model.get_costs().createData(&data_collector)),
               constraints(model.get_constraints().createData(&data_collector)),
               Kinv(model.get_ps().get_nv() +
-                       model.get_contacts().get_nc_total(),
+                       model.get_contacts().get_n_total(),
                    model.get_ps().get_nv() +
-                       model.get_contacts().get_nc_total()),
-              df_dx(model.get_contacts().get_nc_total(),
+                       model.get_contacts().get_n_total()),
+              df_dx(model.get_contacts().get_n_total(),
                     model.get_ps().get_ndx()),
-              df_du(model.get_contacts().get_nc_total(), model.get_ps().get_nu()),
+              df_du(model.get_contacts().get_n_total(), model.get_ps().get_nu()),
               tmp_xstatic(model.get_ps().get_nx()),
               tmp_Jstatic(model.get_ps().get_nv(),
-                          model.get_ps().get_nu() + model.get_contacts().get_nc_total())
+                          model.get_ps().get_nu() + model.get_contacts().get_n_total())
         {
             XAcc.setZero();
             XAccx.setZero();
@@ -187,7 +187,7 @@ namespace galileo
             df_du.setZero();
             tmp_xstatic.setZero();
             tmp_Jstatic.setZero();
-            robot.lambda_c.resize(model.get_contacts().get_nc_total());
+            robot.lambda_c.resize(model.get_contacts().get_n_total());
             robot.lambda_c.setZero();
         }
 
@@ -263,7 +263,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            const auto nc_dim = get_contacts().get_nc_active_dim();
+            const auto nc_dim = get_contacts().get_n_active_dim();
 
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
@@ -288,7 +288,7 @@ namespace galileo
             data.joint.tau = u;
             get_costs().calc(data.costs, x, u);
             data.L_accessor() = data.costs.L;
-            if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
+            if (get_constraints().get_n_active() > 0 || get_constraints().get_n_active() > 0)
             {
                 // data.constraints.resize(this, data);
                 get_constraints().calc(data.constraints, x, u);
@@ -305,7 +305,7 @@ namespace galileo
             pinocchio::computeCentroidalMomentum(get_robot(), data.robot);
             get_costs().calc(data.costs, x);
             data.L_accessor() = data.costs.L;
-            if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
+            if (get_constraints().get_n_active() > 0 || get_constraints().get_n_active() > 0)
             {
                 // data.constraints.resize(this, data);
                 get_constraints().calc(data.constraints, x);
@@ -318,7 +318,7 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             const auto nv_dim = get_ps().get_nv_dim();
-            const auto nc_dim = get_contacts().get_nc_active_dim();
+            const auto nc_dim = get_contacts().get_n_active_dim();
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
 
@@ -368,7 +368,7 @@ namespace galileo
                                                topRows(data.df_du, nc_dim));
             }
             get_costs().calcDiff(data.costs, x, u);
-            if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
+            if (get_constraints().get_n_active() > 0 || get_constraints().get_n_active() > 0)
             {
                 get_constraints().calcDiff(data.constraints, x, u);
             }
@@ -379,7 +379,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x) const
         {
             get_costs().calcDiff(data.costs, x);
-            if (get_constraints().get_nh() > 0 || get_constraints().get_nh() > 0)
+            if (get_constraints().get_n_active() > 0 || get_constraints().get_n_active() > 0)
             {
                 get_constraints().calcDiff(data.constraints, x);
             }
@@ -391,7 +391,7 @@ namespace galileo
                          const int maxiter, const NumScalar tol) const
         {
             const auto nv_dim = get_ps().get_nv_dim();
-            const auto nc_dim = get_contacts().get_nc_active_dim();
+            const auto nc_dim = get_contacts().get_n_active_dim();
             const auto q = head(x, get_ps().get_nq_dim());
 
             head(data.tmp_xstatic, get_ps().get_nq_dim()) = q;

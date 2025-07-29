@@ -21,17 +21,35 @@ namespace galileo
         : public ManagerItemTpl<ImpulseItemTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using PS = PhaseSpec;
+
+        using MetaManager_t = ImpulseManagerTpl<PS, ImpulseCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
         using Base = ManagerItemTpl<ImpulseItemTpl<PhaseSpec, ImpulseCollectionTpl>>;
 
-        ImpulseItemTpl(const std::string &name, const Model_t &model, const bool active = true)
-            : Base(name, model, active)
+        using Meta_t = typename traits<MetaManager_t>::Meta_t;
+        using Model_t = typename traits<MetaManager_t>::Model_t;
+        using Data_t = typename traits<MetaManager_t>::Data_t;
+
+        ImpulseItemTpl(const std::string &name_, const Model_t &model_, const bool active_ = true)
+            : Base(name_, model_, active_)
         {
         }
 
         using Base::active;
         using Base::model;
         using Base::name;
-    }; // class ImpulseItemTpl
+
+    }; // struct ImpulseItemTpl
+
+    template <typename PhaseSpec,
+              template <typename PS> class ImpulseCollectionTpl>
+    struct traits<ImpulseItemTpl<PhaseSpec, ImpulseCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+        using MetaManager_t = ImpulseManagerTpl<PS, ImpulseCollectionTpl>;
+    };
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
@@ -334,6 +352,11 @@ namespace galileo
             return state_.get();
         }
 
+        int get_model_n(const Model_t &model) const
+        {
+            return model.get_nc();
+        }
+
         using Base::addItem;
         using Base::removeItem;
 
@@ -352,11 +375,6 @@ namespace galileo
         using Base::get_n_total_dim;
 
     protected:
-        int get_model_n(const Model_t &model) const
-        {
-            return model.get_nc();
-        }
-
         using Base::items_;
 
         using Base::active_set_;

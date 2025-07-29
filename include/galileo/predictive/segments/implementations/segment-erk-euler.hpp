@@ -94,12 +94,12 @@ namespace galileo
               Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
               Lxw(model.get_ps().get_ndx(), model.get_ps().get_nw()),
               Lww(model.get_ps().get_nw(), model.get_ps().get_nw()),
-              H(model.get_node().get_constraints().get_nh()),
-              Hx(model.get_node().get_constraints().get_nh(), model.get_ps().get_ndx()),
-              Hw(model.get_node().get_constraints().get_nh(), model.get_ps().get_nw()),
-              G(model.get_node().get_constraints().get_nh()),
-              Gx(model.get_node().get_constraints().get_nh(), model.get_ps().get_ndx()),
-              Gw(model.get_node().get_constraints().get_nh(), model.get_ps().get_nw())
+              H(model.get_node().get_constraints().get_n_active()),
+              Hx(model.get_node().get_constraints().get_n_active(), model.get_ps().get_ndx()),
+              Hw(model.get_node().get_constraints().get_n_active(), model.get_ps().get_nw()),
+              G(model.get_node().get_constraints().get_n_active()),
+              Gx(model.get_node().get_constraints().get_n_active(), model.get_ps().get_ndx()),
+              Gw(model.get_node().get_constraints().get_n_active(), model.get_ps().get_nw())
         {
             dx.setZero();
             da_dw.setZero();
@@ -239,8 +239,8 @@ namespace galileo
 
             data.Gx = data.node.Gx_accessor();
             data.Hx = data.node.Hx_accessor();
-            data.Gw.conservativeResize(node_.get_constraints().get_nh(), get_ps().get_nw());
-            data.Hw.conservativeResize(node_.get_constraints().get_nh(), get_ps().get_nw());
+            data.Gw.conservativeResize(node_.get_constraints().get_n_active(), get_ps().get_nw());
+            data.Hw.conservativeResize(node_.get_constraints().get_n_active(), get_ps().get_nw());
             control_.multiplyByJacobian(data.control, data.node.Gu_accessor(), data.Gw);
             control_.multiplyByJacobian(data.control, data.node.Hu_accessor(), data.Hw);
         }

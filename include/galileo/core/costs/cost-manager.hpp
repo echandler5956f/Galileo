@@ -24,13 +24,22 @@ namespace galileo
         : public ManagerItemTpl<CostItemTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
+
+        using MetaManager_t = CostManagerTpl<PS, CostCollectionTpl>;
+        using Collection_t = typename traits<MetaManager_t>::Collection_t;
+        using ModelManager_t = typename traits<MetaManager_t>::ModelManager_t;
+        using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
         using Base = ManagerItemTpl<CostItemTpl<PhaseSpec, CostCollectionTpl>>;
+
+        using Meta_t = typename traits<MetaManager_t>::Meta_t;
+        using Model_t = typename traits<MetaManager_t>::Model_t;
+        using Data_t = typename traits<MetaManager_t>::Data_t;
 
         using NumScalar = typename PS::NumScalar;
 
-        CostItemTpl(const std::string &name, const Model_t &model, const NumScalar &weight, const bool active = true)
-            : Base(name, model, active),
-              weight(weight)
+        CostItemTpl(const std::string &name_, const Model_t &model_, const NumScalar &weight_, const bool active_ = true)
+            : Base(name_, model_, active_),
+              weight(weight_)
         {
         }
 
@@ -38,7 +47,16 @@ namespace galileo
         using Base::model;
         using Base::name;
         NumScalar weight;
-    }; // class CostItemTpl
+
+    }; // struct CostItemTpl
+
+    template <typename PhaseSpec,
+              template <typename PS> class CostCollectionTpl>
+    struct traits<CostItemTpl<PhaseSpec, CostCollectionTpl>>
+    {
+        using PS = PhaseSpec;
+        using MetaManager_t = CostManagerTpl<PS, CostCollectionTpl>;
+    };
 
     template <typename PhaseSpec,
               template <typename PS> class CostCollectionTpl>
@@ -290,6 +308,11 @@ namespace galileo
             return ps_.get();
         }
 
+        int get_model_n(const Model_t &model) const
+        {
+            return 0;
+        }
+
         using Base::addItem;
         using Base::removeItem;
 
@@ -308,11 +331,6 @@ namespace galileo
         using Base::get_n_total_dim;
 
     protected:
-        int get_model_n(const Model_t &model) const
-        {
-            return 0;
-        }
-
         using Base::items_;
 
         using Base::active_set_;
