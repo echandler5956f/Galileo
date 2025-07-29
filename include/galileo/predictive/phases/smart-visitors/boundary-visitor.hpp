@@ -1,5 +1,5 @@
-#ifndef __galileo_predictive_phases_fold_visitors_boundary_visitor_hpp__
-#define __galileo_predictive_phases_fold_visitors_boundary_visitor_hpp__
+#ifndef __galileo_predictive_phases_smart_visitors_boundary_visitor_hpp__
+#define __galileo_predictive_phases_smart_visitors_boundary_visitor_hpp__
 
 #include "galileo/common/visitors/binary-visitor.hpp"
 #include "galileo/predictive/phases/phase-base.hpp"
@@ -141,4 +141,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_predictive_phases_fold_visitors_boundary_visitor_hpp__
+#endif // __galileo_predictive_phases_smart_visitors_boundary_visitor_hpp__

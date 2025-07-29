@@ -22,7 +22,6 @@ namespace galileo
 
         FORWARD_ACCESSOR(CostDataManager_t, costs);
         FORWARD_ACCESSOR(ConstraintDataManager_t, constraints);
-        FORWARD_ACCESSOR(ActuationData_t, actuation);
 
         FORWARD_ACCESSOR(XAcc_t, XAcc);
         FORWARD_ACCESSOR(XAccx_t, XAccx);

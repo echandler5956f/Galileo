@@ -143,31 +143,6 @@ namespace galileo
         return Algo::run(phase_model, typename Algo::ArgsType(collector));
     }
 
-    template <typename PhaseSpec, template <typename> class PhaseCollectionTpl>
-    struct PhaseGetPhaseSpecVisitor
-        : boost::static_visitor<const PhaseSpec &>
-    {
-
-        using ReturnType = PhaseSpec;
-
-        template <typename PhaseModelType>
-        ReturnType operator()(const PhaseModelBase<PhaseModelType, PhaseSpec> &phase_model) const
-        {
-            return phase_model.get_ps();
-        }
-
-        static ReturnType run(const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model)
-        {
-            return boost::apply_visitor(PhaseGetPhaseSpecVisitor<PhaseSpec, PhaseCollectionTpl>(), phase_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class PhaseCollectionTpl>
-    inline PhaseSpec phase_get_ps(const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model)
-    {
-        return PhaseGetPhaseSpecVisitor<PhaseSpec, PhaseCollectionTpl>::run(phase_model);
-    }
-
 } // namespace galileo
 
 #endif // __galileo_predictive_phases_phase_visitors_hxx__

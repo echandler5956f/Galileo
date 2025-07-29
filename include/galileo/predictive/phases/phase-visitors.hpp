@@ -48,9 +48,6 @@ namespace galileo
         const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model,
         DataCollector *const collector);
 
-    template <typename PhaseSpec, template <typename> class PhaseCollectionTpl>
-    inline PhaseSpec phase_get_ps(const PhaseModelTpl<PhaseSpec, PhaseCollectionTpl> &phase_model);
-
 } // namespace galileo
 
 #endif // __galileo_predictive_phases_phase_visitors_hpp__

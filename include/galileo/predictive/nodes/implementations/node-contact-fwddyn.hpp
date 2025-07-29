@@ -44,7 +44,7 @@ namespace galileo
         using ContactModelManager_t = typename traits<ContactManagerMeta_t>::ModelManager_t;
         using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
 
-        using DataCollector_t = DataCollectorDefaultTpl<PS, ContactCollectionTpl>;
+        using DataCollector_t = DataCollectorContactTpl<PS, ContactCollectionTpl>;
 
         // using NC = traits<NodeDerived>::NC;
         // using Kinv_t = Eigen::GMatrix<VarScalar, PS::NV + NC, PS::NV + NC>;
@@ -110,7 +110,6 @@ namespace galileo
 
         DEFAULT_ACCESSOR(CostDataManager_t, costs);
         DEFAULT_ACCESSOR(ConstraintDataManager_t, constraints);
-        DEFAULT_ACCESSOR(ActuationData_t, actuation);
 
         DEFAULT_ACCESSOR(XAcc_t, XAcc);
         DEFAULT_ACCESSOR(XAccx_t, XAccx);

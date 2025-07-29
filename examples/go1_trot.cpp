@@ -49,7 +49,7 @@
 
 #include "galileo/core/data/data-collector-default.hpp"
 
-#include "galileo/predictive/phases/fold-visitors/fold-engine.hpp"
+#include "galileo/predictive/phases/smart-visitors/fold-engine.hpp"
 
 #include <iostream>
 #include <string>

@@ -174,13 +174,6 @@ namespace galileo
             return galileo::phase_create_data(*this, collector);
         }
 
-        using Base::get_ps;
-
-        const PS &get_ps_impl() const
-        {
-            return galileo::phase_get_ps(*this);
-        }
-
     }; // struct PhaseModelTpl
 
 } // namespace galileo

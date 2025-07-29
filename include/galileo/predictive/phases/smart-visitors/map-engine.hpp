@@ -1,8 +1,8 @@
-#ifndef __galileo_predictive_phases_fold_visitors_fold_engine_hpp__
-#define __galileo_predictive_phases_fold_visitors_fold_engine_hpp__
+#ifndef __galileo_predictive_phases_smart_visitors_map_engine_hpp__
+#define __galileo_predictive_phases_smart_visitors_map_engine_hpp__
 
-#include "galileo/predictive/phases/fold-visitors/boundary-visitor.hpp"
-#include "galileo/predictive/phases/fold-visitors/interior-visitor.hpp"
+#include "galileo/predictive/phases/smart-visitors/boundary-visitor.hpp"
+#include "galileo/predictive/phases/smart-visitors/interior-visitor.hpp"
 #include "galileo/predictive/phases/phase-generic.hpp"
 #include <vector>
 
@@ -11,19 +11,8 @@ namespace galileo
     namespace fusion
     {
 
-        template <typename InteriorPropagator, typename BoundaryPropagator>
-        concept IsFoldStateValid = std::is_same_v<typename InteriorPropagator::FoldStateType, typename BoundaryPropagator::FoldStateType>;
-
-        template <typename InteriorPropagator, typename BoundaryPropagator>
-        concept IsFoldReturnTypeValid = std::is_same_v<typename InteriorPropagator::ReturnType, typename BoundaryPropagator::ReturnType>;
-
-        // Main sequential propagation engine with directional folding support
-        template <
-            typename InteriorPropagator,
-            typename BoundaryPropagator,
-            bool IsLeftFold_ = true> // true = forward propagation, false = backward propagation
-            requires IsFoldStateValid<InteriorPropagator, BoundaryPropagator> &&
-                     IsFoldReturnTypeValid<InteriorPropagator, BoundaryPropagator>
+        // Main map engine with interior and boundary visitors
+        template <typename InteriorPropagator>
         struct FoldEngineTpl
         {
         private:
@@ -273,4 +262,4 @@ namespace galileo
 
 } // namespace galileo
 
-#endif // __galileo_common_visitors_fold_visitors_fold_engine_hpp__
+#endif // __galileo_common_visitors_smart_visitors_map_engine_hpp__
