@@ -8,6 +8,22 @@
 #include <set>
 #include <string>
 
+// ==============================================================================
+// MANAGER BASE CLASSES
+// ==============================================================================
+//
+// This file provides the foundational CRTP base classes for the manager system.
+// 
+// For new development, consider using the policy-based manager system defined in:
+// - manager-policies.hpp (policy definitions)
+// - manager-generic.hpp (generic implementations)  
+// - manager-concrete-policies.hpp (concrete policies)
+//
+// The policy-based system dramatically reduces boilerplate while maintaining
+// full compatibility with the base classes defined here.
+//
+// ==============================================================================
+
 namespace galileo
 {
 
