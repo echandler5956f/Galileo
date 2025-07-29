@@ -12,7 +12,7 @@
 #include "galileo/multibody/robot-spec.hpp"
 #include "galileo/core/states/implementations/state-multibody.hpp"
 #include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
-#include "utils/resource_finder.hpp"
+#include "galileo/common/utils/resource_finder.hpp"
 
 namespace galileo
 {
@@ -34,9 +34,9 @@ namespace galileo
         inline std::vector<TestRobotData> get_test_robots()
         {
             return {
-                {"Atlas", get_robot_urdf_path("atlas"), true, 30, 30},
-                {"Go1", get_robot_urdf_path("go1"), true, 12, 12},
-                {"Huron", get_robot_urdf_path("huron"), true, 12, 12},
+                {"Atlas", galileo::utils::get_robot_urdf_path("atlas"), true, 30, 30},
+                {"Go1", galileo::utils::get_robot_urdf_path("go1"), true, 12, 12},
+                {"Huron", galileo::utils::get_robot_urdf_path("huron"), true, 12, 12},
             };
         }
 

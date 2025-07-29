@@ -8,17 +8,9 @@ add_executable(test_runner
     ${TEST_SOURCES}
 )
 
-# Generate test configuration header
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/utils/test_config.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/utils/test_config_generated.hpp"
-    @ONLY
-)
-
 # Add tests directory to include path (for test utilities)
 target_include_directories(test_runner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # Link the test runner against our library and Catch2

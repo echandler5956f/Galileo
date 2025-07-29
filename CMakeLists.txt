@@ -92,6 +92,13 @@ install(
     FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx" PATTERN ".*" EXCLUDE
 )
 
+# Install generated headers
+install(
+    DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/galileo/"
+    DESTINATION "${INCLUDE_INSTALL_DIR}"
+    FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
+)
+
 # Install test resources if they exist
 if(BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources")
     install(
@@ -118,6 +125,13 @@ set(GALILEO_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
 
 include(CMakePackageConfigHelpers)
 
+# Generate resource configuration header for the main library
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/galileo/common/utils/resource_config.hpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/include/galileo/common/utils/resource_config_generated.hpp"
+    @ONLY
+)
+
 add_library(galileo INTERFACE)
 
 target_compile_definitions(galileo INTERFACE ${GALILEO_DEFINITIONS})
@@ -132,6 +146,7 @@ endif()
 
 target_include_directories(galileo INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
 
@@ -154,7 +169,7 @@ if(BUILD_WITH_MUJOCO_SUPPORT)
 endif()
 
 if(BUILD_WITH_CANDLEWICK_SUPPORT)
-  target_link_libraries(galileo INTERFACE candlewick_multibody)
+  target_link_libraries(galileo INTERFACE candlewick::candlewick_multibody)
 endif()
 
 set_target_properties(galileo PROPERTIES EXPORT_NAME Galileo)

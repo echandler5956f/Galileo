@@ -10,6 +10,8 @@
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
 
+#include "galileo/common/utils/resource_finder.hpp"
+
 // =================================================================================================
 // 1. GLOBAL VARIABLES AND DATA STRUCTURES
 // =================================================================================================
@@ -194,7 +196,7 @@ int main(int argc, char **argv)
     std::cout << "Initializing MuJoCo PD Controller..." << std::endl;
 
     // --- Provide path to your model here ---
-    const std::string model_path = "/home/quant/research/Galileo/resources/go2/mjx_scene_force.xml";
+    const std::string model_path = galileo::utils::get_resource_path("go2/mjx_scene_force.xml");
 
     // Load the model
     char error[1000] = "Could not load model file";
