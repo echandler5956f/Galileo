@@ -186,8 +186,8 @@ namespace galileo
                                  RxBlock;
             }
             tail(cdata.Lx, ps.get_nv_dim()) = tail(adata.Ar, ps.get_nv_dim());
-            tail(cdata.Lxx.diagonal(), ps.get_nv_dim()) =
-                tail(adata.Arr.diagonal(), ps.get_nv_dim());
+            cdata.Lxx.diagonal().tail(ps.get_nv_dim()).noalias() =
+                adata.Arr.diagonal().tail(ps.get_nv_dim());
         }
 
         template <typename DataCollector>

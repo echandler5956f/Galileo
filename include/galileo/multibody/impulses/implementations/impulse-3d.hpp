@@ -133,7 +133,7 @@ namespace galileo
               fXj(jMf.inverse().toActionMatrix()),
               dv0_dq(model.get_nc(), model.get_ps().get_nv()),
               dtau_dq(model.get_ps().get_nv(), model.get_ps().get_nv()),
-              v0(model.get_nc(), model.get_nc()),
+              v0(Vector3_t::Zero()),
               f_local(Force_t::Zero()),
               dv0_local_dq(model.get_nc(), model.get_ps().get_nv()),
               fJf(6, model.get_ps().get_nv()),
