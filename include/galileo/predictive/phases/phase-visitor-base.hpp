@@ -16,17 +16,17 @@ namespace galileo
         template <>
         struct UnaryVisitorFamilyTraits<PhaseFamily>
         {
-            template <typename PS, template <typename> class CollectionTpl>
-            using ModelTpl = PhaseModelTpl<PS, CollectionTpl>;
+            template <typename BS, template <typename> class CollectionTpl>
+            using ModelTpl = PhaseModelTpl<BS, CollectionTpl>;
 
-            template <typename PS, template <typename> class CollectionTpl>
-            using DataTpl = PhaseDataTpl<PS, CollectionTpl>;
+            template <typename BS, template <typename> class CollectionTpl>
+            using DataTpl = PhaseDataTpl<BS, CollectionTpl>;
 
-            template <typename ModelType, typename PS>
-            using ModelBase = PhaseModelBase<ModelType, PS>;
+            template <typename ModelType, typename BS>
+            using ModelBase = PhaseModelBase<ModelType, BS>;
 
-            template <typename DataType, typename PS>
-            using DataBase = PhaseDataBase<DataType, PS>;
+            template <typename DataType, typename BS>
+            using DataBase = PhaseDataBase<DataType, BS>;
         };
 
         // Phase-specific unary visitor base

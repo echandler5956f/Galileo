@@ -15,14 +15,14 @@ namespace galileo
         {
         private:
             template <typename LeftPhaseModelType>
-            using LeftPhaseModelBaseOf_t = PhaseModelBase<LeftPhaseModelType, typename traits<LeftPhaseModelType>::PS>;
+            using LeftPhaseModelBaseOf_t = PhaseModelBase<LeftPhaseModelType, typename traits<LeftPhaseModelType>::BS>;
             template <typename RightPhaseModelType>
-            using RightPhaseModelBaseOf_t = PhaseModelBase<RightPhaseModelType, typename traits<RightPhaseModelType>::PS>;
+            using RightPhaseModelBaseOf_t = PhaseModelBase<RightPhaseModelType, typename traits<RightPhaseModelType>::BS>;
 
             template <typename LeftPhaseDataType>
-            using LeftPhaseDataBaseOf_t = PhaseDataBase<LeftPhaseDataType, typename traits<LeftPhaseDataType>::PS>;
+            using LeftPhaseDataBaseOf_t = PhaseDataBase<LeftPhaseDataType, typename traits<LeftPhaseDataType>::BS>;
             template <typename RightPhaseDataType>
-            using RightPhaseDataBaseOf_t = PhaseDataBase<RightPhaseDataType, typename traits<RightPhaseDataType>::PS>;
+            using RightPhaseDataBaseOf_t = PhaseDataBase<RightPhaseDataType, typename traits<RightPhaseDataType>::BS>;
 
         public:
             using VisitorDerived = VisitorDerived_;
@@ -66,39 +66,39 @@ namespace galileo
 
             // Binary visitor dispatch for type-erased phases
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl,
                 typename ArgsTmp>
             static ReturnType run(
-                const PhaseModelTpl<PhaseSpec, CollectionTpl> &current_phase_model,
-                const PhaseDataTpl<PhaseSpec, CollectionTpl> &current_phase_data,
-                const PhaseModelTpl<PhaseSpec, CollectionTpl> &next_phase_model,
-                const PhaseDataTpl<PhaseSpec, CollectionTpl> &next_phase_data,
+                const PhaseModelTpl<BasicSpec, CollectionTpl> &current_phase_model,
+                const PhaseDataTpl<BasicSpec, CollectionTpl> &current_phase_data,
+                const PhaseModelTpl<BasicSpec, CollectionTpl> &next_phase_model,
+                const PhaseDataTpl<BasicSpec, CollectionTpl> &next_phase_data,
                 FoldStateType state,
                 ArgsTmp args)
             {
-                InternalBoundaryVisitor<PhaseSpec, CollectionTpl, ArgsTmp> visitor(state, args);
+                InternalBoundaryVisitor<BasicSpec, CollectionTpl, ArgsTmp> visitor(state, args);
                 return boost::apply_visitor(visitor, current_phase_model, current_phase_data, next_phase_model, next_phase_data);
             }
 
             // Binary visitor dispatch without args
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl>
             static ReturnType run(
-                const PhaseModelTpl<PhaseSpec, CollectionTpl> &current_phase_model,
-                const PhaseDataTpl<PhaseSpec, CollectionTpl> &current_phase_data,
-                const PhaseModelTpl<PhaseSpec, CollectionTpl> &next_phase_model,
-                const PhaseDataTpl<PhaseSpec, CollectionTpl> &next_phase_data,
+                const PhaseModelTpl<BasicSpec, CollectionTpl> &current_phase_model,
+                const PhaseDataTpl<BasicSpec, CollectionTpl> &current_phase_data,
+                const PhaseModelTpl<BasicSpec, CollectionTpl> &next_phase_model,
+                const PhaseDataTpl<BasicSpec, CollectionTpl> &next_phase_data,
                 FoldStateType state)
             {
-                InternalBoundaryVisitor<PhaseSpec, CollectionTpl, NoArg> visitor(state);
+                InternalBoundaryVisitor<BasicSpec, CollectionTpl, NoArg> visitor(state);
                 return boost::apply_visitor(visitor, current_phase_model, current_phase_data, next_phase_model, next_phase_data);
             }
 
         private:
             // Internal visitor for binary dispatch on phase boundaries
-            template <typename PhaseSpec, template <typename> class CollectionTpl, typename ArgType>
+            template <typename BasicSpec, template <typename> class CollectionTpl, typename ArgType>
             struct InternalBoundaryVisitor : public boost::static_visitor<ReturnType>
             {
                 InternalBoundaryVisitor(FoldStateType state_, ArgType args_)
@@ -118,8 +118,8 @@ namespace galileo
             };
 
             // Specialization for NoArg
-            template <typename PhaseSpec, template <typename> class CollectionTpl>
-            struct InternalBoundaryVisitor<PhaseSpec, CollectionTpl, NoArg> : public boost::static_visitor<ReturnType>
+            template <typename BasicSpec, template <typename> class CollectionTpl>
+            struct InternalBoundaryVisitor<BasicSpec, CollectionTpl, NoArg> : public boost::static_visitor<ReturnType>
             {
                 InternalBoundaryVisitor(FoldStateType state_) : state(state_) {}
 

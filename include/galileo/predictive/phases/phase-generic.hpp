@@ -6,66 +6,86 @@
 #include "galileo/predictive/phases/phase-collection.hpp"
 #include "galileo/predictive/phases/phase-visitors.hxx"
 
-#include "galileo/predictive/phases/phase-spec.hpp"
+#include "galileo/core/basic-spec.hpp"
 
 namespace galileo
 {
 
     template <
-        typename PhaseSpec,
-        template <typename PS> class PhaseCollectionTpl>
+        typename BasicSpec,
+        template <typename BS> class PhaseCollectionTpl>
     struct PhaseTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class PhaseCollectionTpl>
-    struct traits<PhaseTpl<PhaseSpec, PhaseCollectionTpl>>
+    template <typename BasicSpec,
+              template <typename BS> class PhaseCollectionTpl>
+    struct traits<PhaseTpl<BasicSpec, PhaseCollectionTpl>>
     {
-        using PS = PhaseSpec;
+        using BS = BasicSpec;
 
-        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
-        using Collection_t = PhaseCollectionTpl<PS>;
-        using Model_t = PhaseModelTpl<PS, PhaseCollectionTpl>;
-        using Data_t = PhaseDataTpl<PS, PhaseCollectionTpl>;
+        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+
+        using Meta_t = PhaseTpl<BS, PhaseCollectionTpl>;
+        using Collection_t = PhaseCollectionTpl<BS>;
+        using Model_t = PhaseModelTpl<BS, PhaseCollectionTpl>;
+        using Data_t = PhaseDataTpl<BS, PhaseCollectionTpl>;
+
+        using XNext_t = VectorX_t;
+        using XNextx_t = MatrixX_t;
+        using XNextw_t = MatrixX_t;
+        using L_t = VarScalar;
+        using Lx_t = VectorX_t;
+        using Lw_t = VectorX_t;
+        using Lxx_t = MatrixX_t;
+        using Lxw_t = MatrixX_t;
+        using Lww_t = MatrixX_t;
+        using H_t = VectorX_t;
+        using Hx_t = MatrixX_t;
+        using Hw_t = MatrixX_t;
+        using G_t = VectorX_t;
+        using Gx_t = MatrixX_t;
+        using Gw_t = MatrixX_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class PhaseCollectionTpl>
-    struct traits<PhaseDataTpl<PhaseSpec, PhaseCollectionTpl>>
+    template <typename BasicSpec,
+              template <typename BS> class PhaseCollectionTpl>
+    struct traits<PhaseDataTpl<BasicSpec, PhaseCollectionTpl>>
     {
-        using PS = PhaseSpec;
+        using BS = BasicSpec;
 
-        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Meta_t = PhaseTpl<BS, PhaseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class PhaseCollectionTpl>
-    struct traits<PhaseModelTpl<PhaseSpec, PhaseCollectionTpl>>
+    template <typename BasicSpec,
+              template <typename BS> class PhaseCollectionTpl>
+    struct traits<PhaseModelTpl<BasicSpec, PhaseCollectionTpl>>
     {
-        using PS = PhaseSpec;
+        using BS = BasicSpec;
 
-        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Meta_t = PhaseTpl<BS, PhaseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class PhaseCollectionTpl>
-    struct PhaseDataTpl : public PhaseDataBase<PhaseDataTpl<PhaseSpec, PhaseCollectionTpl>, PhaseSpec>,
-                          PhaseCollectionTpl<PhaseSpec>::PhaseDataVariant_t
+    template <typename BasicSpec,
+              template <typename BS> class PhaseCollectionTpl>
+    struct PhaseDataTpl : public PhaseDataBase<PhaseDataTpl<BasicSpec, PhaseCollectionTpl>, BasicSpec>,
+                          PhaseCollectionTpl<BasicSpec>::PhaseDataVariant_t
     {
-        using PS = PhaseSpec;
+        using BS = BasicSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
 
-        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Meta_t = PhaseTpl<BS, PhaseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = PhaseDataBase<PhaseDataTpl<PS, PhaseCollectionTpl>, PS>;
+        using Base = PhaseDataBase<PhaseDataTpl<BS, PhaseCollectionTpl>, BS>;
+
+        GALILEO_PHASE_DATA_TYPEDEF(Meta_t);
 
         using DataVariant_t = typename Collection_t::PhaseDataVariant_t;
 
@@ -89,28 +109,226 @@ namespace galileo
         }
 
         template <typename DataDerived>
-        PhaseDataTpl(const PhaseDataBase<DataDerived, PhaseSpec> &data)
+        PhaseDataTpl(const PhaseDataBase<DataDerived, BS> &data)
             : Collection_t::PhaseDataVariant_t((DataVariant_t)data.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, DataDerived>));
         }
 
+        XNext_t &XNext_at_i(const int i) const
+        {
+            return galileo::phase_XNext_at_i(*this, i);
+        }
+        XNextx_t &XNextx_at_i(const int i) const
+        {
+            return galileo::phase_XNextx_at_i(*this, i);
+        }
+        XNextw_t &XNextw_at_i(const int i) const
+        {
+            return galileo::phase_XNextw_at_i(*this, i);
+        }
+        L_t &L_at_i(const int i) const
+        {
+            return galileo::phase_L_at_i(*this, i);
+        }
+        Lx_t &Lx_at_i(const int i) const
+        {
+            return galileo::phase_Lx_at_i(*this, i);
+        }
+        Lw_t &Lw_at_i(const int i) const
+        {
+            return galileo::phase_Lw_at_i(*this, i);
+        }
+        Lxx_t &Lxx_at_i(const int i) const
+        {
+            return galileo::phase_Lxx_at_i(*this, i);
+        }
+        Lxw_t &Lxw_at_i(const int i) const
+        {
+            return galileo::phase_Lxw_at_i(*this, i);
+        }
+        Lww_t &Lww_at_i(const int i) const
+        {
+            return galileo::phase_Lww_at_i(*this, i);
+        }
+        H_t &H_at_i(const int i) const
+        {
+            return galileo::phase_H_at_i(*this, i);
+        }
+        Hx_t &Hx_at_i(const int i) const
+        {
+            return galileo::phase_Hx_at_i(*this, i);
+        }
+        Hw_t &Hw_at_i(const int i) const
+        {
+            return galileo::phase_Hw_at_i(*this, i);
+        }
+        G_t &G_at_i(const int i) const
+        {
+            return galileo::phase_G_at_i(*this, i);
+        }
+        Gx_t &Gx_at_i(const int i) const
+        {
+            return galileo::phase_Gx_at_i(*this, i);
+        }
+        Gw_t &Gw_at_i(const int i) const
+        {
+            return galileo::phase_Gw_at_i(*this, i);
+        }
+
+        /////////////////////////////////////////////////////////////
+
+        XNext_t &XNext_at_i_accessor(const int i)
+        {
+            return XNext_at_i(i);
+        }
+        const XNext_t &XNext_at_i_accessor(const int i) const
+        {
+            return XNext_at_i(i);
+        }
+
+        XNextx_t &XNextx_at_i_accessor(const int i)
+        {
+            return XNextx_at_i(i);
+        }
+        const XNextx_t &XNextx_at_i_accessor(const int i) const
+        {
+            return XNextx_at_i(i);
+        }
+
+        XNextw_t &XNextw_at_i_accessor(const int i)
+        {
+            return XNextw_at_i(i);
+        }
+        const XNextw_t &XNextw_at_i_accessor(const int i) const
+        {
+            return XNextw_at_i(i);
+        }
+
+        L_t &L_at_i_accessor(const int i)
+        {
+            return L_at_i(i);
+        }
+        const L_t &L_at_i_accessor(const int i) const
+        {
+            return L_at_i(i);
+        }
+
+        Lx_t &Lx_at_i_accessor(const int i)
+        {
+            return Lx_at_i(i);
+        }
+        const Lx_t &Lx_at_i_accessor(const int i) const
+        {
+            return Lx_at_i(i);
+        }
+
+        Lw_t &Lw_at_i_accessor(const int i)
+        {
+            return Lw_at_i(i);
+        }
+        const Lw_t &Lw_at_i_accessor(const int i) const
+        {
+            return Lw_at_i(i);
+        }
+
+        Lxx_t &Lxx_at_i_accessor(const int i)
+        {
+            return Lxx_at_i(i);
+        }
+        const Lxx_t &Lxx_at_i_accessor(const int i) const
+        {
+            return Lxx_at_i(i);
+        }
+
+        Lxw_t &Lxw_at_i_accessor(const int i)
+        {
+            return Lxw_at_i(i);
+        }
+        const Lxw_t &Lxw_at_i_accessor(const int i) const
+        {
+            return Lxw_at_i(i);
+        }
+
+        Lww_t &Lww_at_i_accessor(const int i)
+        {
+            return Lww_at_i(i);
+        }
+        const Lww_t &Lww_at_i_accessor(const int i) const
+        {
+            return Lww_at_i(i);
+        }
+
+        H_t &H_at_i_accessor(const int i)
+        {
+            return H_at_i(i);
+        }
+        const H_t &H_at_i_accessor(const int i) const
+        {
+            return H_at_i(i);
+        }
+
+        Hx_t &Hx_at_i_accessor(const int i)
+        {
+            return Hx_at_i(i);
+        }
+        const Hx_t &Hx_at_i_accessor(const int i) const
+        {
+            return Hx_at_i(i);
+        }
+
+        Hw_t &Hw_at_i_accessor(const int i)
+        {
+            return Hw_at_i(i);
+        }
+        const Hw_t &Hw_at_i_accessor(const int i) const
+        {
+            return Hw_at_i(i);
+        }
+
+        G_t &G_at_i_accessor(const int i)
+        {
+            return G_at_i(i);
+        }
+        const G_t &G_at_i_accessor(const int i) const
+        {
+            return G_at_i(i);
+        }
+
+        Gx_t &Gx_at_i_accessor(const int i)
+        {
+            return Gx_at_i(i);
+        }
+        const Gx_t &Gx_at_i_accessor(const int i) const
+        {
+            return Gx_at_i(i);
+        }
+
+        Gw_t &Gw_at_i_accessor(const int i)
+        {
+            return Gw_at_i(i);
+        }
+        const Gw_t &Gw_at_i_accessor(const int i) const
+        {
+            return Gw_at_i(i);
+        }
+
     }; // struct PhaseDataTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class PhaseCollectionTpl>
-    struct PhaseModelTpl : public PhaseModelBase<PhaseModelTpl<PhaseSpec, PhaseCollectionTpl>, PhaseSpec>,
-                           PhaseCollectionTpl<PhaseSpec>::PhaseModelVariant_t
+    template <typename BasicSpec,
+              template <typename BS> class PhaseCollectionTpl>
+    struct PhaseModelTpl : public PhaseModelBase<PhaseModelTpl<BasicSpec, PhaseCollectionTpl>, BasicSpec>,
+                           PhaseCollectionTpl<BasicSpec>::PhaseModelVariant_t
     {
-        using PS = PhaseSpec;
+        using BS = BasicSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
 
-        using Meta_t = PhaseTpl<PS, PhaseCollectionTpl>;
+        using Meta_t = PhaseTpl<BS, PhaseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = PhaseModelBase<PhaseModelTpl<PS, PhaseCollectionTpl>, PS>;
+        using Base = PhaseModelBase<PhaseModelTpl<BS, PhaseCollectionTpl>, BS>;
 
         using ModelVariant_t = typename Collection_t::PhaseModelVariant_t;
 
@@ -125,8 +343,8 @@ namespace galileo
         }
 
         template <typename ModelDerived>
-        PhaseModelTpl(const PhaseModelBase<ModelDerived, PhaseSpec> &model)
-            : Base(model.get_ps()),
+        PhaseModelTpl(const PhaseModelBase<ModelDerived, BS> &model)
+            : Base(),
               ModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
@@ -163,7 +381,7 @@ namespace galileo
                          const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
                          const int maxiter,
-                         const typename PS::NumScalar tol) const
+                         const NumScalar tol) const
         {
             galileo::phase_quasi_static(*this, data, xs.derived(), ws.derived(), maxiter, tol);
         }

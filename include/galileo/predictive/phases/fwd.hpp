@@ -19,14 +19,12 @@ namespace galileo
     template <typename PhaseSpec>
     struct PhaseDataDefaultTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class PhaseCollectionTpl>
+    template <typename BasicSpec,
+              template <typename BS> class PhaseCollectionTpl>
     struct PhaseModelTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class PhaseCollectionTpl>
+    template <typename BasicSpec,
+              template <typename BS> class PhaseCollectionTpl>
     struct PhaseDataTpl;
 
 } // namespace galileo

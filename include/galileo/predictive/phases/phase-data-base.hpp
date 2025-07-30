@@ -2,188 +2,186 @@
 #define __galileo_predictive_phases_phase_data_base_hpp__
 
 #include "galileo/predictive/phases/phase-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
+
+#define GALILEO_PHASE_DATA_TYPEDEF(Phase)                      \
+    using XNext_t = typename traits<Phase>::Data_t::XNext_t;   \
+    using XNextx_t = typename traits<Phase>::Data_t::XNextx_t; \
+    using XNextw_t = typename traits<Phase>::Data_t::XNextw_t; \
+    using L_t = typename traits<Phase>::Data_t::L_t;           \
+    using Lx_t = typename traits<Phase>::Data_t::Lx_t;         \
+    using Lw_t = typename traits<Phase>::Data_t::Lw_t;         \
+    using Lxx_t = typename traits<Phase>::Data_t::Lxx_t;       \
+    using Lxw_t = typename traits<Phase>::Data_t::Lxw_t;       \
+    using Lww_t = typename traits<Phase>::Data_t::Lww_t;       \
+    using H_t = typename traits<Phase>::Data_t::H_t;           \
+    using Hx_t = typename traits<Phase>::Data_t::Hx_t;         \
+    using Hw_t = typename traits<Phase>::Data_t::Hw_t;         \
+    using G_t = typename traits<Phase>::Data_t::G_t;           \
+    using Gx_t = typename traits<Phase>::Data_t::Gx_t;         \
+    using Gw_t = typename traits<Phase>::Data_t::Gw_t;
 
 namespace galileo
 {
 
-    template <typename Derived, typename PhaseSpec>
+    template <typename Derived, typename BasicSpec>
     struct PhaseDataBase
         : public internal::CRTP<Derived>
     {
     public:
-        using PS = PhaseSpec;
-
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        using BS = BasicSpec;
 
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        std::vector<Data_t> &get_segments()
-        {
-            return segments;
-        }
-        const std::vector<Data_t> &get_segments() const
-        {
-            return segments;
-        }
+        GALILEO_PHASE_DATA_TYPEDEF(Meta_t);
 
         XNext_t &XNext_at_i(const int i)
         {
-            return segments[i].XNext;
+            return this->derived().XNext_at_i_accessor(i);
         }
         const XNext_t &XNext_at_i(const int i) const
         {
-            return segments[i].XNext;
+            return this->derived().XNext_at_i_accessor(i);
         }
 
         XNextx_t &XNextx_at_i(const int i)
         {
-            return segments[i].XNextx;
+            return this->derived().XNextx_at_i_accessor(i);
         }
         const XNextx_t &XNextx_at_i(const int i) const
         {
-            return segments[i].XNextx;
+            return this->derived().XNextx_at_i_accessor(i);
         }
 
         XNextw_t &XNextw_at_i(const int i)
         {
-            return segments[i].XNextw;
+            return this->derived().XNextw_at_i_accessor(i);
         }
         const XNextw_t &XNextw_at_i(const int i) const
         {
-            return segments[i].XNextw;
+            return this->derived().XNextw_at_i_accessor(i);
         }
 
         L_t &L_at_i(const int i)
         {
-            return segments[i].L;
+            return this->derived().L_at_i_accessor(i);
         }
         const L_t &L_at_i(const int i) const
         {
-            return segments[i].L;
+            return this->derived().L_at_i_accessor(i);
         }
 
         Lx_t &Lx_at_i(const int i)
         {
-            return segments[i].Lx;
+            return this->derived().Lx_at_i_accessor(i);
         }
         const Lx_t &Lx_at_i(const int i) const
         {
-            return segments[i].Lx;
+            return this->derived().Lx_at_i_accessor(i);
         }
 
         Lw_t &Lw_at_i(const int i)
         {
-            return segments[i].Lw;
+            return this->derived().Lw_at_i_accessor(i);
         }
         const Lw_t &Lw_at_i(const int i) const
         {
-            return segments[i].Lw;
+            return this->derived().Lw_at_i_accessor(i);
         }
 
         Lxx_t &Lxx_at_i(const int i)
         {
-            return segments[i].Lxx;
+            return this->derived().Lxx_at_i_accessor(i);
         }
         const Lxx_t &Lxx_at_i(const int i) const
         {
-            return segments[i].Lxx;
+            return this->derived().Lxx_at_i_accessor(i);
         }
 
         Lxw_t &Lxw_at_i(const int i)
         {
-            return segments[i].Lxw;
+            return this->derived().Lxw_at_i_accessor(i);
         }
         const Lxw_t &Lxw_at_i(const int i) const
         {
-            return segments[i].Lxw;
+            return this->derived().Lxw_at_i_accessor(i);
         }
 
         Lww_t &Lww_at_i(const int i)
         {
-            return segments[i].Lww;
+            return this->derived().Lww_at_i_accessor(i);
         }
         const Lww_t &Lww_at_i(const int i) const
         {
-            return segments[i].Lww;
+            return this->derived().Lww_at_i_accessor(i);
         }
 
         H_t &H_at_i(const int i)
         {
-            return segments[i].H;
+            return this->derived().H_at_i_accessor(i);
         }
         const H_t &H_at_i(const int i) const
         {
-            return segments[i].H;
+            return this->derived().H_at_i_accessor(i);
         }
 
         Hx_t &Hx_at_i(const int i)
         {
-            return segments[i].Hx;
+            return this->derived().Hx_at_i_accessor(i);
         }
         const Hx_t &Hx_at_i(const int i) const
         {
-            return segments[i].Hx;
+            return this->derived().Hx_at_i_accessor(i);
         }
 
         Hw_t &Hw_at_i(const int i)
         {
-            return segments[i].Hw;
+            return this->derived().Hw_at_i_accessor(i);
         }
         const Hw_t &Hw_at_i(const int i) const
         {
-            return segments[i].Hw;
+            return this->derived().Hw_at_i_accessor(i);
         }
 
         G_t &G_at_i(const int i)
         {
-            return segments[i].G;
+            return this->derived().G_at_i_accessor(i);
         }
         const G_t &G_at_i(const int i) const
         {
-            return segments[i].G;
+            return this->derived().G_at_i_accessor(i);
         }
 
         Gx_t &Gx_at_i(const int i)
         {
-            return segments[i].Gx;
+            return this->derived().Gx_at_i_accessor(i);
         }
         const Gx_t &Gx_at_i(const int i) const
         {
-            return segments[i].Gx;
+            return this->derived().Gx_at_i_accessor(i);
         }
 
         Gw_t &Gw_at_i(const int i)
         {
-            return segments[i].Gw;
+            return this->derived().Gw_at_i_accessor(i);
         }
         const Gw_t &Gw_at_i(const int i) const
         {
-            return segments[i].Gw;
+            return this->derived().Gw_at_i_accessor(i);
         }
-
-        std::vector<Data_t> segments;
 
     protected:
         inline PhaseDataBase(const Model_t &model)
         {
-            segments.reserve(model.get_segments().size());
-            for (const auto &segment : model.get_segments())
-            {
-                segments.push_back(segment.createData());
-            }
         }
 
         inline PhaseDataBase(const PhaseDataBase &clone)
-            : segments(clone.segments)
         {
         }
 
         inline PhaseDataBase &operator=(const PhaseDataBase &clone)
         {
-            segments = clone.segments;
             return *this;
         }
 

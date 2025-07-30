@@ -8,21 +8,21 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec>
+    template <typename BasicSpec>
     struct PhaseCollectionDefaultTpl
     {
     public:
-        using PS = PhaseSpec;
+        using BS = BasicSpec;
 
         using PhaseModelVariant_t = boost::variant<PhaseModelVoid>; // TODO: Add phase models
         using PhaseDataVariant_t = boost::variant<PhaseDataVoid>;   // TODO: Add phase data
     };
 
-    template <typename PhaseSpec>
-    using PhaseModelVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseModelVariant_t;
+    template <typename BasicSpec>
+    using PhaseModelVariantTpl = PhaseCollectionDefaultTpl<BasicSpec>::PhaseModelVariant_t;
 
-    template <typename PhaseSpec>
-    using PhaseDataVariantTpl = PhaseCollectionDefaultTpl<PhaseSpec>::PhaseDataVariant_t;
+    template <typename BasicSpec>
+    using PhaseDataVariantTpl = PhaseCollectionDefaultTpl<BasicSpec>::PhaseDataVariant_t;
 
 } // namespace galileo
 

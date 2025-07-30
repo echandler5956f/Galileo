@@ -43,12 +43,12 @@ namespace galileo
         public:
             // Main propagation with args
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl,
                 typename ArgsTmp>
             static ReturnType run(
-                const std::vector<PhaseModelTpl<PhaseSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<PhaseSpec, CollectionTpl>> &phase_data,
+                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
                 FoldStateType initial_state,
                 ArgsTmp args)
             {
@@ -57,11 +57,11 @@ namespace galileo
 
             // Main propagation without args
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl>
             static ReturnType run(
-                const std::vector<PhaseModelTpl<PhaseSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<PhaseSpec, CollectionTpl>> &phase_data,
+                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
                 FoldStateType initial_state)
             {
                 return processPhases(phase_models, phase_data, initial_state);
@@ -70,12 +70,12 @@ namespace galileo
         private:
             // Unified phase processing with directional folding
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl,
                 typename ArgsTmp>
             static ReturnType processPhases(
-                const std::vector<PhaseModelTpl<PhaseSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<PhaseSpec, CollectionTpl>> &phase_data,
+                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
                 FoldStateType initial_state,
                 ArgsTmp args)
             {
@@ -110,11 +110,11 @@ namespace galileo
             }
 
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl>
             static ReturnType processPhases(
-                const std::vector<PhaseModelTpl<PhaseSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<PhaseSpec, CollectionTpl>> &phase_data,
+                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
                 FoldStateType initial_state)
             {
                 FoldStateType current_state = initial_state;
@@ -149,42 +149,42 @@ namespace galileo
 
             // Process interior segments within a single phase
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl,
                 typename ArgsTmp>
             static ReturnType processPhaseInterior(
-                const PhaseModelTpl<PhaseSpec, CollectionTpl> &phase_model,
-                PhaseDataTpl<PhaseSpec, CollectionTpl> &phase_data,
+                const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
+                PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
                 FoldStateType state,
                 ArgsTmp args)
             {
-                InternalPhaseInteriorVisitor<PhaseSpec, CollectionTpl, ArgsTmp> visitor(phase_data, state, args);
+                InternalPhaseInteriorVisitor<BasicSpec, CollectionTpl, ArgsTmp> visitor(phase_data, state, args);
                 return boost::apply_visitor(visitor, phase_model);
             }
 
             template <
-                typename PhaseSpec,
+                typename BasicSpec,
                 template <typename> class CollectionTpl>
             static ReturnType processPhaseInterior(
-                const PhaseModelTpl<PhaseSpec, CollectionTpl> &phase_model,
-                PhaseDataTpl<PhaseSpec, CollectionTpl> &phase_data,
+                const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
+                PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
                 FoldStateType state)
             {
-                InternalPhaseInteriorVisitor<PhaseSpec, CollectionTpl, NoArg> visitor(phase_data, state);
+                InternalPhaseInteriorVisitor<BasicSpec, CollectionTpl, NoArg> visitor(phase_data, state);
                 return boost::apply_visitor(visitor, phase_model);
             }
 
             // Internal visitor for processing segments within a phase
-            template <typename PhaseSpec, template <typename> class CollectionTpl, typename ArgType>
+            template <typename BasicSpec, template <typename> class CollectionTpl, typename ArgType>
             struct InternalPhaseInteriorVisitor : public boost::static_visitor<ReturnType>
             {
-                using PhaseDataVariant_t = PhaseDataTpl<PhaseSpec, CollectionTpl>;
+                using PhaseDataVariant_t = PhaseDataTpl<BasicSpec, CollectionTpl>;
 
                 InternalPhaseInteriorVisitor(PhaseDataVariant_t &phase_data_, FoldStateType state_, ArgType args_)
                     : phase_data(phase_data_), state(state_), args(args_) {}
 
                 template <typename PhaseModelType>
-                ReturnType operator()(const PhaseModelBase<PhaseModelType, PhaseSpec> &phase_model) const
+                ReturnType operator()(const PhaseModelBase<PhaseModelType, BasicSpec> &phase_model) const
                 {
                     using PhaseDataType = typename traits<PhaseModelType>::Data_t;
 
@@ -211,16 +211,16 @@ namespace galileo
             };
 
             // Specialization for NoArg
-            template <typename PhaseSpec, template <typename> class CollectionTpl>
-            struct InternalPhaseInteriorVisitor<PhaseSpec, CollectionTpl, NoArg> : public boost::static_visitor<ReturnType>
+            template <typename BasicSpec, template <typename> class CollectionTpl>
+            struct InternalPhaseInteriorVisitor<BasicSpec, CollectionTpl, NoArg> : public boost::static_visitor<ReturnType>
             {
-                using PhaseDataVariant_t = PhaseDataTpl<PhaseSpec, CollectionTpl>;
+                using PhaseDataVariant_t = PhaseDataTpl<BasicSpec, CollectionTpl>;
 
                 InternalPhaseInteriorVisitor(PhaseDataVariant_t &phase_data_, FoldStateType state_)
                     : phase_data(phase_data_), state(state_) {}
 
                 template <typename PhaseModelType>
-                ReturnType operator()(const PhaseModelBase<PhaseModelType, PhaseSpec> &phase_model) const
+                ReturnType operator()(const PhaseModelBase<PhaseModelType, BasicSpec> &phase_model) const
                 {
                     using PhaseDataType = typename traits<PhaseModelType>::Data_t;
 
