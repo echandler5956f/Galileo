@@ -50,91 +50,91 @@ namespace galileo
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNext_t phase_XNext_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNext_t phase_XNext_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextx_t phase_XNextx_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextx_t phase_XNextx_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextw_t phase_XNextw_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextw_t phase_XNextw_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::L_t phase_L_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::L_t phase_L_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lx_t phase_Lx_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lx_t phase_Lx_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lw_t phase_Lw_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lw_t phase_Lw_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxx_t phase_Lxx_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxx_t phase_Lxx_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxw_t phase_Lxw_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxw_t phase_Lxw_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lww_t phase_Lww_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lww_t phase_Lww_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::H_t phase_H_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::H_t phase_H_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hx_t phase_Hx_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hx_t phase_Hx_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hw_t phase_Hw_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hw_t phase_Hw_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::G_t phase_G_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::G_t phase_G_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gx_t phase_Gx_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gx_t phase_Gx_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 
     template <typename BasicSpec,
               template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gw_t phase_Gw_at_i(
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gw_t phase_Gw_at_seg_i(
         const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data,
         const int i);
 

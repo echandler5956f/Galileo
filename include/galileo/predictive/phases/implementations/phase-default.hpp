@@ -4,57 +4,70 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 
+#include <assert.h>
+
 namespace galileo
 {
 
-    template <typename PhaseSpec>
+    template <typename PhaseSpec,
+              template <typename PS> class JumpTpl>
     struct PhaseDefaultTpl;
 
-    template <typename PhaseSpec>
-    struct traits<PhaseDefaultTpl<PhaseSpec>>
+    template <typename PhaseSpec,
+              template <typename PS> class JumpTpl>
+    struct traits<PhaseDefaultTpl<PhaseSpec, JumpTpl>>
     {
         using PS = PhaseSpec;
 
-        // GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
+        using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
+        using Model_t = PhaseModelDefaultTpl<PS, JumpTpl>;
+        using Data_t = PhaseDataDefaultTpl<PS, JumpTpl>;
 
-        using Meta_t = PhaseDefaultTpl<PS>;
-        using Model_t = PhaseModelDefaultTpl<PS>;
-        using Data_t = PhaseDataDefaultTpl<PS>;
+        using JumpMeta_t = JumpTpl<PS>;
+        using JumpModel_t = typename traits<JumpMeta_t>::Model_t;
+        using JumpData_t = typename traits<JumpMeta_t>::Data_t;
     };
 
-    template <typename PhaseSpec>
-    struct traits<PhaseDataDefaultTpl<PhaseSpec>>
+    template <typename PhaseSpec,
+              template <typename PS> class JumpTpl>
+    struct traits<PhaseDataDefaultTpl<PhaseSpec, JumpTpl>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = PhaseDefaultTpl<PS>;
+        using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec>
-    struct traits<PhaseModelDefaultTpl<PhaseSpec>>
+    template <typename PhaseSpec,
+              template <typename PS> class JumpTpl>
+    struct traits<PhaseModelDefaultTpl<PhaseSpec, JumpTpl>>
     {
         using PS = PhaseSpec;
 
-        using Meta_t = PhaseDefaultTpl<PS>;
+        using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec>
+    template <typename PhaseSpec,
+              template <typename PS> class JumpTpl>
     struct PhaseDataDefaultTpl
-        : public PhaseDataBase<PhaseDataDefaultTpl<PhaseSpec>, typename PhaseSpec::BS>
+        : public PhaseDataBase<PhaseDataDefaultTpl<PhaseSpec, JumpTpl>, typename PhaseSpec::BS>
     {
     public:
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using Meta_t = PhaseDefaultTpl<PS>;
+        using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = PhaseDataBase<PhaseDataDefaultTpl<PS>, typename PS::BS>;
+        using Base = PhaseDataBase<PhaseDataDefaultTpl<PS, JumpTpl>, typename PS::BS>;
+
+        using JumpMeta_t = typename traits<Meta_t>::JumpMeta_t;
+        using JumpModel_t = typename traits<Meta_t>::JumpModel_t;
+        using JumpData_t = typename traits<Meta_t>::JumpData_t;
 
         PhaseDataDefaultTpl(const Model_t &model)
             : Base()
@@ -75,161 +88,169 @@ namespace galileo
             return segments;
         }
 
-        XNext_t &XNext_at_i_accessor(const int i)
+        XNext_t &XNext_at_seg_i_accessor(const int i)
         {
             return segments[i].XNext();
         }
-        const XNext_t &XNext_at_i_accessor(const int i) const
+        const XNext_t &XNext_at_seg_i_accessor(const int i) const
         {
             return segments[i].XNext();
         }
 
-        XNextx_t &XNextx_at_i_accessor(const int i)
+        XNextx_t &XNextx_at_seg_i_accessor(const int i)
         {
             return segments[i].XNextx();
         }
-        const XNextx_t &XNextx_at_i_accessor(const int i) const
+        const XNextx_t &XNextx_at_seg_i_accessor(const int i) const
         {
             return segments[i].XNextx();
         }
 
-        XNextw_t &XNextw_at_i_accessor(const int i)
+        XNextw_t &XNextw_at_seg_i_accessor(const int i)
         {
             return segments[i].XNextw();
         }
-        const XNextw_t &XNextw_at_i_accessor(const int i) const
+        const XNextw_t &XNextw_at_seg_i_accessor(const int i) const
         {
             return segments[i].XNextw();
         }
 
-        L_t &L_at_i_accessor(const int i)
+        L_t &L_at_seg_i_accessor(const int i)
         {
             return segments[i].L();
         }
-        const L_t &L_at_i_accessor(const int i) const
+        const L_t &L_at_seg_i_accessor(const int i) const
         {
             return segments[i].L();
         }
 
-        Lx_t &Lx_at_i_accessor(const int i)
+        Lx_t &Lx_at_seg_i_accessor(const int i)
         {
             return segments[i].Lx();
         }
-        const Lx_t &Lx_at_i_accessor(const int i) const
+        const Lx_t &Lx_at_seg_i_accessor(const int i) const
         {
             return segments[i].Lx();
         }
 
-        Lw_t &Lw_at_i_accessor(const int i)
+        Lw_t &Lw_at_seg_i_accessor(const int i)
         {
             return segments[i].Lw();
         }
-        const Lw_t &Lw_at_i_accessor(const int i) const
+        const Lw_t &Lw_at_seg_i_accessor(const int i) const
         {
             return segments[i].Lw();
         }
 
-        Lxx_t &Lxx_at_i_accessor(const int i)
+        Lxx_t &Lxx_at_seg_i_accessor(const int i)
         {
             return segments[i].Lxx();
         }
-        const Lxx_t &Lxx_at_i_accessor(const int i) const
+        const Lxx_t &Lxx_at_seg_i_accessor(const int i) const
         {
             return segments[i].Lxx();
         }
 
-        Lxw_t &Lxw_at_i_accessor(const int i)
+        Lxw_t &Lxw_at_seg_i_accessor(const int i)
         {
             return segments[i].Lxw();
         }
-        const Lxw_t &Lxw_at_i_accessor(const int i) const
+        const Lxw_t &Lxw_at_seg_i_accessor(const int i) const
         {
             return segments[i].Lxw();
         }
 
-        Lww_t &Lww_at_i_accessor(const int i)
+        Lww_t &Lww_at_seg_i_accessor(const int i)
         {
             return segments[i].Lww();
         }
-        const Lww_t &Lww_at_i_accessor(const int i) const
+        const Lww_t &Lww_at_seg_i_accessor(const int i) const
         {
             return segments[i].Lww();
         }
 
-        H_t &H_at_i_accessor(const int i)
+        H_t &H_at_seg_i_accessor(const int i)
         {
             return segments[i].H();
         }
-        const H_t &H_at_i_accessor(const int i) const
+        const H_t &H_at_seg_i_accessor(const int i) const
         {
             return segments[i].H();
         }
 
-        Hx_t &Hx_at_i_accessor(const int i)
+        Hx_t &Hx_at_seg_i_accessor(const int i)
         {
             return segments[i].Hx();
         }
-        const Hx_t &Hx_at_i_accessor(const int i) const
+        const Hx_t &Hx_at_seg_i_accessor(const int i) const
         {
             return segments[i].Hx();
         }
 
-        Hw_t &Hw_at_i_accessor(const int i)
+        Hw_t &Hw_at_seg_i_accessor(const int i)
         {
             return segments[i].Hw();
         }
-        const Hw_t &Hw_at_i_accessor(const int i) const
+        const Hw_t &Hw_at_seg_i_accessor(const int i) const
         {
             return segments[i].Hw();
         }
 
-        G_t &G_at_i_accessor(const int i)
+        G_t &G_at_seg_i_accessor(const int i)
         {
             return segments[i].G();
         }
-        const G_t &G_at_i_accessor(const int i) const
+        const G_t &G_at_seg_i_accessor(const int i) const
         {
             return segments[i].G();
         }
 
-        Gx_t &Gx_at_i_accessor(const int i)
+        Gx_t &Gx_at_seg_i_accessor(const int i)
         {
             return segments[i].Gx();
         }
-        const Gx_t &Gx_at_i_accessor(const int i) const
+        const Gx_t &Gx_at_seg_i_accessor(const int i) const
         {
             return segments[i].Gx();
         }
 
-        Gw_t &Gw_at_i_accessor(const int i)
+        Gw_t &Gw_at_seg_i_accessor(const int i)
         {
             return segments[i].Gw();
         }
-        const Gw_t &Gw_at_i_accessor(const int i) const
+        const Gw_t &Gw_at_seg_i_accessor(const int i) const
         {
             return segments[i].Gw();
         }
 
         std::vector<SegmentData_t> segments;
+        JumpData_t jump;
 
     }; // struct PhaseDataDefaultTpl
 
-    template <typename PhaseSpec>
+    template <typename PhaseSpec,
+              template <typename PS> class JumpTpl>
     class PhaseModelDefaultTpl
-        : public PhaseModelBase<PhaseModelDefaultTpl<PhaseSpec>, typename PhaseSpec::BS>
+        : public PhaseModelBase<PhaseModelDefaultTpl<PhaseSpec, JumpTpl>, typename PhaseSpec::BS>
     {
     public:
         using PS = PhaseSpec;
 
         GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
 
-        using Meta_t = PhaseDefaultTpl<PS>;
+        using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = PhaseModelBase<PhaseModelDefaultTpl<PS>, typename PS::BS>;
+        using Base = PhaseModelBase<PhaseModelDefaultTpl<PS, JumpTpl>, typename PS::BS>;
 
-        PhaseModelDefaultTpl(const PS &ps)
-            : Base(), ps_(ps)
+        using JumpMeta_t = typename traits<Meta_t>::JumpMeta_t;
+        using JumpModel_t = typename traits<Meta_t>::JumpModel_t;
+        using JumpData_t = typename traits<Meta_t>::JumpData_t;
+
+        PhaseModelDefaultTpl(const PS &ps, const JumpModel_t &jump)
+            : Base(),
+              ps_(ps),
+              jump_(jump)
         {
         }
 
@@ -238,7 +259,19 @@ namespace galileo
                   const Eigen::MatrixBase<StateMatrixType> &xs,
                   const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
+            assert(xs.rows() == get_ps().get_nx());
+            assert(ws.rows() == get_ps().get_nw());
+            assert(ws.cols() == segments_.size());
+            assert(xs.cols() == segments_.size() + (with_jump_ ? 1 : 0));
+
             int i = 0;
+
+            if (with_jump_)
+            {
+                jump_.calc(data.jump, col(xs, i));
+                ++i;
+            }
+
             for (auto model_it = segments_.begin(), data_it = data.segments.begin();
                  model_it != segments_.end(); ++model_it, ++data_it, ++i)
             {
@@ -251,7 +284,18 @@ namespace galileo
                       const Eigen::MatrixBase<StateMatrixType> &xs,
                       const Eigen::MatrixBase<ControlParamMatrixType> &ws) const
         {
+            assert(xs.rows() == get_ps().get_nx());
+            assert(ws.rows() == get_ps().get_nw());
+            assert(ws.cols() == segments_.size());
+            assert(xs.cols() == segments_.size() + (with_jump_ ? 1 : 0));
+
             int i = 0;
+
+            if (with_jump_)
+            {
+                jump_.calcDiff(data.jump, col(xs, i));
+                ++i;
+            }
             for (auto model_it = segments_.begin(), data_it = data.segments.begin();
                  model_it != segments_.end(); ++model_it, ++data_it, ++i)
             {
@@ -264,7 +308,19 @@ namespace galileo
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
                          const int maxiter, const NumScalar &tol) const
         {
+            assert(xs.rows() == get_ps().get_nx());
+            assert(ws.rows() == get_ps().get_nw());
+            assert(ws.cols() == segments_.size());
+            assert(xs.cols() == segments_.size() + (with_jump_ ? 1 : 0));
+
             int i = 0;
+
+            if (with_jump_)
+            {
+                // null op, but follow same interface as calc/calcDiff
+                ++i;
+            }
+
             for (auto model_it = segments_.begin(), data_it = data.segments.begin();
                  model_it != segments_.end(); ++model_it, ++data_it, ++i)
             {
@@ -290,6 +346,9 @@ namespace galileo
     protected:
         std::reference_wrapper<const PS> ps_;
         std::vector<SegmentModel_t> segments_;
+        JumpModel_t jump_;
+
+        bool with_jump_ = false;
 
     }; // class PhaseModelDefaultTpl
 

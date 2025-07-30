@@ -143,25 +143,26 @@ namespace galileo
     struct PhaseXNextVisitor
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNext_t>
     {
-
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNext_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.XNext();
+            return phase_data.XNext_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseXNextVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseXNextVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNext_t phase_XNext(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNext_t phase_XNext_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseXNextVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseXNextVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -169,23 +170,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextx_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextx_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
-        template <typename PhaseDataDerived>
-        ReturnType operator()(const PhaseDataBase<PhaseDataDerived, BasicSpec> &phase_data) const
+        template <typename PhaseDataType>
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.XNextx();
+            return phase_data.XNextx_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseXNextxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseXNextxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextx_t phase_XNextx(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextx_t phase_XNextx_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseXNextxVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseXNextxVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -193,48 +196,51 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextw_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextw_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.XNextw();
+            return phase_data.XNextw_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseXNextwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseXNextwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextw_t phase_XNextw(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::XNextw_t phase_XNextw_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseXNextwVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseXNextwVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
     struct PhaseLVisitor
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::L_t>
     {
-
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::L_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.L();
+            return phase_data.L_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseLVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseLVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::L_t phase_L(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::L_t phase_L_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseLVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseLVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -242,23 +248,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lx_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lx_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
-        template <typename PhaseDataDerived>
-        ReturnType operator()(const PhaseDataBase<PhaseDataDerived, BasicSpec> &phase_data) const
+        template <typename PhaseDataType>
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Lx();
+            return phase_data.Lx_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseLxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseLxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lx_t phase_Lx(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lx_t phase_Lx_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseLxVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseLxVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -266,23 +274,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lw_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lw_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Lw();
+            return phase_data.Lw_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseLwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseLwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lw_t phase_Lw(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lw_t phase_Lw_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseLwVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseLwVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -290,23 +300,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxx_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxx_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
-        template <typename PhaseDataDerived>
-        ReturnType operator()(const PhaseDataBase<PhaseDataDerived, BasicSpec> &phase_data) const
+        template <typename PhaseDataType>
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Lxx();
+            return phase_data.Lxx_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseLxxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseLxxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxx_t phase_Lxx(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxx_t phase_Lxx_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseLxxVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseLxxVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -314,23 +326,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxw_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxw_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
-        template <typename PhaseDataDerived>
-        ReturnType operator()(const PhaseDataBase<PhaseDataDerived, BasicSpec> &phase_data) const
+        template <typename PhaseDataType>
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Lxw();
+            return phase_data.Lxw_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseLxwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseLxwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxw_t phase_Lxw(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lxw_t phase_Lxw_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseLxwVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseLxwVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -338,48 +352,51 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lww_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lww_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Lww();
+            return phase_data.Lww_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseLwwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseLwwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lww_t phase_Lww(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Lww_t phase_Lww_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseLwwVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseLwwVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
     struct PhaseHVisitor
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::H_t>
     {
-
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::H_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.H();
+            return phase_data.H_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseHVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseHVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::H_t phase_H(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::H_t phase_H_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseHVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseHVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -387,23 +404,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hx_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hx_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
-        template <typename PhaseDataDerived>
-        ReturnType operator()(const PhaseDataBase<PhaseDataDerived, BasicSpec> &phase_data) const
+        template <typename PhaseDataType>
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Hx();
+            return phase_data.Hx_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseHxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseHxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hx_t phase_Hx(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hx_t phase_Hx_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseHxVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseHxVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -411,48 +430,51 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hw_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hw_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Hw();
+            return phase_data.Hw_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseHwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseHwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hw_t phase_Hw(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Hw_t phase_Hw_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseHwVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseHwVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
     struct PhaseGVisitor
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::G_t>
     {
-
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::G_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.G();
+            return phase_data.G_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseGVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseGVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::G_t phase_G(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::G_t phase_G_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseGVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseGVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -460,23 +482,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gx_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gx_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
-        template <typename PhaseDataDerived>
-        ReturnType operator()(const PhaseDataBase<PhaseDataDerived, BasicSpec> &phase_data) const
+        template <typename PhaseDataType>
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Gx();
+            return phase_data.Gx_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseGxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseGxVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gx_t phase_Gx(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gx_t phase_Gx_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseGxVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseGxVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
@@ -484,23 +508,25 @@ namespace galileo
         : boost::static_visitor<typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gw_t>
     {
         using ReturnType = typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gw_t;
+        using ArgsType = boost::fusion::vector<const int>;
 
         template <typename PhaseDataType>
-        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data) const
+        ReturnType operator()(const PhaseDataBase<PhaseDataType, BasicSpec> &phase_data, const int i) const
         {
-            return phase_data.Gw();
+            return phase_data.Gw_at_seg_i(i);
         }
 
-        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+        static ReturnType run(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
         {
-            return boost::apply_visitor(PhaseGwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data);
+            return boost::apply_visitor(PhaseGwVisitor<BasicSpec, PhaseCollectionTpl>(), phase_data, i);
         }
     };
 
     template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
-    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gw_t phase_Gw(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data)
+    inline typename PhaseDataTpl<BasicSpec, PhaseCollectionTpl>::Gw_t phase_Gw_at_seg_i(const PhaseDataTpl<BasicSpec, PhaseCollectionTpl> &phase_data, const int i)
     {
-        return PhaseGwVisitor<BasicSpec, PhaseCollectionTpl>::run(phase_data);
+        using Algo = PhaseGwVisitor<BasicSpec, PhaseCollectionTpl>;
+        return Algo::run(phase_data, typename Algo::ArgsType(i));
     }
 
 } // namespace galileo

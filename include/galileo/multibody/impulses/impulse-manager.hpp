@@ -72,7 +72,7 @@ namespace galileo
         using DataContainer_t = std::map<std::string, Data_t>;
 
         using Jc_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNV_t::Value, PS::Options>;
-        using dv0_dq_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNv_t::Value, PS::Options>;
+        using dv0_dq_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNV_t::Value, PS::Options>;
         using vnext_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, 1, PS::Options>;
         using dnext_dx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNV_t::Value, PS::DimNDX_t::Value, PS::Options>;
 

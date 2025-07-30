@@ -46,6 +46,8 @@
 
 #include "galileo/predictive/segments/implementations/segment-erk-euler.hpp"
 
+#include "galileo/predictive/jumps/implementations/jump-impulse-fwddyn.hpp"
+
 #include "galileo/predictive/phases/implementations/phase-default.hpp"
 
 #include "galileo/core/data/data-collector-default.hpp"
@@ -131,6 +133,21 @@ struct ContactCollectionTestTpl
 }; // struct ContactCollectionTestTpl
 
 template <typename PhaseSpec>
+using ImpulseTestTpl = galileo::Impulse3dTpl<PhaseSpec>;
+template <typename PhaseSpec>
+using ImpulseModelTestTpl = typename galileo::traits<ImpulseTestTpl<PhaseSpec>>::Model_t;
+template <typename PhaseSpec>
+using ImpulseDataTestTpl = typename galileo::traits<ImpulseTestTpl<PhaseSpec>>::Data_t;
+
+template <typename PhaseSpec>
+struct ImpulseCollectionTestTpl
+{
+    using PS = PhaseSpec;
+    using ImpulseModelVariant_t = boost::variant<ImpulseModelTestTpl<PS>>;
+    using ImpulseDataVariant_t = boost::variant<ImpulseDataTestTpl<PS>>;
+}; // struct ImpulseCollectionTestTpl
+
+template <typename PhaseSpec>
 using ConstraintManagerTestTpl = galileo::ConstraintManagerTpl<PhaseSpec, ConstraintCollectionTestTpl>;
 
 template <typename PhaseSpec>
@@ -140,6 +157,11 @@ template <typename PhaseSpec>
 using ContactManagerTestTpl = galileo::ContactManagerTpl<PhaseSpec, ContactCollectionTestTpl>;
 template <typename PhaseSpec>
 using ContactModelManagerTestTpl = galileo::ContactModelManagerTpl<PhaseSpec, ContactCollectionTestTpl>;
+
+template <typename PhaseSpec>
+using ImpulseManagerTestTpl = galileo::ImpulseManagerTpl<PhaseSpec, ImpulseCollectionTestTpl>;
+template <typename PhaseSpec>
+using ImpulseModelManagerTestTpl = galileo::ImpulseModelManagerTpl<PhaseSpec, ImpulseCollectionTestTpl>;
 
 template <typename PhaseSpec>
 using NodeTpl = galileo::NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTestTpl>;
@@ -152,7 +174,10 @@ template <typename PhaseSpec>
 using SegmentTpl = galileo::SegmentERKEulerTpl<PhaseSpec>;
 
 template <typename PhaseSpec>
-using PhaseTpl = galileo::PhaseDefaultTpl<PhaseSpec>;
+using JumpTpl = galileo::JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTestTpl>;
+
+template <typename PhaseSpec>
+using PhaseTpl = galileo::PhaseDefaultTpl<PhaseSpec, JumpTpl>;
 
 // template <typename PhaseSpec>
 // struct DummyPhaseTpl;
