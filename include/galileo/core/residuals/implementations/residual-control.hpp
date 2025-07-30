@@ -152,7 +152,7 @@ namespace galileo
             // The Jacobian has constant values which were set in createData
         }
 
-        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
+        template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
         void calcCostDiffImpl(CostDataType &cdata,
                               Data_t &rdata,
                               const ActivationDataType &adata) const

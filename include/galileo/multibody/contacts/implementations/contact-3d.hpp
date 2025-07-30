@@ -19,6 +19,7 @@ namespace galileo
     struct traits<Contact3dTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = Contact3dTpl<PS>;
         using Model_t = ContactModel3dTpl<PS>;
@@ -40,6 +41,7 @@ namespace galileo
     struct traits<ContactData3dTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = Contact3dTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -50,6 +52,7 @@ namespace galileo
     struct traits<ContactModel3dTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = Contact3dTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;

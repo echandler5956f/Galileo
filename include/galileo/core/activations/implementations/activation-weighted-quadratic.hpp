@@ -110,8 +110,7 @@ namespace galileo
 
         explicit ActivationModelWeightedQuadraticTpl(const PS &ps, const DimNR_t &nr_dim, const WeightVector_t &weights)
             : Base(ps, nr_dim),
-              weights_(weights),
-              new_weights_(false)
+              weights_(weights)
         {
         }
 
@@ -126,11 +125,7 @@ namespace galileo
         void calcDiff(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
             data.Ar = data.Wr;
-            if (new_weights_)
-            {
-                data.Arr.diagonal() = weights_;
-                new_weights_ = false;
-            }
+            data.Arr.diagonal() = weights_;
         }
 
         Data_t createData() const
@@ -146,7 +141,6 @@ namespace galileo
         void setWeights(const WeightVector_t &weights)
         {
             weights_ = weights;
-            new_weights_ = true;
         }
 
         using Base::get_ps;
@@ -156,7 +150,6 @@ namespace galileo
 
     protected:
         WeightVector_t weights_;
-        bool new_weights_;
 
     }; // class ActivationModelWeightedQuadraticTpl
 

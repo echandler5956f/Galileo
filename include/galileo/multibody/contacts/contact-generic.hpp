@@ -20,6 +20,7 @@ namespace galileo
     struct traits<ContactTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = ContactCollectionTpl<PS>;
@@ -48,6 +49,7 @@ namespace galileo
     struct traits<ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -62,6 +64,7 @@ namespace galileo
     struct traits<ContactModelTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ContactTpl<PS, ContactCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;

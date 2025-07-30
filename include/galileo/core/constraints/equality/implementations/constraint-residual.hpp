@@ -17,6 +17,7 @@ namespace galileo
     struct traits<ConstraintResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl>;
         using Model_t = ConstraintModelResidualTpl<PS, ResidualTpl>;
@@ -39,6 +40,7 @@ namespace galileo
     struct traits<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -51,6 +53,7 @@ namespace galileo
     struct traits<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ConstraintResidualTpl<PS, ResidualTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;

@@ -19,6 +19,7 @@ namespace galileo
     struct traits<CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
         using Model_t = CostModelResidualTpl<PS, ResidualTpl, ActivationTpl>;
@@ -47,6 +48,7 @@ namespace galileo
     struct traits<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -60,6 +62,7 @@ namespace galileo
     struct traits<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;

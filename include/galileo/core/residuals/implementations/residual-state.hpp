@@ -136,7 +136,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            get_ps().get_state()->diff(x_ref_, x, data.R);
+            get_ps().get_state().diff(x_ref_, x, data.R);
         }
 
         template <typename StateVectorType>
@@ -151,7 +151,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            get_ps().get_state()->Jdiff(x_ref_, x, data.Rx, data.Rx, SECOND);
+            get_ps().get_state().template Jdiff<SECOND>(x_ref_, x, data.Rx, data.Rx);
         }
 
         template <typename StateVectorType>
@@ -161,20 +161,19 @@ namespace galileo
             calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
 
-        template <typename CostDataType, typename ActivationDataType, bool UpdateU = true>
+        template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
         void calcCostDiffImpl(CostDataType &cdata,
                               Data_t &rdata,
                               const ActivationDataType &adata) const
         {
             const PS &ps = get_ps();
             const RobotModel_t &robot = get_ps().get_state().get_robot();
-            typedef Eigen::Block<MatrixX_t> MatrixBlock;
 
             // trust
             for (pinocchio::JointIndex i = 1;
                  i < (pinocchio::JointIndex)robot.njoints; ++i)
             {
-                const MatrixBlock &RxBlock = block(rdata.Rx, robot.idx_vs[i], robot.idx_vs[i],
+                const auto &RxBlock = block(rdata.Rx, robot.idx_vs[i], robot.idx_vs[i],
                                                    robot.nvs[i], robot.nvs[i]);
                 segment(cdata.Lx, robot.idx_vs[i], robot.nvs[i]).noalias() =
                     RxBlock.transpose() *

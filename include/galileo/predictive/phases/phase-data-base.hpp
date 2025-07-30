@@ -4,21 +4,21 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 
 #define GALILEO_PHASE_DATA_TYPEDEF(Phase)                      \
-    using XNext_t = typename traits<Phase>::Data_t::XNext_t;   \
-    using XNextx_t = typename traits<Phase>::Data_t::XNextx_t; \
-    using XNextw_t = typename traits<Phase>::Data_t::XNextw_t; \
-    using L_t = typename traits<Phase>::Data_t::L_t;           \
-    using Lx_t = typename traits<Phase>::Data_t::Lx_t;         \
-    using Lw_t = typename traits<Phase>::Data_t::Lw_t;         \
-    using Lxx_t = typename traits<Phase>::Data_t::Lxx_t;       \
-    using Lxw_t = typename traits<Phase>::Data_t::Lxw_t;       \
-    using Lww_t = typename traits<Phase>::Data_t::Lww_t;       \
-    using H_t = typename traits<Phase>::Data_t::H_t;           \
-    using Hx_t = typename traits<Phase>::Data_t::Hx_t;         \
-    using Hw_t = typename traits<Phase>::Data_t::Hw_t;         \
-    using G_t = typename traits<Phase>::Data_t::G_t;           \
-    using Gx_t = typename traits<Phase>::Data_t::Gx_t;         \
-    using Gw_t = typename traits<Phase>::Data_t::Gw_t;
+    using XNext_t = typename traits<Phase>::XNext_t;          \
+    using XNextx_t = typename traits<Phase>::XNextx_t;        \
+    using XNextw_t = typename traits<Phase>::XNextw_t;        \
+    using L_t = typename traits<Phase>::L_t;                  \
+    using Lx_t = typename traits<Phase>::Lx_t;                \
+    using Lw_t = typename traits<Phase>::Lw_t;                \
+    using Lxx_t = typename traits<Phase>::Lxx_t;              \
+    using Lxw_t = typename traits<Phase>::Lxw_t;              \
+    using Lww_t = typename traits<Phase>::Lww_t;              \
+    using H_t = typename traits<Phase>::H_t;                  \
+    using Hx_t = typename traits<Phase>::Hx_t;                \
+    using Hw_t = typename traits<Phase>::Hw_t;                \
+    using G_t = typename traits<Phase>::G_t;                  \
+    using Gx_t = typename traits<Phase>::Gx_t;                \
+    using Gw_t = typename traits<Phase>::Gw_t;
 
 namespace galileo
 {
@@ -172,7 +172,7 @@ namespace galileo
         }
 
     protected:
-        inline PhaseDataBase(const Model_t &model)
+        inline PhaseDataBase()
         {
         }
 

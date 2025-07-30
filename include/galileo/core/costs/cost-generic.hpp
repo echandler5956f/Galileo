@@ -21,6 +21,7 @@ namespace galileo
     struct traits<CostTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = CostTpl<PS, CostCollectionTpl>;
         using Collection_t = CostCollectionTpl<PS>;
@@ -40,6 +41,7 @@ namespace galileo
     struct traits<CostDataTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = CostTpl<PS, CostCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -52,6 +54,7 @@ namespace galileo
     struct traits<CostModelTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = CostTpl<PS, CostCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;

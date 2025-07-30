@@ -21,6 +21,7 @@ namespace galileo
     struct traits<ConstraintTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ConstraintTpl<PS, ConstraintCollectionTpl>;
         using Collection_t = ConstraintCollectionTpl<PS>;
@@ -39,6 +40,7 @@ namespace galileo
     struct traits<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ConstraintTpl<PS, ConstraintCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -51,6 +53,7 @@ namespace galileo
     struct traits<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ConstraintTpl<PS, ConstraintCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;

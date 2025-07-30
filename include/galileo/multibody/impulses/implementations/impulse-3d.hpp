@@ -19,6 +19,7 @@ namespace galileo
     struct traits<Impulse3dTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = Impulse3dTpl<PS>;
         using Model_t = ImpulseModel3dTpl<PS>;
@@ -40,6 +41,7 @@ namespace galileo
     struct traits<ImpulseData3dTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = Impulse3dTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -50,6 +52,7 @@ namespace galileo
     struct traits<ImpulseModel3dTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = Impulse3dTpl<PS>;
         using Model_t = typename traits<Meta_t>::Model_t;

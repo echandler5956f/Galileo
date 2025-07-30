@@ -299,162 +299,371 @@ CostModelManager_t createSwingFootCostManager(const PhaseSpec_t &ps,
                                               const std::vector<pinocchio::FrameIndex> &swing_foot_ids = {},
                                               const std::vector<Eigen::Vector3d> &swing_foot_targets = {})
 {
+    std::cout << "DEBUG: Entering createSwingFootCostManager" << std::endl;
+    std::cout << "DEBUG: COM reference: " << com_ref.transpose() << std::endl;
+    std::cout << "DEBUG: Number of swing feet: " << swing_foot_ids.size() << std::endl;
+    std::cout << "DEBUG: Number of swing targets: " << swing_foot_targets.size() << std::endl;
+
+    std::cout << "DEBUG: Creating cost manager..." << std::endl;
     CostModelManager_t cost_manager(ps);
+    std::cout << "DEBUG: Cost manager created" << std::endl;
 
     // CoM position cost (always active)
+    std::cout << "DEBUG: Creating CoM residual..." << std::endl;
     ResidualCoMPositionModel_t com_residual(ps, com_ref);
+    std::cout << "DEBUG: CoM residual created" << std::endl;
+
+    std::cout << "DEBUG: Creating CoM activation weight..." << std::endl;
     Eigen::Vector<VarScalar_, ResidualCoMPositionModel_t::DimNR_t::Value> com_activation_weight =
         Eigen::Vector<VarScalar_, ResidualCoMPositionModel_t::DimNR_t::Value>::Constant(1.0);
+    std::cout << "DEBUG: CoM activation weight created with size: " << com_activation_weight.size() << std::endl;
+
+    std::cout << "DEBUG: Creating CoM activation..." << std::endl;
     ActivationCoMModel_t com_activation(ps, com_residual.get_nr_dim(), com_activation_weight);
+    std::cout << "DEBUG: CoM activation created" << std::endl;
+
+    std::cout << "DEBUG: Creating CoM cost..." << std::endl;
     CostCoMPositionModel_t com_cost(ps, com_residual, com_activation);
+    std::cout << "DEBUG: CoM cost created" << std::endl;
+
+    std::cout << "DEBUG: Adding CoM cost to manager..." << std::endl;
     cost_manager.addItem("com_position", com_cost, 1e3);
+    std::cout << "DEBUG: CoM cost added" << std::endl;
 
     // Control regularization cost
+    std::cout << "DEBUG: Creating control regularization..." << std::endl;
     Eigen::Vector<VarScalar_, PhaseSpec_t::DimNU_t::Value> control_ref =
         Eigen::Vector<VarScalar_, PhaseSpec_t::DimNU_t::Value>::Zero();
+    std::cout << "DEBUG: Control reference size: " << control_ref.size() << std::endl;
+
     ResidualControlModel_t control_residual(ps, control_ref);
+    std::cout << "DEBUG: Control residual created" << std::endl;
+
     Eigen::Vector<VarScalar_, ResidualControlModel_t::DimNR_t::Value> control_activation_weight =
         Eigen::Vector<VarScalar_, ResidualControlModel_t::DimNR_t::Value>::Constant(1.0);
     ActivationControlModel_t control_activation(ps, control_residual.get_nr_dim(), control_activation_weight);
     CostControlModel_t control_cost(ps, control_residual, control_activation);
     cost_manager.addItem("control_regularization", control_cost, 1e-1);
+    std::cout << "DEBUG: Control cost added" << std::endl;
 
     // State regularization cost
+    std::cout << "DEBUG: Creating state regularization..." << std::endl;
     ResidualStateModel_t state_residual(ps, ps.get_state().zero());
+    std::cout << "DEBUG: State residual created" << std::endl;
+
     Eigen::Vector<VarScalar_, ResidualStateModel_t::DimNR_t::Value> state_activation_weight =
         Eigen::Vector<VarScalar_, ResidualStateModel_t::DimNR_t::Value>::Constant(1.0);
     ActivationStateModel_t state_activation(ps, state_residual.get_nr_dim(), state_activation_weight);
     CostStateModel_t state_cost(ps, state_residual, state_activation);
     cost_manager.addItem("state_regularization", state_cost, 1e-1);
+    std::cout << "DEBUG: State cost added" << std::endl;
 
     // Swing foot costs (if any swing feet specified)
+    std::cout << "DEBUG: Processing swing foot costs..." << std::endl;
     for (size_t i = 0; i < swing_foot_ids.size(); ++i) {
+        std::cout << "DEBUG: Processing swing foot " << i << " with ID: " << swing_foot_ids[i] << std::endl;
         if (i < swing_foot_targets.size()) {
+            std::cout << "DEBUG: Target position: " << swing_foot_targets[i].transpose() << std::endl;
+
             ResidualFrameTranslationModel_t foot_residual(ps, swing_foot_ids[i], swing_foot_targets[i]);
+            std::cout << "DEBUG: Foot residual created" << std::endl;
+
             Eigen::Vector<VarScalar_, ResidualFrameTranslationModel_t::DimNR_t::Value> foot_activation_weight =
                 Eigen::Vector<VarScalar_, ResidualFrameTranslationModel_t::DimNR_t::Value>::Constant(1.0);
             ActivationFrameTranslationModel_t foot_activation(ps, foot_residual.get_nr_dim(), foot_activation_weight);
             CostFrameTranslationModel_t foot_cost(ps, foot_residual, foot_activation);
             cost_manager.addItem("swing_foot_" + std::to_string(swing_foot_ids[i]), foot_cost, 1e4);
+            std::cout << "DEBUG: Foot position cost added" << std::endl;
 
             // Add velocity cost for swing foot
             Motion_t foot_vel_ref = Motion_t::Zero(); // NEED TO MAKE THIS A REAL REFERENCE TO TRACK A FOOT VELOCITY LIKE IN CROCODDYL
+            std::cout << "DEBUG: Creating foot velocity cost..." << std::endl;
             ResidualFrameVelocityModel_t foot_vel_residual(ps, swing_foot_ids[i], foot_vel_ref, pinocchio::LOCAL_WORLD_ALIGNED);
+            std::cout << "DEBUG: Foot velocity residual created" << std::endl;
+
             Eigen::Vector<VarScalar_, ResidualFrameVelocityModel_t::DimNR_t::Value> foot_vel_activation_weight =
                 Eigen::Vector<VarScalar_, ResidualFrameVelocityModel_t::DimNR_t::Value>::Constant(1.0);
             ActivationFrameVelocityModel_t foot_vel_activation(ps, foot_vel_residual.get_nr_dim(), foot_vel_activation_weight);
             CostFrameVelocityModel_t foot_vel_cost(ps, foot_vel_residual, foot_vel_activation);
             cost_manager.addItem("swing_foot_vel_" + std::to_string(swing_foot_ids[i]), foot_vel_cost, 1e2);
+            std::cout << "DEBUG: Foot velocity cost added" << std::endl;
         }
     }
 
+    std::cout << "DEBUG: Exiting createSwingFootCostManager" << std::endl;
     return cost_manager;
 }
 
 // Function to create contact manager for given support feet
 ContactModelManager_t createContactManager(const PhaseSpec_t &ps, const std::vector<pinocchio::FrameIndex> &support_foot_ids)
 {
+    std::cout << "DEBUG: Entering createContactManager" << std::endl;
+    std::cout << "DEBUG: Number of support feet: " << support_foot_ids.size() << std::endl;
+
     ContactModelManager_t contact_manager(ps);
+    std::cout << "DEBUG: Contact manager created" << std::endl;
 
     for (const auto &foot_id : support_foot_ids) {
+        std::cout << "DEBUG: Creating contact for foot ID: " << foot_id << std::endl;
         ContactModel_t contact(ps, foot_id, pinocchio::LOCAL_WORLD_ALIGNED,
                               Eigen::Vector3d::Zero(), Eigen::Vector2d(0., 50.));
+        std::cout << "DEBUG: Contact model created" << std::endl;
+
         contact_manager.addItem("contact_" + std::to_string(foot_id), contact);
+        std::cout << "DEBUG: Contact added to manager" << std::endl;
     }
 
+    std::cout << "DEBUG: Exiting createContactManager" << std::endl;
     return contact_manager;
 }
 
 int main()
 {
+    std::cout << "=== DEBUG: Starting go1_trot ===" << std::endl;
+
     std::string urdf_path = "/home/quant/research/Galileo/resources/go1/urdf/go1.urdf";
+    std::cout << "DEBUG: URDF path set to: " << urdf_path << std::endl;
 
+    std::cout << "DEBUG: Creating robot model..." << std::endl;
     RobotModel_t model = RobotModel_t();
-    pinocchio::urdf::buildModel(urdf_path, pinocchio::JointModelFreeFlyerTpl<VarScalar, Options>(), model);
+    std::cout << "DEBUG: Robot model created successfully" << std::endl;
 
+    std::cout << "DEBUG: Building model from URDF..." << std::endl;
+    pinocchio::urdf::buildModel(urdf_path, pinocchio::JointModelFreeFlyerTpl<VarScalar_, Options_>(), model);
+    std::cout << "DEBUG: Model built successfully" << std::endl;
+
+    std::cout << "DEBUG: Creating state..." << std::endl;
     State_t state = State_t(model);
-    ActuationModel_t actuation = ActuationModel_t(state);
+    std::cout << "DEBUG: State created successfully" << std::endl;
 
+    std::cout << "DEBUG: Creating actuation..." << std::endl;
+    ActuationModel_t actuation = ActuationModel_t(state);
+    std::cout << "DEBUG: Actuation created successfully" << std::endl;
+
+    std::cout << "DEBUG: Creating phase spec..." << std::endl;
     PhaseSpec_t ps = PhaseSpec_t(state);
+    std::cout << "DEBUG: Phase spec created successfully" << std::endl;
 
     std::cout << "Robot initialized with " << model.nq << " positions and " << model.nv << " velocities" << std::endl;
 
-    // Get foot frame IDs
-    pinocchio::FrameIndex lf_foot_id = model.getFrameId("LF_FOOT");
-    pinocchio::FrameIndex rf_foot_id = model.getFrameId("RF_FOOT");
-    pinocchio::FrameIndex lh_foot_id = model.getFrameId("LH_FOOT");
-    pinocchio::FrameIndex rh_foot_id = model.getFrameId("RH_FOOT");
+    // Get foot frame IDs with debug output
+    std::cout << "DEBUG: Getting foot frame IDs..." << std::endl;
+    std::cout << "DEBUG: Available frames in model:" << std::endl;
+    for (size_t i = 0; i < model.frames.size(); ++i) {
+        std::cout << "  Frame " << i << ": " << model.frames[i].name << std::endl;
+    }
 
-    // Setup default state
+    std::cout << "DEBUG: Looking for LF_FOOT frame..." << std::endl;
+    pinocchio::FrameIndex lf_foot_id;
+    try {
+        lf_foot_id = model.getFrameId("LF_FOOT");
+        std::cout << "DEBUG: LF_FOOT found with ID: " << lf_foot_id << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "ERROR: LF_FOOT not found: " << e.what() << std::endl;
+        return -1;
+    }
+
+    std::cout << "DEBUG: Looking for RF_FOOT frame..." << std::endl;
+    pinocchio::FrameIndex rf_foot_id;
+    try {
+        rf_foot_id = model.getFrameId("RF_FOOT");
+        std::cout << "DEBUG: RF_FOOT found with ID: " << rf_foot_id << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "ERROR: RF_FOOT not found: " << e.what() << std::endl;
+        return -1;
+    }
+
+    std::cout << "DEBUG: Looking for LH_FOOT frame..." << std::endl;
+    pinocchio::FrameIndex lh_foot_id;
+    try {
+        lh_foot_id = model.getFrameId("LH_FOOT");
+        std::cout << "DEBUG: LH_FOOT found with ID: " << lh_foot_id << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "ERROR: LH_FOOT not found: " << e.what() << std::endl;
+        return -1;
+    }
+
+    std::cout << "DEBUG: Looking for RH_FOOT frame..." << std::endl;
+    pinocchio::FrameIndex rh_foot_id;
+    try {
+        rh_foot_id = model.getFrameId("RH_FOOT");
+        std::cout << "DEBUG: RH_FOOT found with ID: " << rh_foot_id << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "ERROR: RH_FOOT not found: " << e.what() << std::endl;
+        return -1;
+    }
+
+    // Setup default state with debug output
+    std::cout << "DEBUG: Setting up default state..." << std::endl;
+    std::cout << "DEBUG: Available reference configurations:" << std::endl;
+    for (const auto& config : model.referenceConfigurations) {
+        std::cout << "  Config: " << config.first << " (size: " << config.second.size() << ")" << std::endl;
+    }
+
     Eigen::VectorXd defaultstate = Eigen::VectorXd::Zero(model.nq + model.nv);
-    defaultstate.head(model.nq) = model.referenceConfigurations.at("standing");
+    std::cout << "DEBUG: Default state vector created with size: " << defaultstate.size() << std::endl;
 
-    // Compute initial foot positions
+    std::cout << "DEBUG: Looking for 'standing' configuration..." << std::endl;
+    try {
+        defaultstate.head(model.nq) = model.referenceConfigurations.at("standing");
+        std::cout << "DEBUG: Standing configuration loaded successfully" << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "ERROR: Standing configuration not found: " << e.what() << std::endl;
+        std::cout << "DEBUG: Using zero configuration instead" << std::endl;
+        defaultstate.head(model.nq) = Eigen::VectorXd::Zero(model.nq);
+    }
+
+    // Compute initial foot positions with debug output
+    std::cout << "DEBUG: Computing initial foot positions..." << std::endl;
     pinocchio::Data rdata(model);
     const auto q0 = defaultstate.head(model.nq);
+    std::cout << "DEBUG: Configuration q0 size: " << q0.size() << std::endl;
+
+    std::cout << "DEBUG: Running forward kinematics..." << std::endl;
     pinocchio::forwardKinematics(model, rdata, q0);
+    std::cout << "DEBUG: Forward kinematics completed" << std::endl;
+
+    std::cout << "DEBUG: Computing center of mass..." << std::endl;
     pinocchio::centerOfMass(model, rdata, q0);
+    std::cout << "DEBUG: Center of mass computed" << std::endl;
+
+    std::cout << "DEBUG: Updating frame placements..." << std::endl;
     pinocchio::updateFramePlacements(model, rdata);
+    std::cout << "DEBUG: Frame placements updated" << std::endl;
 
+    std::cout << "DEBUG: Extracting foot positions..." << std::endl;
     const Eigen::Vector3d rf_foot_pos0 = rdata.oMf[rf_foot_id].translation();
-    const Eigen::Vector3d rh_foot_pos0 = rdata.oMf[rh_foot_id].translation();
-    const Eigen::Vector3d lf_foot_pos0 = rdata.oMf[lf_foot_id].translation();
-    const Eigen::Vector3d lh_foot_pos0 = rdata.oMf[lh_foot_id].translation();
+    std::cout << "DEBUG: RF foot position: " << rf_foot_pos0.transpose() << std::endl;
 
+    const Eigen::Vector3d rh_foot_pos0 = rdata.oMf[rh_foot_id].translation();
+    std::cout << "DEBUG: RH foot position: " << rh_foot_pos0.transpose() << std::endl;
+
+    const Eigen::Vector3d lf_foot_pos0 = rdata.oMf[lf_foot_id].translation();
+    std::cout << "DEBUG: LF foot position: " << lf_foot_pos0.transpose() << std::endl;
+
+    const Eigen::Vector3d lh_foot_pos0 = rdata.oMf[lh_foot_id].translation();
+    std::cout << "DEBUG: LH foot position: " << lh_foot_pos0.transpose() << std::endl;
+
+    std::cout << "DEBUG: Computing COM reference..." << std::endl;
     Eigen::Vector3d comRef = (rf_foot_pos0 + rh_foot_pos0 + lf_foot_pos0 + lh_foot_pos0) / 4;
     comRef[2] = rdata.com[0][2];
+    std::cout << "DEBUG: COM reference: " << comRef.transpose() << std::endl;
 
-    // Setup control parameters
+    // Setup control parameters with debug output
+    std::cout << "DEBUG: Setting up control parameters..." << std::endl;
     JacobiRoots_t jacobi_roots(1.0, 0.0);
+    std::cout << "DEBUG: Jacobi roots created" << std::endl;
+
     jacobi_roots.compute_roots();
+    std::cout << "DEBUG: Jacobi roots computed" << std::endl;
+
     Eigen::VectorXd nodes = jacobi_roots.get_roots();
+    std::cout << "DEBUG: Nodes extracted, size: " << nodes.size() << std::endl;
+
     BarycentricInterpolator_t interpolator(nodes);
+    std::cout << "DEBUG: Barycentric interpolator created" << std::endl;
+
     ControlParamModel_t control_param(ps, interpolator);
+    std::cout << "DEBUG: Control parameter model created" << std::endl;
 
     // Gait parameters
     double timestep = 0.02;
-    // TODO: Use these parameters to create multiple phases for a complete walking gait
-    // std::size_t stepknots = 20;
-    // std::size_t supportknots = 10;
-    // double steplength = 0.2;
-    // double stepheight = 0.05;
+    std::cout << "DEBUG: Timestep set to: " << timestep << std::endl;
 
     // Support foot configurations for each swing phase
+    std::cout << "DEBUG: Setting up support configurations..." << std::endl;
     std::vector<pinocchio::FrameIndex> rh_support = {lf_foot_id, rf_foot_id, lh_foot_id};
     std::vector<pinocchio::FrameIndex> rf_support = {lf_foot_id, lh_foot_id, rh_foot_id};
     std::vector<pinocchio::FrameIndex> lh_support = {lf_foot_id, rf_foot_id, rh_foot_id};
     std::vector<pinocchio::FrameIndex> lf_support = {rf_foot_id, lh_foot_id, rh_foot_id};
-
     std::vector<pinocchio::FrameIndex> all_feet_support = {lf_foot_id, rf_foot_id, lh_foot_id, rh_foot_id};
+    std::cout << "DEBUG: Support configurations created" << std::endl;
 
     // Create empty jump model for phases
+    std::cout << "DEBUG: Creating managers..." << std::endl;
     ImpulseModelManager_t impulse_manager(ps);
+    std::cout << "DEBUG: Impulse manager created" << std::endl;
+
     ConstraintModelManager_t empty_constraint_manager(ps);
+    std::cout << "DEBUG: Constraint manager created" << std::endl;
+
     CostModelManager_t empty_cost_manager(ps);
+    std::cout << "DEBUG: Cost manager created" << std::endl;
+
+    std::cout << "DEBUG: Creating jump model..." << std::endl;
     JumpModel_t jump_model(ps, empty_cost_manager, empty_constraint_manager, impulse_manager);
+    std::cout << "DEBUG: Jump model created" << std::endl;
 
     // Create phases vector
-    std::vector<PhaseModelGeneric_t> phases;
+    std::cout << "DEBUG: Creating phases vector..." << std::endl;
+    std::vector<PhaseModelGeneric_t> phase_models;
+    std::cout << "DEBUG: Phases vector created" << std::endl;
+
+    std::cout << "DEBUG: Creating phase data vector..." << std::endl;
+    std::vector<PhaseDataGeneric_t> phase_data;
+    std::cout << "DEBUG: Phase data vector created" << std::endl;
 
     // Create first double support phase
+    std::cout << "DEBUG: Creating double support cost manager..." << std::endl;
     auto double_support_cost_manager = createSwingFootCostManager(ps, comRef);
-    auto double_support_contact_manager = createContactManager(ps, all_feet_support);
+    std::cout << "DEBUG: Double support cost manager created" << std::endl;
 
+    std::cout << "DEBUG: Creating double support contact manager..." << std::endl;
+    auto double_support_contact_manager = createContactManager(ps, all_feet_support);
+    std::cout << "DEBUG: Double support contact manager created" << std::endl;
+
+    std::cout << "DEBUG: Creating double support node..." << std::endl;
     NodeModel_t double_support_node(ps, double_support_cost_manager, empty_constraint_manager,
                                    double_support_contact_manager, actuation, 0.0, false);
+    std::cout << "DEBUG: Double support node created" << std::endl;
 
+    std::cout << "DEBUG: Creating double support segment..." << std::endl;
     SegmentModel_t double_support_segment(ps, double_support_node, control_param, timestep);
+    std::cout << "DEBUG: Double support segment created" << std::endl;
 
+    std::cout << "DEBUG: Creating double support phase..." << std::endl;
     PhaseModel_t double_support_phase(ps, jump_model);
+    std::cout << "DEBUG: Double support phase created" << std::endl;
+
+    std::cout << "DEBUG: Adding segment to phase..." << std::endl;
     double_support_phase.addSegment(double_support_segment);
+    std::cout << "DEBUG: Segment added to phase" << std::endl;
 
     // Add to phases (need to convert to type-erased PhaseModelGeneric_t)
-    phases.emplace_back(static_cast<PhaseModelGeneric_t>(double_support_phase));
+    std::cout << "DEBUG: Converting and adding phase to vector..." << std::endl;
+    phase_models.emplace_back(static_cast<PhaseModelGeneric_t>(double_support_phase));
+    std::cout << "DEBUG: Phase added to vector" << std::endl;
 
     std::cout << "Walking gait created successfully!" << std::endl;
     std::cout << "- Robot model has " << model.nq << " DOF" << std::endl;
     std::cout << "- Phase spec created with all required managers" << std::endl;
-    std::cout << "- Created " << phases.size() << " phases" << std::endl;
+    std::cout << "- Created " << phase_models.size() << " phases" << std::endl;
 
+    std::cout << "DEBUG: Creating phase data..." << std::endl;
+    for (size_t i = 0; i < phase_models.size(); i++) {
+        phase_data.emplace_back(static_cast<PhaseDataGeneric_t>(phase_models[i].createData()));
+        std::cout << "DEBUG: Phase data created for phase model at index " << i << std::endl;
+    }
+    std::cout << "DEBUG: Phase data created" << std::endl;
+
+    std::cout << "DEBUG: Running phase calc..." << std::endl;
+    for (size_t i = 0; i < phase_models.size(); i++) {
+        Eigen::MatrixXd xs = Eigen::MatrixXd::Zero(ps.get_nx(), 1); // only added one segment
+        Eigen::MatrixXd ws = Eigen::MatrixXd::Zero(ps.get_nw(), 1);
+        phase_models[i].calc(phase_data[i], xs, ws);
+        std::cout << "DEBUG: Phase calc completed for phase model at index " << i << std::endl;
+    }
+    std::cout << "DEBUG: Finished running phase calc" << std::endl;
+
+    std::cout << "DEBUG: Running phase calc diff..." << std::endl;
+    for (size_t i = 0; i < phase_models.size(); i++) {
+        Eigen::MatrixXd xs = Eigen::MatrixXd::Zero(ps.get_nx(), 1); // only added one segment
+        Eigen::MatrixXd ws = Eigen::MatrixXd::Zero(ps.get_nw(), 1);
+        phase_models[i].calcDiff(phase_data[i], xs, ws);
+        std::cout << "DEBUG: Phase calc diff completed for phase model at index " << i << std::endl;
+    }
+    std::cout << "DEBUG: Finished running phase calc diff" << std::endl;
+
+    std::cout << "=== DEBUG: Program completed successfully ===" << std::endl;
     return 0;
 }

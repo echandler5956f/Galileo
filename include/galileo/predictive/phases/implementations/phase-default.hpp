@@ -18,6 +18,7 @@ namespace galileo
     struct traits<PhaseDefaultTpl<PhaseSpec, JumpTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = typename PS::BS;
 
         using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
         using Model_t = PhaseModelDefaultTpl<PS, JumpTpl>;
@@ -26,6 +27,23 @@ namespace galileo
         using JumpMeta_t = JumpTpl<PS>;
         using JumpModel_t = typename traits<JumpMeta_t>::Model_t;
         using JumpData_t = typename traits<JumpMeta_t>::Data_t;
+
+        // Add the missing types from PhaseSpec
+        using XNext_t = typename PS::XNext_t;
+        using XNextx_t = typename PS::XNextx_t;
+        using XNextw_t = typename PS::XNextw_t;
+        using L_t = typename PS::L_t;
+        using Lx_t = typename PS::Lx_t;
+        using Lw_t = typename PS::Lw_t;
+        using Lxx_t = typename PS::Lxx_t;
+        using Lxw_t = typename PS::Lxw_t;
+        using Lww_t = typename PS::Lww_t;
+        using H_t = typename PS::H_t;
+        using Hx_t = typename PS::Hx_t;
+        using Hw_t = typename PS::Hw_t;
+        using G_t = typename PS::G_t;
+        using Gx_t = typename PS::Gx_t;
+        using Gw_t = typename PS::Gw_t;
     };
 
     template <typename PhaseSpec,
@@ -33,6 +51,7 @@ namespace galileo
     struct traits<PhaseDataDefaultTpl<PhaseSpec, JumpTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = typename PS::BS;
 
         using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -44,6 +63,7 @@ namespace galileo
     struct traits<PhaseModelDefaultTpl<PhaseSpec, JumpTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = typename PS::BS;
 
         using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -70,7 +90,8 @@ namespace galileo
         using JumpData_t = typename traits<Meta_t>::JumpData_t;
 
         PhaseDataDefaultTpl(const Model_t &model)
-            : Base()
+            : Base(),
+              jump(model.get_jump().createData())
         {
             segments.reserve(model.get_segments().size());
             for (const auto &segment : model.get_segments())
@@ -346,6 +367,11 @@ namespace galileo
         void addSegment(const SegmentModel_t &segment)
         {
             segments_.push_back(segment);
+        }
+
+        const JumpModel_t &get_jump() const
+        {
+            return jump_;
         }
 
     protected:

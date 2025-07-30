@@ -20,6 +20,7 @@ namespace galileo
     struct traits<ImpulseTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ImpulseTpl<PS, ImpulseCollectionTpl>;
         using Collection_t = ImpulseCollectionTpl<PS>;
@@ -48,6 +49,7 @@ namespace galileo
     struct traits<ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ImpulseTpl<PS, ImpulseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -62,6 +64,7 @@ namespace galileo
     struct traits<ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using PS = PhaseSpec;
+        using SpecOfBaseClass = PS;
 
         using Meta_t = ImpulseTpl<PS, ImpulseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;

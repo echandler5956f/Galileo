@@ -20,6 +20,7 @@ namespace galileo
     struct traits<PhaseTpl<BasicSpec, PhaseCollectionTpl>>
     {
         using BS = BasicSpec;
+        using SpecOfBaseClass = BS;
 
         GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
 
@@ -50,6 +51,7 @@ namespace galileo
     struct traits<PhaseDataTpl<BasicSpec, PhaseCollectionTpl>>
     {
         using BS = BasicSpec;
+        using SpecOfBaseClass = BS;
 
         using Meta_t = PhaseTpl<BS, PhaseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -62,6 +64,7 @@ namespace galileo
     struct traits<PhaseModelTpl<BasicSpec, PhaseCollectionTpl>>
     {
         using BS = BasicSpec;
+        using SpecOfBaseClass = BS;
 
         using Meta_t = PhaseTpl<BS, PhaseCollectionTpl>;
         using Collection_t = typename traits<Meta_t>::Collection_t;
@@ -385,10 +388,9 @@ namespace galileo
             galileo::phase_quasi_static(*this, data, xs.derived(), ws.derived(), maxiter, tol);
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData() const
         {
-            return galileo::phase_create_data(*this, collector);
+            return galileo::phase_create_data(*this);
         }
 
     }; // struct PhaseModelTpl

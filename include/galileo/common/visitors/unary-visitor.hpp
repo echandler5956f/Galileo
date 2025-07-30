@@ -45,10 +45,10 @@ namespace galileo
             using DataBase = typename FamilyTraits::template DataBase<DataType, PS>;
 
             template <typename ModelType>
-            using ModelBaseOf_t = ModelBase<ModelType, typename traits<ModelType>::PS>;
+            using ModelBaseOf_t = ModelBase<ModelType, typename traits<ModelType>::SpecOfBaseClass>;
 
             template <typename DataType>
-            using DataBaseOf_t = DataBase<DataType, typename traits<DataType>::PS>;
+            using DataBaseOf_t = DataBase<DataType, typename traits<DataType>::SpecOfBaseClass>;
 
             template <typename ModelType>
             using DataOf_t = typename ModelBaseOf_t<ModelType>::Data_t;

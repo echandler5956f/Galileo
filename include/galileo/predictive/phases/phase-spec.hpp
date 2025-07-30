@@ -164,11 +164,6 @@ namespace galileo
         using SegmentData_t = typename traits<SegmentMeta_t>::Data_t;
         using SegmentDataVector_t = std::vector<SegmentData_t>;
 
-        using PhaseMeta_t = PhaseTpl<PS>;
-        using PhaseModel_t = typename traits<PhaseMeta_t>::Model_t;
-        using PhaseData_t = typename traits<PhaseMeta_t>::Data_t;
-        using PhaseDataVector_t = std::vector<PhaseData_t>;
-
         /* ---------------------------------------------------------------- */
         /* Dependent dimension types */
         /* ---------------------------------------------------------------- */
@@ -294,6 +289,11 @@ namespace galileo
 
         // Segment inequality constraint derivatives
         using Gw_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, NW, Options>; // Jacobian of inequality constraints w.r.t. the control parameters
+
+        using PhaseMeta_t = PhaseTpl<PS>;
+        using PhaseModel_t = typename traits<PhaseMeta_t>::Model_t;
+        using PhaseData_t = typename traits<PhaseMeta_t>::Data_t;
+        using PhaseDataVector_t = std::vector<PhaseData_t>;
 
         /* ---------------------------------------------------------------- */
         /* Accessors for the PhaseSpec dimensions */
