@@ -46,7 +46,7 @@
 
 #include "galileo/predictive/segments/implementations/segment-erk-euler.hpp"
 
-#include "galileo/predictive/phases/implementations/phase-multibody.hpp"
+// #include "galileo/predictive/phases/implementations/phase-multibody.hpp"
 
 #include "galileo/core/data/data-collector-default.hpp"
 
@@ -151,8 +151,30 @@ using ControlParamTpl = galileo::ControlParamPolynomialTpl<PhaseSpec, NOrder>;
 template <typename PhaseSpec>
 using SegmentTpl = galileo::SegmentERKEulerTpl<PhaseSpec>;
 
+// template <typename PhaseSpec>
+// using PhaseTpl = galileo::PhaseMultibodyContactTpl<PhaseSpec>;
+
 template <typename PhaseSpec>
-using PhaseTpl = galileo::PhaseMultibodyContactTpl<PhaseSpec>;
+struct DummyPhaseTpl;
+template <typename PhaseSpec>
+struct DummyPhaseModelTpl;
+template <typename PhaseSpec>
+struct DummyPhaseDataTpl;
+
+namespace galileo
+{
+    template <typename PhaseSpec>
+    struct traits<DummyPhaseTpl<PhaseSpec>>
+    {
+        using PS = PhaseSpec;
+        using Meta_t = DummyPhaseTpl<PS>;
+        using Model_t = DummyPhaseModelTpl<PS>;
+        using Data_t = DummyPhaseDataTpl<PS>;
+    }; // traits<DummyPhaseTpl<PhaseSpec>>
+} // namespace galileo
+
+template <typename PhaseSpec>
+using PhaseTpl = DummyPhaseTpl<PhaseSpec>;
 
 using PhaseSpec_t = galileo::PhaseSpecTpl<RobotSpec_t, ConstraintManagerTestTpl, CostManagerTestTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
 

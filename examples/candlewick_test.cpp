@@ -44,8 +44,11 @@ int main(int argc, char **argv) {
   assert(!visualizer.hasExternalData());
   pinocchio::Data &data = visualizer.data();
 
-  Eigen::VectorXd q0 = pinocchio::neutral(model);
-  Eigen::VectorXd q1 = pinocchio::randomConfiguration(model);
+  Eigen::VectorXd q0 = model.referenceConfigurations["standing"];
+  Eigen::VectorXd q1 = pinocchio::neutral(model);
+
+  std::cout << "q0: " << q0.transpose() << std::endl;
+  std::cout << "q1: " << q1.transpose() << std::endl;
 
   double dt = 1. / static_cast<double>(fps);
   using duration_t = std::chrono::duration<double>;
@@ -58,8 +61,13 @@ int main(int argc, char **argv) {
   while (!visualizer.shouldExit()) {
     const auto now = steady_clock::now();
 
-    double alpha = std::sin(t);
+    double alpha = 0.5 * (std::sin(t) + 1.0);
     pinocchio::interpolate(model, q0, q1, alpha, q);
+
+    pinocchio::forwardKinematics(model, data, q);
+    auto base_to_rl_foot = data.oMf[model.getFrameId("base")].inverse() * data.oMf[model.getFrameId("RL_foot")];
+    q[2] = -base_to_rl_foot.translation()[2];
+
     pinocchio::difference(model, qn, q, v);
     v /= dt;
     pinocchio::forwardKinematics(model, data, q, v);
