@@ -9,5 +9,8 @@ if(BUILD_WITH_CANDLEWICK_SUPPORT)
   target_link_libraries(candlewick_test PRIVATE galileo example-robot-data::example-robot-data)
 endif()
 
+# add_executable(test1 test1.cpp)
+# target_link_libraries(test1 PRIVATE galileo)
+
 add_executable(go1_trot go1_trot.cpp)
 target_link_libraries(go1_trot PRIVATE galileo)

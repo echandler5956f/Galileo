@@ -184,9 +184,9 @@ namespace galileo
         JumpModelImpulseFwdDynTpl(PS &ps, const CostModelManager_t &costs,
                                   const ConstraintModelManager_t &constraints,
                                   const ImpulseModelManager_t &impulses,
-                                  const NumScalar &r_coeff,
-                                  const NumScalar &JMinvJt_damping,
-                                  const bool enable_force)
+                                  const NumScalar &r_coeff = 0.0,
+                                  const NumScalar &JMinvJt_damping = 0.0,
+                                  const bool enable_force = false)
             : Base(ps),
               costs_(costs),
               constraints_(constraints),

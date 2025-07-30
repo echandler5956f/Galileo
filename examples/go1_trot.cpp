@@ -5,17 +5,13 @@
 #include "galileo/predictive/phases/phase-spec.hpp"
 
 #include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
-#include "galileo/core/actuations/implementations/actuation-full.hpp"
 
-#include "galileo/core/states/implementations/state-euclidean.hpp"
 #include "galileo/core/states/implementations/state-multibody.hpp"
 
-#include "galileo/core/activations/implementations/activation-quadratic.hpp"
 #include "galileo/core/activations/implementations/activation-weighted-quadratic.hpp"
 
 #include "galileo/core/residuals/implementations/residual-com-position.hpp"
 #include "galileo/core/residuals/implementations/residual-control.hpp"
-#include "galileo/core/residuals/implementations/residual-frame-placement.hpp"
 #include "galileo/core/residuals/implementations/residual-frame-translation.hpp"
 #include "galileo/core/residuals/implementations/residual-frame-velocity.hpp"
 #include "galileo/core/residuals/implementations/residual-state.hpp"
@@ -27,17 +23,12 @@
 #include "galileo/core/constraints/equality/implementations/constraint-residual.hpp"
 
 #include "galileo/multibody/contacts/implementations/contact-3d.hpp"
-#include "galileo/multibody/contacts/implementations/contact-6d.hpp"
-
 #include "galileo/multibody/contacts/contact-manager.hpp"
 
 #include "galileo/multibody/impulses/implementations/impulse-3d.hpp"
-#include "galileo/multibody/impulses/implementations/impulse-6d.hpp"
-
 #include "galileo/multibody/impulses/impulse-manager.hpp"
 
 #include "galileo/predictive/nodes/implementations/node-contact-fwddyn.hpp"
-#include "galileo/predictive/nodes/implementations/node-impulse-fwddyn.hpp"
 
 #include "galileo/common/math/barycentric-interpolator.hpp"
 #include "galileo/common/math/jacobi-roots.hpp"
@@ -52,6 +43,8 @@
 
 #include "galileo/core/data/data-collector-default.hpp"
 
+#include "galileo/predictive/phases/phase-generic.hpp"
+
 #include "galileo/predictive/phases/smart-visitors/fold-engine.hpp"
 
 #include <iostream>
@@ -61,11 +54,11 @@
 #include <cassert>
 #include <chrono>
 
-using VarScalar = double;
-using NumScalar = double;
-constexpr int Options = Eigen::ColMajor;
+using VarScalar_ = double;
+using NumScalar_ = double;
+constexpr int Options_ = Eigen::ColMajor;
 
-using BasicSpec_t = galileo::BasicSpecTpl<VarScalar, NumScalar, Options>;
+using BasicSpec_t = galileo::BasicSpecTpl<VarScalar_, NumScalar_, Options_>;
 
 template <typename RobotSpec>
 using StateTpl = galileo::StateMultibodyTpl<RobotSpec>;
@@ -73,137 +66,171 @@ using StateTpl = galileo::StateMultibodyTpl<RobotSpec>;
 template <typename RobotSpec>
 using ActuationTpl = galileo::ActuationFloatingBaseTpl<RobotSpec>;
 
-constexpr int NQb = 7;
-constexpr int NQj = 12;
-constexpr int NVb = 6;
-constexpr int NVj = 12;
-constexpr int NRotors = 0;
+constexpr int NQb_ = 7;
+constexpr int NQj_ = 12;
+constexpr int NVb_ = 6;
+constexpr int NVj_ = 12;
+constexpr int NRotors_ = 0;
 
-using RobotSpec_t = galileo::RobotSpecTpl<BasicSpec_t, NQb, NQj, NVb, NVj, NRotors, StateTpl, ActuationTpl>;
+using RobotSpec_t = galileo::RobotSpecTpl<BasicSpec_t, NQb_, NQj_, NVb_, NVj_, NRotors_, StateTpl, ActuationTpl>;
+
+// Define the 5 different residual types for walking gait
+template <typename PhaseSpec>
+using ResidualCoMPositionTpl = galileo::ResidualCoMPositionTpl<PhaseSpec>;
+template <typename PhaseSpec>
+using ResidualControlTpl = galileo::ResidualControlTpl<PhaseSpec>;
+template <typename PhaseSpec>
+using ResidualFrameTranslationTpl = galileo::ResidualFrameTranslationTpl<PhaseSpec>;
+template <typename PhaseSpec>
+using ResidualFrameVelocityTpl = galileo::ResidualFrameVelocityTpl<PhaseSpec>;
+template <typename PhaseSpec>
+using ResidualStateTpl = galileo::ResidualStateTpl<PhaseSpec>;
+
+// Define activation types for each residual
+template <typename PhaseSpec>
+using ActivationCoMTpl = galileo::ActivationWeightedQuadraticTpl<PhaseSpec, ResidualCoMPositionTpl>;
+template <typename PhaseSpec>
+using ActivationControlTpl = galileo::ActivationWeightedQuadraticTpl<PhaseSpec, ResidualControlTpl>;
+template <typename PhaseSpec>
+using ActivationFrameTranslationTpl = galileo::ActivationWeightedQuadraticTpl<PhaseSpec, ResidualFrameTranslationTpl>;
+template <typename PhaseSpec>
+using ActivationFrameVelocityTpl = galileo::ActivationWeightedQuadraticTpl<PhaseSpec, ResidualFrameVelocityTpl>;
+template <typename PhaseSpec>
+using ActivationStateTpl = galileo::ActivationWeightedQuadraticTpl<PhaseSpec, ResidualStateTpl>;
+
+// Define cost types for each residual
+template <typename PhaseSpec>
+using CostCoMPositionTpl = galileo::CostResidualTpl<PhaseSpec, ResidualCoMPositionTpl, ActivationCoMTpl>;
+template <typename PhaseSpec>
+using CostControlTpl = galileo::CostResidualTpl<PhaseSpec, ResidualControlTpl, ActivationControlTpl>;
+template <typename PhaseSpec>
+using CostFrameTranslationTpl = galileo::CostResidualTpl<PhaseSpec, ResidualFrameTranslationTpl, ActivationFrameTranslationTpl>;
+template <typename PhaseSpec>
+using CostFrameVelocityTpl = galileo::CostResidualTpl<PhaseSpec, ResidualFrameVelocityTpl, ActivationFrameVelocityTpl>;
+template <typename PhaseSpec>
+using CostStateTpl = galileo::CostResidualTpl<PhaseSpec, ResidualStateTpl, ActivationStateTpl>;
+
+// Extract model and data types for costs
+template <typename PhaseSpec>
+using CostCoMPositionModelTpl = typename galileo::traits<CostCoMPositionTpl<PhaseSpec>>::Model_t;
+template <typename PhaseSpec>
+using CostCoMPositionDataTpl = typename galileo::traits<CostCoMPositionTpl<PhaseSpec>>::Data_t;
 
 template <typename PhaseSpec>
-using ResidualTestTpl = galileo::ResidualFrameTranslationTpl<PhaseSpec>;
+using CostControlModelTpl = typename galileo::traits<CostControlTpl<PhaseSpec>>::Model_t;
+template <typename PhaseSpec>
+using CostControlDataTpl = typename galileo::traits<CostControlTpl<PhaseSpec>>::Data_t;
 
 template <typename PhaseSpec>
-using ActivationTestTpl = galileo::ActivationQuadraticTpl<PhaseSpec, ResidualTestTpl>;
+using CostFrameTranslationModelTpl = typename galileo::traits<CostFrameTranslationTpl<PhaseSpec>>::Model_t;
+template <typename PhaseSpec>
+using CostFrameTranslationDataTpl = typename galileo::traits<CostFrameTranslationTpl<PhaseSpec>>::Data_t;
 
 template <typename PhaseSpec>
-using CostTestTpl = galileo::CostResidualTpl<PhaseSpec, ResidualTestTpl, ActivationTestTpl>;
+using CostFrameVelocityModelTpl = typename galileo::traits<CostFrameVelocityTpl<PhaseSpec>>::Model_t;
 template <typename PhaseSpec>
-using CostModelTestTpl = typename galileo::traits<CostTestTpl<PhaseSpec>>::Model_t;
-template <typename PhaseSpec>
-using CostDataTestTpl = typename galileo::traits<CostTestTpl<PhaseSpec>>::Data_t;
+using CostFrameVelocityDataTpl = typename galileo::traits<CostFrameVelocityTpl<PhaseSpec>>::Data_t;
 
 template <typename PhaseSpec>
-struct CostCollectionTestTpl
+using CostStateModelTpl = typename galileo::traits<CostStateTpl<PhaseSpec>>::Model_t;
+template <typename PhaseSpec>
+using CostStateDataTpl = typename galileo::traits<CostStateTpl<PhaseSpec>>::Data_t;
+
+template <typename PhaseSpec>
+struct CostCollectionWalkingTpl
 {
     using PS = PhaseSpec;
-    using CostModelVariant_t = boost::variant<CostModelTestTpl<PS>>;
-    using CostDataVariant_t = boost::variant<CostDataTestTpl<PS>>;
-}; // struct CostCollectionTestTpl
+    using CostModelVariant_t = boost::variant<CostCoMPositionModelTpl<PS>,
+                                              CostControlModelTpl<PS>,
+                                              CostFrameTranslationModelTpl<PS>,
+                                              CostFrameVelocityModelTpl<PS>,
+                                              CostStateModelTpl<PS>>;
+
+    using CostDataVariant_t = boost::variant<CostCoMPositionDataTpl<PS>,
+                                             CostControlDataTpl<PS>,
+                                             CostFrameTranslationDataTpl<PS>,
+                                             CostFrameVelocityDataTpl<PS>,
+                                             CostStateDataTpl<PS>>;
+}; // struct CostCollectionWalkingTpl
 
 template <typename PhaseSpec>
-using ConstraintTestTpl = galileo::ConstraintResidualTpl<PhaseSpec, ResidualTestTpl>;
+using ConstraintTestTpl = galileo::ConstraintResidualTpl<PhaseSpec, ResidualFrameTranslationTpl>;
 template <typename PhaseSpec>
 using ConstraintModelTestTpl = typename galileo::traits<ConstraintTestTpl<PhaseSpec>>::Model_t;
 template <typename PhaseSpec>
 using ConstraintDataTestTpl = typename galileo::traits<ConstraintTestTpl<PhaseSpec>>::Data_t;
 
 template <typename PhaseSpec>
-struct ConstraintCollectionTestTpl
+struct ConstraintCollectionWalkingTpl
 {
     using PS = PhaseSpec;
     using ConstraintModelVariant_t = boost::variant<ConstraintModelTestTpl<PS>>;
     using ConstraintDataVariant_t = boost::variant<ConstraintDataTestTpl<PS>>;
-}; // struct ConstraintCollectionTestTpl
+}; // struct ConstraintCollectionWalkingTpl
 
 template <typename PhaseSpec>
-using ContactTestTpl = galileo::Contact3dTpl<PhaseSpec>;
+using ContactWalkingTpl = galileo::Contact3dTpl<PhaseSpec>;
 template <typename PhaseSpec>
-using ContactModelTestTpl = typename galileo::traits<ContactTestTpl<PhaseSpec>>::Model_t;
+using ContactModelWalkingTpl = typename galileo::traits<ContactWalkingTpl<PhaseSpec>>::Model_t;
 template <typename PhaseSpec>
-using ContactDataTestTpl = typename galileo::traits<ContactTestTpl<PhaseSpec>>::Data_t;
+using ContactDataWalkingTpl = typename galileo::traits<ContactWalkingTpl<PhaseSpec>>::Data_t;
 
 template <typename PhaseSpec>
-struct ContactCollectionTestTpl
+struct ContactCollectionWalkingTpl
 {
     using PS = PhaseSpec;
-    using ContactModelVariant_t = boost::variant<ContactModelTestTpl<PS>>;
-    using ContactDataVariant_t = boost::variant<ContactDataTestTpl<PS>>;
-}; // struct ContactCollectionTestTpl
+    using ContactModelVariant_t = boost::variant<ContactModelWalkingTpl<PS>>;
+    using ContactDataVariant_t = boost::variant<ContactDataWalkingTpl<PS>>;
+}; // struct ContactCollectionWalkingTpl
 
 template <typename PhaseSpec>
-using ImpulseTestTpl = galileo::Impulse3dTpl<PhaseSpec>;
+using ImpulseWalkingTpl = galileo::Impulse3dTpl<PhaseSpec>;
 template <typename PhaseSpec>
-using ImpulseModelTestTpl = typename galileo::traits<ImpulseTestTpl<PhaseSpec>>::Model_t;
+using ImpulseModelWalkingTpl = typename galileo::traits<ImpulseWalkingTpl<PhaseSpec>>::Model_t;
 template <typename PhaseSpec>
-using ImpulseDataTestTpl = typename galileo::traits<ImpulseTestTpl<PhaseSpec>>::Data_t;
+using ImpulseDataWalkingTpl = typename galileo::traits<ImpulseWalkingTpl<PhaseSpec>>::Data_t;
 
 template <typename PhaseSpec>
-struct ImpulseCollectionTestTpl
+struct ImpulseCollectionWalkingTpl
 {
     using PS = PhaseSpec;
-    using ImpulseModelVariant_t = boost::variant<ImpulseModelTestTpl<PS>>;
-    using ImpulseDataVariant_t = boost::variant<ImpulseDataTestTpl<PS>>;
-}; // struct ImpulseCollectionTestTpl
+    using ImpulseModelVariant_t = boost::variant<ImpulseModelWalkingTpl<PS>>;
+    using ImpulseDataVariant_t = boost::variant<ImpulseDataWalkingTpl<PS>>;
+}; // struct ImpulseCollectionWalkingTpl
 
 template <typename PhaseSpec>
-using ConstraintManagerTestTpl = galileo::ConstraintManagerTpl<PhaseSpec, ConstraintCollectionTestTpl>;
+using ConstraintManagerWalkingTpl = galileo::ConstraintManagerTpl<PhaseSpec, ConstraintCollectionWalkingTpl>;
 
 template <typename PhaseSpec>
-using CostManagerTestTpl = galileo::CostManagerTpl<PhaseSpec, CostCollectionTestTpl>;
+using CostManagerWalkingTpl = galileo::CostManagerTpl<PhaseSpec, CostCollectionWalkingTpl>;
 
 template <typename PhaseSpec>
-using ContactManagerTestTpl = galileo::ContactManagerTpl<PhaseSpec, ContactCollectionTestTpl>;
+using ContactManagerWalkingTpl = galileo::ContactManagerTpl<PhaseSpec, ContactCollectionWalkingTpl>;
 template <typename PhaseSpec>
-using ContactModelManagerTestTpl = galileo::ContactModelManagerTpl<PhaseSpec, ContactCollectionTestTpl>;
-
-template <typename PhaseSpec>
-using ImpulseManagerTestTpl = galileo::ImpulseManagerTpl<PhaseSpec, ImpulseCollectionTestTpl>;
-template <typename PhaseSpec>
-using ImpulseModelManagerTestTpl = galileo::ImpulseModelManagerTpl<PhaseSpec, ImpulseCollectionTestTpl>;
+using ContactModelManagerWalkingTpl = galileo::ContactModelManagerTpl<PhaseSpec, ContactCollectionWalkingTpl>;
 
 template <typename PhaseSpec>
-using NodeTpl = galileo::NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTestTpl>;
-
-static constexpr int NOrder = 1;
+using ImpulseManagerWalkingTpl = galileo::ImpulseManagerTpl<PhaseSpec, ImpulseCollectionWalkingTpl>;
 template <typename PhaseSpec>
-using ControlParamTpl = galileo::ControlParamPolynomialTpl<PhaseSpec, NOrder>;
+using ImpulseModelManagerWalkingTpl = galileo::ImpulseModelManagerTpl<PhaseSpec, ImpulseCollectionWalkingTpl>;
 
 template <typename PhaseSpec>
-using SegmentTpl = galileo::SegmentERKEulerTpl<PhaseSpec>;
+using NodeWalkingTpl = galileo::NodeContactFwdDynTpl<PhaseSpec, ContactCollectionWalkingTpl>;
+
+static constexpr int NOrder_ = 1;
+template <typename PhaseSpec>
+using ControlParamWalkingTpl = galileo::ControlParamPolynomialTpl<PhaseSpec, NOrder_>;
 
 template <typename PhaseSpec>
-using JumpTpl = galileo::JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTestTpl>;
+using SegmentWalkingTpl = galileo::SegmentERKEulerTpl<PhaseSpec>;
 
 template <typename PhaseSpec>
-using PhaseTpl = galileo::PhaseDefaultTpl<PhaseSpec, JumpTpl>;
+using JumpWalkingTpl = galileo::JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionWalkingTpl>;
 
-// template <typename PhaseSpec>
-// struct DummyPhaseTpl;
-// template <typename PhaseSpec>
-// struct DummyPhaseModelTpl;
-// template <typename PhaseSpec>
-// struct DummyPhaseDataTpl;
+template <typename PhaseSpec>
+using PhaseWalkingTpl = galileo::PhaseDefaultTpl<PhaseSpec, JumpWalkingTpl>;
 
-// namespace galileo
-// {
-//     template <typename PhaseSpec>
-//     struct traits<DummyPhaseTpl<PhaseSpec>>
-//     {
-//         using PS = PhaseSpec;
-//         using Meta_t = DummyPhaseTpl<PS>;
-//         using Model_t = DummyPhaseModelTpl<PS>;
-//         using Data_t = DummyPhaseDataTpl<PS>;
-//     }; // traits<DummyPhaseTpl<PhaseSpec>>
-// } // namespace galileo
-
-// template <typename PhaseSpec>
-// using PhaseTpl = DummyPhaseTpl<PhaseSpec>;
-
-using PhaseSpec_t = galileo::PhaseSpecTpl<RobotSpec_t, ConstraintManagerTestTpl, CostManagerTestTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
-
-using RobotSpec_t = typename PhaseSpec_t::RS;
+using PhaseSpec_t = galileo::PhaseSpecTpl<RobotSpec_t, ConstraintManagerWalkingTpl, CostManagerWalkingTpl, NodeWalkingTpl, ControlParamWalkingTpl, SegmentWalkingTpl, PhaseWalkingTpl>;
 
 using RobotModel_t = typename PhaseSpec_t::RobotModel_t;
 using RobotData_t = typename PhaseSpec_t::RobotData_t;
@@ -211,133 +238,135 @@ using RobotData_t = typename PhaseSpec_t::RobotData_t;
 using State_t = typename PhaseSpec_t::State_t;
 using ActuationModel_t = typename PhaseSpec_t::ActuationModel_t;
 
-using ResidualModel_t = typename galileo::traits<ResidualTestTpl<PhaseSpec_t>>::Model_t;
-
-using ActivationModel_t = typename galileo::traits<ActivationTestTpl<PhaseSpec_t>>::Model_t;
-
-using CostModel_t = typename galileo::traits<CostTestTpl<PhaseSpec_t>>::Model_t;
 using CostModelManager_t = typename PhaseSpec_t::CostModelManager_t;
-
-using ConstraintModel_t = typename galileo::traits<ConstraintTestTpl<PhaseSpec_t>>::Model_t;
 using ConstraintModelManager_t = typename PhaseSpec_t::ConstraintModelManager_t;
-
-using ContactModel_t = typename galileo::traits<ContactTestTpl<PhaseSpec_t>>::Model_t;
-using ContactModelManager_t = ContactModelManagerTestTpl<PhaseSpec_t>;
+using ContactModelManager_t = ContactModelManagerWalkingTpl<PhaseSpec_t>;
+using ImpulseModelManager_t = ImpulseModelManagerWalkingTpl<PhaseSpec_t>;
 
 using NodeModel_t = typename PhaseSpec_t::NodeModel_t;
 using NodeData_t = typename PhaseSpec_t::NodeData_t;
 
-using JacobiRoots_t = galileo::JacobiRootsTpl<VarScalar, NOrder, Options>;
-using BarycentricInterpolator_t = galileo::BarycentricInterpolatorTpl<VarScalar, NOrder, Options>;
+using JacobiRoots_t = galileo::JacobiRootsTpl<VarScalar_, NOrder_, Options_>;
+using BarycentricInterpolator_t = galileo::BarycentricInterpolatorTpl<VarScalar_, NOrder_, Options_>;
 
 using ControlParamModel_t = typename PhaseSpec_t::ControlParamModel_t;
 
 using SegmentModel_t = typename PhaseSpec_t::SegmentModel_t;
 using SegmentData_t = typename PhaseSpec_t::SegmentData_t;
 
-struct TestInteriorPropagator;
-namespace galileo
+using JumpModel_t = typename galileo::traits<JumpWalkingTpl<PhaseSpec_t>>::Model_t;
+using PhaseModel_t = typename PhaseSpec_t::PhaseModel_t;
+
+// Extract concrete model types for the walking gait
+using ResidualCoMPositionModel_t = typename galileo::traits<ResidualCoMPositionTpl<PhaseSpec_t>>::Model_t;
+using ActivationCoMModel_t = typename galileo::traits<ActivationCoMTpl<PhaseSpec_t>>::Model_t;
+using CostCoMPositionModel_t = typename galileo::traits<CostCoMPositionTpl<PhaseSpec_t>>::Model_t;
+
+using ResidualControlModel_t = typename galileo::traits<ResidualControlTpl<PhaseSpec_t>>::Model_t;
+using ActivationControlModel_t = typename galileo::traits<ActivationControlTpl<PhaseSpec_t>>::Model_t;
+using CostControlModel_t = typename galileo::traits<CostControlTpl<PhaseSpec_t>>::Model_t;
+
+using ResidualStateModel_t = typename galileo::traits<ResidualStateTpl<PhaseSpec_t>>::Model_t;
+using ActivationStateModel_t = typename galileo::traits<ActivationStateTpl<PhaseSpec_t>>::Model_t;
+using CostStateModel_t = typename galileo::traits<CostStateTpl<PhaseSpec_t>>::Model_t;
+
+using ResidualFrameTranslationModel_t = typename galileo::traits<ResidualFrameTranslationTpl<PhaseSpec_t>>::Model_t;
+using ActivationFrameTranslationModel_t = typename galileo::traits<ActivationFrameTranslationTpl<PhaseSpec_t>>::Model_t;
+using CostFrameTranslationModel_t = typename galileo::traits<CostFrameTranslationTpl<PhaseSpec_t>>::Model_t;
+
+using ResidualFrameVelocityModel_t = typename galileo::traits<ResidualFrameVelocityTpl<PhaseSpec_t>>::Model_t;
+using ActivationFrameVelocityModel_t = typename galileo::traits<ActivationFrameVelocityTpl<PhaseSpec_t>>::Model_t;
+using CostFrameVelocityModel_t = typename galileo::traits<CostFrameVelocityTpl<PhaseSpec_t>>::Model_t;
+
+using ContactModel_t = typename galileo::traits<ContactWalkingTpl<PhaseSpec_t>>::Model_t;
+
+template <typename BasicSpec>
+struct PhaseCollectionWalkingTpl
 {
-    template <>
-    struct traits<TestInteriorPropagator>
-    {
-        using FoldStateType = Eigen::VectorXd;
-        using ReturnType = Eigen::VectorXd;
-    };
-}
+    using PhaseModelVariant_t = boost::variant<PhaseModel_t>;
+    using PhaseDataVariant_t = boost::variant<typename PhaseModel_t::Data_t>;
+}; // struct PhaseCollectionWalkingTpl
 
-// Example custom interior propagator
-struct TestInteriorPropagator
-    : galileo::fusion::InteriorPropagatorBase<TestInteriorPropagator>
+GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec_t);
+
+using Phase_t = galileo::PhaseTpl<BasicSpec_t, PhaseCollectionWalkingTpl>;
+using PhaseModelGeneric_t = typename galileo::traits<Phase_t>::Model_t;
+using PhaseDataGeneric_t = typename galileo::traits<Phase_t>::Data_t;
+
+// Function to create cost manager for swing foot phase
+CostModelManager_t createSwingFootCostManager(const PhaseSpec_t &ps,
+                                              const Eigen::Vector3d &com_ref,
+                                              const std::vector<pinocchio::FrameIndex> &swing_foot_ids = {},
+                                              const std::vector<Eigen::Vector3d> &swing_foot_targets = {})
 {
-    using FoldStateType = typename galileo::traits<TestInteriorPropagator>::FoldStateType;
-    using ReturnType = typename galileo::traits<TestInteriorPropagator>::ReturnType;
-    using ArgsType = boost::fusion::vector<const Eigen::VectorXd &>;
+    CostModelManager_t cost_manager(ps);
 
-    // Version with control parameters
-    template <typename SegmentModel, typename SegmentData>
-    static ReturnType algo(const SegmentModel &segment_model, SegmentData &segment_data, FoldStateType state, const Eigen::VectorXd &controls)
-    {
-        std::cout << "Processing segment with controls..." << std::endl;
+    // CoM position cost (always active)
+    ResidualCoMPositionModel_t com_residual(ps, com_ref);
+    Eigen::Vector<VarScalar_, ResidualCoMPositionModel_t::DimNR_t::Value> com_activation_weight =
+        Eigen::Vector<VarScalar_, ResidualCoMPositionModel_t::DimNR_t::Value>::Constant(1.0);
+    ActivationCoMModel_t com_activation(ps, com_residual.get_nr_dim(), com_activation_weight);
+    CostCoMPositionModel_t com_cost(ps, com_residual, com_activation);
+    cost_manager.addItem("com_position", com_cost, 1e3);
 
-        // Apply segment dynamics with controls
-        segment_model.calc(segment_data, state, controls);
-        std::cout << "  State norm changed from " << state.norm() << " to " << segment_data.XNext_accessor().norm() << std::endl;
+    // Control regularization cost
+    Eigen::Vector<VarScalar_, PhaseSpec_t::DimNU_t::Value> control_ref =
+        Eigen::Vector<VarScalar_, PhaseSpec_t::DimNU_t::Value>::Zero();
+    ResidualControlModel_t control_residual(ps, control_ref);
+    Eigen::Vector<VarScalar_, ResidualControlModel_t::DimNR_t::Value> control_activation_weight =
+        Eigen::Vector<VarScalar_, ResidualControlModel_t::DimNR_t::Value>::Constant(1.0);
+    ActivationControlModel_t control_activation(ps, control_residual.get_nr_dim(), control_activation_weight);
+    CostControlModel_t control_cost(ps, control_residual, control_activation);
+    cost_manager.addItem("control_regularization", control_cost, 1e-1);
 
-        return segment_data.XNext_accessor();
+    // State regularization cost
+    ResidualStateModel_t state_residual(ps, ps.get_state().zero());
+    Eigen::Vector<VarScalar_, ResidualStateModel_t::DimNR_t::Value> state_activation_weight =
+        Eigen::Vector<VarScalar_, ResidualStateModel_t::DimNR_t::Value>::Constant(1.0);
+    ActivationStateModel_t state_activation(ps, state_residual.get_nr_dim(), state_activation_weight);
+    CostStateModel_t state_cost(ps, state_residual, state_activation);
+    cost_manager.addItem("state_regularization", state_cost, 1e-1);
+
+    // Swing foot costs (if any swing feet specified)
+    for (size_t i = 0; i < swing_foot_ids.size(); ++i) {
+        if (i < swing_foot_targets.size()) {
+            ResidualFrameTranslationModel_t foot_residual(ps, swing_foot_ids[i], swing_foot_targets[i]);
+            Eigen::Vector<VarScalar_, ResidualFrameTranslationModel_t::DimNR_t::Value> foot_activation_weight =
+                Eigen::Vector<VarScalar_, ResidualFrameTranslationModel_t::DimNR_t::Value>::Constant(1.0);
+            ActivationFrameTranslationModel_t foot_activation(ps, foot_residual.get_nr_dim(), foot_activation_weight);
+            CostFrameTranslationModel_t foot_cost(ps, foot_residual, foot_activation);
+            cost_manager.addItem("swing_foot_" + std::to_string(swing_foot_ids[i]), foot_cost, 1e4);
+
+            // Add velocity cost for swing foot
+            Motion_t foot_vel_ref = Motion_t::Zero(); // NEED TO MAKE THIS A REAL REFERENCE TO TRACK A FOOT VELOCITY LIKE IN CROCODDYL
+            ResidualFrameVelocityModel_t foot_vel_residual(ps, swing_foot_ids[i], foot_vel_ref, pinocchio::LOCAL_WORLD_ALIGNED);
+            Eigen::Vector<VarScalar_, ResidualFrameVelocityModel_t::DimNR_t::Value> foot_vel_activation_weight =
+                Eigen::Vector<VarScalar_, ResidualFrameVelocityModel_t::DimNR_t::Value>::Constant(1.0);
+            ActivationFrameVelocityModel_t foot_vel_activation(ps, foot_vel_residual.get_nr_dim(), foot_vel_activation_weight);
+            CostFrameVelocityModel_t foot_vel_cost(ps, foot_vel_residual, foot_vel_activation);
+            cost_manager.addItem("swing_foot_vel_" + std::to_string(swing_foot_ids[i]), foot_vel_cost, 1e2);
+        }
     }
-};
 
-template <typename SegmentModel, typename SegmentData>
-inline typename TestInteriorPropagator::ReturnType interior_propagate(const SegmentModel &segment_model, SegmentData &segment_data, typename TestInteriorPropagator::FoldStateType state, const Eigen::VectorXd &controls)
-{
-    using Algo = TestInteriorPropagator;
-    return Algo::run(segment_model, segment_data, state, typename Algo::ArgsType(controls));
+    return cost_manager;
 }
 
-struct TestBoundaryPropagator;
-namespace galileo
+// Function to create contact manager for given support feet
+ContactModelManager_t createContactManager(const PhaseSpec_t &ps, const std::vector<pinocchio::FrameIndex> &support_foot_ids)
 {
-    template <>
-    struct traits<TestBoundaryPropagator>
-    {
-        using FoldStateType = Eigen::VectorXd;
-        static constexpr bool IsDirectionallyInvariant = false;
-        using ReturnType = Eigen::VectorXd;
-    };
-}
+    ContactModelManager_t contact_manager(ps);
 
-// Example custom boundary propagator
-struct TestBoundaryPropagator
-    : galileo::fusion::BoundaryPropagatorBase<TestBoundaryPropagator>
-{
-    using FoldStateType = typename galileo::traits<TestBoundaryPropagator>::FoldStateType;
-    static constexpr bool IsDirectionallyInvariant = galileo::traits<TestBoundaryPropagator>::IsDirectionallyInvariant;
-    using ReturnType = typename galileo::traits<TestBoundaryPropagator>::ReturnType;
-    using ArgsType = boost::fusion::vector<const Eigen::VectorXd &>;
-
-    template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData>
-    static ReturnType algo(const CurrentPhaseModel &current_phase_model, const CurrentPhaseData &current_phase_data,
-                           const NextPhaseModel &next_phase_model, const NextPhaseData &next_phase_data,
-                           FoldStateType state, const Eigen::VectorXd &controls)
-    {
-        std::cout << "Applying boundary transformation between phases" << std::endl;
-        std::cout << "  Input state norm: " << state.norm() << std::endl;
-
-        // For this test, apply a simple scaling as a "reset map"
-        ReturnType reset_state = state * 0.99; // Slight energy dissipation
-
-        std::cout << "  Output state norm: " << reset_state.norm() << std::endl;
-
-        return reset_state;
+    for (const auto &foot_id : support_foot_ids) {
+        ContactModel_t contact(ps, foot_id, pinocchio::LOCAL_WORLD_ALIGNED,
+                              Eigen::Vector3d::Zero(), Eigen::Vector2d(0., 50.));
+        contact_manager.addItem("contact_" + std::to_string(foot_id), contact);
     }
-};
 
-template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData>
-inline typename TestBoundaryPropagator::ReturnType boundary_propagate(const CurrentPhaseModel &current_phase_model, const CurrentPhaseData &current_phase_data,
-                                                                      const NextPhaseModel &next_phase_model, const NextPhaseData &next_phase_data,
-                                                                      typename TestBoundaryPropagator::FoldStateType state, const Eigen::VectorXd &controls)
-{
-    using Algo = TestBoundaryPropagator;
-    return Algo::run(current_phase_model, current_phase_data, next_phase_model, next_phase_data, state, typename Algo::ArgsType(controls));
+    return contact_manager;
 }
-
-// Test propagators for both directions
-using TestPropagatorLeftFold = galileo::fusion::FoldTpl<
-    TestInteriorPropagator,
-    TestBoundaryPropagator,
-    true>; // Left fold (forward)
-
-using TestPropagatorRightFold = galileo::fusion::FoldTpl<
-    TestInteriorPropagator,
-    TestBoundaryPropagator,
-    false>; // Right fold (backward)
 
 int main()
 {
-    std::cout << "=== Sequential Propagation Test ===" << std::endl;
-
-    // Setup robot model (simplified from go1_trot.cpp)
     std::string urdf_path = "/home/quant/research/Galileo/resources/go1/urdf/go1.urdf";
 
     RobotModel_t model = RobotModel_t();
@@ -350,126 +379,82 @@ int main()
 
     std::cout << "Robot initialized with " << model.nq << " positions and " << model.nv << " velocities" << std::endl;
 
-    pinocchio::FrameIndex frame_id = model.getFrameId("base");
-    ResidualModel_t residual = ResidualModel_t(ps, frame_id, Eigen::Vector3d(0., 0., 0.));
-    ActivationModel_t activation = ActivationModel_t(ps, residual.get_nr_dim());
+    // Get foot frame IDs
+    pinocchio::FrameIndex lf_foot_id = model.getFrameId("LF_FOOT");
+    pinocchio::FrameIndex rf_foot_id = model.getFrameId("RF_FOOT");
+    pinocchio::FrameIndex lh_foot_id = model.getFrameId("LH_FOOT");
+    pinocchio::FrameIndex rh_foot_id = model.getFrameId("RH_FOOT");
 
-    std::cout << "Residual dimension: " << residual.get_nr_dim() << std::endl;
+    // Setup default state
+    Eigen::VectorXd defaultstate = Eigen::VectorXd::Zero(model.nq + model.nv);
+    defaultstate.head(model.nq) = model.referenceConfigurations.at("standing");
 
-    CostModel_t cost = CostModel_t(ps, residual, activation);
-    std::cout << "Cost model created" << std::endl;
-    CostModelManager_t cost_manager = CostModelManager_t(ps);
-    std::cout << "Cost model manager created" << std::endl;
-    cost_manager.addItem("test_cost", cost, 1.0);
-    std::cout << "Cost model added" << std::endl;
+    // Compute initial foot positions
+    pinocchio::Data rdata(model);
+    const auto q0 = defaultstate.head(model.nq);
+    pinocchio::forwardKinematics(model, rdata, q0);
+    pinocchio::centerOfMass(model, rdata, q0);
+    pinocchio::updateFramePlacements(model, rdata);
 
-    ConstraintModel_t constraint = ConstraintModel_t(ps, residual);
-    ConstraintModelManager_t constraint_manager = ConstraintModelManager_t(ps);
-    constraint_manager.addItem("test_constraint", constraint);
+    const Eigen::Vector3d rf_foot_pos0 = rdata.oMf[rf_foot_id].translation();
+    const Eigen::Vector3d rh_foot_pos0 = rdata.oMf[rh_foot_id].translation();
+    const Eigen::Vector3d lf_foot_pos0 = rdata.oMf[lf_foot_id].translation();
+    const Eigen::Vector3d lh_foot_pos0 = rdata.oMf[lh_foot_id].translation();
 
-    std::cout << "Constraint model created" << std::endl;
+    Eigen::Vector3d comRef = (rf_foot_pos0 + rh_foot_pos0 + lf_foot_pos0 + lh_foot_pos0) / 4;
+    comRef[2] = rdata.com[0][2];
 
-    pinocchio::FrameIndex frame_id_2 = model.getFrameId("LF_FOOT");
-    ContactModel_t contact = ContactModel_t(ps, frame_id_2, pinocchio::LOCAL, Eigen::Vector3d(0., 0., 0.), Eigen::Vector2d(0., 0.));
-    ContactModelManager_t contact_manager = ContactModelManager_t(ps);
-    contact_manager.addItem("test_contact", contact);
-
-    std::cout << "Contact model created" << std::endl;
-
-    // Setup basic node and control for segments
-    NodeModel_t node = NodeModel_t(
-        ps,
-        cost_manager,
-        constraint_manager,
-        contact_manager,
-        actuation,
-        0.0,
-        false);
-
-    std::cout << "Node model created" << std::endl;
-
+    // Setup control parameters
     JacobiRoots_t jacobi_roots(1.0, 0.0);
     jacobi_roots.compute_roots();
     Eigen::VectorXd nodes = jacobi_roots.get_roots();
-
-    std::cout << "Jacobi roots created" << std::endl;
-
     BarycentricInterpolator_t interpolator(nodes);
     ControlParamModel_t control_param(ps, interpolator);
 
-    std::cout << "ps: " << ps << std::endl;
+    // Gait parameters
+    double timestep = 0.02;
+    // TODO: Use these parameters to create multiple phases for a complete walking gait
+    // std::size_t stepknots = 20;
+    // std::size_t supportknots = 10;
+    // double steplength = 0.2;
+    // double stepheight = 0.05;
 
-    // Create test segments
-    std::vector<SegmentModel_t *> test_segments;
-    std::vector<SegmentData_t *> test_segment_data;
+    // Support foot configurations for each swing phase
+    std::vector<pinocchio::FrameIndex> rh_support = {lf_foot_id, rf_foot_id, lh_foot_id};
+    std::vector<pinocchio::FrameIndex> rf_support = {lf_foot_id, lh_foot_id, rh_foot_id};
+    std::vector<pinocchio::FrameIndex> lh_support = {lf_foot_id, rf_foot_id, rh_foot_id};
+    std::vector<pinocchio::FrameIndex> lf_support = {rf_foot_id, lh_foot_id, rh_foot_id};
 
-    const NumScalar period = 0.1;
+    std::vector<pinocchio::FrameIndex> all_feet_support = {lf_foot_id, rf_foot_id, lh_foot_id, rh_foot_id};
 
-    SegmentModel_t segment_model1 = SegmentModel_t(ps, node, control_param, period);
-    std::cout << "segment_model1 created" << std::endl;
-    test_segments.push_back(&segment_model1);
-    std::cout << "segment_model1 pushed" << std::endl;
-    SegmentData_t segment_data1 = segment_model1.createData();
-    std::cout << "segment_data1 created" << std::endl;
-    test_segment_data.push_back(&segment_data1);
-    std::cout << "segment_data1 pushed" << std::endl;
+    // Create empty jump model for phases
+    ImpulseModelManager_t impulse_manager(ps);
+    ConstraintModelManager_t empty_constraint_manager(ps);
+    CostModelManager_t empty_cost_manager(ps);
+    JumpModel_t jump_model(ps, empty_cost_manager, empty_constraint_manager, impulse_manager);
 
-    SegmentModel_t segment_model2 = SegmentModel_t(ps, node, control_param, period);
-    std::cout << "segment_model2 created" << std::endl;
-    test_segments.push_back(&segment_model2);
-    std::cout << "segment_model2 pushed" << std::endl;
-    SegmentData_t segment_data2 = segment_model2.createData();
-    std::cout << "segment_data2 created" << std::endl;
-    test_segment_data.push_back(&segment_data2);
-    std::cout << "segment_data2 pushed" << std::endl;
+    // Create phases vector
+    std::vector<PhaseModelGeneric_t> phases;
 
-    std::cout << "Created " << test_segments.size() << " test segments" << std::endl;
+    // Create first double support phase
+    auto double_support_cost_manager = createSwingFootCostManager(ps, comRef);
+    auto double_support_contact_manager = createContactManager(ps, all_feet_support);
 
-    // Create initial state
-    Eigen::VectorXd initial_state = state.rand();
-    std::cout << "Initial state size: " << initial_state.size() << std::endl;
-    std::cout << "Initial state norm: " << initial_state.norm() << std::endl;
+    NodeModel_t double_support_node(ps, double_support_cost_manager, empty_constraint_manager,
+                                   double_support_contact_manager, actuation, 0.0, false);
 
-    // Test individual segment propagation
-    std::cout << "\n--- Testing Individual Segment Transformation ---" << std::endl;
+    SegmentModel_t double_support_segment(ps, double_support_node, control_param, timestep);
 
-    Eigen::VectorXd current_state = initial_state;
-    for (size_t i = 0; i < test_segments.size(); ++i)
-    {
-        std::cout << "Segment " << i << ":" << std::endl;
-        Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
-        current_state = interior_propagate(*test_segments[i], *test_segment_data[i], current_state, controls);
-    }
+    PhaseModel_t double_support_phase(ps, jump_model);
+    double_support_phase.addSegment(double_support_segment);
 
-    std::cout << "Final state after individual processing: " << current_state.norm() << std::endl;
+    // Add to phases (need to convert to type-erased PhaseModelGeneric_t)
+    phases.emplace_back(static_cast<PhaseModelGeneric_t>(double_support_phase));
 
-    // Test directional fold differences
-    std::cout << "\n--- Testing Left vs Right Fold ---" << std::endl;
-
-    std::cout << "Left fold (forward) processing would traverse: segments[0] -> segments[" << test_segments.size() - 1 << "]" << std::endl;
-    std::cout << "Right fold (backward) processing would traverse: segments[" << test_segments.size() - 1 << "] -> segments[0]" << std::endl;
-
-    // Reset state for comparison
-    Eigen::VectorXd left_fold_state = initial_state;
-    Eigen::VectorXd right_fold_state = initial_state;
-
-    // Process with left fold (forward)
-    for (size_t i = 0; i < test_segments.size(); ++i)
-    {
-        Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
-        left_fold_state = interior_propagate(*test_segments[i], *test_segment_data[i], left_fold_state, controls);
-    }
-
-    // Process with right fold (backward)
-    for (size_t i = test_segments.size(); i-- > 0;)
-    {
-        Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
-        right_fold_state = interior_propagate(*test_segments[i], *test_segment_data[i], right_fold_state, controls);
-    }
-
-    std::cout << "Left fold final state norm: " << left_fold_state.norm() << std::endl;
-    std::cout << "Right fold final state norm: " << right_fold_state.norm() << std::endl;
-    std::cout << "Difference in norms: " << std::abs(left_fold_state.norm() - right_fold_state.norm()) << std::endl;
+    std::cout << "Walking gait created successfully!" << std::endl;
+    std::cout << "- Robot model has " << model.nq << " DOF" << std::endl;
+    std::cout << "- Phase spec created with all required managers" << std::endl;
+    std::cout << "- Created " << phases.size() << " phases" << std::endl;
 
     return 0;
 }

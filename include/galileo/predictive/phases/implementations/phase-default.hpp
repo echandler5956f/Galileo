@@ -343,6 +343,11 @@ namespace galileo
             return segments_;
         }
 
+        void addSegment(const SegmentModel_t &segment)
+        {
+            segments_.push_back(segment);
+        }
+
     protected:
         std::reference_wrapper<const PS> ps_;
         std::vector<SegmentModel_t> segments_;

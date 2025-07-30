@@ -140,6 +140,7 @@ namespace galileo
     struct PhaseSpecTpl
     {
         using RS = RobotSpec;
+        using BS = typename RS::BS;
         using PS = PhaseSpecTpl<RS, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
 
         // Import the robot spec types and constants

@@ -15,15 +15,6 @@ namespace galileo
         template <typename PS> class ContactCollectionTpl>
     struct NodeDataContactFwdDynTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ImpulseCollectionTpl>
-    struct NodeModelImpulseFwdDynTpl;
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ImpulseCollectionTpl>
-    struct NodeDataImpulseFwdDynTpl;
-
 } // namespace galileo
 
 #endif // __galileo_predictive_nodes_fwd_hpp__
