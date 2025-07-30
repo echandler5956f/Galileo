@@ -59,44 +59,6 @@ namespace galileo
             }
         }
 
-        template <bool IsForward, typename RightPhaseModelType, typename RightPhaseDataType, typename StateVectorType, typename ControlVectorType>
-        void resetMapCalc(Data_t &data,
-                          const RightPhaseModelType &right_model,
-                          RightPhaseDataType &right_data,
-                          const Eigen::MatrixBase<StateVectorType> &x,
-                          const Eigen::MatrixBase<ControlVectorType> &u) const
-        {
-            this->derived().resetMapCalc(data, right_model, right_data, x, u);
-        }
-
-        template <bool IsForward, typename RightPhaseModelType, typename RightPhaseDataType, typename StateVectorType>
-        void resetMapCalc(Data_t &data,
-                          const RightPhaseModelType &right_model,
-                          RightPhaseDataType &right_data,
-                          const Eigen::MatrixBase<StateVectorType> &x) const
-        {
-            this->derived().resetMapCalc(data, right_model, right_data, x);
-        }
-
-        template <bool IsForward, typename RightPhaseModelType, typename RightPhaseDataType, typename StateVectorType, typename ControlVectorType>
-        void resetMapCalcDiff(Data_t &data,
-                              const RightPhaseModelType &right_model,
-                              RightPhaseDataType &right_data,
-                              const Eigen::MatrixBase<StateVectorType> &x,
-                              const Eigen::MatrixBase<ControlVectorType> &u) const
-        {
-            this->derived().resetMapCalcDiff(data, right_model, right_data, x, u);
-        }
-
-        template <bool IsForward, typename RightPhaseModelType, typename RightPhaseDataType, typename StateVectorType>
-        void resetMapCalcDiff(Data_t &data,
-                              const RightPhaseModelType &right_model,
-                              RightPhaseDataType &right_data,
-                              const Eigen::MatrixBase<StateVectorType> &x) const
-        {
-            this->derived().resetMapCalcDiff(data, right_model, right_data, x);
-        }
-
         Data_t createData() const
         {
             return Data_t(*this);

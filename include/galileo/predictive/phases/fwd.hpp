@@ -14,13 +14,10 @@ namespace galileo
     {
     }; // struct PhaseDataVoid
 
-    template <typename PhaseSpec,
-              template <typename _PS, template <typename PS_> class ResetCollectionTpl> class ResetNodeTpl>
-    struct PhaseModelMultibodyTpl;
-
-    template <typename PhaseSpec,
-              template <typename _PS, template <typename PS_> class ResetCollectionTpl> class ResetNodeTpl>
-    struct PhaseDataMultibodyTpl;
+    template <typename PhaseSpec>
+    struct PhaseModelDefaultTpl;
+    template <typename PhaseSpec>
+    struct PhaseDataDefaultTpl;
 
     template <
         typename PhaseSpec,
