@@ -35,14 +35,12 @@
  * @param ReturnType The return type of the accessor.
  * @param accessor_name The name of the accessor.
  */
-#define FORWARD_ACCESSOR(ReturnType, accessor_name)        \
-    /* lvalue-qualified overload */                        \
-    ReturnType &accessor_name()                            \
+#define FORWARD_ACCESSOR(return_type, accessor_name)       \
+    return_type &accessor_name()                           \
     {                                                      \
         return this->derived().accessor_name##_accessor(); \
     }                                                      \
-    /* const-lvalue-qualified overload */                  \
-    const ReturnType &accessor_name() const                \
+    const return_type &accessor_name() const               \
     {                                                      \
         return this->derived().accessor_name##_accessor(); \
     }
@@ -53,17 +51,17 @@
  * This macro is used to define a default accessor for a member variable. This accessor macro is used in the
  * derived class that actually stores the accessor_name variable.
  *
- * @param ReturnType The return type of the accessor.
+ * @param return_type The return type of the accessor.
  * @param accessor_name The name of the accessor (name of the variable).
  */
-#define DEFAULT_ACCESSOR(ReturnType, accessor_name)    \
-    ReturnType &accessor_name##_accessor()             \
-    {                                                  \
-        return accessor_name;                          \
-    }                                                  \
-    const ReturnType &accessor_name##_accessor() const \
-    {                                                  \
-        return accessor_name;                          \
+#define DEFAULT_ACCESSOR(return_type, accessor_name)    \
+    return_type &accessor_name##_accessor()             \
+    {                                                   \
+        return accessor_name;                           \
+    }                                                   \
+    const return_type &accessor_name##_accessor() const \
+    {                                                   \
+        return accessor_name;                           \
     }
 
 /**
@@ -77,14 +75,14 @@
  * @param ReturnType The return type of the accessor.
  * @param accessor_name The name of the accessor.
  */
-#define GENERIC_ACCESSOR(ReturnType, accessor_name)    \
-    ReturnType &accessor_name##_accessor()             \
-    {                                                  \
-        return accessor_name();                        \
-    }                                                  \
-    const ReturnType &accessor_name##_accessor() const \
-    {                                                  \
-        return accessor_name();                        \
+#define GENERIC_ACCESSOR(return_type, accessor_name)    \
+    return_type &accessor_name##_accessor()             \
+    {                                                   \
+        return accessor_name();                         \
+    }                                                   \
+    const return_type &accessor_name##_accessor() const \
+    {                                                   \
+        return accessor_name();                         \
     }
 
 #endif // __galileo_common_meta_macros_hpp__
