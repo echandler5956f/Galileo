@@ -223,6 +223,9 @@ using ConstraintModelManager_t = typename PhaseSpec_t::ConstraintModelManager_t;
 using ContactModel_t = typename galileo::traits<ContactTestTpl<PhaseSpec_t>>::Model_t;
 using ContactModelManager_t = ContactModelManagerTestTpl<PhaseSpec_t>;
 
+using ImpulseModel_t = typename galileo::traits<ImpulseTestTpl<PhaseSpec_t>>::Model_t;
+using ImpulseModelManager_t = ImpulseModelManagerTestTpl<PhaseSpec_t>;
+
 using NodeModel_t = typename PhaseSpec_t::NodeModel_t;
 using NodeData_t = typename PhaseSpec_t::NodeData_t;
 
@@ -233,6 +236,9 @@ using ControlParamModel_t = typename PhaseSpec_t::ControlParamModel_t;
 
 using SegmentModel_t = typename PhaseSpec_t::SegmentModel_t;
 using SegmentData_t = typename PhaseSpec_t::SegmentData_t;
+
+using JumpModel_t = typename galileo::traits<JumpTpl<PhaseSpec_t>>::Model_t;
+using JumpData_t = typename galileo::traits<JumpTpl<PhaseSpec_t>>::Data_t;
 
 struct TestInteriorPropagator;
 namespace galileo
@@ -262,6 +268,7 @@ struct TestInteriorPropagator
         // Apply segment dynamics with controls
         segment_model.calc(segment_data, state, controls);
         std::cout << "  State norm changed from " << state.norm() << " to " << segment_data.XNext_accessor().norm() << std::endl;
+        segment_model.calcDiff(segment_data, state, controls);
 
         return segment_data.XNext_accessor();
     }
@@ -368,12 +375,18 @@ int main()
 
     std::cout << "Constraint model created" << std::endl;
 
-    pinocchio::FrameIndex frame_id_2 = model.getFrameId("LF_FOOT");
-    ContactModel_t contact = ContactModel_t(ps, frame_id_2, pinocchio::LOCAL, Eigen::Vector3d(0., 0., 0.), Eigen::Vector2d(0., 0.));
     ContactModelManager_t contact_manager = ContactModelManager_t(ps);
-    contact_manager.addItem("test_contact", contact);
+    pinocchio::FrameIndex frame_id_1 = model.getFrameId("LF_FOOT");
+    ContactModel_t contact1 = ContactModel_t(ps, frame_id_1, pinocchio::LOCAL, Eigen::Vector3d(0., 0., 0.), Eigen::Vector2d(0., 0.));
+    std::cout << "Contact model 1 created" << std::endl;
+    contact_manager.addItem("test_contact1", contact1);
+    std::cout << "Contact model 1 added" << std::endl;
 
-    std::cout << "Contact model created" << std::endl;
+    pinocchio::FrameIndex frame_id_2 = model.getFrameId("RF_FOOT");
+    ContactModel_t contact2 = ContactModel_t(ps, frame_id_2, pinocchio::LOCAL, Eigen::Vector3d(0., 0., 0.), Eigen::Vector2d(0., 0.));
+    std::cout << "Contact model 2 created" << std::endl;
+    contact_manager.addItem("test_contact2", contact2);
+    std::cout << "Contact model 2 added" << std::endl;
 
     // Setup basic node and control for segments
     NodeModel_t node = NodeModel_t(
@@ -384,7 +397,6 @@ int main()
         actuation,
         0.0,
         false);
-
     std::cout << "Node model created" << std::endl;
 
     JacobiRoots_t jacobi_roots(1.0, 0.0);
@@ -469,6 +481,21 @@ int main()
     std::cout << "Left fold final state norm: " << left_fold_state.norm() << std::endl;
     std::cout << "Right fold final state norm: " << right_fold_state.norm() << std::endl;
     std::cout << "Difference in norms: " << std::abs(left_fold_state.norm() - right_fold_state.norm()) << std::endl;
+
+    pinocchio::FrameIndex frame_id_3 = model.getFrameId("LF_FOOT");
+    ImpulseModel_t impulse = ImpulseModel_t(ps, frame_id_3, pinocchio::LOCAL);
+    ImpulseModelManager_t impulse_manager = ImpulseModelManager_t(ps);
+    impulse_manager.addItem("test_impulse", impulse);
+    std::cout << "Impulse model created" << std::endl;
+
+    JumpModel_t jump = JumpModel_t(ps, cost_manager, constraint_manager, impulse_manager);
+    std::cout << "Jump model created" << std::endl;
+    JumpData_t jump_data = jump.createData();
+    std::cout << "Jump data created" << std::endl;
+    jump.calc(jump_data, initial_state);
+    std::cout << "Jump calc done" << std::endl;
+    jump.calcDiff(jump_data, initial_state);
+    std::cout << "Jump calcDiff done" << std::endl;
 
     return 0;
 }
