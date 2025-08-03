@@ -11,9 +11,8 @@
 namespace galileo
 {
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class CostCollectionTpl>
     struct CostTpl;
 
     template <typename PhaseSpec,

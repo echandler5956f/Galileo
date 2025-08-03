@@ -1,9 +1,9 @@
 #ifndef __galileo_predictive_phases_smart_visitors_map_engine_hpp__
 #define __galileo_predictive_phases_smart_visitors_map_engine_hpp__
 
+#include "galileo/predictive/phases/phase-generic.hpp"
 #include "galileo/predictive/phases/smart-visitors/boundary-visitor.hpp"
 #include "galileo/predictive/phases/smart-visitors/interior-visitor.hpp"
-#include "galileo/predictive/phases/phase-generic.hpp"
 #include <vector>
 
 namespace galileo
@@ -31,10 +31,9 @@ namespace galileo
 
         public:
             // Main propagation with args
-            template <
-                typename BasicSpec,
-                template <typename> class CollectionTpl,
-                typename ArgsTmp>
+            template <typename BasicSpec,
+                      template <typename> class CollectionTpl,
+                      typename ArgsTmp>
             static ReturnType run(
                 const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
                 std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
@@ -45,9 +44,8 @@ namespace galileo
             }
 
             // Main propagation without args
-            template <
-                typename BasicSpec,
-                template <typename> class CollectionTpl>
+            template <typename BasicSpec,
+                      template <typename> class CollectionTpl>
             static ReturnType run(
                 const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
                 std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
@@ -58,10 +56,9 @@ namespace galileo
 
         private:
             // Unified phase processing with directional folding
-            template <
-                typename BasicSpec,
-                template <typename> class CollectionTpl,
-                typename ArgsTmp>
+            template <typename BasicSpec,
+                      template <typename> class CollectionTpl,
+                      typename ArgsTmp>
             static ReturnType processPhases(
                 const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
                 std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
@@ -98,9 +95,8 @@ namespace galileo
                 return current_state;
             }
 
-            template <
-                typename BasicSpec,
-                template <typename> class CollectionTpl>
+            template <typename BasicSpec,
+                      template <typename> class CollectionTpl>
             static ReturnType processPhases(
                 const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
                 std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
@@ -137,10 +133,9 @@ namespace galileo
             }
 
             // Process interior segments within a single phase
-            template <
-                typename BasicSpec,
-                template <typename> class CollectionTpl,
-                typename ArgsTmp>
+            template <typename BasicSpec,
+                      template <typename> class CollectionTpl,
+                      typename ArgsTmp>
             static ReturnType processPhaseInterior(
                 const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
                 PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
@@ -151,9 +146,8 @@ namespace galileo
                 return boost::apply_visitor(visitor, phase_model);
             }
 
-            template <
-                typename BasicSpec,
-                template <typename> class CollectionTpl>
+            template <typename BasicSpec,
+                      template <typename> class CollectionTpl>
             static ReturnType processPhaseInterior(
                 const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
                 PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
@@ -252,10 +246,9 @@ namespace galileo
         }; // struct FoldEngineTpl
 
         // Convenience alias matching the expected user interface
-        template <
-            typename InteriorPropagator,
-            typename BoundaryPropagator,
-            bool IsLeftFold = true>
+        template <typename InteriorPropagator,
+                  typename BoundaryPropagator,
+                  bool IsLeftFold = true>
         using FoldTpl = FoldEngineTpl<InteriorPropagator, BoundaryPropagator, IsLeftFold>;
 
     } // namespace fusion

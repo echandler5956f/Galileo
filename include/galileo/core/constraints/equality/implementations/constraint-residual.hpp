@@ -6,14 +6,12 @@
 namespace galileo
 {
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     struct ConstraintResidualTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     struct traits<ConstraintResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
@@ -34,27 +32,24 @@ namespace galileo
         using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     struct traits<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = ConstraintResidualTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     struct traits<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = ConstraintResidualTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     struct ConstraintDataResidualTpl
         : public ConstraintDataBase<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
@@ -95,9 +90,8 @@ namespace galileo
 
     }; // struct ConstraintDataResidualTpl
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     class ConstraintModelResidualTpl
         : public ConstraintModelBase<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {

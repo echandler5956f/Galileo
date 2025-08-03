@@ -6,16 +6,14 @@
 namespace galileo
 {
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl,
+              template <typename PS> class ActivationTpl>
     struct CostResidualTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl,
+              template <typename PS> class ActivationTpl>
     struct traits<CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using PS = PhaseSpec;
@@ -41,30 +39,27 @@ namespace galileo
         using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl,
+              template <typename PS> class ActivationTpl>
     struct traits<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>;
     };
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl,
+              template <typename PS> class ActivationTpl>
     struct traits<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>;
     };
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl,
+              template <typename PS> class ActivationTpl>
     struct CostDataResidualTpl
         : public CostDataBase<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {
@@ -122,10 +117,9 @@ namespace galileo
 
     }; // struct CostDataResidualTpl
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl,
-        template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl,
+              template <typename PS> class ActivationTpl>
     class CostModelResidualTpl
         : public CostModelBase<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {

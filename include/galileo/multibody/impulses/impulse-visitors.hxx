@@ -20,7 +20,7 @@ namespace galileo
         template <typename ImpulseModelType>
         static void algo(
             const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
-            ImpulseDataBase<typename traits<ImpulseModelType>::Data_t, PhaseSpec> &impulse_data,
+            ImpulseDataBase<typename ImpulseModelType::Data_t, PhaseSpec> &impulse_data,
             const Eigen::MatrixBase<StateVectorType> &x)
         {
             impulse_model.calc(impulse_data.derived(), x.derived());
@@ -51,7 +51,7 @@ namespace galileo
         template <typename ImpulseModelType>
         static void algo(
             const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
-            ImpulseDataBase<typename traits<ImpulseModelType>::Data_t, PhaseSpec> &impulse_data,
+            ImpulseDataBase<typename ImpulseModelType::Data_t, PhaseSpec> &impulse_data,
             const Eigen::MatrixBase<StateVectorType> &x)
         {
             impulse_model.calcDiff(impulse_data.derived(), x.derived());
@@ -82,7 +82,7 @@ namespace galileo
         template <typename ImpulseModelType>
         static void algo(
             const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
-            ImpulseDataBase<typename traits<ImpulseModelType>::Data_t, PhaseSpec> &impulse_data,
+            ImpulseDataBase<typename ImpulseModelType::Data_t, PhaseSpec> &impulse_data,
             const Eigen::MatrixBase<ForceVectorType> &force)
         {
             impulse_model.updateForce(impulse_data.derived(), force.derived());
@@ -113,7 +113,7 @@ namespace galileo
         template <typename ImpulseModelType>
         static void algo(
             const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
-            ImpulseDataBase<typename traits<ImpulseModelType>::Data_t, PhaseSpec> &impulse_data,
+            ImpulseDataBase<typename ImpulseModelType::Data_t, PhaseSpec> &impulse_data,
             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx)
         {
             impulse_model.updateForceDiff(impulse_data.derived(), df_dx.derived());
@@ -143,7 +143,7 @@ namespace galileo
         template <typename ImpulseModelType>
         static void algo(
             const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
-            ImpulseDataBase<typename traits<ImpulseModelType>::Data_t, PhaseSpec> &impulse_data)
+            ImpulseDataBase<typename ImpulseModelType::Data_t, PhaseSpec> &impulse_data)
         {
             impulse_model.setZeroForce(impulse_data.derived());
         }
@@ -170,7 +170,7 @@ namespace galileo
         template <typename ImpulseModelType>
         static void algo(
             const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
-            ImpulseDataBase<typename traits<ImpulseModelType>::Data_t, PhaseSpec> &impulse_data)
+            ImpulseDataBase<typename ImpulseModelType::Data_t, PhaseSpec> &impulse_data)
         {
             impulse_model.setZeroForceDiff(impulse_data.derived());
         }

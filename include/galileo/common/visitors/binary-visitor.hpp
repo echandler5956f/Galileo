@@ -66,12 +66,11 @@ namespace galileo
 
         public:
             // Model + Data + Args
-            template <
-                typename LeftPhaseSpec,
-                template <typename> class LeftCollectionTpl,
-                typename RightPhaseSpec,
-                template <typename> class RightCollectionTpl,
-                typename ArgsTmp>
+            template <typename LeftPhaseSpec,
+                      template <typename> class LeftCollectionTpl,
+                      typename RightPhaseSpec,
+                      template <typename> class RightCollectionTpl,
+                      typename ArgsTmp>
             static ReturnType run(
                 const LeftModelTpl<LeftPhaseSpec, LeftCollectionTpl> &left_model,
                 const RightModelTpl<RightPhaseSpec, RightCollectionTpl> &right_model,
@@ -85,11 +84,10 @@ namespace galileo
             }
 
             // Model + Data (no args)
-            template <
-                typename LeftPhaseSpec,
-                template <typename> class LeftCollectionTpl,
-                typename RightPhaseSpec,
-                template <typename> class RightCollectionTpl>
+            template <typename LeftPhaseSpec,
+                      template <typename> class LeftCollectionTpl,
+                      typename RightPhaseSpec,
+                      template <typename> class RightCollectionTpl>
             static ReturnType run(
                 const LeftModelTpl<LeftPhaseSpec, LeftCollectionTpl> &left_model,
                 const RightModelTpl<RightPhaseSpec, RightCollectionTpl> &right_model,
@@ -127,12 +125,11 @@ namespace galileo
             }
 
             // Model + Args
-            template <
-                typename LeftPhaseSpec,
-                template <typename> class LeftCollectionTpl,
-                typename RightPhaseSpec,
-                template <typename> class RightCollectionTpl,
-                typename ArgsTmp>
+            template <typename LeftPhaseSpec,
+                      template <typename> class LeftCollectionTpl,
+                      typename RightPhaseSpec,
+                      template <typename> class RightCollectionTpl,
+                      typename ArgsTmp>
             static ReturnType run(const LeftModelTpl<LeftPhaseSpec, LeftCollectionTpl> &left_model, const RightModelTpl<RightPhaseSpec, RightCollectionTpl> &right_model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
@@ -140,12 +137,11 @@ namespace galileo
             }
 
             // Data + Args
-            template <
-                typename LeftPhaseSpec,
-                template <typename> class LeftCollectionTpl,
-                typename RightPhaseSpec,
-                template <typename> class RightCollectionTpl,
-                typename ArgsTmp>
+            template <typename LeftPhaseSpec,
+                      template <typename> class LeftCollectionTpl,
+                      typename RightPhaseSpec,
+                      template <typename> class RightCollectionTpl,
+                      typename ArgsTmp>
             static ReturnType run(const LeftDataTpl<LeftPhaseSpec, LeftCollectionTpl> &left_data, const RightDataTpl<RightPhaseSpec, RightCollectionTpl> &right_data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
@@ -153,11 +149,10 @@ namespace galileo
             }
 
             // Model only
-            template <
-                typename LeftPhaseSpec,
-                template <typename> class LeftCollectionTpl,
-                typename RightPhaseSpec,
-                template <typename> class RightCollectionTpl>
+            template <typename LeftPhaseSpec,
+                      template <typename> class LeftCollectionTpl,
+                      typename RightPhaseSpec,
+                      template <typename> class RightCollectionTpl>
             static ReturnType run(const LeftModelTpl<LeftPhaseSpec, LeftCollectionTpl> &left_model, const RightModelTpl<RightPhaseSpec, RightCollectionTpl> &right_model)
             {
                 InternalVisitorModel<NoArg> visitor;
@@ -165,11 +160,10 @@ namespace galileo
             }
 
             // Data only
-            template <
-                typename LeftPhaseSpec,
-                template <typename> class LeftCollectionTpl,
-                typename RightPhaseSpec,
-                template <typename> class RightCollectionTpl>
+            template <typename LeftPhaseSpec,
+                      template <typename> class LeftCollectionTpl,
+                      typename RightPhaseSpec,
+                      template <typename> class RightCollectionTpl>
             static ReturnType run(const LeftDataTpl<LeftPhaseSpec, LeftCollectionTpl> &left_data, const RightDataTpl<RightPhaseSpec, RightCollectionTpl> &right_data)
             {
                 InternalVisitorModel<NoArg> visitor;

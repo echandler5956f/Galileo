@@ -6,12 +6,10 @@
 namespace galileo
 {
 
-    template <
-        typename PhaseSpec>
+    template <typename PhaseSpec>
     struct SegmentERKEulerTpl;
 
-    template <
-        typename PhaseSpec>
+    template <typename PhaseSpec>
     struct traits<SegmentERKEulerTpl<PhaseSpec>>
     {
         using PS = PhaseSpec;
@@ -24,15 +22,13 @@ namespace galileo
         static constexpr int NStages = DimNStages_t::Value;
     };
 
-    template <
-        typename PhaseSpec>
+    template <typename PhaseSpec>
     struct traits<SegmentERKDataEulerTpl<PhaseSpec>>
     {
         using Meta_t = SegmentERKEulerTpl<PhaseSpec>;
     };
 
-    template <
-        typename PhaseSpec>
+    template <typename PhaseSpec>
     struct traits<SegmentERKModelEulerTpl<PhaseSpec>>
     {
         using Meta_t = SegmentERKEulerTpl<PhaseSpec>;

@@ -6,13 +6,11 @@
 namespace galileo
 {
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ImpulseCollectionTpl>
     struct JumpModelImpulseFwdDynTpl;
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ImpulseCollectionTpl>
     struct JumpDataImpulseFwdDynTpl;
 
 } // namespace galileo

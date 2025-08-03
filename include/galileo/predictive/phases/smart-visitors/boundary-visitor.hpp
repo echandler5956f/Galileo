@@ -65,8 +65,7 @@ namespace galileo
             }
 
             // Binary visitor dispatch for type-erased phases
-            template <
-                typename BasicSpec,
+            template <typename BasicSpec,
                 template <typename> class CollectionTpl,
                 typename ArgsTmp>
             static ReturnType run(
@@ -82,8 +81,7 @@ namespace galileo
             }
 
             // Binary visitor dispatch without args
-            template <
-                typename BasicSpec,
+            template <typename BasicSpec,
                 template <typename> class CollectionTpl>
             static ReturnType run(
                 const PhaseModelTpl<BasicSpec, CollectionTpl> &current_phase_model,

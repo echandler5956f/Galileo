@@ -55,10 +55,9 @@ namespace galileo
 
         public:
             // Model + Data + Args
-            template <
-                typename PhaseSpec,
-                template <typename PS> class CollectionTpl,
-                typename ArgsTmp>
+            template <typename PhaseSpec,
+                      template <typename PS> class CollectionTpl,
+                      typename ArgsTmp>
             static ReturnType run(
                 const ModelTpl<PhaseSpec, CollectionTpl> &model,
                 DataTpl<PhaseSpec, CollectionTpl> &data,
@@ -102,10 +101,9 @@ namespace galileo
             }
 
             // Model + Args
-            template <
-                typename PhaseSpec,
-                template <typename PS> class CollectionTpl,
-                typename ArgsTmp>
+            template <typename PhaseSpec,
+                      template <typename PS> class CollectionTpl,
+                      typename ArgsTmp>
             static ReturnType run(const ModelTpl<PhaseSpec, CollectionTpl> &model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
@@ -113,10 +111,9 @@ namespace galileo
             }
 
             // Data + Args
-            template <
-                typename PhaseSpec,
-                template <typename PS> class CollectionTpl,
-                typename ArgsTmp>
+            template <typename PhaseSpec,
+                      template <typename PS> class CollectionTpl,
+                      typename ArgsTmp>
             static ReturnType run(const DataTpl<PhaseSpec, CollectionTpl> &data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);

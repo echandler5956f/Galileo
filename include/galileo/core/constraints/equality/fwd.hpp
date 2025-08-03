@@ -15,27 +15,23 @@ namespace galileo
     {
     }; // struct ConstraintDataVoid
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     struct ConstraintModelResidualTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ResidualTpl>
     struct ConstraintDataResidualTpl;
 
     template <typename PhaseSpec>
     struct ConstraintCollectionDefaultTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ConstraintCollectionTpl>
     struct ConstraintModelTpl;
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ConstraintCollectionTpl>
     struct ConstraintDataTpl;
 
     template <typename PhaseSpec,

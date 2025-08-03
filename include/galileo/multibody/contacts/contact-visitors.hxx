@@ -20,7 +20,7 @@ namespace galileo
         template <typename ContactModelType>
         static void algo(
             const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
+            ContactDataBase<typename ContactModelType::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<StateVectorType> &x)
         {
             contact_model.calc(contact_data.derived(), x.derived());
@@ -51,7 +51,7 @@ namespace galileo
         template <typename ContactModelType>
         static void algo(
             const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
+            ContactDataBase<typename ContactModelType::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<StateVectorType> &x)
         {
             contact_model.calcDiff(contact_data.derived(), x.derived());
@@ -82,7 +82,7 @@ namespace galileo
         template <typename ContactModelType>
         static void algo(
             const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
+            ContactDataBase<typename ContactModelType::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<ForceVectorType> &force)
         {
             contact_model.updateForce(contact_data.derived(), force.derived());
@@ -114,7 +114,7 @@ namespace galileo
         template <typename ContactModelType>
         static void algo(
             const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data,
+            ContactDataBase<typename ContactModelType::Data_t, PhaseSpec> &contact_data,
             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
             const Eigen::MatrixBase<MatrixNcNuType> &df_du)
         {
@@ -147,7 +147,7 @@ namespace galileo
         template <typename ContactModelType>
         static void algo(
             const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data)
+            ContactDataBase<typename ContactModelType::Data_t, PhaseSpec> &contact_data)
         {
             contact_model.setZeroForce(contact_data.derived());
         }
@@ -174,7 +174,7 @@ namespace galileo
         template <typename ContactModelType>
         static void algo(
             const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
-            ContactDataBase<typename traits<ContactModelType>::Data_t, PhaseSpec> &contact_data)
+            ContactDataBase<typename ContactModelType::Data_t, PhaseSpec> &contact_data)
         {
             contact_model.setZeroForceDiff(contact_data.derived());
         }

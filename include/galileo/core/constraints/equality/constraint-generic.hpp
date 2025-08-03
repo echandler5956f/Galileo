@@ -11,9 +11,8 @@
 namespace galileo
 {
 
-    template <
-        typename PhaseSpec,
-        template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec,
+              template <typename PS> class ConstraintCollectionTpl>
     struct ConstraintTpl;
 
     template <typename PhaseSpec,
