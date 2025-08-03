@@ -10,15 +10,9 @@
 #include <pinocchio/algorithm/rnea.hpp>
 
 #include "galileo/common/math/matrix-decomposition.hpp"
-
-#include "galileo/predictive/nodes/node-base.hpp"
-
-#include "galileo/multibody/contacts/contact-manager.hpp"
-#include "galileo/multibody/contacts/fwd.hpp"
-
 #include "galileo/core/data/data-collector-default.hpp"
-
-#include "galileo/predictive/phases/phase-spec.hpp"
+#include "galileo/multibody/contacts/contact-manager.hpp"
+#include "galileo/predictive/nodes/node-base.hpp"
 
 namespace galileo
 {

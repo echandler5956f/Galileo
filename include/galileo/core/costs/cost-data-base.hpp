@@ -3,8 +3,6 @@
 
 #include "galileo/core/costs/cost-base.hpp"
 
-// We use traits rather than PhaseSpec,
-// because each cost model has its own residual
 #define GALILEO_COST_DATA_TYPEDEF(Cost)         \
     using L_t = typename traits<Cost>::L_t;     \
     using Lx_t = typename traits<Cost>::Lx_t;   \

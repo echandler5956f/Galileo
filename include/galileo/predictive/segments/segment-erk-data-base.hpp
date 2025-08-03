@@ -2,7 +2,8 @@
 #define __galileo_predictive_segments_segment_erk_data_base_hpp__
 
 #include "galileo/predictive/segments/segment-erk-base.hpp"
-#include "galileo/predictive/segments/segment-erk-model-base.hpp"
+
+#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {

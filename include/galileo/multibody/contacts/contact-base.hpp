@@ -4,6 +4,8 @@
 #include "galileo/multibody/contacts/fwd.hpp"
 #include "galileo/multibody/force-base.hpp"
 
+#include "galileo/predictive/phases/phase-spec.hpp"
+
 #define GALILEO_CONTACT_DATA_TYPEDEF(Contact) \
     GALILEO_FORCE_DATA_TYPEDEF(Contact);      \
     using VectorNc_t = typename traits<Contact>::VectorNc_t;

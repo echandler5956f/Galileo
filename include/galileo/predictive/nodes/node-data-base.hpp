@@ -2,7 +2,7 @@
 #define __galileo_predictive_nodes_node_data_base_hpp__
 
 #include "galileo/predictive/nodes/node-base.hpp"
-#include "galileo/predictive/nodes/node-model-base.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {

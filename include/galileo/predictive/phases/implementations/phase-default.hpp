@@ -4,8 +4,6 @@
 #include "galileo/predictive/phases/phase-base.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 
-#include <assert.h>
-
 namespace galileo
 {
 

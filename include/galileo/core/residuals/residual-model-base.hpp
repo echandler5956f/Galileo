@@ -2,14 +2,6 @@
 #define __galileo_core_residuals_residual_model_base_hpp__
 
 #include "galileo/core/residuals/residual-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
-
-#define GALILEO_RESIDUAL_DATA_TYPEDEF(Residual)           \
-    using R_t = typename traits<Residual>::R_t;           \
-    using Rx_t = typename traits<Residual>::Rx_t;         \
-    using Ru_t = typename traits<Residual>::Ru_t;         \
-    using Arr_Rx_t = typename traits<Residual>::Arr_Rx_t; \
-    using Arr_Ru_t = typename traits<Residual>::Arr_Ru_t;
 
 namespace galileo
 {

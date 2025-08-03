@@ -1,14 +1,12 @@
 #ifndef __galileo_core_residuals_residual_frame_placement_hpp__
 #define __galileo_core_residuals_residual_frame_placement_hpp__
 
-#include <pinocchio/multibody/fwd.hpp>
 #include <pinocchio/spatial/motion.hpp>
 
 #include <pinocchio/algorithm/frames-derivatives.hpp>
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics-derivatives.hpp>
 
-#include "galileo/core/residuals/fwd.hpp"
 #include "galileo/core/residuals/residual-base.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 

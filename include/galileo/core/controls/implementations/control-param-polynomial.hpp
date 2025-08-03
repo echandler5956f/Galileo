@@ -2,7 +2,6 @@
 #define __galileo_core_controls_control_param_polynomial_hpp__
 
 #include "galileo/core/controls/control-param-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 #include "galileo/common/math/barycentric-interpolator.hpp"
 

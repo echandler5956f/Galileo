@@ -4,8 +4,6 @@
 #include "galileo/core/actuations/actuation-base.hpp"
 #include "galileo/multibody/robot-spec.hpp"
 
-#include <memory>
-
 namespace galileo
 {
 

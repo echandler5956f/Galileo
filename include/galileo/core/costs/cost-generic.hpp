@@ -4,7 +4,6 @@
 #include "galileo/core/costs/cost-base.hpp"
 #include "galileo/core/costs/cost-collection.hpp"
 #include "galileo/core/costs/cost-visitors.hxx"
-#include "galileo/core/costs/fwd.hpp"
 
 #include <boost/mpl/contains.hpp>
 

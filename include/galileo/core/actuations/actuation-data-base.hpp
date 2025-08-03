@@ -2,10 +2,7 @@
 #define __galileo_core_actuations_actuation_data_base_hpp__
 
 #include "galileo/core/actuations/actuation-base.hpp"
-#include "galileo/core/actuations/actuation-model-base.hpp"
 #include "galileo/multibody/robot-spec.hpp"
-
-#include <array>
 
 namespace galileo
 {

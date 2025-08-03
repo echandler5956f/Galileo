@@ -1,7 +1,6 @@
 #ifndef __galileo_core_residuals_residual_control_hpp__
 #define __galileo_core_residuals_residual_control_hpp__
 
-#include "galileo/core/residuals/fwd.hpp"
 #include "galileo/core/residuals/residual-base.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 

@@ -1,13 +1,13 @@
 #ifndef __galileo_multibody_impulses_impulse_3d_hpp__
 #define __galileo_multibody_impulses_impulse_3d_hpp__
 
+#include <pinocchio/spatial/motion.hpp>
+
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics-derivatives.hpp>
 #include <pinocchio/multibody/data.hpp>
-#include <pinocchio/spatial/motion.hpp>
 
 #include "galileo/multibody/impulses/impulse-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {

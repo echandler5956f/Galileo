@@ -1,6 +1,12 @@
 #ifndef __galileo_multibody_impulses_impulse_6d_hpp__
 #define __galileo_multibody_impulses_impulse_6d_hpp__
 
+#include <pinocchio/spatial/motion.hpp>
+
+#include <pinocchio/algorithm/frames.hpp>
+#include <pinocchio/algorithm/kinematics-derivatives.hpp>
+#include <pinocchio/multibody/data.hpp>
+
 #include "galileo/multibody/impulses/impulse-base.hpp"
 
 namespace galileo

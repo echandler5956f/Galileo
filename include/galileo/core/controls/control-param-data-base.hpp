@@ -2,7 +2,6 @@
 #define __galileo_core_controls_control_param_data_base_hpp__
 
 #include "galileo/core/controls/control-param-base.hpp"
-#include "galileo/core/controls/control-param-model-base.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo

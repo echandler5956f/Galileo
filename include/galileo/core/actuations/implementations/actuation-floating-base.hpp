@@ -2,7 +2,6 @@
 #define __galileo_core_actuations_actuation_floating_base_hpp__
 
 #include "galileo/core/actuations/actuation-base.hpp"
-#include "galileo/multibody/robot-spec.hpp"
 
 namespace galileo
 {

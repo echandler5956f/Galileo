@@ -4,6 +4,8 @@
 #include "galileo/multibody/impulses/fwd.hpp"
 #include "galileo/multibody/force-base.hpp"
 
+#include "galileo/predictive/phases/phase-spec.hpp"
+
 #define GALILEO_IMPULSE_DATA_TYPEDEF(Impulse) \
     GALILEO_FORCE_DATA_TYPEDEF(Impulse);      \
     using VectorNc_t = typename traits<Impulse>::VectorNc_t;

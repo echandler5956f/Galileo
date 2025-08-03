@@ -5,7 +5,6 @@
 #include <pinocchio/spatial/force.hpp>
 
 #include "galileo/multibody/fwd.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 #define GALILEO_FORCE_DATA_TYPEDEF(Force)                        \
     using MatrixNcNv_t = typename traits<Force>::MatrixNcNv_t;   \

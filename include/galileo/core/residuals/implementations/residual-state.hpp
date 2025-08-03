@@ -1,14 +1,12 @@
 #ifndef __galileo_core_residuals_residual_state_hpp__
 #define __galileo_core_residuals_residual_state_hpp__
 
-#include <pinocchio/multibody/fwd.hpp>
 #include <pinocchio/spatial/motion.hpp>
 
 #include <pinocchio/algorithm/joint-configuration.hpp>
 
 #include "galileo/core/states/state-base.hpp"
 
-#include "galileo/core/residuals/fwd.hpp"
 #include "galileo/core/residuals/residual-base.hpp"
 #include "galileo/predictive/phases/phase-spec.hpp"
 

@@ -2,10 +2,7 @@
 #define __galileo_core_activations_activation_data_base_hpp__
 
 #include "galileo/core/activations/activation-base.hpp"
-#include "galileo/core/activations/activation-model-base.hpp"
 
-// We use traits rather than PhaseSpec,
-// because each activation model has its own NR
 #define GALILEO_ACTIVATION_DATA_TYPEDEF(Activation)   \
     using A_t = typename traits<Activation>::A_t;     \
     using Ar_t = typename traits<Activation>::Ar_t;   \

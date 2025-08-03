@@ -2,10 +2,7 @@
 #define __galileo_core_constraints_equality_constraint_data_base_hpp__
 
 #include "galileo/core/constraints/equality/constraint-base.hpp"
-#include "galileo/core/constraints/equality/constraint-model-base.hpp"
 
-// We use traits rather than PhaseSpec,
-// because each constraint model has its own NH
 #define GALILEO_CONSTRAINT_DATA_TYPEDEF(Constraint) \
     using H_t = typename traits<Constraint>::H_t;   \
     using Hx_t = typename traits<Constraint>::Hx_t; \

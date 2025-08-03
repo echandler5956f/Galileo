@@ -2,7 +2,13 @@
 #define __galileo_core_residuals_residual_data_base_hpp__
 
 #include "galileo/core/residuals/residual-base.hpp"
-#include "galileo/core/residuals/residual-model-base.hpp"
+
+#define GALILEO_RESIDUAL_DATA_TYPEDEF(Residual)           \
+    using R_t = typename traits<Residual>::R_t;           \
+    using Rx_t = typename traits<Residual>::Rx_t;         \
+    using Ru_t = typename traits<Residual>::Ru_t;         \
+    using Arr_Rx_t = typename traits<Residual>::Arr_Rx_t; \
+    using Arr_Ru_t = typename traits<Residual>::Arr_Ru_t;
 
 namespace galileo
 {

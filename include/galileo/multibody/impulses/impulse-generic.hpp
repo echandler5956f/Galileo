@@ -4,9 +4,6 @@
 #include "galileo/multibody/impulses/impulse-base.hpp"
 #include "galileo/multibody/impulses/impulse-collection.hpp"
 #include "galileo/multibody/impulses/impulse-visitors.hxx"
-#include "galileo/multibody/impulses/fwd.hpp"
-
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {

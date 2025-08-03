@@ -2,7 +2,7 @@
 #define __galileo_predictive_jumps_jump_data_base_hpp__
 
 #include "galileo/predictive/jumps/jump-base.hpp"
-#include "galileo/predictive/jumps/jump-model-base.hpp"
+#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {

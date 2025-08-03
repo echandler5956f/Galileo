@@ -1,14 +1,13 @@
 #ifndef __galileo_core_states_state_multibody_hpp__
 #define __galileo_core_states_state_multibody_hpp__
 
-#include "galileo/core/states/state-base.hpp"
-#include "galileo/multibody/robot-spec.hpp"
-
 #include <pinocchio/algorithm/joint-configuration.hpp>
 #include <pinocchio/multibody/model.hpp>
 
-#include <cmath>  // For std::isfinite
-#include <limits> // For std::numeric_limits
+#include "galileo/core/states/state-base.hpp"
+#include "galileo/multibody/robot-spec.hpp"
+
+#include <limits>
 
 namespace galileo
 {

@@ -2,7 +2,6 @@
 #define __galileo_predictive_phases_phase_model_base_hpp__
 
 #include "galileo/predictive/phases/phase-base.hpp"
-#include "galileo/core/basic-spec.hpp"
 
 namespace galileo
 {

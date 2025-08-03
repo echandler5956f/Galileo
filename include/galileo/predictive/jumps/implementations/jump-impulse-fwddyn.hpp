@@ -9,14 +9,9 @@
 #include <pinocchio/algorithm/rnea-derivatives.hpp>
 #include <pinocchio/algorithm/rnea.hpp>
 
-#include "galileo/predictive/jumps/jump-base.hpp"
-
-#include "galileo/multibody/impulses/fwd.hpp"
-#include "galileo/multibody/impulses/impulse-manager.hpp"
-
 #include "galileo/core/data/data-collector-default.hpp"
-
-#include "galileo/predictive/phases/phase-spec.hpp"
+#include "galileo/multibody/impulses/impulse-manager.hpp"
+#include "galileo/predictive/jumps/jump-base.hpp"
 
 namespace galileo
 {
