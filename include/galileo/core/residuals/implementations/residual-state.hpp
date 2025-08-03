@@ -43,21 +43,13 @@ namespace galileo
     template <typename PhaseSpec>
     struct traits<ResidualDataStateTpl<PhaseSpec>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = ResidualStateTpl<PS>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ResidualStateTpl<PhaseSpec>;
     };
 
     template <typename PhaseSpec>
     struct traits<ResidualModelStateTpl<PhaseSpec>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = ResidualStateTpl<PS>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ResidualStateTpl<PhaseSpec>;
     };
 
     template <typename PhaseSpec>

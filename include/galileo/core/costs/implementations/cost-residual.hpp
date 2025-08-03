@@ -47,12 +47,8 @@ namespace galileo
         template <typename PS> class ActivationTpl>
     struct traits<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
-        using PS = PhaseSpec;
-        using SpecOfBaseClass = PS;
-
-        using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using SpecOfBaseClass = PhaseSpec;
+        using Meta_t = CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>;
     };
 
     template <
@@ -61,12 +57,8 @@ namespace galileo
         template <typename PS> class ActivationTpl>
     struct traits<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
-        using PS = PhaseSpec;
-        using SpecOfBaseClass = PS;
-
-        using Meta_t = CostResidualTpl<PS, ResidualTpl, ActivationTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using SpecOfBaseClass = PhaseSpec;
+        using Meta_t = CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>;
     };
 
     template <

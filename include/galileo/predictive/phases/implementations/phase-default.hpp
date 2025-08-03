@@ -50,24 +50,16 @@ namespace galileo
               template <typename PS> class JumpTpl>
     struct traits<PhaseDataDefaultTpl<PhaseSpec, JumpTpl>>
     {
-        using PS = PhaseSpec;
-        using SpecOfBaseClass = typename PS::BS;
-
-        using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using SpecOfBaseClass = typename PhaseSpec::BS;
+        using Meta_t = PhaseDefaultTpl<PhaseSpec, JumpTpl>;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class JumpTpl>
     struct traits<PhaseModelDefaultTpl<PhaseSpec, JumpTpl>>
     {
-        using PS = PhaseSpec;
-        using SpecOfBaseClass = typename PS::BS;
-
-        using Meta_t = PhaseDefaultTpl<PS, JumpTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using SpecOfBaseClass = typename PhaseSpec::BS;
+        using Meta_t = PhaseDefaultTpl<PhaseSpec, JumpTpl>;
     };
 
     template <typename PhaseSpec,

@@ -40,23 +40,15 @@ namespace galileo
     template <typename PhaseSpec>
     struct traits<ContactData3dTpl<PhaseSpec>>
     {
-        using PS = PhaseSpec;
-        using SpecOfBaseClass = PS;
-
-        using Meta_t = Contact3dTpl<PS>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using SpecOfBaseClass = PhaseSpec;
+        using Meta_t = Contact3dTpl<PhaseSpec>;
     };
 
     template <typename PhaseSpec>
     struct traits<ContactModel3dTpl<PhaseSpec>>
     {
-        using PS = PhaseSpec;
-        using SpecOfBaseClass = PS;
-
-        using Meta_t = Contact3dTpl<PS>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using SpecOfBaseClass = PhaseSpec;
+        using Meta_t = Contact3dTpl<PhaseSpec>;
     };
 
     template <typename PhaseSpec>

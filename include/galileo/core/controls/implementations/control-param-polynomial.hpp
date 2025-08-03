@@ -27,11 +27,7 @@ namespace galileo
     template <typename PhaseSpec, int NOrder_>
     struct traits<ControlParamModelPolynomialTpl<PhaseSpec, NOrder_>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ControlParamPolynomialTpl<PhaseSpec, NOrder_>;
     };
 
     template <typename PhaseSpec, int NOrder_>

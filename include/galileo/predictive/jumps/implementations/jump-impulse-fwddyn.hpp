@@ -51,22 +51,14 @@ namespace galileo
               template <typename PS> class ImpulseCollectionTpl>
     struct traits<JumpDataImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = JumpImpulseFwdDynTpl<PS, ImpulseCollectionTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
     struct traits<JumpModelImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = JumpImpulseFwdDynTpl<PS, ImpulseCollectionTpl>;
-        using Data_t = typename traits<Meta_t>::Data_t;
-        using Model_t = typename traits<Meta_t>::Model_t;
+        using Meta_t = JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>;
     };
 
     template <typename PhaseSpec,

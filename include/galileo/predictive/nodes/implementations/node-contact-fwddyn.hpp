@@ -63,22 +63,14 @@ namespace galileo
               template <typename PS> class ContactCollectionTpl>
     struct traits<NodeDataContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     struct traits<NodeModelContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = NodeContactFwdDynTpl<PS, ContactCollectionTpl>;
-        using Data_t = typename traits<Meta_t>::Data_t;
-        using Model_t = typename traits<Meta_t>::Model_t;
+        using Meta_t = NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>;
     };
 
     template <typename PhaseSpec,

@@ -23,11 +23,7 @@ namespace galileo
     template <typename RobotSpec>
     struct traits<ActuationModelFullTpl<RobotSpec>>
     {
-        using RS = RobotSpec;
-
-        using Meta_t = ActuationFullTpl<RS>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ActuationFullTpl<RobotSpec>;
     };
 
     template <typename RobotSpec>

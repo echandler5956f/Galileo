@@ -43,21 +43,13 @@ namespace galileo
     template <typename PhaseSpec>
     struct traits<ResidualDataFrameVelocityTpl<PhaseSpec>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = ResidualFrameVelocityTpl<PS>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ResidualFrameVelocityTpl<PhaseSpec>;
     };
 
     template <typename PhaseSpec>
     struct traits<ResidualModelFrameVelocityTpl<PhaseSpec>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = ResidualFrameVelocityTpl<PS>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ResidualFrameVelocityTpl<PhaseSpec>;
     };
 
     template <typename PhaseSpec>

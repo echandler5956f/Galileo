@@ -38,22 +38,14 @@ namespace galileo
               template <typename PS> class ResidualTpl>
     struct traits<ActivationDataWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ActivationWeightedQuadraticTpl<PhaseSpec, ResidualTpl>;
     };
 
     template <typename PhaseSpec,
               template <typename PS> class ResidualTpl>
     struct traits<ActivationModelWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
-        using PS = PhaseSpec;
-
-        using Meta_t = ActivationWeightedQuadraticTpl<PS, ResidualTpl>;
-        using Model_t = typename traits<Meta_t>::Model_t;
-        using Data_t = typename traits<Meta_t>::Data_t;
+        using Meta_t = ActivationWeightedQuadraticTpl<PhaseSpec, ResidualTpl>;
     };
 
     template <typename PhaseSpec,
