@@ -6,8 +6,6 @@
 #include "galileo/core/constraints/equality/constraint-base.hpp"
 #include "galileo/core/constraints/equality/constraint-generic.hpp"
 
-#include "galileo/common/container/aligned-vector.hpp"
-
 namespace galileo
 {
 

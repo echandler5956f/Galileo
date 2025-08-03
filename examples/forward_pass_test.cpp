@@ -93,7 +93,6 @@ using RobotSpec_t = galileo::RobotSpecTpl<BasicSpec_t, NQb_, NQj_, NVb_, NVj_, N
 
 template <typename PhaseSpec>
 using ResidualFrameVelocityTpl = galileo::ResidualFrameVelocityTpl<PhaseSpec>;
-;
 
 template <typename PhaseSpec>
 using ActivationFrameVelocityTpl = galileo::ActivationQuadraticTpl<PhaseSpec, ResidualFrameVelocityTpl>;

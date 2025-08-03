@@ -55,8 +55,6 @@
 
 #include <iostream>
 #include <string>
-
-// Standard library
 #include <cassert>
 #include <chrono>
 
@@ -407,80 +405,101 @@ int main()
 
     BarycentricInterpolator_t interpolator(nodes);
     ControlParamModel_t control_param(ps, interpolator);
+    const NumScalar period = 0.1;
 
     std::cout << "ps: " << ps << std::endl;
 
-    // Create test segments
-    std::vector<SegmentModel_t *> test_segments;
-    std::vector<SegmentData_t *> test_segment_data;
+    // // Create test segments
+    // std::vector<SegmentModel_t *> test_segments;
+    // std::vector<SegmentData_t *> test_segment_data;
 
-    const NumScalar period = 0.1;
+    // SegmentModel_t segment_model1 = SegmentModel_t(ps, node, control_param, period);
+    // std::cout << "segment_model1 created" << std::endl;
+    // test_segments.push_back(&segment_model1);
+    // std::cout << "segment_model1 pushed" << std::endl;
+    // SegmentData_t segment_data1 = segment_model1.createData();
+    // std::cout << "segment_data1 created" << std::endl;
+    // test_segment_data.push_back(&segment_data1);
+    // std::cout << "segment_data1 pushed" << std::endl;
 
-    SegmentModel_t segment_model1 = SegmentModel_t(ps, node, control_param, period);
-    std::cout << "segment_model1 created" << std::endl;
-    test_segments.push_back(&segment_model1);
-    std::cout << "segment_model1 pushed" << std::endl;
-    SegmentData_t segment_data1 = segment_model1.createData();
-    std::cout << "segment_data1 created" << std::endl;
-    test_segment_data.push_back(&segment_data1);
-    std::cout << "segment_data1 pushed" << std::endl;
+    // SegmentModel_t segment_model2 = SegmentModel_t(ps, node, control_param, period);
+    // std::cout << "segment_model2 created" << std::endl;
+    // test_segments.push_back(&segment_model2);
+    // std::cout << "segment_model2 pushed" << std::endl;
+    // SegmentData_t segment_data2 = segment_model2.createData();
+    // std::cout << "segment_data2 created" << std::endl;
+    // test_segment_data.push_back(&segment_data2);
+    // std::cout << "segment_data2 pushed" << std::endl;
 
-    SegmentModel_t segment_model2 = SegmentModel_t(ps, node, control_param, period);
-    std::cout << "segment_model2 created" << std::endl;
-    test_segments.push_back(&segment_model2);
-    std::cout << "segment_model2 pushed" << std::endl;
-    SegmentData_t segment_data2 = segment_model2.createData();
-    std::cout << "segment_data2 created" << std::endl;
-    test_segment_data.push_back(&segment_data2);
-    std::cout << "segment_data2 pushed" << std::endl;
+    // std::cout << "Created " << test_segments.size() << " test segments" << std::endl;
 
-    std::cout << "Created " << test_segments.size() << " test segments" << std::endl;
+    // // Create initial state
+    // Eigen::VectorXd initial_state = state.rand();
+    // std::cout << "Initial state size: " << initial_state.size() << std::endl;
+    // std::cout << "Initial state norm: " << initial_state.norm() << std::endl;
 
-    // Create initial state
-    Eigen::VectorXd initial_state = state.rand();
-    std::cout << "Initial state size: " << initial_state.size() << std::endl;
-    std::cout << "Initial state norm: " << initial_state.norm() << std::endl;
+    // // Test individual segment propagation
+    // std::cout << "\n--- Testing Individual Segment Transformation ---" << std::endl;
 
-    // Test individual segment propagation
-    std::cout << "\n--- Testing Individual Segment Transformation ---" << std::endl;
+    // Eigen::VectorXd current_state = initial_state;
+    // for (size_t i = 0; i < test_segments.size(); ++i)
+    // {
+    //     std::cout << "Segment " << i << ":" << std::endl;
+    //     Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
+    //     current_state = interior_propagate(*test_segments[i], *test_segment_data[i], current_state, controls);
+    // }
 
-    Eigen::VectorXd current_state = initial_state;
-    for (size_t i = 0; i < test_segments.size(); ++i)
-    {
-        std::cout << "Segment " << i << ":" << std::endl;
-        Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
-        current_state = interior_propagate(*test_segments[i], *test_segment_data[i], current_state, controls);
-    }
+    // std::cout << "Final state after individual processing: " << current_state.norm() << std::endl;
 
-    std::cout << "Final state after individual processing: " << current_state.norm() << std::endl;
+    // // Test directional fold differences
+    // std::cout << "\n--- Testing Left vs Right Fold ---" << std::endl;
 
-    // Test directional fold differences
-    std::cout << "\n--- Testing Left vs Right Fold ---" << std::endl;
+    // std::cout << "Left fold (forward) processing would traverse: segments[0] -> segments[" << test_segments.size() - 1 << "]" << std::endl;
+    // std::cout << "Right fold (backward) processing would traverse: segments[" << test_segments.size() - 1 << "] -> segments[0]" << std::endl;
 
-    std::cout << "Left fold (forward) processing would traverse: segments[0] -> segments[" << test_segments.size() - 1 << "]" << std::endl;
-    std::cout << "Right fold (backward) processing would traverse: segments[" << test_segments.size() - 1 << "] -> segments[0]" << std::endl;
+    // // Reset state for comparison
+    // Eigen::VectorXd left_fold_state = initial_state;
+    // Eigen::VectorXd right_fold_state = initial_state;
 
-    // Reset state for comparison
-    Eigen::VectorXd left_fold_state = initial_state;
-    Eigen::VectorXd right_fold_state = initial_state;
+    // // Process with left fold (forward)
+    // for (size_t i = 0; i < test_segments.size(); ++i)
+    // {
+    //     Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
+    //     left_fold_state = interior_propagate(*test_segments[i], *test_segment_data[i], left_fold_state, controls);
+    // }
 
-    // Process with left fold (forward)
-    for (size_t i = 0; i < test_segments.size(); ++i)
-    {
-        Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
-        left_fold_state = interior_propagate(*test_segments[i], *test_segment_data[i], left_fold_state, controls);
-    }
+    // // Process with right fold (backward)
+    // for (size_t i = test_segments.size(); i-- > 0;)
+    // {
+    //     Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
+    //     right_fold_state = interior_propagate(*test_segments[i], *test_segment_data[i], right_fold_state, controls);
+    // }
 
-    // Process with right fold (backward)
-    for (size_t i = test_segments.size(); i-- > 0;)
-    {
-        Eigen::VectorXd controls = Eigen::VectorXd::Random(test_segments[i]->get_ps().get_nw_dim());
-        right_fold_state = interior_propagate(*test_segments[i], *test_segment_data[i], right_fold_state, controls);
-    }
+    // std::cout << "Left fold final state norm: " << left_fold_state.norm() << std::endl;
+    // std::cout << "Right fold final state norm: " << right_fold_state.norm() << std::endl;
+    // std::cout << "Difference in norms: " << std::abs(left_fold_state.norm() - right_fold_state.norm()) << std::endl;
 
-    std::cout << "Left fold final state norm: " << left_fold_state.norm() << std::endl;
-    std::cout << "Right fold final state norm: " << right_fold_state.norm() << std::endl;
-    std::cout << "Difference in norms: " << std::abs(left_fold_state.norm() - right_fold_state.norm()) << std::endl;
+    // pinocchio::FrameIndex frame_id_3 = model.getFrameId("LF_FOOT");
+    // ImpulseModel_t impulse = ImpulseModel_t(ps, frame_id_3, pinocchio::LOCAL);
+    // ImpulseModelManager_t impulse_manager = ImpulseModelManager_t(ps);
+    // impulse_manager.addItem("test_impulse", impulse);
+    // std::cout << "Impulse model created" << std::endl;
+
+    // JumpModel_t jump = JumpModel_t(ps, cost_manager, constraint_manager, impulse_manager);
+    // std::cout << "Jump model created" << std::endl;
+    // JumpData_t jump_data = jump.createData();
+    // std::cout << "Jump data created" << std::endl;
+    // jump.calc(jump_data, initial_state);
+    // std::cout << "Jump calc done" << std::endl;
+    // jump.calcDiff(jump_data, initial_state);
+    // std::cout << "Jump calcDiff done" << std::endl;
+
+    // --------------------------------------------------------------------------------------------------------
+
+    std::vector<SegmentModel_t> segment_models;
+    std::vector<SegmentData_t> segment_datas;
+    std::vector<JumpModel_t> jump_models;
+    std::vector<JumpData_t> jump_datas;
 
     pinocchio::FrameIndex frame_id_3 = model.getFrameId("LF_FOOT");
     ImpulseModel_t impulse = ImpulseModel_t(ps, frame_id_3, pinocchio::LOCAL);
@@ -488,14 +507,31 @@ int main()
     impulse_manager.addItem("test_impulse", impulse);
     std::cout << "Impulse model created" << std::endl;
 
-    JumpModel_t jump = JumpModel_t(ps, cost_manager, constraint_manager, impulse_manager);
-    std::cout << "Jump model created" << std::endl;
-    JumpData_t jump_data = jump.createData();
-    std::cout << "Jump data created" << std::endl;
-    jump.calc(jump_data, initial_state);
-    std::cout << "Jump calc done" << std::endl;
-    jump.calcDiff(jump_data, initial_state);
-    std::cout << "Jump calcDiff done" << std::endl;
+    for (int i = 0; i < 10; ++i)
+    {
+        segment_models.push_back(SegmentModel_t(ps, node, control_param, period));
+        segment_datas.push_back(segment_models.back().createData());
+        jump_models.push_back(JumpModel_t(ps, cost_manager, constraint_manager, ImpulseModelManager_t(ps)));
+        jump_datas.push_back(jump_models.back().createData());
+    }
+
+    using VectorNx_t = typename PhaseSpec_t::VectorNx_t;
+    using VectorNw_t = typename PhaseSpec_t::VectorNw_t;
+
+    for (int i = 0; i < 10; ++i)
+    {
+        VectorNx_t x = state.rand();
+        VectorNw_t w = VectorNw_t::Random(ps.get_nw_dim());
+        std::cout << "Caling segment model calc" << std::endl;
+        segment_models[i].calc(segment_datas[i], x, w);
+        std::cout << "Caling segment model calcDiff" << std::endl;
+        segment_models[i].calcDiff(segment_datas[i], x, w);
+
+        std::cout << "Caling jump model calc" << std::endl;
+        jump_models[i].calc(jump_datas[i], x);
+        std::cout << "Caling jump model calcDiff" << std::endl;
+        jump_models[i].calcDiff(jump_datas[i], x);
+    }
 
     return 0;
 }

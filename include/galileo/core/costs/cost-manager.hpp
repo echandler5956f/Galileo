@@ -6,8 +6,6 @@
 #include "galileo/core/costs/cost-base.hpp"
 #include "galileo/core/costs/cost-generic.hpp"
 
-#include "galileo/common/container/aligned-vector.hpp"
-
 // Despite its name, this file only pertains to cost residuals,
 // not just any general costs derived from CostModelBase/CostDataBase
 

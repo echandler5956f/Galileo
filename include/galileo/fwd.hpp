@@ -14,6 +14,7 @@ namespace galileo
 #include <iostream>
 #include <memory>
 #include <type_traits>
+#include <vector>
 
 #include "galileo/common/meta/concepts.hpp"
 #include "galileo/common/meta/dimension.hpp"

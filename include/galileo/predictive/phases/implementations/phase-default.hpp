@@ -100,11 +100,11 @@ namespace galileo
             }
         }
 
-        std::vector<SegmentData_t> &get_segments()
+        SegmentDataVector_t &get_segments()
         {
             return segments;
         }
-        const std::vector<SegmentData_t> &get_segments() const
+        const SegmentDataVector_t &get_segments() const
         {
             return segments;
         }
@@ -244,7 +244,7 @@ namespace galileo
             return segments[i].Gw();
         }
 
-        std::vector<SegmentData_t> segments;
+        SegmentDataVector_t segments;
         JumpData_t jump;
 
     }; // struct PhaseDataDefaultTpl
@@ -359,7 +359,7 @@ namespace galileo
             return ps_.get();
         }
 
-        const std::vector<SegmentModel_t> &get_segments() const
+        const SegmentModelVector_t &get_segments() const
         {
             return segments_;
         }
@@ -376,7 +376,7 @@ namespace galileo
 
     protected:
         std::reference_wrapper<const PS> ps_;
-        std::vector<SegmentModel_t> segments_;
+        SegmentModelVector_t segments_;
         JumpModel_t jump_;
 
         bool with_jump_ = false;

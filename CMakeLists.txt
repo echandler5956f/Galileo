@@ -37,7 +37,7 @@ option(BUILD_WITH_OPENMP_SUPPORT "Build the library with OpenMP multithreading s
 option(BUILD_TESTS "Build the tests for Galileo" OFF)
 option(BUILD_EXAMPLES "Build the examples for Galileo" ON)
 option(BUILD_WITH_MUJOCO_SUPPORT "Build Galileo with MuJoCo simulation support" OFF)
-option(BUILD_WITH_CANDLEWICK_SUPPORT "Build Galileo with Candlewick visualization support" ON)
+option(BUILD_WITH_CANDLEWICK_SUPPORT "Build Galileo with Candlewick visualization support" OFF)
 
 add_compile_options(-Wall -Wextra -Wcast-align -Wdisabled-optimization
                     -Wno-sign-conversion -Wformat=2 -Winit-self

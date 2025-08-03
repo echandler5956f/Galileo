@@ -7,32 +7,34 @@
 #include <array>
 #include <vector>
 
-#define GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec)                                 \
-    GALILEO_ROBOT_SPEC_META_TYPEDEF(PhaseSpec::RS);                                \
-    using ConstraintManagerMeta_t = typename PhaseSpec::ConstraintManagerMeta_t;   \
-    using ConstraintCollection_t = typename PhaseSpec::ConstraintCollection_t;     \
-    using ConstraintModelManager_t = typename PhaseSpec::ConstraintModelManager_t; \
-    using ConstraintDataManager_t = typename PhaseSpec::ConstraintDataManager_t;   \
-    using CostManagerMeta_t = typename PhaseSpec::CostManagerMeta_t;               \
-    using CostCollection_t = typename PhaseSpec::CostCollection_t;                 \
-    using CostModelManager_t = typename PhaseSpec::CostModelManager_t;             \
-    using CostDataManager_t = typename PhaseSpec::CostDataManager_t;               \
-    using NodeMeta_t = typename PhaseSpec::NodeMeta_t;                             \
-    using NodeModel_t = typename PhaseSpec::NodeModel_t;                           \
-    using NodeData_t = typename PhaseSpec::NodeData_t;                             \
-    using NodeDataVector_t = typename PhaseSpec::NodeDataVector_t;                 \
-    using ControlParamMeta_t = typename PhaseSpec::ControlParamMeta_t;             \
-    using ControlParamModel_t = typename PhaseSpec::ControlParamModel_t;           \
-    using ControlParamData_t = typename PhaseSpec::ControlParamData_t;             \
-    using ControlParamDataVector_t = typename PhaseSpec::ControlParamDataVector_t; \
-    using SegmentMeta_t = typename PhaseSpec::SegmentMeta_t;                       \
-    using SegmentModel_t = typename PhaseSpec::SegmentModel_t;                     \
-    using SegmentData_t = typename PhaseSpec::SegmentData_t;                       \
-    using SegmentDataVector_t = typename PhaseSpec::SegmentDataVector_t;           \
-    using PhaseMeta_t = typename PhaseSpec::PhaseMeta_t;                           \
-    using PhaseModel_t = typename PhaseSpec::PhaseModel_t;                         \
-    using PhaseData_t = typename PhaseSpec::PhaseData_t;                           \
-    using PhaseDataVector_t = typename PhaseSpec::PhaseDataVector_t;
+#define GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec)                                   \
+    GALILEO_ROBOT_SPEC_META_TYPEDEF(PhaseSpec::RS);                                  \
+    using ConstraintManagerMeta_t = typename PhaseSpec::ConstraintManagerMeta_t;     \
+    using ConstraintCollection_t = typename PhaseSpec::ConstraintCollection_t;       \
+    using ConstraintModelManager_t = typename PhaseSpec::ConstraintModelManager_t;   \
+    using ConstraintDataManager_t = typename PhaseSpec::ConstraintDataManager_t;     \
+    using CostManagerMeta_t = typename PhaseSpec::CostManagerMeta_t;                 \
+    using CostCollection_t = typename PhaseSpec::CostCollection_t;                   \
+    using CostModelManager_t = typename PhaseSpec::CostModelManager_t;               \
+    using CostDataManager_t = typename PhaseSpec::CostDataManager_t;                 \
+    using NodeMeta_t = typename PhaseSpec::NodeMeta_t;                               \
+    using NodeModel_t = typename PhaseSpec::NodeModel_t;                             \
+    using NodeData_t = typename PhaseSpec::NodeData_t;                               \
+    using NodeModelVector_t = typename PhaseSpec::NodeModelVector_t;                 \
+    using NodeDataVector_t = typename PhaseSpec::NodeDataVector_t;                   \
+    using ControlParamMeta_t = typename PhaseSpec::ControlParamMeta_t;               \
+    using ControlParamModel_t = typename PhaseSpec::ControlParamModel_t;             \
+    using ControlParamData_t = typename PhaseSpec::ControlParamData_t;               \
+    using ControlParamModelVector_t = typename PhaseSpec::ControlParamModelVector_t; \
+    using ControlParamDataVector_t = typename PhaseSpec::ControlParamDataVector_t;   \
+    using SegmentMeta_t = typename PhaseSpec::SegmentMeta_t;                         \
+    using SegmentModel_t = typename PhaseSpec::SegmentModel_t;                       \
+    using SegmentData_t = typename PhaseSpec::SegmentData_t;                         \
+    using SegmentModelVector_t = typename PhaseSpec::SegmentModelVector_t;           \
+    using SegmentDataVector_t = typename PhaseSpec::SegmentDataVector_t;             \
+    using PhaseMeta_t = typename PhaseSpec::PhaseMeta_t;                             \
+    using PhaseModel_t = typename PhaseSpec::PhaseModel_t;                           \
+    using PhaseData_t = typename PhaseSpec::PhaseData_t;
 
 #define GALILEO_PHASE_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec) \
     GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec::RS);
@@ -152,16 +154,22 @@ namespace galileo
         using NodeMeta_t = NodeTpl<PS>;
         using NodeModel_t = typename traits<NodeMeta_t>::Model_t;
         using NodeData_t = typename traits<NodeMeta_t>::Data_t;
+
+        using NodeModelVector_t = std::vector<NodeModel_t>;
         using NodeDataVector_t = std::vector<NodeData_t>;
 
         using ControlParamMeta_t = ControlParamTpl<PS>;
         using ControlParamModel_t = typename traits<ControlParamMeta_t>::Model_t;
         using ControlParamData_t = typename traits<ControlParamMeta_t>::Data_t;
+
+        using ControlParamModelVector_t = std::vector<ControlParamModel_t>;
         using ControlParamDataVector_t = std::vector<ControlParamData_t>;
 
         using SegmentMeta_t = SegmentTpl<PS>;
         using SegmentModel_t = typename traits<SegmentMeta_t>::Model_t;
         using SegmentData_t = typename traits<SegmentMeta_t>::Data_t;
+
+        using SegmentModelVector_t = std::vector<SegmentModel_t>;
         using SegmentDataVector_t = std::vector<SegmentData_t>;
 
         /* ---------------------------------------------------------------- */
@@ -293,7 +301,6 @@ namespace galileo
         using PhaseMeta_t = PhaseTpl<PS>;
         using PhaseModel_t = typename traits<PhaseMeta_t>::Model_t;
         using PhaseData_t = typename traits<PhaseMeta_t>::Data_t;
-        using PhaseDataVector_t = std::vector<PhaseData_t>;
 
         /* ---------------------------------------------------------------- */
         /* Accessors for the PhaseSpec dimensions */
