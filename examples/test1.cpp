@@ -522,14 +522,14 @@ int main()
     {
         VectorNx_t x = state.rand();
         VectorNw_t w = VectorNw_t::Random(ps.get_nw_dim());
-        std::cout << "Caling segment model calc" << std::endl;
+        std::cout << "Calling segment model calc" << std::endl;
         segment_models[i].calc(segment_datas[i], x, w);
-        std::cout << "Caling segment model calcDiff" << std::endl;
+        std::cout << "Calling segment model calcDiff" << std::endl;
         segment_models[i].calcDiff(segment_datas[i], x, w);
 
-        std::cout << "Caling jump model calc" << std::endl;
+        std::cout << "Calling jump model calc" << std::endl;
         jump_models[i].calc(jump_datas[i], x);
-        std::cout << "Caling jump model calcDiff" << std::endl;
+        std::cout << "Calling jump model calcDiff" << std::endl;
         jump_models[i].calcDiff(jump_datas[i], x);
     }
 

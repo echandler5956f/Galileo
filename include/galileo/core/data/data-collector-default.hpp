@@ -16,28 +16,19 @@ namespace galileo
     struct DataCollectorContactTpl : public DataCollectorBase<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>>,
                                      public MultibodyDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
                                      public ActuationDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                                     public JointDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                                     public ContactDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec, ContactCollectionTpl>
+                                     public JointDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>
     {
         using PS = PhaseSpec;
-
-        using ContactManagerMeta_t = ContactManagerTpl<PS, ContactCollectionTpl>;
-        using ContactModelManager_t = typename traits<ContactManagerMeta_t>::ModelManager_t;
-        using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
 
         using RobotData_t = typename PS::RobotData_t;
         using ActuationData_t = typename PS::ActuationData_t;
         using JointData_t = JointDataTpl<PS>;
-        using ContactData_t = ContactDataManager_t;
 
-        DataCollectorContactTpl(RobotData_t *robot_,
-                                ActuationData_t *actuation_,
-                                JointData_t *joint_,
-                                ContactData_t *contacts_) : MultibodyDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(robot_),
-                                                            ActuationDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(actuation_),
-                                                            JointDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(joint_),
-                                                            ContactDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS, ContactCollectionTpl>(contacts_)
-
+        DataCollectorContactTpl(std::shared_ptr<RobotData_t> robot_,
+                                std::shared_ptr<ActuationData_t> actuation_,
+                                std::shared_ptr<JointData_t> joint_) : MultibodyDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(robot_),
+                                                                       ActuationDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(actuation_),
+                                                                       JointDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(joint_)
         {
         }
 
@@ -46,8 +37,7 @@ namespace galileo
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
     struct DataCollectorImpulseTpl : public DataCollectorBase<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>>,
-                                     public MultibodyDataMixinTpl<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>, PhaseSpec>,
-                                     public ImpulseDataMixinTpl<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>, PhaseSpec, ImpulseCollectionTpl>
+                                     public MultibodyDataMixinTpl<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>, PhaseSpec>
     {
         using PS = PhaseSpec;
 
@@ -58,10 +48,7 @@ namespace galileo
         using RobotData_t = typename PS::RobotData_t;
         using ImpulseData_t = ImpulseDataManager_t;
 
-        DataCollectorImpulseTpl(RobotData_t *robot_,
-                                ImpulseData_t *impulses_) : MultibodyDataMixinTpl<DataCollectorImpulseTpl<PS, ImpulseCollectionTpl>, PS>(robot_),
-                                                            ImpulseDataMixinTpl<DataCollectorImpulseTpl<PS, ImpulseCollectionTpl>, PS, ImpulseCollectionTpl>(impulses_)
-
+        DataCollectorImpulseTpl(std::shared_ptr<RobotData_t> robot_) : MultibodyDataMixinTpl<DataCollectorImpulseTpl<PS, ImpulseCollectionTpl>, PS>(robot_)
         {
         }
 

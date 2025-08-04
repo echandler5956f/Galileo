@@ -112,11 +112,11 @@ namespace galileo
         JumpDataImpulseFwdDynTpl(const Model_t &model)
             : XNext(model.get_ps().get_nx()),
               XNextx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
-              robot(RobotData_t(model.get_robot())),
-              impulses(model.get_impulses().createData(&robot)),
-              data_collector(&robot, &impulses),
-              costs(model.get_costs().createData(&data_collector)),
-              constraints(model.get_constraints().createData(&data_collector)),
+              data_collector(std::make_shared<DataCollector_t>(std::make_shared<RobotData_t>(model.get_robot()))),
+              robot(data_collector->robot),
+              impulses(model.get_impulses().createData(robot.get())),
+              costs(model.get_costs().createData(data_collector.get())),
+              constraints(model.get_constraints().createData(data_collector.get())),
               vnone(model.get_ps().get_nv()),
               Kinv(model.get_ps().get_nv() +
                        model.get_impulses().get_n_total(),
@@ -136,9 +136,9 @@ namespace galileo
         XNext_t XNext;
         XNextx_t XNextx;
 
-        RobotData_t robot;
+        std::shared_ptr<DataCollector_t> data_collector;
+        std::shared_ptr<RobotData_t> robot;
         ImpulseDataManager_t impulses;
-        DataCollector_t data_collector;
         CostDataManager_t costs;
         ConstraintDataManager_t constraints;
 
@@ -196,22 +196,22 @@ namespace galileo
 
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
-            pinocchio::computeAllTerms(get_robot(), data.robot, q, v);
-            pinocchio::computeCentroidalMomentum(get_robot(), data.robot);
+            pinocchio::computeAllTerms(get_robot(), *data.robot.get(), q, v);
+            pinocchio::computeCentroidalMomentum(get_robot(), *data.robot.get());
             if (!with_armature_)
             {
-                data.robot.M.diagonal() += armature_;
+                data.robot->M.diagonal() += armature_;
             }
             get_impulses().calc(data.impulses, x);
 
-            pinocchio::impulseDynamics(get_robot(), data.robot, v,
+            pinocchio::impulseDynamics(get_robot(), *data.robot.get(), v,
                                        topRows(data.impulses.Jc, nc_dim),
                                        r_coeff_, JMinvJt_damping_);
 
             head(data.XNext, get_ps().get_nq_dim()) = q;
-            tail(data.XNext, get_ps().get_nv_dim()) = data.robot.dq_after;
-            get_impulses().updateVelocity(data.impulses, data.robot.dq_after);
-            get_impulses().updateForce(data.impulses, data.robot.impulse_c);
+            tail(data.XNext, get_ps().get_nv_dim()) = data.robot->dq_after;
+            get_impulses().updateVelocity(data.impulses, data.robot->dq_after);
+            get_impulses().updateForce(data.impulses, data.robot->impulse_c);
 
             get_costs().calc(data.costs, x);
             data.L_accessor() = data.costs.L;
@@ -236,42 +236,42 @@ namespace galileo
             // recursively: https://eigen.tuxfamily.org/bz/show_bug.cgi?id=408. Therefore,
             // it is not possible to pass data.Kinv.topLeftCorner(nv + nc, nv + nc)
             data.Kinv.resize(get_ps().get_nv() + nc_dim.value(), nv_dim.value() + nc_dim.value());
-            pinocchio::computeRNEADerivatives(get_robot(), data.robot, q,
-                                              data.vnone, data.robot.dq_after - v,
+            pinocchio::computeRNEADerivatives(get_robot(), *data.robot.get(), q,
+                                              data.vnone, data.robot->dq_after - v,
                                               data.impulses.fext);
-            pinocchio::computeGeneralizedGravityDerivatives(get_robot(), data.robot,
+            pinocchio::computeGeneralizedGravityDerivatives(get_robot(), *data.robot.get(),
                                                             q, data.dgrav_dq);
             pinocchio::getKKTContactDynamicMatrixInverse(
-                get_robot(), data.robot, topRows(data.impulses.Jc, nc_dim), data.Kinv);
+                get_robot(), *data.robot.get(), topRows(data.impulses.Jc, nc_dim), data.Kinv);
 
             pinocchio::computeForwardKinematicsDerivatives(
-                get_robot(), data.robot, q, data.robot.dq_after, data.vnone);
+                get_robot(), *data.robot.get(), q, data.robot->dq_after, data.vnone);
             get_impulses().calcDiff(data.impulses, x);
-            get_impulses().updateRneaDiff(data.impulses, data.robot);
+            get_impulses().updateRneaDiff(data.impulses, *data.robot.get());
 
             auto a_partial_dtau = topLeftCorner(data.Kinv, nv_dim, nv_dim);
             auto a_partial_da = topRightCorner(data.Kinv, nv_dim, nc_dim);
             auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_dim, nv_dim);
             auto f_partial_da = bottomRightCorner(data.Kinv, nc_dim, nc_dim);
 
-            data.robot.dtau_dq -= data.dgrav_dq;
-            data.robot.M.template triangularView<Eigen::StrictlyLower>() =
-                data.robot.M.transpose()
+            data.robot->dtau_dq -= data.dgrav_dq;
+            data.robot->M.template triangularView<Eigen::StrictlyLower>() =
+                data.robot->M.transpose()
                     .template triangularView<Eigen::StrictlyLower>();
             topLeftCorner(data.XNextx, nv_dim, nv_dim).setIdentity();
             topRightCorner(data.XNextx, nv_dim, nv_dim).setZero();
             bottomLeftCorner(data.XNextx, nv_dim, nv_dim).noalias() =
-                -a_partial_dtau * data.robot.dtau_dq;
+                -a_partial_dtau * data.robot->dtau_dq;
             bottomLeftCorner(data.XNextx, nv_dim, nv_dim).noalias() -=
                 a_partial_da * data.impulses.dv0_dq.topRows(nc_dim);
             bottomRightCorner(data.XNextx, nv_dim, nv_dim).noalias() =
-                a_partial_dtau * data.robot.M;
+                a_partial_dtau * data.robot->M;
 
             // Computing the cost derivatives
             if (enable_force_)
             {
                 topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() =
-                    f_partial_dtau * data.robot.dtau_dq;
+                    f_partial_dtau * data.robot->dtau_dq;
                 topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() +=
                     f_partial_da * data.impulses.dv0_dq.topRows(nc_dim);
                 topRightCorner(data.df_dx, nc_dim, nv_dim).noalias() =

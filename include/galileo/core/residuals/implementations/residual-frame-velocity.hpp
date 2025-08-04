@@ -87,7 +87,7 @@ namespace galileo
             Arr_Ru.setZero();
         }
 
-        RobotData_t *robot;
+        std::shared_ptr<RobotData_t> robot;
 
         R_t R;
         Rx_t Rx;
@@ -129,7 +129,7 @@ namespace galileo
         {
             data.R = (pinocchio::getFrameVelocity(
                           get_ps().get_state().get_robot(),
-                          *data.robot,
+                          *data.robot.get(),
                           frame_id_,
                           type_) -
                       vref_)
@@ -150,7 +150,7 @@ namespace galileo
         {
             pinocchio::getFrameVelocityDerivatives(
                 get_ps().get_state().get_robot(),
-                *data.robot,
+                *data.robot.get(),
                 frame_id_,
                 type_,
                 leftCols(data.Rx, get_ps().get_nv_dim()),

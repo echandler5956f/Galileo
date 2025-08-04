@@ -306,13 +306,20 @@ int main(int argc, char **argv)
     std::vector<double> phase_durations = {0.5, 0.25, 0.25, 0.25, 0.25, 0.5};
     std::vector<std::vector<pinocchio::FrameIndex>> phases = {all_feet_support, trot_phase_1, trot_phase_2, trot_phase_1, trot_phase_2, all_feet_support};
 
-    std::vector<JumpModel_t> jump_models;
-    std::vector<JumpData_t> jump_datas;
-    std::vector<SegmentModel_t> segment_models;
-    std::vector<SegmentData_t> segment_datas;
+    std::vector<std::shared_ptr<JumpModel_t>> jump_models;
+    std::vector<std::shared_ptr<JumpData_t>> jump_datas;
+    std::vector<std::shared_ptr<SegmentModel_t>> segment_models;
+    std::vector<std::shared_ptr<SegmentData_t>> segment_datas;
 
-    std::vector<ContactModelManager_t> contact_managers;
-    std::vector<ImpulseModelManager_t> impulse_managers;
+    std::vector<std::shared_ptr<ContactModelManager_t>> contact_managers;
+    std::vector<std::shared_ptr<ImpulseModelManager_t>> impulse_managers;
+
+    jump_models.reserve(phases.size());
+    jump_datas.reserve(phases.size());
+    segment_models.reserve(phases.size() * num_knots.size());
+    segment_datas.reserve(phases.size() * num_knots.size());
+    contact_managers.reserve(phases.size() * num_knots.size());
+    impulse_managers.reserve(phases.size());
 
     for (int i = 0; i < phases.size(); i++)
     {
@@ -327,7 +334,7 @@ int main(int argc, char **argv)
                 impulse_manager.addItem("impulse_" + std::to_string(foot_id), impulse);
                 std::cout << "DEBUG: Finished creating impulse for foot " << foot_id << " phase " << i << std::endl;
             }
-            impulse_managers.push_back(impulse_manager);
+            impulse_managers.push_back(std::make_shared<ImpulseModelManager_t>(impulse_manager));
         }
 
         for (int j = 0; j < num_knots[i]; j++)
@@ -342,7 +349,7 @@ int main(int argc, char **argv)
                 contact_manager.addItem("contact_" + std::to_string(foot_id), contact);
                 std::cout << "DEBUG: Finished creating contact for foot " << foot_id << " knot " << j << std::endl;
             }
-            contact_managers.push_back(contact_manager);
+            contact_managers.push_back(std::make_shared<ContactModelManager_t>(contact_manager));
         }
     }
 
@@ -351,25 +358,25 @@ int main(int argc, char **argv)
         if (i > 0)
         {
             std::cout << "DEBUG: Creating jump model for phase " << i << std::endl;
-            JumpModel_t jump_model(ps, empty_cost_manager, empty_constraint_manager, impulse_managers[i-1]);
+            JumpModel_t jump_model(ps, empty_cost_manager, empty_constraint_manager, *impulse_managers[i-1]);
             std::cout << "DEBUG: Finished creating jump model for phase " << i << std::endl;
-            jump_models.push_back(jump_model);
+            jump_models.push_back(std::make_shared<JumpModel_t>(jump_model));
             std::cout << "DEBUG: Creating jump data for phase " << i << std::endl;
-            jump_datas.push_back(jump_model.createData());
+            jump_datas.push_back(std::make_shared<JumpData_t>(jump_model.createData()));
             std::cout << "DEBUG: Finished creating jump data for phase " << i << std::endl;
         }
         for (int j = 0; j < num_knots[i]; j++)
         {
             std::cout << "DEBUG: Creating node for phase " << i << " knot " << j << std::endl;
-            NodeModel_t node(ps, empty_cost_manager, empty_constraint_manager, contact_managers[i*num_knots[i] + j], actuation, 0.0, false);
+            NodeModel_t node(ps, empty_cost_manager, empty_constraint_manager, *contact_managers[i*num_knots[i] + j], actuation, 0.0, false);
             std::cout << "DEBUG: Finished creating node for phase " << i << " knot " << j << std::endl;
             std::cout << "DEBUG: Creating segment model for phase " << i << " knot " << j << std::endl;
             double timestep = phase_durations[i] / num_knots[i];
             SegmentModel_t segment_model(ps, node, control_param, timestep);
             std::cout << "DEBUG: Finished creating segment model for phase " << i << " knot " << j << std::endl;
-            segment_models.push_back(segment_model);
+            segment_models.push_back(std::make_shared<SegmentModel_t>(segment_model));
             std::cout << "DEBUG: Creating segment data for phase " << i << " knot " << j << std::endl;
-            segment_datas.push_back(segment_model.createData());
+            segment_datas.push_back(std::make_shared<SegmentData_t>(segment_model.createData()));
             std::cout << "DEBUG: Finished creating segment data for phase " << i << " knot " << j << std::endl;
         }
     }
@@ -390,17 +397,18 @@ int main(int argc, char **argv)
         if (i > 0)
         {
             std::cout << "DEBUG: Calculating jump model for phase " << i << std::endl;
-            jump_models[i-1].calc(jump_datas[i-1], x);
+            jump_models[i-1]->calc(*jump_datas[i-1], x);
             std::cout << "DEBUG: Finished calculating jump model for phase " << i << std::endl;
-            x = jump_datas[i-1].XNext;
+            x = jump_datas[i-1]->XNext;
             xs.push_back(x);
         }
         for (int j = 0; j < num_knots[i]; j++)
         {
+            Eigen::VectorXd w = Eigen::VectorXd::Zero(ps.get_nw());
             std::cout << "DEBUG: Calculating segment model for phase " << i << " knot " << j << std::endl;
-            segment_models[i * num_knots[i] + j].calc(segment_datas[i * num_knots[i] + j], x);
+            segment_models[i * num_knots[i] + j]->calc(*segment_datas[i * num_knots[i] + j], x, w);
             std::cout << "DEBUG: Finished calculating segment model for phase " << i << " knot " << j << std::endl;
-            x = segment_datas[i * num_knots[i] + j].XNext;
+            x = segment_datas[i * num_knots[i] + j]->XNext;
             xs.push_back(x);
         }
     }

@@ -90,7 +90,7 @@ namespace galileo
             fJf.setZero();
         }
 
-        RobotData_t *robot;
+        std::shared_ptr<RobotData_t> robot;
 
         R_t R;
         Rx_t Rx;
@@ -132,7 +132,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            pinocchio::updateFramePlacement(get_ps().get_state().get_robot(), *data.robot, frame_id_);
+            pinocchio::updateFramePlacement(get_ps().get_state().get_robot(), *data.robot.get(), frame_id_);
             data.R = data.robot->oMf[frame_id_].translation() - x_ref_;
         }
 
@@ -150,7 +150,7 @@ namespace galileo
         {
             pinocchio::getFrameJacobian(
                 get_ps().get_state().get_robot(),
-                *data.robot,
+                *data.robot.get(),
                 frame_id_,
                 pinocchio::ReferenceFrame::LOCAL,
                 data.fJf);

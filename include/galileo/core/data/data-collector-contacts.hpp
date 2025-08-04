@@ -18,10 +18,10 @@ namespace galileo
         using ContactModelManager_t = typename traits<ContactManagerMeta_t>::ModelManager_t;
         using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
 
-        ContactDataMixinTpl(ContactDataManager_t *data)
+        ContactDataMixinTpl(std::shared_ptr<ContactDataManager_t> data)
             : contacts(data) {}
 
-        ContactDataManager_t *contacts;
+        std::shared_ptr<ContactDataManager_t> contacts;
 
     }; // struct ContactDataMixinTpl
 

@@ -14,10 +14,10 @@ namespace galileo
 
         using ActuationData_t = typename PS::ActuationData_t;
 
-        ActuationDataMixinTpl(ActuationData_t *data)
+        ActuationDataMixinTpl(std::shared_ptr<ActuationData_t> data)
             : actuation(data) {}
 
-        ActuationData_t *actuation;
+        std::shared_ptr<ActuationData_t> actuation;
 
     }; // struct ActuationDataMixinTpl
 

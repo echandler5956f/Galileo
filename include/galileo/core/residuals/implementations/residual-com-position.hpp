@@ -86,7 +86,7 @@ namespace galileo
             Arr_Ru.setZero();
         }
 
-        RobotData_t *robot;
+        std::shared_ptr<RobotData_t> robot;
 
         R_t R;
         Rx_t Rx;

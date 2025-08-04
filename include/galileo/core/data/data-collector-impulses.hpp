@@ -18,10 +18,10 @@ namespace galileo
         using ImpulseModelManager_t = typename traits<ImpulseManagerMeta_t>::ModelManager_t;
         using ImpulseDataManager_t = typename traits<ImpulseManagerMeta_t>::DataManager_t;
 
-        ImpulseDataMixinTpl(ImpulseDataManager_t *data)
+        ImpulseDataMixinTpl(std::shared_ptr<ImpulseDataManager_t> data)
             : impulses(data) {}
 
-        ImpulseDataManager_t *impulses;
+        std::shared_ptr<ImpulseDataManager_t> impulses;
 
     }; // struct ImpulseDataMixinTpl
 
