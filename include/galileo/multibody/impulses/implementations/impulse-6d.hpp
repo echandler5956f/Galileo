@@ -175,7 +175,8 @@ namespace galileo
         ImpulseModel6dTpl(const PS &ps,
                           const FrameIndex_t id,
                           const ReferenceFrame_t &type)
-            : Base(ps, id, type, DimNC_t()),
+            : Base(id, type, DimNC_t()),
+              ps_(ps),
               robot_(ps.get_state().get_robot())
         {
         }
@@ -264,13 +265,6 @@ namespace galileo
         using Base::setZeroForceDiff;
         using Base::updateForceDiff;
 
-        const RobotModel_t &get_robot() const
-        {
-            return robot_.get();
-        }
-
-        using Base::get_ps;
-
         using Base::get_id;
         using Base::get_type;
 
@@ -278,9 +272,19 @@ namespace galileo
         using Base::set_type;
 
         using Base::get_nc;
-        using Base::get_nc_dim;
+
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
+        const RobotModel_t &get_robot() const
+        {
+            return robot_.get();
+        }
 
     protected:
+        std::reference_wrapper<const PS> ps_;
         std::reference_wrapper<const RobotModel_t> robot_;
 
     }; // struct ImpulseModel6dTpl

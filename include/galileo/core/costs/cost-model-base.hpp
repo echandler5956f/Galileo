@@ -53,34 +53,19 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const PS &get_ps() const
-        {
-            return this->derived().get_ps_impl();
-        }
-
-        const PS &get_ps_impl() const
-        {
-            return ps_.get();
-        }
-
     protected:
-        inline CostModelBase(const PS &ps)
-            : ps_(ps)
+        inline CostModelBase()
         {
         }
 
         inline CostModelBase(const CostModelBase &clone)
-            : ps_(clone.ps_)
         {
         }
 
         inline CostModelBase &operator=(const CostModelBase &clone)
         {
-            ps_ = clone.ps_;
             return *this;
         }
-
-        std::reference_wrapper<const PS> ps_;
 
     }; // class CostModelBase
 

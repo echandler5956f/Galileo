@@ -171,7 +171,7 @@ namespace galileo
 
         template <typename CostModelType>
         CostModelTpl(const CostModelBase<CostModelType, PhaseSpec> &model)
-            : Base(model.get_ps()),
+            : Base(),
               Collection_t::CostModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, CostModelType>));
@@ -221,13 +221,6 @@ namespace galileo
         Data_t createData(DataCollector *const collector) const
         {
             return galileo::cost_create_data(*this, collector);
-        }
-
-        using Base::get_ps;
-
-        const PS &get_ps_impl() const
-        {
-            return galileo::cost_get_ps(*this);
         }
 
     }; // struct CostModelTpl

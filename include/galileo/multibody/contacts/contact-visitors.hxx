@@ -223,57 +223,6 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
-    struct ContactGetRobotVisitor : boost::static_visitor<const typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::RobotModel_t &>
-    {
-        using ReturnType = const typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::RobotModel_t &;
-
-        template <typename ContactModelType>
-        ReturnType operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
-        {
-            return contact_model.get_robot();
-        }
-
-        static ReturnType run(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
-        {
-            return boost::apply_visitor(ContactGetRobotVisitor<PhaseSpec, ContactCollectionTpl>(), contact_model);
-        }
-    };
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    inline const typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::RobotModel_t &contact_get_robot(
-        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
-    {
-        return ContactGetRobotVisitor<PhaseSpec, ContactCollectionTpl>::run(contact_model);
-    }
-
-    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
-    struct ContactGetPhaseSpecVisitor
-        : boost::static_visitor<const PhaseSpec &>
-    {
-
-        using ReturnType = const PhaseSpec &;
-
-        template <typename ContactModelType>
-        ReturnType operator()(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model) const
-        {
-            return contact_model.get_ps();
-        }
-
-        static ReturnType run(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
-        {
-            return boost::apply_visitor(ContactGetPhaseSpecVisitor<PhaseSpec, ContactCollectionTpl>(), contact_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
-    inline const PhaseSpec &contact_get_ps(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model)
-    {
-        return ContactGetPhaseSpecVisitor<PhaseSpec, ContactCollectionTpl>::run(contact_model);
-    }
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
     struct ContactGetIdVisitor : boost::static_visitor<typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t>
     {
         using ReturnType = typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t;

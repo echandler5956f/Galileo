@@ -60,14 +60,6 @@ namespace galileo
         const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model,
         typename PhaseSpec::RobotData_t *const robot);
 
-    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
-    inline PhaseSpec impulse_get_ps(const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model);
-
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
-    inline typename ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>::RobotModel_t impulse_get_robot(
-        const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model);
-
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
     inline typename ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>::FrameIndex_t impulse_get_id(

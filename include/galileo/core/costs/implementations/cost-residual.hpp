@@ -141,7 +141,8 @@ namespace galileo
 
         CostModelResidualTpl(const PS &ps, const ResidualModel_t &residual,
                              const ActivationModel_t &activation)
-            : Base(ps),
+            : Base(),
+              ps_(ps),
               residual_(residual),
               activation_(activation)
         {
@@ -212,6 +213,11 @@ namespace galileo
             return Data_t(*this, collector);
         }
 
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
         const ResidualModel_t &get_residual() const
         {
             return residual_;
@@ -222,9 +228,8 @@ namespace galileo
             return activation_;
         }
 
-        using Base::get_ps;
-
     protected:
+        std::reference_wrapper<const PS> ps_;
         ResidualModel_t residual_;
         ActivationModel_t activation_;
 

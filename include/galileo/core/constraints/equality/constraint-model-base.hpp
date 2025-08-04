@@ -55,26 +55,6 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const PS &get_ps() const
-        {
-            return this->derived().get_ps_impl();
-        }
-
-        const PS &get_ps_impl() const
-        {
-            return ps_.get();
-        }
-
-        const DimNH_t &get_nh_dim() const
-        {
-            return this->derived().get_nh_dim_impl();
-        }
-
-        const DimNH_t &get_nh_dim_impl() const
-        {
-            return nh_dim_;
-        }
-
         int get_nh() const
         {
             return this->derived().get_nh_impl();
@@ -86,24 +66,22 @@ namespace galileo
         }
 
     protected:
-        inline ConstraintModelBase(const PS &ps, const DimNH_t &nh_dim)
-            : ps_(ps), nh_dim_(nh_dim)
+        inline ConstraintModelBase(const DimNH_t &nh_dim)
+            : nh_dim_(nh_dim)
         {
         }
 
         inline ConstraintModelBase(const ConstraintModelBase &clone)
-            : ps_(clone.ps_), nh_dim_(clone.nh_dim_)
+            : nh_dim_(clone.nh_dim_)
         {
         }
 
         inline ConstraintModelBase &operator=(const ConstraintModelBase &clone)
         {
-            ps_ = clone.ps_;
             nh_dim_ = clone.nh_dim_;
             return *this;
         }
 
-        std::reference_wrapper<const PS> ps_;
         DimNH_t nh_dim_;
 
     }; // class ConstraintModelBase

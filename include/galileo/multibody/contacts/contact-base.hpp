@@ -230,21 +230,6 @@ namespace galileo
             return this->derived().createData(robot);
         }
 
-        const RobotModel_t &get_robot() const
-        {
-            return this->derived().get_robot();
-        }
-
-        const PS &get_ps() const
-        {
-            return this->derived().get_ps_impl();
-        }
-
-        const PS &get_ps_impl() const
-        {
-            return ps_;
-        }
-
         FrameIndex_t get_id() const
         {
             return this->derived().get_id_impl();
@@ -306,26 +291,24 @@ namespace galileo
         }
 
     protected:
-        inline ContactModelBase(const PS &ps, const FrameIndex_t &id, const ReferenceFrame_t &type, const DimNC_t &nc_dim)
-            : ps_(ps), nc_dim_(nc_dim), id_(id), type_(type)
+        inline ContactModelBase(const FrameIndex_t &id, const ReferenceFrame_t &type, const DimNC_t &nc_dim)
+            : nc_dim_(nc_dim), id_(id), type_(type)
         {
         }
 
         inline ContactModelBase(const ContactModelBase &clone)
-            : ps_(clone.ps_), nc_dim_(clone.nc_dim_), id_(clone.id_), type_(clone.type_)
+            : nc_dim_(clone.nc_dim_), id_(clone.id_), type_(clone.type_)
         {
         }
 
         inline ContactModelBase &operator=(const ContactModelBase &clone)
         {
-            ps_ = clone.ps_;
             nc_dim_ = clone.nc_dim_;
             id_ = clone.id_;
             type_ = clone.type_;
             return *this;
         }
 
-        const PS &ps_;
         DimNC_t nc_dim_;
         FrameIndex_t id_;
         ReferenceFrame_t type_;

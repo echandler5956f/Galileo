@@ -55,9 +55,6 @@ namespace galileo
         const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model,
         DataCollector *const collector);
 
-    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
-    inline PhaseSpec cost_get_ps(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model);
-
     // Cost data visitors
 
     template <typename PhaseSpec,

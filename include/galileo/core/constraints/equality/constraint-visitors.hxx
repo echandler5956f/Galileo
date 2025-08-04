@@ -169,31 +169,6 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintGetPhaseSpecVisitor
-        : boost::static_visitor<const PhaseSpec &>
-    {
-
-        using ReturnType = PhaseSpec;
-
-        template <typename ConstraintModelType>
-        ReturnType operator()(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model) const
-        {
-            return constraint_model.get_ps();
-        }
-
-        static ReturnType run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-        {
-            return boost::apply_visitor(ConstraintGetPhaseSpecVisitor<PhaseSpec, ConstraintCollectionTpl>(), constraint_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline PhaseSpec constraint_get_ps(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
-    {
-        return ConstraintGetPhaseSpecVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_model);
-    }
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct ConstraintGetNHVisitor
         : boost::static_visitor<int>
     {

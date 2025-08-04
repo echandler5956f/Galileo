@@ -205,7 +205,8 @@ namespace galileo
                           const ReferenceFrame_t &type,
                           const Eigen::MatrixBase<Vector3Type> &xref,
                           const Eigen::MatrixBase<Vector2Type> &gains)
-            : Base(ps, id, type, DimNC_t()),
+            : Base(id, type, DimNC_t()),
+              ps_(ps),
               robot_(ps.get_state().get_robot()),
               xref_(xref),
               gains_(gains)
@@ -358,13 +359,6 @@ namespace galileo
         using Base::setZeroForceDiff;
         using Base::updateForceDiff;
 
-        const RobotModel_t &get_robot() const
-        {
-            return robot_.get();
-        }
-
-        using Base::get_ps;
-
         using Base::get_id;
         using Base::get_type;
 
@@ -372,9 +366,19 @@ namespace galileo
         using Base::set_type;
 
         using Base::get_nc;
-        using Base::get_nc_dim;
+
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
+        const RobotModel_t &get_robot() const
+        {
+            return robot_.get();
+        }
 
     protected:
+        std::reference_wrapper<const PS> ps_;
         std::reference_wrapper<const RobotModel_t> robot_;
         Vector3_t xref_;
         Vector2_t gains_;

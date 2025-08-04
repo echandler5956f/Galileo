@@ -168,31 +168,6 @@ namespace galileo
         return Algo::run(cost_model, typename Algo::ArgsType(collector));
     }
 
-    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
-    struct CostGetPhaseSpecVisitor
-        : boost::static_visitor<const PhaseSpec &>
-    {
-
-        using ReturnType = PhaseSpec;
-
-        template <typename CostModelType>
-        ReturnType operator()(const CostModelBase<CostModelType, PhaseSpec> &cost_model) const
-        {
-            return cost_model.get_ps();
-        }
-
-        static ReturnType run(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
-        {
-            return boost::apply_visitor(CostGetPhaseSpecVisitor<PhaseSpec, CostCollectionTpl>(), cost_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
-    inline PhaseSpec cost_get_ps(const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model)
-    {
-        return CostGetPhaseSpecVisitor<PhaseSpec, CostCollectionTpl>::run(cost_model);
-    }
-
     // Cost data visitors
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl>

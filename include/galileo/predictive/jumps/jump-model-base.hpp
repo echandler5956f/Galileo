@@ -44,11 +44,6 @@ namespace galileo
             return ps_.get();
         }
 
-        PS &get_ps()
-        {
-            return ps_.get();
-        }
-
         const State_t &get_state() const
         {
             return get_ps().get_state();
@@ -70,7 +65,7 @@ namespace galileo
         }
 
     protected:
-        inline JumpModelBase(PS &ps)
+        inline JumpModelBase(const PS &ps)
             : ps_(ps), robot_(ps.get_state().get_robot())
         {
         }
@@ -87,7 +82,7 @@ namespace galileo
             return *this;
         }
 
-        std::reference_wrapper<PS> ps_;
+        std::reference_wrapper<const PS> ps_;
         std::reference_wrapper<const RobotModel_t> robot_;
 
     }; // class JumpModelBase

@@ -219,57 +219,6 @@ namespace galileo
 
     template <typename PhaseSpec,
               template <typename PS> class ImpulseCollectionTpl>
-    struct ImpulseGetRobotVisitor : boost::static_visitor<const typename ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>::RobotModel_t &>
-    {
-        using ReturnType = const typename ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>::RobotModel_t &;
-
-        template <typename ImpulseModelType>
-        ReturnType operator()(const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model) const
-        {
-            return impulse_model.get_robot();
-        }
-
-        static ReturnType run(const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model)
-        {
-            return boost::apply_visitor(ImpulseGetRobotVisitor<PhaseSpec, ImpulseCollectionTpl>(), impulse_model);
-        }
-    };
-
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
-    inline const typename ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>::RobotModel_t &impulse_get_robot(
-        const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model)
-    {
-        return ImpulseGetRobotVisitor<PhaseSpec, ImpulseCollectionTpl>::run(impulse_model);
-    }
-
-    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
-    struct ImpulseGetPhaseSpecVisitor
-        : boost::static_visitor<const PhaseSpec &>
-    {
-
-        using ReturnType = const PhaseSpec &;
-
-        template <typename ImpulseModelType>
-        ReturnType operator()(const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model) const
-        {
-            return impulse_model.get_ps();
-        }
-
-        static ReturnType run(const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model)
-        {
-            return boost::apply_visitor(ImpulseGetPhaseSpecVisitor<PhaseSpec, ImpulseCollectionTpl>(), impulse_model);
-        }
-    };
-
-    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
-    inline const PhaseSpec &impulse_get_ps(const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model)
-    {
-        return ImpulseGetPhaseSpecVisitor<PhaseSpec, ImpulseCollectionTpl>::run(impulse_model);
-    }
-
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
     struct ImpulseGetIdVisitor : boost::static_visitor<typename ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>::FrameIndex_t>
     {
         using ReturnType = typename ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl>::FrameIndex_t;

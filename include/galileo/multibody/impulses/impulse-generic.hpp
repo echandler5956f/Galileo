@@ -222,7 +222,7 @@ namespace galileo
 
         template <typename ModelDerived>
         ImpulseModelTpl(const ImpulseModelBase<ModelDerived, PhaseSpec> &model)
-            : Base(model.get_ps(), model.get_id(), model.get_type(), DimNC_t(model.get_nc())),
+            : Base(model.get_id(), model.get_type(), DimNC_t(model.get_nc())),
               ModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ModelDerived>));
@@ -285,26 +285,6 @@ namespace galileo
             galileo::impulse_set_zero_force_diff(*this, data);
         }
 
-        const RobotModel_t &get_robot() const
-        {
-            return galileo::impulse_get_robot(*this);
-        }
-
-        using Base::get_ps;
-
-        using Base::get_id;
-        using Base::set_id;
-
-        using Base::get_type;
-        using Base::set_type;
-
-        using Base::get_nc;
-
-        const PS &get_ps_impl() const
-        {
-            return galileo::impulse_get_ps(*this);
-        }
-
         FrameIndex_t get_id_impl() const
         {
             return galileo::impulse_get_id(*this);
@@ -329,6 +309,14 @@ namespace galileo
         {
             return galileo::impulse_get_nc(*this);
         }
+
+        using Base::get_id;
+        using Base::set_id;
+
+        using Base::get_type;
+        using Base::set_type;
+
+        using Base::get_nc;
 
     }; // struct ImpulseModelTpl
 

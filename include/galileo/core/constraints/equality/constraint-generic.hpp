@@ -165,7 +165,7 @@ namespace galileo
 
         template <typename ConstraintModelType>
         ConstraintModelTpl(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &model)
-            : Base(model.get_ps(), DimNH_t(model.get_nh())),
+            : Base(DimNH_t(model.get_nh())),
               Collection_t::ConstraintModelVariant_t((ModelVariant_t)model.derived())
         {
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ConstraintModelType>));
@@ -207,19 +207,12 @@ namespace galileo
             galileo::constraint_calc_first_order(*this, data, x.derived(), Blank());
         }
 
-        using Base::get_ps;
-
-        using Base::get_nh;
-
-        const PS &get_ps_impl() const
-        {
-            return galileo::constraint_get_ps(*this);
-        }
-
         int get_nh_impl() const
         {
             return galileo::constraint_get_nh(*this);
         }
+
+        using Base::get_nh;
 
     }; // struct ConstraintModelTpl
 

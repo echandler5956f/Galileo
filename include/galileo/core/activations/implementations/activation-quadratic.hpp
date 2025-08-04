@@ -94,7 +94,7 @@ namespace galileo
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &nr_dim)
-            : Base(ps, nr_dim)
+            : Base(nr_dim)
         {
         }
 
@@ -115,8 +115,6 @@ namespace galileo
         {
             return Data_t(*this);
         }
-
-        using Base::get_ps;
 
         using Base::get_nr;
         using Base::get_nr_dim;

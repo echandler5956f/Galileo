@@ -74,7 +74,7 @@ namespace galileo
         using MatrixX_t = Eigen::GMatrix<VarScalar, Eigen::Dynamic, Eigen::Dynamic, Options>;
 
         // Stream output operator
-        friend std::ostream& operator<<(std::ostream& os, const BasicSpecTpl& spec)
+        friend std::ostream &operator<<(std::ostream &os, const BasicSpecTpl &spec)
         {
             os << "BasicSpec{VarScalar: " << typeid(VarScalar).name()
                << ", NumScalar: " << typeid(NumScalar).name()

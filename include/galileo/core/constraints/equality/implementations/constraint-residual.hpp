@@ -110,7 +110,8 @@ namespace galileo
         using ResidualData_t = typename traits<Meta_t>::ResidualData_t;
 
         ConstraintModelResidualTpl(const PS &ps, const ResidualModel_t &residual)
-            : Base(ps, DimNH_t(residual.get_nr())),
+            : Base(DimNH_t(residual.get_nr())),
+              ps_(ps),
               residual_(residual)
         {
         }
@@ -157,17 +158,20 @@ namespace galileo
             return Data_t(*this, collector);
         }
 
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
         const ResidualModel_t &get_residual() const
         {
             return residual_;
         }
 
-        using Base::get_ps;
-
         using Base::get_nh;
-        using Base::get_nh_dim;
 
     protected:
+        std::reference_wrapper<const PS> ps_;
         ResidualModel_t residual_;
 
     }; // class ConstraintModelResidualTpl

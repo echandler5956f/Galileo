@@ -188,13 +188,13 @@ namespace galileo
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
         ContactModel6dTpl(const PS &ps,
-                          const RobotModel_t &robot,
                           const FrameIndex_t id,
                           const ReferenceFrame_t &type,
                           const SE3_t &pref,
                           const Vector2_t &gains)
-            : Base(ps, id, type, DimNC_t()),
-              robot_(robot),
+            : Base(id, type, DimNC_t()),
+              ps_(ps),
+              robot_(ps.get_state().get_robot()),
               pref_(pref),
               gains_(gains)
         {
@@ -330,13 +330,6 @@ namespace galileo
         using Base::setZeroForceDiff;
         using Base::updateForceDiff;
 
-        const RobotModel_t &get_robot() const
-        {
-            return robot_.get();
-        }
-
-        using Base::get_ps;
-
         using Base::get_id;
         using Base::get_type;
 
@@ -344,9 +337,19 @@ namespace galileo
         using Base::set_type;
 
         using Base::get_nc;
-        using Base::get_nc_dim;
+
+        const PS &get_ps() const
+        {
+            return ps_.get();
+        }
+
+        const RobotModel_t &get_robot() const
+        {
+            return robot_.get();
+        }
 
     protected:
+        std::reference_wrapper<const PS> ps_;
         std::reference_wrapper<const RobotModel_t> robot_;
         SE3_t pref_;
         Vector2_t gains_;

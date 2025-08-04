@@ -56,9 +56,6 @@ namespace galileo
         DataCollector *const collector);
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline PhaseSpec constraint_get_ps(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
-
-    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     inline int constraint_get_nh(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
 
     // Constraint data visitors

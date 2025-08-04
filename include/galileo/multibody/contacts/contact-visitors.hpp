@@ -62,14 +62,6 @@ namespace galileo
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
         typename PhaseSpec::RobotData_t *const robot);
 
-    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
-    inline PhaseSpec contact_get_ps(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
-
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    inline typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::RobotModel_t contact_get_robot(
-        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
-
     template <typename PhaseSpec,
               template <typename PS> class ContactCollectionTpl>
     inline typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t contact_get_id(

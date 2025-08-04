@@ -344,6 +344,11 @@ namespace galileo
             return Data_t(*this);
         }
 
+        void addSegment(const SegmentModel_t &segment)
+        {
+            segments_.push_back(segment);
+        }
+
         const PS &get_ps() const
         {
             return ps_.get();
@@ -352,11 +357,6 @@ namespace galileo
         const SegmentModelVector_t &get_segments() const
         {
             return segments_;
-        }
-
-        void addSegment(const SegmentModel_t &segment)
-        {
-            segments_.push_back(segment);
         }
 
         const JumpModel_t &get_jump() const

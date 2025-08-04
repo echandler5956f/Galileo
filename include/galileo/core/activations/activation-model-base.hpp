@@ -38,11 +38,6 @@ namespace galileo
             return this->derived().createData();
         }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
         const DimNR_t &get_nr_dim() const
         {
             return nr_dim_;
@@ -54,24 +49,22 @@ namespace galileo
         }
 
     protected:
-        inline ActivationModelBase(const PS &ps, const DimNR_t &nr_dim)
-            : ps_(ps), nr_dim_(nr_dim)
+        inline ActivationModelBase(const DimNR_t &nr_dim)
+            : nr_dim_(nr_dim)
         {
         }
 
         inline ActivationModelBase(const ActivationModelBase &clone)
-            : ps_(clone.ps_), nr_dim_(clone.nr_dim_)
+            : nr_dim_(clone.nr_dim_)
         {
         }
 
         inline ActivationModelBase &operator=(const ActivationModelBase &clone)
         {
-            ps_ = clone.ps_;
             nr_dim_ = clone.nr_dim_;
             return *this;
         }
 
-        std::reference_wrapper<const PS> ps_;
         DimNR_t nr_dim_;
 
     }; // class ActivationModelBase
