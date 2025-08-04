@@ -302,9 +302,9 @@ int main(int argc, char **argv)
     ConstraintModelManager_t empty_constraint_manager(ps);
     CostModelManager_t empty_cost_manager(ps);
 
-    std::vector<int> num_knots = {2, 2, 2, 2, 2, 2};
-    std::vector<double> phase_durations = {0.5, 0.25, 0.25, 0.25, 0.25, 0.5};
-    std::vector<std::vector<pinocchio::FrameIndex>> phases = {all_feet_support, trot_phase_1, trot_phase_2, trot_phase_1, trot_phase_2, all_feet_support};
+    std::vector<int> num_knots = {10, 10, 10, 10};
+    std::vector<double> phase_durations = {0.5, 0.25, 0.25, 0.25};
+    std::vector<std::vector<pinocchio::FrameIndex>> phases = {all_feet_support, trot_phase_1, trot_phase_2, trot_phase_1};
 
     std::vector<std::shared_ptr<JumpModel_t>> jump_models;
     std::vector<std::shared_ptr<JumpData_t>> jump_datas;
@@ -384,7 +384,7 @@ int main(int argc, char **argv)
 
     // Forward simulation pass
     std::vector<VectorNx_t> xs;
-    std::vector<VectorNu_t> us;
+    std::vector<VectorNw_t> ws;
 
     VectorNx_t x = VectorNx_t::Zero(state.get_nx());
     head(x, state.get_nq_dim()) = model.referenceConfigurations["standing"];
@@ -404,17 +404,22 @@ int main(int argc, char **argv)
         }
         for (int j = 0; j < num_knots[i]; j++)
         {
-            Eigen::VectorXd w = Eigen::VectorXd::Zero(ps.get_nw());
+            VectorNw_t w = VectorNw_t::Zero(ps.get_nw());
+            std::cout << "DEBUG: Calculating quasiStatic controls for phase " << i << " knot " << j << std::endl;
+            segment_models[i * num_knots[i] + j]->quasiStatic(*segment_datas[i * num_knots[i] + j], x, w, 100, 1e-3);
+            std::cout << "DEBUG: Finished calculating quasiStatic controls for phase " << i << " knot " << j << std::endl;
+
             std::cout << "DEBUG: Calculating segment model for phase " << i << " knot " << j << std::endl;
             segment_models[i * num_knots[i] + j]->calc(*segment_datas[i * num_knots[i] + j], x, w);
             std::cout << "DEBUG: Finished calculating segment model for phase " << i << " knot " << j << std::endl;
             x = segment_datas[i * num_knots[i] + j]->XNext;
             xs.push_back(x);
+            ws.push_back(w);
         }
     }
 
     std::cout << "DEBUG: xs.size(): " << xs.size() << std::endl;
-    std::cout << "DEBUG: us.size(): " << us.size() << std::endl;
+    std::cout << "DEBUG: ws.size(): " << ws.size() << std::endl;
 
     // Calculate total trajectory time and create time vector
     double total_time = 0.0;
