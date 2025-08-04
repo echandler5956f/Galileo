@@ -2,7 +2,6 @@
 #define __galileo_core_actuations_actuation_model_base_hpp__
 
 #include "galileo/core/actuations/actuation-base.hpp"
-#include "galileo/multibody/robot-spec.hpp"
 
 namespace galileo
 {
@@ -14,11 +13,11 @@ namespace galileo
     public:
         using RS = RobotSpec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
-
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        using State_t = typename RS::State_t;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,

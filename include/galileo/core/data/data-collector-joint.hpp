@@ -40,10 +40,10 @@ namespace galileo
     {
         using PS = PhaseSpec;
 
-        JointDataTpl<PS> *joint;
-
         JointDataMixinTpl(JointDataTpl<PS> *data)
             : joint(data) {}
+
+        JointDataTpl<PS> *joint;
 
     }; // struct JointDataMixinTpl
 

@@ -12,11 +12,12 @@ namespace galileo
 
         using RobotData_t = typename PS::RobotData_t;
 
-        RobotData_t *robot;
-
         MultibodyDataMixinTpl(RobotData_t *data)
             : robot(data) {}
-    };
+
+        RobotData_t *robot;
+
+    }; // struct MultibodyDataMixinTpl
 
 } // namespace galileo
 

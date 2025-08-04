@@ -38,7 +38,7 @@ public:
 
     using RS = RobotSpecTpl<BS, NQb, NQj, NVb, NVj, NRotors, StateEuclideanTpl, ActuationFloatingBaseTpl>;
     using ActuationModel_t = ActuationModelFloatingBaseTpl<RS>;
-    using ActuationData_t = ActuationDataTpl<RS>;
+    using ActuationData_t = ActuationDataFloatingBaseTpl<RS>;
 
     FloatingBaseTestFixture()
     {

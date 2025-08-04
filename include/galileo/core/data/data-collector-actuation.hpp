@@ -11,12 +11,13 @@ namespace galileo
     struct ActuationDataMixinTpl
     {
         using PS = PhaseSpec;
-        using RS = typename PS::RS;
 
-        ActuationDataTpl<RS> *actuation;
+        using ActuationData_t = typename PS::ActuationData_t;
 
-        ActuationDataMixinTpl(ActuationDataTpl<RS> *data)
+        ActuationDataMixinTpl(ActuationData_t *data)
             : actuation(data) {}
+
+        ActuationData_t *actuation;
 
     }; // struct ActuationDataMixinTpl
 
