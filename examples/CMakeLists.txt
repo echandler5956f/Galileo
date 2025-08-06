@@ -8,6 +8,9 @@ if(BUILD_WITH_CANDLEWICK_SUPPORT)
   # add_executable(candlewick_test candlewick_test.cpp)
   # target_link_libraries(candlewick_test PRIVATE galileo example-robot-data::example-robot-data)
 
+  # add_executable(candlewick_advanced_test candlewick_advanced_test.cpp)
+  # target_link_libraries(candlewick_advanced_test PRIVATE galileo example-robot-data::example-robot-data)
+
   add_executable(forward_pass_test forward_pass_test.cpp)
   target_link_libraries(forward_pass_test PRIVATE galileo example-robot-data::example-robot-data)
 endif()
