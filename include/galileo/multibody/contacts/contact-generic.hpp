@@ -270,18 +270,6 @@ namespace galileo
             galileo::contact_update_force(*this, data, force.derived());
         }
 
-        using Base::setZeroForce;
-        using Base::setZeroForceDiff;
-        using Base::updateForceDiff;
-
-        template <typename MatrixNcNdxType, typename MatrixNcNuType>
-        void updateForceDiffImpl(Data_t &data,
-                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
-                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
-        {
-            galileo::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
-        }
-
         void setZeroForceImpl(Data_t &data) const
         {
             galileo::contact_set_zero_force(*this, data);
@@ -290,6 +278,14 @@ namespace galileo
         void setZeroForceDiffImpl(Data_t &data) const
         {
             galileo::contact_set_zero_force_diff(*this, data);
+        }
+
+        template <typename MatrixNcNdxType, typename MatrixNcNuType>
+        void updateForceDiffImpl(Data_t &data,
+                                 const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                                 const Eigen::MatrixBase<MatrixNcNuType> &df_du) const
+        {
+            galileo::contact_update_force_diff(*this, data, df_dx.derived(), df_du.derived());
         }
 
         FrameIndex_t get_id_impl() const
@@ -316,6 +312,10 @@ namespace galileo
         {
             return galileo::contact_get_nc(*this);
         }
+
+        using Base::setZeroForce;
+        using Base::setZeroForceDiff;
+        using Base::updateForceDiff;
 
         using Base::get_id;
         using Base::set_id;

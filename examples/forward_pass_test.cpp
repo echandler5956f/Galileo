@@ -229,26 +229,26 @@ GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec_t);
 
 int main(int argc, char **argv)
 {
-    // CLI::App app{"Visualizer example"};
-    // argv = app.ensure_utf8(argv);
-    // std::array<Uint32, 2> window_dims{1920u, 1080u};
-    // double fps;
+    CLI::App app{"Visualizer example"};
+    argv = app.ensure_utf8(argv);
+    std::array<Uint32, 2> window_dims{1920u, 1080u};
+    double fps;
 
-    // app.add_option("--dims", window_dims, "Window dimensions.")
-    //     ->capture_default_str();
-    // app.add_option<double, unsigned int>("--fps", fps, "Framerate")
-    //     ->default_val(60);
+    app.add_option("--dims", window_dims, "Window dimensions.")
+        ->capture_default_str();
+    app.add_option<double, unsigned int>("--fps", fps, "Framerate")
+        ->default_val(60);
 
-    // CLI11_PARSE(app, argc, argv);
+    CLI11_PARSE(app, argc, argv);
 
     pinocchio::Model model;
     pinocchio::GeometryModel geom_model;
     loadModels(go1_robot_spec, model, &geom_model, NULL);
     pinocchio::Data rdata(model);
 
-    // Visualizer visualizer{{window_dims[0], window_dims[1]}, model, geom_model};
-    // assert(!visualizer.hasExternalData());
-    // pinocchio::Data &vis_data = visualizer.data();
+    Visualizer visualizer{{window_dims[0], window_dims[1]}, model, geom_model};
+    assert(!visualizer.hasExternalData());
+    pinocchio::Data &vis_data = visualizer.data();
 
     State_t state = State_t(model);
 
@@ -265,17 +265,14 @@ int main(int argc, char **argv)
     pinocchio::FrameIndex rl_foot_id = model.getFrameId("RL_foot");
     std::cout << "DEBUG: RL_FOOT found with ID: " << rl_foot_id << std::endl;
 
-    VectorNq_t q0 = model.referenceConfigurations["standing"];
-    std::cout << "DEBUG: Standing configuration: " << q0.transpose() << std::endl;
-    VectorNv_t v0 = VectorNv_t::Zero(model.nv);
     VectorNx_t x0 = VectorNx_t::Zero(ps.get_nx());
-    head(x0, ps.get_nq_dim()) = q0;
-    tail(x0, ps.get_nv_dim()) = v0;
+    head(x0, ps.get_nq_dim()) = model.referenceConfigurations["standing"];
+    tail(x0, ps.get_nv_dim()) = VectorNv_t::Zero(model.nv);
     std::cout << "DEBUG: Initial state: " << x0.transpose() << std::endl;
 
     // Compute initial foot positions with debug output
-    pinocchio::forwardKinematics(model, rdata, q0);
-    pinocchio::centerOfMass(model, rdata, q0);
+    pinocchio::forwardKinematics(model, rdata, head(x0, ps.get_nq_dim()));
+    pinocchio::centerOfMass(model, rdata, head(x0, ps.get_nq_dim()));
     pinocchio::updateFramePlacements(model, rdata);
 
     const Eigen::Vector3d fr_foot_pos0 = rdata.oMf[fr_foot_id].translation();
@@ -287,7 +284,7 @@ int main(int argc, char **argv)
     const Eigen::Vector3d rl_foot_pos0 = rdata.oMf[rl_foot_id].translation();
     std::cout << "DEBUG: RL_FOOT position: " << rl_foot_pos0.transpose() << std::endl;
 
-    JacobiRoots_t jacobi_roots(1.0, 0.0);
+    JacobiRoots_t jacobi_roots(0.0, 0.0);
     jacobi_roots.compute_roots();
 
     Eigen::VectorXd nodes = jacobi_roots.get_roots();
@@ -302,9 +299,9 @@ int main(int argc, char **argv)
     ConstraintModelManager_t empty_constraint_manager(ps);
     CostModelManager_t empty_cost_manager(ps);
 
-    std::vector<int> num_knots = {10, 10, 10, 10};
-    std::vector<double> phase_durations = {0.5, 0.25, 0.25, 0.25};
-    std::vector<std::vector<pinocchio::FrameIndex>> phases = {all_feet_support, trot_phase_1, trot_phase_2, trot_phase_1};
+    std::vector<int> num_knots = {25};
+    std::vector<double> phase_durations = {0.25};
+    std::vector<std::vector<pinocchio::FrameIndex>> phases = {all_feet_support};
 
     std::vector<std::shared_ptr<JumpModel_t>> jump_models;
     std::vector<std::shared_ptr<JumpData_t>> jump_datas;
@@ -329,10 +326,10 @@ int main(int argc, char **argv)
             ImpulseModelManager_t impulse_manager(ps);
             for (const auto &foot_id : phases[i])
             {
-                std::cout << "DEBUG: Creating impulse for foot " << foot_id << " phase " << i << std::endl;
+                // std::cout << "DEBUG: Creating impulse for foot " << foot_id << " phase " << i << std::endl;
                 ImpulseModel_t impulse(ps, foot_id, pinocchio::LOCAL_WORLD_ALIGNED);
                 impulse_manager.addItem("impulse_" + std::to_string(foot_id), impulse);
-                std::cout << "DEBUG: Finished creating impulse for foot " << foot_id << " phase " << i << std::endl;
+                // std::cout << "DEBUG: Finished creating impulse for foot " << foot_id << " phase " << i << std::endl;
             }
             impulse_managers.push_back(std::make_shared<ImpulseModelManager_t>(impulse_manager));
         }
@@ -343,11 +340,11 @@ int main(int argc, char **argv)
             ContactModelManager_t contact_manager(ps);
             for (const auto &foot_id : phases[i])
             {
-                std::cout << "DEBUG: Creating contact for foot " << foot_id << " knot " << j << std::endl;
+                // std::cout << "DEBUG: Creating contact for foot " << foot_id << " knot " << j << std::endl;
                 ContactModel_t contact(ps, foot_id, pinocchio::LOCAL_WORLD_ALIGNED,
-                                       Eigen::Vector3d::Zero(), Eigen::Vector2d(0., 50.));
+                                       Eigen::Vector3d::Zero(), Eigen::Vector2d(0., 0.));
                 contact_manager.addItem("contact_" + std::to_string(foot_id), contact);
-                std::cout << "DEBUG: Finished creating contact for foot " << foot_id << " knot " << j << std::endl;
+                // std::cout << "DEBUG: Finished creating contact for foot " << foot_id << " knot " << j << std::endl;
             }
             contact_managers.push_back(std::make_shared<ContactModelManager_t>(contact_manager));
         }
@@ -359,25 +356,25 @@ int main(int argc, char **argv)
         {
             std::cout << "DEBUG: Creating jump model for phase " << i << std::endl;
             JumpModel_t jump_model(ps, empty_cost_manager, empty_constraint_manager, *impulse_managers[i-1]);
-            std::cout << "DEBUG: Finished creating jump model for phase " << i << std::endl;
+            // std::cout << "DEBUG: Finished creating jump model for phase " << i << std::endl;
             jump_models.push_back(std::make_shared<JumpModel_t>(jump_model));
-            std::cout << "DEBUG: Creating jump data for phase " << i << std::endl;
+            // std::cout << "DEBUG: Creating jump data for phase " << i << std::endl;
             jump_datas.push_back(std::make_shared<JumpData_t>(jump_model.createData()));
-            std::cout << "DEBUG: Finished creating jump data for phase " << i << std::endl;
+            // std::cout << "DEBUG: Finished creating jump data for phase " << i << std::endl;
         }
         for (int j = 0; j < num_knots[i]; j++)
         {
-            std::cout << "DEBUG: Creating node for phase " << i << " knot " << j << std::endl;
-            NodeModel_t node(ps, empty_cost_manager, empty_constraint_manager, *contact_managers[i*num_knots[i] + j], actuation, 0.0, false);
-            std::cout << "DEBUG: Finished creating node for phase " << i << " knot " << j << std::endl;
-            std::cout << "DEBUG: Creating segment model for phase " << i << " knot " << j << std::endl;
+            std::cout << "DEBUG: Creating models for phase " << i << " knot " << j << std::endl;
+            NodeModel_t node(ps, empty_cost_manager, empty_constraint_manager, *contact_managers[i*num_knots[i] + j], actuation, 0.0, true);
+            // std::cout << "DEBUG: Finished creating node for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Creating segment model for phase " << i << " knot " << j << std::endl;
             double timestep = phase_durations[i] / num_knots[i];
             SegmentModel_t segment_model(ps, node, control_param, timestep);
-            std::cout << "DEBUG: Finished creating segment model for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Finished creating segment model for phase " << i << " knot " << j << std::endl;
             segment_models.push_back(std::make_shared<SegmentModel_t>(segment_model));
-            std::cout << "DEBUG: Creating segment data for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Creating segment data for phase " << i << " knot " << j << std::endl;
             segment_datas.push_back(std::make_shared<SegmentData_t>(segment_model.createData()));
-            std::cout << "DEBUG: Finished creating segment data for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Finished creating segment data for phase " << i << " knot " << j << std::endl;
         }
     }
     std::cout << "DEBUG: Finished creating segment models" << std::endl;
@@ -386,32 +383,32 @@ int main(int argc, char **argv)
     std::vector<VectorNx_t> xs;
     std::vector<VectorNw_t> ws;
 
-    VectorNx_t x = VectorNx_t::Zero(state.get_nx());
-    head(x, state.get_nq_dim()) = model.referenceConfigurations["standing"];
-    tail(x, state.get_nv_dim()) = VectorNv_t::Zero(model.nv);
-    std::cout << "DEBUG: Initial state: " << x.transpose() << std::endl;
+    std::cout << "DEBUG: Initial state: " << x0.transpose() << std::endl;
+    VectorNx_t x = x0;
+    xs.push_back(x);
 
     std::cout << "DEBUG: Starting forward simulation pass" << std::endl;
     for (int i = 0; i < phases.size(); i++)
     {
         if (i > 0)
         {
-            std::cout << "DEBUG: Calculating jump model for phase " << i << std::endl;
-            jump_models[i-1]->calc(*jump_datas[i-1], x);
-            std::cout << "DEBUG: Finished calculating jump model for phase " << i << std::endl;
-            x = jump_datas[i-1]->XNext;
-            xs.push_back(x);
+            // std::cout << "DEBUG: Calculating jump model for phase " << i << std::endl;
+            // jump_models[i-1]->calc(*jump_datas[i-1], x);
+            // std::cout << "DEBUG: Finished calculating jump model for phase " << i << std::endl;
+            // x = jump_datas[i-1]->XNext;
+            // xs.push_back(x);
         }
         for (int j = 0; j < num_knots[i]; j++)
         {
+            std::cout << "DEBUG: Calculating quasiStatic controls and integrating for phase " << i << " knot " << j << std::endl;
             VectorNw_t w = VectorNw_t::Zero(ps.get_nw());
-            std::cout << "DEBUG: Calculating quasiStatic controls for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Calculating quasiStatic controls for phase " << i << " knot " << j << std::endl;
             segment_models[i * num_knots[i] + j]->quasiStatic(*segment_datas[i * num_knots[i] + j], x, w, 100, 1e-3);
-            std::cout << "DEBUG: Finished calculating quasiStatic controls for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Finished calculating quasiStatic controls for phase " << i << " knot " << j << std::endl;
 
-            std::cout << "DEBUG: Calculating segment model for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Calculating segment model for phase " << i << " knot " << j << std::endl;
             segment_models[i * num_knots[i] + j]->calc(*segment_datas[i * num_knots[i] + j], x, w);
-            std::cout << "DEBUG: Finished calculating segment model for phase " << i << " knot " << j << std::endl;
+            // std::cout << "DEBUG: Finished calculating segment model for phase " << i << " knot " << j << std::endl;
             x = segment_datas[i * num_knots[i] + j]->XNext;
             xs.push_back(x);
             ws.push_back(w);
@@ -420,6 +417,21 @@ int main(int argc, char **argv)
 
     std::cout << "DEBUG: xs.size(): " << xs.size() << std::endl;
     std::cout << "DEBUG: ws.size(): " << ws.size() << std::endl;
+
+    for (int i = 0; i < xs.size(); i++)
+    {
+        std::cout << "DEBUG: qs[" << i << "]: " << head(xs[i], ps.get_nq_dim()).transpose() << std::endl;
+    }
+
+    for (int i = 0; i < xs.size(); i++)
+    {
+        std::cout << "DEBUG: vs[" << i << "]: " << tail(xs[i], ps.get_nv_dim()).transpose() << std::endl;
+    }
+
+    for (int i = 0; i < ws.size(); i++)
+    {
+        std::cout << "DEBUG: ws[" << i << "]: " << ws[i].transpose() << std::endl;
+    }
 
     // Calculate total trajectory time and create time vector
     double total_time = 0.0;
@@ -431,7 +443,7 @@ int main(int argc, char **argv)
         if (i > 0)
         {
             // Add time for jump (instantaneous)
-            knot_times.push_back(total_time);
+            // knot_times.push_back(total_time);
         }
 
         double timestep = phase_durations[i] / num_knots[i];
@@ -445,66 +457,66 @@ int main(int argc, char **argv)
     std::cout << "DEBUG: Total trajectory time: " << total_time << " seconds" << std::endl;
     std::cout << "DEBUG: Number of knot points: " << knot_times.size() << std::endl;
 
-    // double dt = 1. / static_cast<double>(fps);
-    // using duration_t = std::chrono::duration<double>;
-    // double t = 0.;
-    // VectorNx_t q = defaultstate.head(model.nq);
-    // VectorNx_t qn = q;
-    // VectorNv_t v = VectorNv_t::Zero(model.nv);
+    double dt = 1. / static_cast<double>(fps);
+    using duration_t = std::chrono::duration<double>;
+    double t = 0.;
+    VectorNq_t q = head(x0, ps.get_nq_dim());
+    VectorNq_t qn = q;
+    VectorNv_t v = tail(x0, ps.get_nv_dim());
 
-    // while (!visualizer.shouldExit())
-    // {
-    //     const auto now = steady_clock::now();
+    while (!visualizer.shouldExit())
+    {
+        const auto now = steady_clock::now();
 
-    //     // Cycle through the trajectory (loop when reaching the end)
-    //     double trajectory_t = fmod(t, total_time);
+        // Cycle through the trajectory (loop when reaching the end)
+        double trajectory_t = fmod(t, total_time);
 
-    //     // Find the appropriate knot points for interpolation
-    //     int knot_idx = 0;
-    //     for (int i = 0; i < knot_times.size() - 1; i++)
-    //     {
-    //         if (trajectory_t >= knot_times[i] && trajectory_t < knot_times[i + 1])
-    //         {
-    //             knot_idx = i;
-    //             break;
-    //         }
-    //     }
+        // Find the appropriate knot points for interpolation
+        int knot_idx = 0;
+        for (int i = 0; i < knot_times.size() - 1; i++)
+        {
+            if (trajectory_t >= knot_times[i] && trajectory_t < knot_times[i + 1])
+            {
+                knot_idx = i;
+                break;
+            }
+        }
 
-    //     if (knot_idx >= xs.size() - 1)
-    //     {
-    //         knot_idx = xs.size() - 2;
-    //     }
+        if (knot_idx >= xs.size() - 1)
+        {
+            knot_idx = xs.size() - 2;
+        }
 
-    //     // Calculate interpolation parameter
-    //     double alpha = 0.0;
-    //     if (knot_times[knot_idx + 1] > knot_times[knot_idx])
-    //     {
-    //         alpha = (trajectory_t - knot_times[knot_idx]) / (knot_times[knot_idx + 1] - knot_times[knot_idx]);
-    //     }
-    //     alpha = std::max(0.0, std::min(1.0, alpha)); // Clamp to [0,1]
+        // Calculate interpolation parameter
+        double alpha = 0.0;
+        if (knot_times[knot_idx + 1] > knot_times[knot_idx])
+        {
+            alpha = (trajectory_t - knot_times[knot_idx]) / (knot_times[knot_idx + 1] - knot_times[knot_idx]);
+        }
+        alpha = std::max(0.0, std::min(1.0, alpha)); // Clamp to [0,1]
 
-    //     // Extract q and v from the state vectors
-    //     VectorNx_t q0 = xs[knot_idx].head(model.nq);
-    //     VectorNx_t q1 = xs[knot_idx + 1].head(model.nq);
-    //     VectorNv_t v0 = xs[knot_idx].tail(model.nv);
-    //     VectorNv_t v1 = xs[knot_idx + 1].tail(model.nv);
+        // Extract q and v from the state vectors
+        VectorNq_t q0_k = head(xs[knot_idx], ps.get_nq_dim());
+        VectorNq_t q1_k = head(xs[knot_idx + 1], ps.get_nq_dim());
+        VectorNv_t v0_k = tail(xs[knot_idx], ps.get_nv_dim());
+        VectorNv_t v1_k = tail(xs[knot_idx + 1], ps.get_nv_dim());
 
-    //     // Interpolate configuration using pinocchio's manifold interpolation
-    //     pinocchio::interpolate(model, q0, q1, alpha, q);
+        // Interpolate configuration using pinocchio's manifold interpolation
+        pinocchio::interpolate(model, q0_k, q1_k, alpha, q);
 
-    //     // Linear interpolation for velocities
-    //     v = (1.0 - alpha) * v0 + alpha * v1;
+        // Linear interpolation for velocities
+        v = (1.0 - alpha) * v0_k + alpha * v1_k;
 
-    //     // Update kinematics for visualization
-    //     pinocchio::forwardKinematics(model, vis_data, q, v);
-    //     pinocchio::updateFramePlacements(model, vis_data);
+        // Update kinematics for visualization
+        pinocchio::forwardKinematics(model, vis_data, q, v);
+        pinocchio::updateFramePlacements(model, vis_data);
 
-    //     visualizer.display();
-    //     std::this_thread::sleep_until(now + duration_t(dt));
+        visualizer.display();
+        std::this_thread::sleep_until(now + duration_t(dt));
 
-    //     t += dt;
-    //     qn = q;
-    // }
+        t += dt;
+        qn = q;
+    }
 
     return 0;
 }

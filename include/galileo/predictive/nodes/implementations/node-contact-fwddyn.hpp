@@ -263,12 +263,24 @@ namespace galileo
             }
             get_actuation().calc(*data.actuation.get(), x, u);
             get_contacts().calc(data.contacts, x);
+
+            // MatrixX_t tmp_Jc = topRows(data.contacts.Jc, nc_dim);
+            // Eigen::FullPivLU<decltype(tmp_Jc)> Jc_lu(tmp_Jc);
+
+            // if (Jc_lu.rank() < tmp_Jc.rows() &&
+            //     JMinvJt_damping_ == NumScalar(0.)) {
+            //     std::cout << "DEBUG: Jc_lu.rank(): " << Jc_lu.rank() << std::endl;
+            //     std::cout << "DEBUG: tmp_Jc.rows(): " << tmp_Jc.rows() << std::endl;
+            //     std::cout << "A damping factor is needed as the contact Jacobian is not full-rank" << std::endl;
+            // }
+
             pinocchio::forwardDynamics(
                 get_robot(), *data.robot.get(), data.actuation->tau,
                 topRows(data.contacts.Jc, nc_dim),
                 head(data.contacts.a0, nc_dim),
                 JMinvJt_damping_);
             data.XAcc = data.robot->ddq;
+
             get_contacts().updateAcceleration(data.contacts, data.robot->ddq);
             get_contacts().updateForce(data.contacts, data.robot->lambda_c);
             data.joint->a = data.robot->ddq;
@@ -373,35 +385,63 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x,
+        void quasiStatic(Data_t &data,
+                         const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlVectorType> &u,
                          const int maxiter, const NumScalar tol) const
         {
+            // Collect dimensions
+            const auto nq_dim = get_ps().get_nq_dim();
             const auto nv_dim = get_ps().get_nv_dim();
+            const auto nu_dim = get_ps().get_nu_dim();
             const auto nc_dim = get_contacts().get_n_active_dim();
-            const auto q = head(x, get_ps().get_nq_dim());
-
-            head(data.tmp_xstatic, get_ps().get_nq_dim()) = q;
-            tail(data.tmp_xstatic, nv_dim).setZero();
+        
+            // Build the static state [ q; 0 ]
+            const auto q = head(x, nq_dim);
+            const auto v = VectorNv_t::Zero(nv_dim.value());
+            head(data.tmp_xstatic, nq_dim) = q;
+            tail(data.tmp_xstatic, nv_dim) = v;
             u.setZero();
 
-            pinocchio::computeAllTerms(get_robot(), *data.robot.get(), q,
-                                       tail(data.tmp_xstatic, nv_dim));
-            pinocchio::computeJointJacobians(get_robot(), *data.robot.get(), q);
-            pinocchio::rnea(get_robot(), *data.robot.get(), q,
-                            tail(data.tmp_xstatic, nv_dim),
-                            tail(data.tmp_xstatic, nv_dim));
+            // Compute M(q) and bias h(q,0)
+            pinocchio::computeAllTerms(get_robot(), *data.robot.get(), q, v);
+            pinocchio::rnea(get_robot(), *data.robot.get(), q, v, v);
+            const auto &h = data.robot->tau;
+            const auto &M = data.robot->M;
+
+            // Linearize actuation & contacts
             get_actuation().calc(*data.actuation.get(), data.tmp_xstatic, u);
             get_actuation().calcDiff(*data.actuation.get(), data.tmp_xstatic, u);
             get_contacts().calc(data.contacts, data.tmp_xstatic);
 
-            // Allocates memory
-            data.tmp_Jstatic.conservativeResize(get_ps().get_nv(), get_ps().get_nu() + nc_dim.value());
-            leftCols(data.tmp_Jstatic, get_ps().get_nu_dim()) = data.actuation->dtau_du;
-            rightCols(data.tmp_Jstatic, nc_dim) =
-                topRows(data.contacts.Jc, nc_dim).transpose();
+            const auto B = data.actuation->dtau_du;
+            const auto Jc = topRows(data.contacts.Jc, nc_dim);
+            const auto a0 = head(data.contacts.a0, nc_dim);
 
-            u.noalias() = head(pseudoInverse(data.tmp_Jstatic) * data.robot->tau, get_ps().get_nu_dim());
+            VectorNv_t rhs;
+            data.tmp_Jstatic.conservativeResize(nv_dim.value(), nu_dim.value() + nc_dim.value());
+            leftCols(data.tmp_Jstatic, nu_dim) = B;
+            rightCols(data.tmp_Jstatic, nc_dim) = Jc.transpose();
+
+            if constexpr (true) 
+            {
+                // Solve [B  Jc^{T}] [u; \lambda] = h
+                rhs = h;
+            }
+            else
+            {
+                MatrixX_t Jc_dyn = MatrixX_t(Jc);
+                VectorX_t ddq = - pseudoInverse(Jc_dyn) * a0;
+                VectorX_t tau_eff = h + M * ddq;
+                // Solve B u + Jc^{T} \lambda = \tau_{eff}
+                rhs = tau_eff;
+            }
+            
+            VectorX_t z = pseudoInverse(data.tmp_Jstatic) * rhs;
+
+            data.robot->lambda_c = tail(z, nc_dim);
+            u = head(z, nu_dim);
+
             data.robot->tau.setZero();
         }
 
