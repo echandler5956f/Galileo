@@ -480,19 +480,29 @@ namespace galileo
         {
         }
 
+        void display(std::ostream &os, const std::string &indent = "  ") const
+        {
+            os << indent << "State: {\n";
+            get_state().display(os, indent + "  ");
+            os << indent << "}\n";
+            os << indent << "Phase-Specific Dimensions: {\n";
+            os << indent << "  Control: {\n";
+            os << indent << "    NU (Control dimension):         " << nu_dim_ << "\n";
+            os << indent << "    NOrder (Control order):         " << norder_dim_ << "\n";
+            os << indent << "    NW (Control parameters):        " << nw_dim_ << "\n";
+            os << indent << "  }\n";
+            os << indent << "  Integration: {\n";
+            os << indent << "    NStages (Runge-Kutta stages):   " << nstages_dim_ << "\n";
+            os << indent << "  }\n";
+            os << indent << "}\n";
+            os << indent << "Configuration: " << (IsValidPhaseSpec(*this) ? "VALID" : "INVALID") << "\n";
+        }
+
         // Stream output operator
         friend std::ostream &operator<<(std::ostream &os, const PhaseSpecTpl &ps)
         {
-            os << "PhaseSpec{\n";
-            os << "  State: " << ps.get_state() << "\n";
-            os << "  Phase-Specific Dimensions:\n";
-            os << "    Control:\n";
-            os << "      NU (Control dimension):         " << ps.nu_dim_ << "\n";
-            os << "      NOrder (Control order):         " << ps.norder_dim_ << "\n";
-            os << "      NW (Control parameters):        " << ps.nw_dim_ << "\n";
-            os << "    Integration:\n";
-            os << "      NStages (Runge-Kutta stages):   " << ps.nstages_dim_ << "\n";
-            os << "  Configuration: " << (IsValidPhaseSpec(ps) ? "VALID" : "INVALID") << "\n";
+            os << "PhaseSpec: {\n";
+            ps.display(os, "  ");
             os << "}";
             return os;
         }
@@ -518,7 +528,7 @@ namespace galileo
         bool valid_norder = (ps.get_norder() >= 0);
         bool valid_nw = (ps.get_nw() == ps.get_nu() * ps.get_norder());
         bool valid_nstages = (ps.get_nstages() > 0); // Zero stages is not allowed
-        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.get_state().get_rs());
+        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotHolder(ps.get_state().get_rs());
     }
 
 } // namespace galileo

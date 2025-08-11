@@ -78,7 +78,7 @@ namespace galileo
                 get_rs().nua_dim_.set_value(get_nvj_dim() + get_nrotors_dim());
             }
 
-            GALILEO_ASSERT(IsValidRobotSpec(get_rs()), "StateMultibodyTpl: Invalid robot spec");
+            GALILEO_ASSERT(IsValidRobotHolder(get_rs()), "StateMultibodyTpl: Invalid robot spec");
             initialize();
         }
 
@@ -308,21 +308,23 @@ namespace galileo
         /**
          * @brief Display multibody state information to output stream
          */
-        void disp(std::ostream &os) const
+        void display(std::ostream &os, const std::string &indent = "  ") const
         {
-            os << "StateMultibody{\n";
-            os << "  RobotSpec: " << get_rs() << "\n";
-            os << "  Pinocchio Model:\n";
-            os << "    Model name: " << model_.name << "\n";
-            os << "    Number of joints: " << model_.njoints << "\n";
-            os << "    Number of bodies: " << model_.nbodies << "\n";
-            os << "    Number of frames: " << model_.nframes << "\n";
-            os << "    Has floating base: " << (get_nqb() > 0 ? "Yes" : "No") << "\n";
-            os << "  State Bounds:\n";
-            os << "    Lower bounds: " << lb_.transpose() << "\n";
-            os << "    Upper bounds: " << ub_.transpose() << "\n";
-            os << "    Default state: " << x0_.transpose() << "\n";
-            os << "}";
+            os << indent << "RobotSpec: {\n";
+            get_rs().display(os, indent + "  ");
+            os << indent << "}\n";
+            os << indent<< "Pinocchio Model: {\n";
+            os << indent<< "  Model name: " << model_.name << "\n";
+            os << indent<< "  Number of joints: " << model_.njoints << "\n";
+            os << indent<< "  Number of bodies: " << model_.nbodies << "\n";
+            os << indent<< "  Number of frames: " << model_.nframes << "\n";
+            os << indent<< "  Has floating base: " << (get_nqb() > 0 ? "Yes" : "No") << "\n";
+            os << indent<< "}\n";
+            os << indent<< "State Bounds: {\n";
+            os << indent<< "  Lower bounds: " << lb_.transpose() << "\n";
+            os << indent<< "  Upper bounds: " << ub_.transpose() << "\n";
+            os << indent<< "  Default state: " << x0_.transpose() << "\n";
+            os << indent<< "}\n";
         }
 
     protected:

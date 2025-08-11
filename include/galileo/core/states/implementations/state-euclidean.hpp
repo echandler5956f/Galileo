@@ -22,7 +22,7 @@ namespace galileo
         StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
             : Base(rs), lb_(lb), ub_(ub)
         {
-            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateEuclideanTpl: Invalid robot spec");
+            GALILEO_ASSERT(IsValidRobotHolder(rs), "StateEuclideanTpl: Invalid robot spec");
             GALILEO_ASSERT(IsValidEuclidean(*this), "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
         }
 
@@ -169,15 +169,16 @@ namespace galileo
         /**
          * @brief Display Euclidean state information to output stream
          */
-        void disp(std::ostream &os) const
+        void display(std::ostream &os, const std::string &indent = "  ") const
         {
-            os << "StateEuclidean{\n";
-            os << "  RobotSpec: " << get_rs() << "\n";
-            os << "  State Bounds:\n";
-            os << "    Lower bounds: " << lb_.transpose() << "\n";
-            os << "    Upper bounds: " << ub_.transpose() << "\n";
-            os << "  Configuration: " << (IsValidEuclidean(*this) ? "VALID" : "INVALID") << "\n";
-            os << "}";
+            os << indent << "RobotSpec: {:\n";
+            get_rs().display(os, indent + "  ");
+            os << indent << "}\n";
+            os << indent << "State Bounds: {\n";
+            os << indent << "  Lower bounds: " << lb_.transpose() << "\n";
+            os << indent << "  Upper bounds: " << ub_.transpose() << "\n";
+            os << indent << "}\n";
+            os << indent << "Euclidean configuration: " << (IsValidEuclidean(*this) ? "VALID" : "INVALID") << "\n";
         }
 
     protected:

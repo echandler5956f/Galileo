@@ -459,15 +459,17 @@ namespace galileo
          * This method must be implemented by derived classes to provide
          * state-specific display information.
          */
-        void disp(std::ostream &os) const
+        void display(std::ostream &os, const std::string &indent = "  ") const
         {
-            this->derived().disp(os);
+            this->derived().display(os, indent);
         }
 
         // Stream output operator
         friend std::ostream &operator<<(std::ostream &os, const StateBase &state)
         {
-            state.derived().disp(os);
+            os << "State: {\n";
+            state.derived().display(os, "  ");
+            os << "}";
             return os;
         }
 
