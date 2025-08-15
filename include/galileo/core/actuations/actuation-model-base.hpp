@@ -17,8 +17,6 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        using State_t = typename RS::State_t;
-
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -70,29 +68,29 @@ namespace galileo
             return this->derived().createData();
         }
 
-        const State_t &get_state() const
+        const RS &get_rs() const
         {
-            return state_.get();
+            return rs_;
         }
 
     protected:
-        inline ActuationModelBase(const State_t &state)
-            : state_(state)
+        inline ActuationModelBase(const RS &rs)
+            : rs_(rs)
         {
         }
 
         inline ActuationModelBase(const ActuationModelBase &clone)
-            : state_(clone.state_)
+            : rs_(clone.rs_)
         {
         }
 
         inline ActuationModelBase &operator=(const ActuationModelBase &clone)
         {
-            state_ = clone.state_;
+            rs_ = clone.rs_;
             return *this;
         }
 
-        std::reference_wrapper<const State_t> state_;
+        RS rs_;
 
     }; // class ActuationModelBase
 

@@ -96,7 +96,7 @@ namespace test_helpers
             state = std::make_unique<StateType>(*model);
 
             // Validate dimensions
-            REQUIRE(IsValidRobotHolder(*rs));
+            REQUIRE(IsValidRobotSpec(*rs));
 
             if (spec.has_floating_base)
             {

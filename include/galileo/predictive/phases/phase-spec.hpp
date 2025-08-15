@@ -528,7 +528,7 @@ namespace galileo
         bool valid_norder = (ps.get_norder() >= 0);
         bool valid_nw = (ps.get_nw() == ps.get_nu() * ps.get_norder());
         bool valid_nstages = (ps.get_nstages() > 0); // Zero stages is not allowed
-        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotHolder(ps.get_state().get_rs());
+        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.get_state().get_rs());
     }
 
 } // namespace galileo

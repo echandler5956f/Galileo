@@ -78,7 +78,7 @@ namespace galileo
                 get_rs().nua_dim_.set_value(get_nvj_dim() + get_nrotors_dim());
             }
 
-            GALILEO_ASSERT(IsValidRobotHolder(get_rs()), "StateMultibodyTpl: Invalid robot spec");
+            GALILEO_ASSERT(IsValidRobotSpec(get_rs()), "StateMultibodyTpl: Invalid robot spec");
             initialize();
         }
 

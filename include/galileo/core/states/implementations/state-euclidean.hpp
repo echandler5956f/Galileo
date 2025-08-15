@@ -22,7 +22,7 @@ namespace galileo
         StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
             : Base(rs), lb_(lb), ub_(ub)
         {
-            GALILEO_ASSERT(IsValidRobotHolder(rs), "StateEuclideanTpl: Invalid robot spec");
+            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateEuclideanTpl: Invalid robot spec");
             GALILEO_ASSERT(IsValidEuclidean(*this), "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
         }
 

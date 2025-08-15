@@ -60,15 +60,15 @@ namespace galileo
         DEFAULT_ACCESSOR(BoolArrayNv_t, tau_set);
 
         ActuationDataFullTpl(const Model_t &model)
-            : tau(model.get_state().get_nv()),
-              u(model.get_state().get_nua()),
-              dtau_dx(model.get_state().get_nv(),
-                      model.get_state().get_ndx()),
-              dtau_du(model.get_state().get_nv(),
-                      model.get_state().get_nua()),
-              Mtau(model.get_state().get_nua(),
-                   model.get_state().get_nv()),
-              tau_set(model.get_state().get_nv())
+            : tau(model.get_rs().get_nv()),
+              u(model.get_rs().get_nua()),
+              dtau_dx(model.get_rs().get_nv(),
+                      model.get_rs().get_ndx()),
+              dtau_du(model.get_rs().get_nv(),
+                      model.get_rs().get_nua()),
+              Mtau(model.get_rs().get_nua(),
+                   model.get_rs().get_nv()),
+              tau_set(model.get_rs().get_nv())
         {
             tau.setZero();
             u.setZero();
@@ -101,7 +101,7 @@ namespace galileo
         using State_t = typename RS::State_t;
 
         ActuationModelFullTpl(const State_t &state)
-            : Base(state)
+            : Base(state.get_rs())
         {
         }
 
@@ -142,7 +142,7 @@ namespace galileo
             return Data_t(*this);
         }
 
-        using Base::get_state;
+        using Base::get_rs;
 
     }; // class ActuationModelFullTpl
 

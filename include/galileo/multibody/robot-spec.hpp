@@ -6,8 +6,6 @@
 #include <pinocchio/spatial/motion.hpp>
 #include <pinocchio/spatial/se3.hpp>
 
-#include "galileo/multibody/robot-holder.hpp"
-
 #include "galileo/core/basic-spec.hpp"
 
 // Macros to import the types and constants from a robot spec
@@ -100,44 +98,39 @@ namespace galileo
               template <typename> class StateTpl,
               template <typename> class ActuationTpl>
     struct RobotSpecTpl
-        : public RobotHolderTpl<_NQb, _NQj, _NVb, _NVj, _NRotors>
     {
         using RS = RobotSpecTpl<BasicSpec, _NQb, _NQj, _NVb, _NVj, _NRotors, StateTpl, ActuationTpl>;
-        using Base = RobotHolderTpl<_NQb, _NQj, _NVb, _NVj, _NRotors>;
-
-        /* ---------------------------------------------------------------- */
-        /* Forward the dimension types from the robot holder */
-        /* ---------------------------------------------------------------- */
-        using Base::DimNDX_t;
-        using Base::DimNQ_t;
-        using Base::DimNQb_t;
-        using Base::DimNQj_t;
-        using Base::DimNRotors_t;
-        using Base::DimNUa_t;
-        using Base::DimNV_t;
-        using Base::DimNVb_t;
-        using Base::DimNVj_t;
-        using Base::DimNX_t;
-
-        /* ------------------------------------------------------------------- */
-        /* Forward the associated compile-time constants from the robot holder */
-        /* ------------------------------------------------------------------- */
-        static constexpr int NQb = Base::NQb;
-        static constexpr int NQj = Base::NQj;
-        static constexpr int NVb = Base::NVb;
-        static constexpr int NVj = Base::NVj;
-        static constexpr int NRotors = Base::NRotors;
-        static constexpr int NQ = Base::NQ;
-        static constexpr int NV = Base::NV;
-        static constexpr int NX = Base::NX;
-        static constexpr int NDX = Base::NDX;
-        static constexpr int NUa = Base::NUa;
 
         /* ---------------------------------------------------------------- */
         /* Import the basic spec types and constants */
         /* ---------------------------------------------------------------- */
         using BS = BasicSpec;
         GALILEO_BASIC_SPEC_MASTER_TYPEDEF(BS);
+
+        /* ---------------------------------------------------------------- */
+        /* Dimensions and constants */
+        /* ---------------------------------------------------------------- */
+        using DimNQb_t = DimensionTpl<_NQb>;                    // Dimension of floating base generalized coordinates
+        using DimNQj_t = DimensionTpl<_NQj>;                    // Dimension of joint generalized coordinates
+        using DimNVb_t = DimensionTpl<_NVb>;                    // Dimension of floating base generalized velocities
+        using DimNVj_t = DimensionTpl<_NVj>;                    // Dimension of joint generalized velocities
+        using DimNRotors_t = DimensionTpl<_NRotors>;            // Number of rotors attached to the floating base
+        using DimNQ_t = decltype(DimNQb_t{} + DimNQj_t{});      // Dimension of generalized coordinates
+        using DimNV_t = decltype(DimNVb_t{} + DimNVj_t{});      // Dimension of generalized velocities
+        using DimNX_t = decltype(DimNQ_t{} + DimNV_t{});        // Dimension of state
+        using DimNDX_t = decltype(DimNV_t{} + DimNV_t{});       // Dimension of state tangent space
+        using DimNUa_t = decltype(DimNVj_t{} + DimNRotors_t{}); // Dimension of actuated inputs
+
+        static constexpr int NQb = DimNQb_t::Value;
+        static constexpr int NQj = DimNQj_t::Value;
+        static constexpr int NVb = DimNVb_t::Value;
+        static constexpr int NVj = DimNVj_t::Value;
+        static constexpr int NRotors = DimNRotors_t::Value;
+        static constexpr int NQ = DimNQ_t::Value;
+        static constexpr int NV = DimNV_t::Value;
+        static constexpr int NX = DimNX_t::Value;
+        static constexpr int NDX = DimNDX_t::Value;
+        static constexpr int NUa = DimNUa_t::Value;
 
         /* ---------------------------------------------------------------- */
         /* Fixed-size Eigen types */
@@ -194,41 +187,127 @@ namespace galileo
         /* Accessors for the RobotSpec dimensions */
         /* ---------------------------------------------------------------- */
 
-        using Base::get_nqb;
-        using Base::get_nqb_dim;
+        const DimNQb_t &get_nqb_dim() const
+        {
+            return nqb_dim_;
+        }
 
-        using Base::get_nqj;
-        using Base::get_nqj_dim;
+        int get_nqb() const
+        {
+            return nqb_dim_.value();
+        }
 
-        using Base::get_nvb;
-        using Base::get_nvb_dim;
+        const DimNQj_t &get_nqj_dim() const
+        {
+            return nqj_dim_;
+        }
 
-        using Base::get_nvj;
-        using Base::get_nvj_dim;
+        int get_nqj() const
+        {
+            return nqj_dim_.value();
+        }
 
-        using Base::get_nrotors;
-        using Base::get_nrotors_dim;
+        const DimNVb_t &get_nvb_dim() const
+        {
+            return nvb_dim_;
+        }
 
-        using Base::get_nq;
-        using Base::get_nq_dim;
+        int get_nvb() const
+        {
+            return nvb_dim_.value();
+        }
 
-        using Base::get_nv;
-        using Base::get_nv_dim;
+        const DimNVj_t &get_nvj_dim() const
+        {
+            return nvj_dim_;
+        }
 
-        using Base::get_nx;
-        using Base::get_nx_dim;
+        int get_nvj() const
+        {
+            return nvj_dim_.value();
+        }
 
-        using Base::get_ndx;
-        using Base::get_ndx_dim;
+        const DimNRotors_t &get_nrotors_dim() const
+        {
+            return nrotors_dim_;
+        }
 
-        using Base::get_nua;
-        using Base::get_nua_dim;
+        int get_nrotors() const
+        {
+            return nrotors_dim_.value();
+        }
+
+        const DimNQ_t &get_nq_dim() const
+        {
+            return nq_dim_;
+        }
+
+        int get_nq() const
+        {
+            return nq_dim_.value();
+        }
+
+        const DimNV_t &get_nv_dim() const
+        {
+            return nv_dim_;
+        }
+
+        int get_nv() const
+        {
+            return nv_dim_.value();
+        }
+
+        const DimNX_t &get_nx_dim() const
+        {
+            return nx_dim_;
+        }
+
+        int get_nx() const
+        {
+            return nx_dim_.value();
+        }
+
+        const DimNDX_t &get_ndx_dim() const
+        {
+            return ndx_dim_;
+        }
+
+        int get_ndx() const
+        {
+            return ndx_dim_.value();
+        }
+
+        const DimNUa_t &get_nua_dim() const
+        {
+            return nua_dim_;
+        }
+
+        int get_nua() const
+        {
+            return nua_dim_.value();
+        }
 
         // Constructor to properly initialize compound dimensions through the base class
         RobotSpecTpl()
-            : Base()
+            : nqb_dim_{}, nqj_dim_{}, nvb_dim_{}, nvj_dim_{}, nrotors_dim_{},
+              nq_dim_(nqb_dim_ + nqj_dim_),
+              nv_dim_(nvb_dim_ + nvj_dim_),
+              nx_dim_(nq_dim_ + nv_dim_),
+              ndx_dim_(nv_dim_ + nv_dim_),
+              nua_dim_(nvj_dim_ + nrotors_dim_)
         {
         }
+
+        DimNQb_t nqb_dim_;
+        DimNQj_t nqj_dim_;
+        DimNVb_t nvb_dim_;
+        DimNVj_t nvj_dim_;
+        DimNRotors_t nrotors_dim_;
+        DimNQ_t nq_dim_;
+        DimNV_t nv_dim_;
+        DimNX_t nx_dim_;
+        DimNDX_t ndx_dim_;
+        DimNUa_t nua_dim_;
 
         void display(std::ostream &os, const std::string &indent = "  ") const
         {
@@ -236,8 +315,22 @@ namespace galileo
             BS{}.display(os, "");
             os << "}\n";
 
-            os << indent << "RobotHolder: {\n";
-            static_cast<const Base &>(*this).display(os, indent + "  ");
+            os << indent << "Robot Dimensions: {\n";
+            os << indent << "  Base Configuration:\n";
+            os << indent << "    NQb (Base generalized coordinates): " << get_nqb_dim() << "\n";
+            os << indent << "    NVb (Base generalized velocities):  " << get_nvb_dim() << "\n";
+            os << indent << "  Joint Configuration:\n";
+            os << indent << "    NQj (Joint generalized coordinates): " << get_nqj_dim() << "\n";
+            os << indent << "    NVj (Joint generalized velocities):  " << get_nvj_dim() << "\n";
+            os << indent << "  Actuation:\n";
+            os << indent << "    NRotors (Number of rotors): " << get_nrotors_dim() << "\n";
+            os << indent << "    NUa (Actuated inputs):      " << get_nua_dim() << "\n";
+            os << indent << "  Combined Dimensions:\n";
+            os << indent << "    NQ (Total generalized coordinates): " << get_nq_dim() << "\n";
+            os << indent << "    NV (Total generalized velocities):  " << get_nv_dim() << "\n";
+            os << indent << "    NX (State dimension):                " << get_nx_dim() << "\n";
+            os << indent << "    NDX (State tangent dimension):       " << get_ndx_dim() << "\n";
+            os << indent << "Configuration: " << (IsValidRobotSpec(*this) ? "VALID" : "INVALID") << "\n";
             os << indent << "}\n";
         }
 
@@ -248,8 +341,18 @@ namespace galileo
             os << "}";
             return os;
         }
-
     };
+
+    template <typename RobotSpecType>
+    bool IsValidRobotSpec(const RobotSpecType &rs)
+    {
+        bool valid_nq = (rs.get_nq() == rs.get_nqb() + rs.get_nqj());
+        bool valid_nv = (rs.get_nv() == rs.get_nvb() + rs.get_nvj());
+        bool valid_nx = (rs.get_nx() == rs.get_nq() + rs.get_nv());
+        bool valid_ndx = (rs.get_ndx() == rs.get_nv() + rs.get_nv());
+        bool valid_nua = (rs.get_nua() == rs.get_nvj() + rs.get_nrotors());
+        return valid_nq && valid_nv && valid_nx && valid_ndx && valid_nua;
+    }
 
 } // namespace galileo
 

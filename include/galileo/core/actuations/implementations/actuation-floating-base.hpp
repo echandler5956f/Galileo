@@ -60,15 +60,15 @@ namespace galileo
         DEFAULT_ACCESSOR(BoolArrayNv_t, tau_set);
 
         ActuationDataFloatingBaseTpl(const Model_t &model)
-            : tau(model.get_state().get_nv()),
-              u(model.get_state().get_nua()),
-              dtau_dx(model.get_state().get_nv(),
-                      model.get_state().get_ndx()),
-              dtau_du(model.get_state().get_nv(),
-                      model.get_state().get_nua()),
-              Mtau(model.get_state().get_nua(),
-                   model.get_state().get_nv()),
-              tau_set(model.get_state().get_nv())
+            : tau(model.get_rs().get_nv()),
+              u(model.get_rs().get_nua()),
+              dtau_dx(model.get_rs().get_nv(),
+                      model.get_rs().get_ndx()),
+              dtau_du(model.get_rs().get_nv(),
+                      model.get_rs().get_nua()),
+              Mtau(model.get_rs().get_nua(),
+                   model.get_rs().get_nv()),
+              tau_set(model.get_rs().get_nv())
         {
             tau.setZero();
             u.setZero();
@@ -77,9 +77,9 @@ namespace galileo
             Mtau.setZero();
             tau_set.setOnes();
 
-            dtau_du.diagonal(-model.get_state().get_nvb()).setOnes();
-            Mtau.diagonal(model.get_state().get_nvb()).setOnes();
-            for (int i = 0; i < model.get_state().get_nvb(); ++i)
+            dtau_du.diagonal(-model.get_rs().get_nvb()).setOnes();
+            Mtau.diagonal(model.get_rs().get_nvb()).setOnes();
+            for (int i = 0; i < model.get_rs().get_nvb(); ++i)
                 tau_set(i) = false;
         }
 
@@ -106,7 +106,7 @@ namespace galileo
         using State_t = typename RS::State_t;
 
         ActuationModelFloatingBaseTpl(const State_t &state)
-            : Base(state)
+            : Base(state.get_rs())
         {
         }
 
@@ -115,7 +115,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            tail(data.tau, get_state().get_nua_dim()) = u;
+            tail(data.tau, get_rs().get_nua_dim()) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -131,7 +131,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tail(tau, get_state().get_nua_dim());
+            data.u = tail(tau, get_rs().get_nua_dim());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -147,7 +147,7 @@ namespace galileo
             return Data_t(*this);
         }
 
-        using Base::get_state;
+        using Base::get_rs;
 
     }; // class ActuationModelFloatingBaseTpl
 
