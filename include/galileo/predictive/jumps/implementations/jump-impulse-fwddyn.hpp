@@ -249,10 +249,10 @@ namespace galileo
             get_impulses().calcDiff(data.impulses, x);
             get_impulses().updateRneaDiff(data.impulses, *data.robot.get());
 
-            auto a_partial_dtau = topLeftCorner(data.Kinv, nv_dim, nv_dim);
-            auto a_partial_da = topRightCorner(data.Kinv, nv_dim, nc_dim);
-            auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_dim, nv_dim);
-            auto f_partial_da = bottomRightCorner(data.Kinv, nc_dim, nc_dim);
+            const auto a_partial_dtau = topLeftCorner(data.Kinv, nv_dim, nv_dim);
+            const auto a_partial_da = topRightCorner(data.Kinv, nv_dim, nc_dim);
+            const auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_dim, nv_dim);
+            const auto f_partial_da = bottomRightCorner(data.Kinv, nc_dim, nc_dim);
 
             data.robot->dtau_dq -= data.dgrav_dq;
             data.robot->M.template triangularView<Eigen::StrictlyLower>() =

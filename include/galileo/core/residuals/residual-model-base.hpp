@@ -88,7 +88,7 @@ namespace galileo
             else if constexpr (QDependent)
             {
                 // Only Q dependent - compute Rq once and share it
-                auto Rq = leftCols(rdata.Rx, get_ps().get_nv_dim());
+                const auto Rq = leftCols(rdata.Rx, get_ps().get_nv_dim());
                 calcCostDiffRxQImpl(cdata, rdata, adata, Rq);
 
                 if constexpr (compile_time_update_u)
@@ -99,7 +99,7 @@ namespace galileo
             else if constexpr (VDependent)
             {
                 // Only V dependent - compute Rv once and share it
-                auto Rv = rightCols(rdata.Rx, get_ps().get_nv_dim());
+                const auto Rv = rightCols(rdata.Rx, get_ps().get_nv_dim());
                 calcCostDiffRxVImpl(cdata, rdata, adata, Rv);
 
                 if constexpr (compile_time_update_u)

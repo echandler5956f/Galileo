@@ -283,7 +283,7 @@ namespace galileo
                 ++i;
             }
 
-            for (auto model_it = segments_.begin(), data_it = data.segments.begin();
+            for (const auto model_it = segments_.begin(), data_it = data.segments.begin();
                  model_it != segments_.end(); ++model_it, ++data_it, ++i)
             {
                 model_it->calc(*data_it, col(xs, i), col(ws, i));
@@ -307,7 +307,7 @@ namespace galileo
                 jump_.calcDiff(data.jump, col(xs, i));
                 ++i;
             }
-            for (auto model_it = segments_.begin(), data_it = data.segments.begin();
+            for (const auto model_it = segments_.begin(), data_it = data.segments.begin();
                  model_it != segments_.end(); ++model_it, ++data_it, ++i)
             {
                 model_it->calcDiff(*data_it, col(xs, i), col(ws, i));
@@ -332,7 +332,7 @@ namespace galileo
                 ++i;
             }
 
-            for (auto model_it = segments_.begin(), data_it = data.segments.begin();
+            for (const auto model_it = segments_.begin(), data_it = data.segments.begin();
                  model_it != segments_.end(); ++model_it, ++data_it, ++i)
             {
                 model_it->quasiStatic(*data_it, col(xs, i), col(ws, i), maxiter, tol);

@@ -204,7 +204,7 @@ namespace galileo
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
-                auto nc_i = get_model_n(m_i.model);
+                const int nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
                     Data_t &d_i = it_d->second;
@@ -227,7 +227,7 @@ namespace galileo
                  it_m != end_m || it_d != end_d; ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
-                auto nc_i = get_model_n(m_i.model);
+                const int nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
                     Data_t &d_i = it_d->second;
@@ -262,7 +262,7 @@ namespace galileo
             {
                 const Item_t &m_i = it_m->second;
                 Data_t &d_i = it_d->second;
-                auto nc_i = get_model_n(m_i.model);
+                const int nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
                     const auto force_i = segment(force, nc_accum_i, nc_i);
@@ -297,7 +297,7 @@ namespace galileo
             {
                 const Item_t &m_i = it_m->second;
                 Data_t &d_i = it_d->second;
-                auto nc_i = get_model_n(m_i.model);
+                const int nc_i = get_model_n(m_i.model);
                 if (m_i.active)
                 {
                     const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_i, get_ps().get_ndx_dim());

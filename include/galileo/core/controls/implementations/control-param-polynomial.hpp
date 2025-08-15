@@ -98,7 +98,7 @@ namespace galileo
             for (int i = 0; i < get_norder(); ++i)
             {
                 auto out_block_i = block(out, 0, i * get_nu(), A_rows_dim, get_nu_dim());
-                auto du_dw_block_i = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
+                const auto du_dw_block_i = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
                 if constexpr (IsSetTo<op>)
                     out_block_i.noalias() = A * du_dw_block_i;
                 else if constexpr (IsAddTo<op>)
@@ -119,7 +119,7 @@ namespace galileo
             for (int i = 0; i < get_norder(); ++i)
             {
                 auto out_block_i = block(out, i * get_nu(), 0, get_nu_dim(), A_cols_dim);
-                auto du_dw_block_i = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
+                const auto du_dw_block_i = block(data.du_dw, 0, i * get_nu(), get_nu_dim(), get_nu_dim());
                 if constexpr (IsSetTo<op>)
                     out_block_i.noalias() = du_dw_block_i.transpose() * A;
                 else if constexpr (IsAddTo<op>)

@@ -191,7 +191,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x, u);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     segment(data.H, nh_accum_i, nh_i) = d_i.H();
                     nh_accum_i += nh_i;
                 }
@@ -216,7 +216,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     segment(data.H, nh_accum_i, nh_i) = d_i.H();
                     nh_accum_i += nh_i;
                 }
@@ -242,7 +242,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x, u);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     block(data.Hx, nh_accum_i, 0, nh_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     block(data.Hu, nh_accum_i, 0, nh_i, get_ps().get_nu_dim()) = d_i.Hu();
                     nh_accum_i += nh_i;
@@ -268,7 +268,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     block(data.Hx, nh_accum_i, 0, nh_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     nh_accum_i += nh_i;
                 }

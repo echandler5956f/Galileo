@@ -214,7 +214,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x);
-                    auto nc_i = get_model_n(m_i.model);
+                    const int nc_i = get_model_n(m_i.model);
                     segment(data.a0, nc_accum_i, nc_i) = d_i.a0();
                     block(data.Jc, nc_accum_i, 0, nc_i, get_ps().get_nv_dim()) = d_i.Jc();
                     nc_accum_i += nc_i;
@@ -238,7 +238,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x);
-                    auto nc_i = get_model_n(m_i.model);
+                    const int nc_i = get_model_n(m_i.model);
                     block(data.da0_dx, nc_accum_i, 0, nc_i, get_ps().get_ndx_dim()) = d_i.da0_dx();
                     nc_accum_i += nc_i;
                 }
@@ -271,7 +271,7 @@ namespace galileo
                 Data_t &d_i = it_d->second;
                 if (m_i.active)
                 {
-                    auto nc_i = get_model_n(m_i.model);
+                    const int nc_i = get_model_n(m_i.model);
                     const auto force_i = segment(force, nc_accum_i, nc_i);
                     m_i.model.updateForce(d_i, force_i);
                     const pinocchio::JointIndex joint =
@@ -307,7 +307,7 @@ namespace galileo
                 Data_t &d_i = it_d->second;
                 if (m_i.active)
                 {
-                    auto nc_i = get_model_n(m_i.model);
+                    const int nc_i = get_model_n(m_i.model);
                     const auto df_dx_i = block(df_dx, nc_accum_i, 0, nc_i, get_ps().get_ndx_dim());
                     const auto df_du_i = block(df_du, nc_accum_i, 0, nc_i, get_ps().get_nu_dim());
                     m_i.model.updateForceDiff(d_i, df_dx_i, df_du_i);

@@ -155,7 +155,7 @@ namespace galileo
             }
             else if (active)
             {
-                auto model_n = get_model_n(model);
+                const int model_n = get_model_n(model);
                 active_dim_ += model_n;
                 total_dim_ += model_n;
                 active_set_.insert(name);
