@@ -313,9 +313,9 @@ int main(int argc, char **argv)
 
     jump_models.reserve(phases.size());
     jump_datas.reserve(phases.size());
-    segment_models.reserve(phases.size() * num_knots.size());
-    segment_datas.reserve(phases.size() * num_knots.size());
-    contact_managers.reserve(phases.size() * num_knots.size());
+    segment_models.reserve(phases.size() * num_knots[0]);
+    segment_datas.reserve(phases.size() * num_knots[0]);
+    contact_managers.reserve(phases.size() * num_knots[0]);
     impulse_managers.reserve(phases.size());
 
     for (int i = 0; i < phases.size(); i++)

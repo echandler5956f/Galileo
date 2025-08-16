@@ -94,9 +94,9 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Basic Construction", "[floating_base]
         REQUIRE(fixture.actuation_model_ != nullptr);
 
         // Test dimension accessors
-        REQUIRE(fixture.actuation_model_->get_state().get_nua() == fixture.rs_.NUa);
-        REQUIRE(fixture.actuation_model_->get_state().get_nua() == FloatingBaseTestFixture<double>::NVj + FloatingBaseTestFixture<double>::NRotors);
-        REQUIRE(fixture.actuation_model_->get_state().get_nua() == 12); // 12 + 0
+        REQUIRE(fixture.actuation_model_->get_rs().get_nua() == fixture.rs_.NUa);
+        REQUIRE(fixture.actuation_model_->get_rs().get_nua() == FloatingBaseTestFixture<double>::NVj + FloatingBaseTestFixture<double>::NRotors);
+        REQUIRE(fixture.actuation_model_->get_rs().get_nua() == 12); // 12 + 0
     }
 
     SECTION("Different floating base configurations")
@@ -113,7 +113,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Basic Construction", "[floating_base]
             auto state = StateEuclideanTpl<RS_NoRotors>(rs, lb, ub);
             ActuationModelFloatingBaseTpl<RS_NoRotors> model(state);
 
-            REQUIRE(model.get_state().get_nua() == 12); // Only joint actuations
+            REQUIRE(model.get_rs().get_nua() == 12); // Only joint actuations
         }
 
         // Test with many rotors
@@ -126,7 +126,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Basic Construction", "[floating_base]
             auto state = StateEuclideanTpl<RS_ManyRotors>(rs, lb, ub);
             ActuationModelFloatingBaseTpl<RS_ManyRotors> model(state);
 
-            REQUIRE(model.get_state().get_nua() == 16); // 12 joint + 4 rotor actuations
+            REQUIRE(model.get_rs().get_nua() == 16); // 12 joint + 4 rotor actuations
         }
     }
 }
@@ -395,7 +395,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Dynamic Dimensions", "[floating_base]
         ActuationModelFloatingBaseTpl<RS_Dynamic> model(state);
 
         // Test dimensions
-        REQUIRE(model.get_state().get_nua() == 18);
+        REQUIRE(model.get_rs().get_nua() == 18);
 
         // Test data creation
         auto data = model.createData();
@@ -515,7 +515,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - DimensionTpl Integration", "[floating
         static_assert(FloatingBaseTestFixture<double>::RS::NUa == 12);
         static_assert(FloatingBaseTestFixture<double>::RS::NV == 18);
 
-        REQUIRE(fixture.actuation_model_->get_state().get_nua() == FloatingBaseTestFixture<double>::RS::NUa);
+        REQUIRE(fixture.actuation_model_->get_rs().get_nua() == FloatingBaseTestFixture<double>::RS::NUa);
         REQUIRE(fixture.state_->get_nv() == FloatingBaseTestFixture<double>::RS::NV);
         REQUIRE(fixture.state_->get_nua() == FloatingBaseTestFixture<double>::RS::NUa);
     }
@@ -545,7 +545,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - DimensionTpl Integration", "[floating
         ActuationModelFloatingBaseTpl<RS_Mixed> model(state);
 
         // Test mixed dimensions work correctly
-        REQUIRE(model.get_state().get_nua() == 12);
+        REQUIRE(model.get_rs().get_nua() == 12);
 
         auto data = model.createData();
 
@@ -577,7 +577,7 @@ TEST_CASE("ActuationModelFloatingBaseTpl - Thread Safety", "[floating_base][thre
         const auto& const_model = *fixture.actuation_model_;
 
         // Test const methods
-        REQUIRE(const_model.get_state().get_nua() == fixture.rs_.NUa);
+        REQUIRE(const_model.get_rs().get_nua() == fixture.rs_.NUa);
 
         // Test that const methods don't modify state
         auto data = const_model.createData();
