@@ -146,8 +146,8 @@ namespace galileo
               XAccx(model.get_ps().get_nv(), model.get_ps().get_ndx()),
               XAccu(model.get_ps().get_nv(), model.get_ps().get_nu()),
               data_collector(std::make_shared<DataCollector_t>(std::make_shared<RobotData_t>(model.get_robot()),
-                             std::make_shared<ActuationData_t>(model.get_actuation().createData()),
-                             std::make_shared<JointData_t>(model.get_ps()))),
+                                                               std::make_shared<ActuationData_t>(model.get_actuation().createData()),
+                                                               std::make_shared<JointData_t>(model.get_ps()))),
               robot(data_collector->robot),
               actuation(data_collector->actuation),
               joint(data_collector->joint),
@@ -395,7 +395,7 @@ namespace galileo
             const auto nv_dim = get_ps().get_nv_dim();
             const auto nu_dim = get_ps().get_nu_dim();
             const auto nc_dim = get_contacts().get_n_active_dim();
-        
+
             // Build the static state [ q; 0 ]
             const auto q = head(x, nq_dim);
             const auto v = VectorNv_t::Zero(nv_dim.value());
@@ -423,7 +423,7 @@ namespace galileo
             leftCols(data.tmp_Jstatic, nu_dim) = B;
             rightCols(data.tmp_Jstatic, nc_dim) = Jc.transpose();
 
-            if constexpr (true) 
+            if constexpr (true)
             {
                 // Solve [B  Jc^{T}] [u; \lambda] = h
                 rhs = h;
@@ -431,12 +431,12 @@ namespace galileo
             else
             {
                 MatrixX_t Jc_dyn = MatrixX_t(Jc);
-                VectorX_t ddq = - pseudoInverse(Jc_dyn) * a0;
+                VectorX_t ddq = -pseudoInverse(Jc_dyn) * a0;
                 VectorX_t tau_eff = h + M * ddq;
                 // Solve B u + Jc^{T} \lambda = \tau_{eff}
                 rhs = tau_eff;
             }
-            
+
             VectorX_t z = pseudoInverse(data.tmp_Jstatic) * rhs;
 
             data.robot->lambda_c = tail(z, nc_dim);
