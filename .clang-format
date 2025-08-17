@@ -1,0 +1,67 @@
+# Best-effort: mimic VS Code's vcFormat while disabling using/include sorting
+
+BasedOnStyle: Microsoft
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120
+
+# Braces / namespaces
+BreakBeforeBraces: Allman
+NamespaceIndentation: All
+
+# Access specifiers indented (public:/protected:)
+AccessModifierOffset: -4
+BreakInheritanceList: AfterComma
+
+# Keep trivial in-class functions on one line (e.g., getters)
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+
+# Constructor initializer list
+BreakConstructorInitializers: BeforeColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+
+# Do not change your ordering
+SortIncludes: false
+SortUsingDeclarations: false
+IncludeBlocks: Preserve
+
+# Preprocessor & macros
+IndentPPDirectives: None
+AlignEscapedNewlines: DontAlign
+
+# Pointer/reference style & spacing
+DerivePointerAlignment: false
+PointerAlignment: Right
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: ControlStatements
+
+# Keep banner comments / spacing
+ReflowComments: false
+KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 1
+
+# Avoid lining up '=' or types in columns
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignTrailingComments: true
+AlignOperands: DontAlign
+
+# Templates
+BreakTemplateDeclarations: Leave
+AlwaysBreakTemplateDeclarations: Yes
+PenaltyBreakTemplateDeclaration: 0
+BreakBeforeTemplateCloser: true
+SpaceAfterTemplateKeyword: true
+IndentWrappedFunctionNames: true
+
+# Prefer one-per-line when things wrap; don't auto pack
+AlignAfterOpenBracket: Align
+BinPackParameters: false
+BinPackArguments: false
+BinPackTemplateArguments: false
+ExperimentalAutoDetectBinPacking: false
