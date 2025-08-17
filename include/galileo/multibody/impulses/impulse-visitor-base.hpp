@@ -9,7 +9,9 @@ namespace galileo
     namespace fusion
     {
         // Family tag for impulses
-        struct ImpulseFamily {};
+        struct ImpulseFamily
+        {
+        };
 
         // Trait specialization for Impulse family
         template <>

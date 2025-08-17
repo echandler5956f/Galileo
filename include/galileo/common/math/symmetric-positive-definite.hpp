@@ -18,9 +18,7 @@ namespace galileo
      * @return false if the matrix is not symmetric
      */
     template <typename _EigenDerived>
-    bool isSymmetric(
-        const Eigen::MatrixBase<_EigenDerived> &M,
-        const typename _EigenDerived::Scalar eps = 1e-8)
+    bool isSymmetric(const Eigen::MatrixBase<_EigenDerived> &M, const typename _EigenDerived::Scalar eps = 1e-8)
     {
         return M.isApprox(M.transpose(), eps);
     }
@@ -34,9 +32,7 @@ namespace galileo
      * @return true if enforcing symmetry is successful, false otherwise
      */
     template <typename _EigenDerived>
-    bool enforceSymmetric(
-        Eigen::MatrixBase<_EigenDerived> &M,
-        const typename _EigenDerived::Scalar eps = 1e-8)
+    bool enforceSymmetric(Eigen::MatrixBase<_EigenDerived> &M, const typename _EigenDerived::Scalar eps = 1e-8)
     {
         using Scalar = typename _EigenDerived::Scalar;
         M = (Scalar(0.5) * (M + M.transpose())).eval();
@@ -53,9 +49,7 @@ namespace galileo
      * @return false if the matrix is not positive definite
      */
     template <typename _EigenDerived>
-    bool isPositiveDefinite(
-        const Eigen::MatrixBase<_EigenDerived> &M,
-        const typename _EigenDerived::Scalar eps = 1e-8)
+    bool isPositiveDefinite(const Eigen::MatrixBase<_EigenDerived> &M, const typename _EigenDerived::Scalar eps = 1e-8)
     {
         Eigen::SelfAdjointEigenSolver<_EigenDerived> eigensolver(M);
         if (eigensolver.info() == Eigen::Success)
@@ -75,9 +69,7 @@ namespace galileo
      * @return true if enforcing positive definite is successful, false otherwise
      */
     template <typename _EigenDerived>
-    bool enforcePositiveDefinite(
-        Eigen::MatrixBase<_EigenDerived> &M,
-        const typename _EigenDerived::Scalar eps = 1e-8)
+    bool enforcePositiveDefinite(Eigen::MatrixBase<_EigenDerived> &M, const typename _EigenDerived::Scalar eps = 1e-8)
     {
         enforceSymmetric(M, eps);
         Eigen::SelfAdjointEigenSolver<_EigenDerived> eigensolver(M);
@@ -87,9 +79,8 @@ namespace galileo
             bool modified = false;
             if ((eigensolver.eigenvalues().array() < eps).any())
             {
-                M.noalias() = eigensolver.eigenvectors() *
-                              eigensolver.eigenvalues().cwiseMax(eps).asDiagonal() *
-                              eigensolver.eigenvectors().transpose();
+                M.noalias() = eigensolver.eigenvectors() * eigensolver.eigenvalues().cwiseMax(eps).asDiagonal() *
+                    eigensolver.eigenvectors().transpose();
                 modified = true;
             }
             return modified;
@@ -111,9 +102,7 @@ namespace galileo
      * @see isPositiveDefinite
      */
     template <typename MatrixType>
-    static bool isSPD(
-        const Eigen::MatrixBase<MatrixType> &M,
-        const typename MatrixType::Scalar eps = 1e-8)
+    static bool isSPD(const Eigen::MatrixBase<MatrixType> &M, const typename MatrixType::Scalar eps = 1e-8)
     {
         return isSymmetric(M, eps) && isPositiveDefinite(M, eps);
     }
@@ -131,9 +120,7 @@ namespace galileo
      * @see enforcePositiveDefinite
      */
     template <typename MatrixType>
-    static bool enforceSPD(
-        Eigen::MatrixBase<MatrixType> &M,
-        const typename MatrixType::Scalar eps = 1e-8)
+    static bool enforceSPD(Eigen::MatrixBase<MatrixType> &M, const typename MatrixType::Scalar eps = 1e-8)
     {
         return enforceSymmetric(M, eps) && enforcePositiveDefinite(M, eps);
     }

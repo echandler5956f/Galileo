@@ -160,7 +160,8 @@ namespace galileo
             requires(!IsDynamic)
             : runtime_value_(runtime_val)
         {
-            GALILEO_ASSERT(runtime_val == Value, "DimensionTpl: Dimension value does not match fixed compile-time size");
+            GALILEO_ASSERT(runtime_val == Value,
+                           "DimensionTpl: Dimension value does not match fixed compile-time size");
         }
 
         // Copy and assignment
@@ -180,7 +181,8 @@ namespace galileo
             }
             else
             {
-                GALILEO_ASSERT(runtime_val == Value, "DimensionTpl: Dimension value does not match fixed compile-time size");
+                GALILEO_ASSERT(runtime_val == Value,
+                               "DimensionTpl: Dimension value does not match fixed compile-time size");
                 GALILEO_ASSERT(runtime_val >= 0, "DimensionTpl: Runtime dimension values must be non-negative");
             }
         }
@@ -199,7 +201,8 @@ namespace galileo
             requires(IsDynamic || OtherValue == detail::Dynamic || Value >= OtherValue)
         {
             int runtime_result = value() - other.value();
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension subtraction resulted in negative runtime value");
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension subtraction resulted in negative runtime value");
             return SubDim_t<Value, OtherValue>(runtime_result);
         }
 
@@ -207,7 +210,8 @@ namespace galileo
         auto operator*(const DimensionTpl<OtherValue> &other) const
         {
             int runtime_result = value() * other.value();
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension multiplication resulted in negative runtime value");
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension multiplication resulted in negative runtime value");
             return MulDim_t<Value, OtherValue>(runtime_result);
         }
 
@@ -223,20 +227,23 @@ namespace galileo
         auto operator+(int scalar) const
         {
             int runtime_result = value() + scalar;
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension scalar addition resulted in negative runtime value");
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension scalar addition resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(runtime_result);
         }
 
         auto operator-(int scalar) const
         {
             int runtime_result = value() - scalar;
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension scalar subtraction resulted in negative runtime value");
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension scalar subtraction resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(runtime_result);
         }
 
         auto operator*(int scalar) const
         {
-            GALILEO_ASSERT(scalar >= 0, "DimensionTpl: Dimension scalar multiplication resulted in negative runtime value");
+            GALILEO_ASSERT(scalar >= 0,
+                           "DimensionTpl: Dimension scalar multiplication resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(value() * scalar);
         }
 
@@ -335,7 +342,8 @@ namespace galileo
         auto &operator+=(int scalar)
         {
             int new_runtime_value = value() + scalar;
-            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension scalar += resulted in negative runtime value");
+            GALILEO_ASSERT(new_runtime_value >= 0,
+                           "DimensionTpl: Dimension scalar += resulted in negative runtime value");
 
             if constexpr (IsFixed)
             {
@@ -350,7 +358,8 @@ namespace galileo
         auto &operator-=(int scalar)
         {
             int new_runtime_value = value() - scalar;
-            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension scalar -= resulted in negative runtime value");
+            GALILEO_ASSERT(new_runtime_value >= 0,
+                           "DimensionTpl: Dimension scalar -= resulted in negative runtime value");
 
             if constexpr (IsFixed)
             {

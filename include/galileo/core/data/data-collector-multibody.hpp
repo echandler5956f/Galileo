@@ -12,8 +12,7 @@ namespace galileo
 
         using RobotData_t = typename PS::RobotData_t;
 
-        MultibodyDataMixinTpl(std::shared_ptr<RobotData_t> data)
-            : robot(data) {}
+        MultibodyDataMixinTpl(std::shared_ptr<RobotData_t> data) : robot(data) {}
 
         std::shared_ptr<RobotData_t> robot;
 

@@ -50,8 +50,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ContactData6dTpl
-        : public ContactDataBase<ContactData6dTpl<PhaseSpec>, PhaseSpec>
+    struct ContactData6dTpl : public ContactDataBase<ContactData6dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -172,8 +171,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ContactModel6dTpl
-        : public ContactModelBase<ContactModel6dTpl<PhaseSpec>, PhaseSpec>
+    struct ContactModel6dTpl : public ContactModelBase<ContactModel6dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -192,24 +190,16 @@ namespace galileo
                           const ReferenceFrame_t &type,
                           const SE3_t &pref,
                           const Vector2_t &gains)
-            : Base(id, type, DimNC_t()),
-              ps_(ps),
-              robot_(ps.get_state().get_robot()),
-              pref_(pref),
-              gains_(gains)
+            : Base(id, type, DimNC_t()), ps_(ps), robot_(ps.get_state().get_robot()), pref_(pref), gains_(gains)
         {
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
-            pinocchio::updateFramePlacement(get_robot(),
-                                            *data.robot, get_id());
-            pinocchio::getFrameJacobian(get_robot(), *data.robot,
-                                        get_id(), pinocchio::LOCAL, data.fJf);
-            data.a0_local = pinocchio::getFrameAcceleration(get_robot(),
-                                                            *data.robot, get_id());
+            pinocchio::updateFramePlacement(get_robot(), *data.robot, get_id());
+            pinocchio::getFrameJacobian(get_robot(), *data.robot, get_id(), pinocchio::LOCAL, data.fJf);
+            data.a0_local = pinocchio::getFrameAcceleration(get_robot(), *data.robot, get_id());
 
             if (gains_[0] != 0.)
             {
@@ -218,8 +208,7 @@ namespace galileo
             }
             if (gains_[1] != 0.)
             {
-                data.v = pinocchio::getFrameVelocity(get_robot(),
-                                                     *data.robot, get_id());
+                data.v = pinocchio::getFrameVelocity(get_robot(), *data.robot, get_id());
                 data.a0_local += gains_[1] * data.v;
             }
             switch (get_type())
@@ -238,15 +227,18 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const auto nv_dim = get_ps().get_nv_dim();
-            const pinocchio::JointIndex joint =
-                get_robot().frames[data.frame].parentJoint;
-            pinocchio::getJointAccelerationDerivatives(
-                get_robot(), *data.robot, joint, pinocchio::LOCAL,
-                data.v_partial_dq, data.a_partial_dq, data.a_partial_dv, data.a_partial_da);
+            const pinocchio::JointIndex joint = get_robot().frames[data.frame].parentJoint;
+            pinocchio::getJointAccelerationDerivatives(get_robot(),
+                                                       *data.robot,
+                                                       joint,
+                                                       pinocchio::LOCAL,
+                                                       data.v_partial_dq,
+                                                       data.a_partial_dq,
+                                                       data.a_partial_dv,
+                                                       data.a_partial_da);
             leftCols(data.da0_local_dx, nv_dim).noalias() = data.fXj * data.a_partial_dq;
             rightCols(data.da0_local_dx, nv_dim).noalias() = data.fXj * data.a_partial_dv;
 
@@ -257,8 +249,7 @@ namespace galileo
             }
             if (gains_[1] != 0.)
             {
-                leftCols(data.da0_local_dx, nv_dim).noalias() +=
-                    gains_[1] * data.fXj * data.v_partial_dq;
+                leftCols(data.da0_local_dx, nv_dim).noalias() += gains_[1] * data.fXj * data.v_partial_dq;
                 rightCols(data.da0_local_dx, nv_dim).noalias() += gains_[1] * data.fJf;
             }
             switch (get_type())
@@ -270,8 +261,7 @@ namespace galileo
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
                 // Recalculate the constrained accelerations after imposing contact
                 // constraints. This is necessary for the forward-dynamics case.
-                data.a0_local = pinocchio::getFrameAcceleration(
-                    get_robot(), *data.robot, get_id());
+                data.a0_local = pinocchio::getFrameAcceleration(get_robot(), *data.robot, get_id());
                 if (gains_[0] != 0.)
                 {
                     data.a0_local += gains_[0] * pinocchio::log6(data.rMf);
@@ -288,22 +278,16 @@ namespace galileo
                 data.av_world_skew.noalias() = data.av_skew * oRf;
                 data.aw_world_skew.noalias() = data.aw_skew * oRf;
                 data.da0_dx.noalias() = data.lwaMl.toActionMatrix() * data.da0_local_dx;
-                topRows<3>(leftCols(data.da0_dx, nv_dim)).noalias() -=
-                    data.av_world_skew * bottomRows<3>(data.fJf);
-                bottomRows<3>(leftCols(data.da0_dx, nv_dim)).noalias() -=
-                    data.aw_world_skew * bottomRows<3>(data.fJf);
+                topRows<3>(leftCols(data.da0_dx, nv_dim)).noalias() -= data.av_world_skew * bottomRows<3>(data.fJf);
+                bottomRows<3>(leftCols(data.da0_dx, nv_dim)).noalias() -= data.aw_world_skew * bottomRows<3>(data.fJf);
                 break;
             }
         }
 
-        Data_t createData(RobotData_t *const robot) const
-        {
-            return Data_t(*this, robot);
-        }
+        Data_t createData(RobotData_t *const robot) const { return Data_t(*this, robot); }
 
         template <typename ForceVectorType>
-        void updateForce(Data_t &data,
-                         const Eigen::MatrixBase<ForceVectorType> &f) const
+        void updateForce(Data_t &data, const Eigen::MatrixBase<ForceVectorType> &f) const
         {
             data.f = pinocchio::ForceTpl<typename PS::VarScalar>(f);
             switch (get_type())
@@ -318,10 +302,8 @@ namespace galileo
                 data.fext = data.jMf.act(data.f_local);
                 pinocchio::skew(data.f_local.linear(), data.fv_skew);
                 pinocchio::skew(data.f_local.angular(), data.fw_skew);
-                topRows<3>(data.fJf_df).noalias() =
-                    data.fv_skew * bottomRows<3>(data.fJf);
-                bottomRows<3>(data.fJf_df).noalias() =
-                    data.fw_skew * bottomRows<3>(data.fJf);
+                topRows<3>(data.fJf_df).noalias() = data.fv_skew * bottomRows<3>(data.fJf);
+                bottomRows<3>(data.fJf_df).noalias() = data.fw_skew * bottomRows<3>(data.fJf);
                 data.dtau_dq.noalias() = -data.fJf.transpose() * data.fJf_df;
                 break;
             }
@@ -329,24 +311,14 @@ namespace galileo
         using Base::setZeroForce;
         using Base::setZeroForceDiff;
         using Base::updateForceDiff;
-
         using Base::get_id;
         using Base::get_type;
-
         using Base::set_id;
         using Base::set_type;
-
         using Base::get_nc;
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        const RobotModel_t &get_robot() const
-        {
-            return robot_.get();
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const RobotModel_t &get_robot() const { return robot_.get(); }
 
     protected:
         std::reference_wrapper<const PS> ps_;

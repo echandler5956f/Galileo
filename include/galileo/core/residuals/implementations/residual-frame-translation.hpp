@@ -75,7 +75,8 @@ namespace galileo
         template <typename DataCollector>
         ResidualDataFrameTranslationTpl(const Model_t &model, DataCollector *const collector)
             : robot(collector->robot),
-              R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+              R(model.get_nr()),
+              Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
               Arr_Ru(model.get_nr(), model.get_ps().get_nu()),
@@ -122,8 +123,7 @@ namespace galileo
         ResidualModelFrameTranslationTpl(const PS &ps,
                                          const FrameIndex_t frame_id,
                                          const Eigen::MatrixBase<Vector3Type> &x_ref)
-            : Base(ps, DimNR_t()),
-              frame_id_(frame_id), x_ref_(x_ref)
+            : Base(ps, DimNR_t()), frame_id_(frame_id), x_ref_(x_ref)
         {
         }
 
@@ -137,8 +137,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -148,20 +147,18 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            pinocchio::getFrameJacobian(
-                get_ps().get_state().get_robot(),
-                *data.robot.get(),
-                frame_id_,
-                pinocchio::ReferenceFrame::LOCAL,
-                data.fJf);
+            pinocchio::getFrameJacobian(get_ps().get_state().get_robot(),
+                                        *data.robot.get(),
+                                        frame_id_,
+                                        pinocchio::ReferenceFrame::LOCAL,
+                                        data.fJf);
 
             leftCols(data.Rx, get_ps().get_nv_dim()).noalias() =
                 data.robot->oMf[frame_id_].rotation() * topRows(data.fJf, 3);
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -173,10 +170,8 @@ namespace galileo
         }
 
         using Base::get_ps;
-
         using Base::get_nr;
         using Base::get_nr_dim;
-
         using Base::get_q_dependent;
         using Base::get_u_dependent;
         using Base::get_v_dependent;

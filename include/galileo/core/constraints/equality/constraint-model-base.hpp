@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class ConstraintModelBase
-        : public internal::CRTP<Derived>
+    class ConstraintModelBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -28,8 +27,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x);
         }
@@ -43,8 +41,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x);
         }
@@ -55,27 +52,12 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        int get_nh() const
-        {
-            return this->derived().get_nh_impl();
-        }
-
-        int get_nh_impl() const
-        {
-            return nh_dim_.value();
-        }
+        int get_nh() const { return this->derived().get_nh_impl(); }
+        int get_nh_impl() const { return nh_dim_.value(); }
 
     protected:
-        inline ConstraintModelBase(const DimNH_t &nh_dim)
-            : nh_dim_(nh_dim)
-        {
-        }
-
-        inline ConstraintModelBase(const ConstraintModelBase &clone)
-            : nh_dim_(clone.nh_dim_)
-        {
-        }
-
+        inline ConstraintModelBase(const DimNH_t &nh_dim) : nh_dim_(nh_dim) {}
+        inline ConstraintModelBase(const ConstraintModelBase &clone) : nh_dim_(clone.nh_dim_) {}
         inline ConstraintModelBase &operator=(const ConstraintModelBase &clone)
         {
             nh_dim_ = clone.nh_dim_;

@@ -6,14 +6,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     struct CostResidualTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     struct traits<CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using PS = PhaseSpec;
@@ -39,27 +35,21 @@ namespace galileo
         using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     struct traits<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     struct traits<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = CostResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     struct CostDataResidualTpl
         : public CostDataBase<CostDataResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {
@@ -117,9 +107,7 @@ namespace galileo
 
     }; // struct CostDataResidualTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     class CostModelResidualTpl
         : public CostModelBase<CostModelResidualTpl<PhaseSpec, ResidualTpl, ActivationTpl>, PhaseSpec>
     {
@@ -139,12 +127,8 @@ namespace galileo
         using ActivationModel_t = typename traits<Meta_t>::ActivationModel_t;
         using ActivationData_t = typename traits<Meta_t>::ActivationData_t;
 
-        CostModelResidualTpl(const PS &ps, const ResidualModel_t &residual,
-                             const ActivationModel_t &activation)
-            : Base(),
-              ps_(ps),
-              residual_(residual),
-              activation_(activation)
+        CostModelResidualTpl(const PS &ps, const ResidualModel_t &residual, const ActivationModel_t &activation)
+            : Base(), ps_(ps), residual_(residual), activation_(activation)
         {
         }
 
@@ -159,8 +143,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             if constexpr (!residual_.get_q_dependent() && !residual_.get_v_dependent())
             {
@@ -189,8 +172,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             if constexpr (!residual_.get_q_dependent() && !residual_.get_v_dependent())
             {
@@ -213,20 +195,9 @@ namespace galileo
             return Data_t(*this, collector);
         }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        const ResidualModel_t &get_residual() const
-        {
-            return residual_;
-        }
-
-        const ActivationModel_t &get_activation() const
-        {
-            return activation_;
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const ResidualModel_t &get_residual() const { return residual_; }
+        const ActivationModel_t &get_activation() const { return activation_; }
 
     protected:
         std::reference_wrapper<const PS> ps_;

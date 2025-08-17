@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class CostModelBase
-        : public internal::CRTP<Derived>
+    class CostModelBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -26,8 +25,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x);
         }
@@ -41,8 +39,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x);
         }
@@ -54,18 +51,9 @@ namespace galileo
         }
 
     protected:
-        inline CostModelBase()
-        {
-        }
-
-        inline CostModelBase(const CostModelBase &clone)
-        {
-        }
-
-        inline CostModelBase &operator=(const CostModelBase &clone)
-        {
-            return *this;
-        }
+        inline CostModelBase() {}
+        inline CostModelBase(const CostModelBase &clone) {}
+        inline CostModelBase &operator=(const CostModelBase &clone) { return *this; }
 
     }; // class CostModelBase
 

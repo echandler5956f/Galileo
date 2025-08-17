@@ -39,8 +39,7 @@ namespace galileo
     };
 
     template <typename RobotSpec>
-    class ActuationDataFloatingBaseTpl
-        : public ActuationDataBase<ActuationDataFloatingBaseTpl<RobotSpec>, RobotSpec>
+    class ActuationDataFloatingBaseTpl : public ActuationDataBase<ActuationDataFloatingBaseTpl<RobotSpec>, RobotSpec>
     {
     public:
         using RS = RobotSpec;
@@ -62,12 +61,9 @@ namespace galileo
         ActuationDataFloatingBaseTpl(const Model_t &model)
             : tau(model.get_rs().get_nv()),
               u(model.get_rs().get_nua()),
-              dtau_dx(model.get_rs().get_nv(),
-                      model.get_rs().get_ndx()),
-              dtau_du(model.get_rs().get_nv(),
-                      model.get_rs().get_nua()),
-              Mtau(model.get_rs().get_nua(),
-                   model.get_rs().get_nv()),
+              dtau_dx(model.get_rs().get_nv(), model.get_rs().get_ndx()),
+              dtau_du(model.get_rs().get_nv(), model.get_rs().get_nua()),
+              Mtau(model.get_rs().get_nua(), model.get_rs().get_nv()),
               tau_set(model.get_rs().get_nv())
         {
             tau.setZero();
@@ -79,8 +75,7 @@ namespace galileo
 
             dtau_du.diagonal(-model.get_rs().get_nvb()).setOnes();
             Mtau.diagonal(model.get_rs().get_nvb()).setOnes();
-            for (int i = 0; i < model.get_rs().get_nvb(); ++i)
-                tau_set(i) = false;
+            for (int i = 0; i < model.get_rs().get_nvb(); ++i) tau_set(i) = false;
         }
 
         VectorNv_t tau;
@@ -92,8 +87,7 @@ namespace galileo
     };
 
     template <typename RobotSpec>
-    class ActuationModelFloatingBaseTpl
-        : public ActuationModelBase<ActuationModelFloatingBaseTpl<RobotSpec>, RobotSpec>
+    class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<RobotSpec>, RobotSpec>
     {
     public:
         using RS = RobotSpec;
@@ -105,10 +99,7 @@ namespace galileo
 
         using State_t = typename RS::State_t;
 
-        ActuationModelFloatingBaseTpl(const State_t &state)
-            : Base(state.get_rs())
-        {
-        }
+        ActuationModelFloatingBaseTpl(const State_t &state) : Base(state.get_rs()) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -142,10 +133,7 @@ namespace galileo
             // has constant values which are set in createData
         }
 
-        Data_t createData() const
-        {
-            return Data_t(*this);
-        }
+        Data_t createData() const { return Data_t(*this); }
 
         using Base::get_rs;
 

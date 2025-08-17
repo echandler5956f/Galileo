@@ -11,12 +11,12 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    struct DataCollectorContactTpl : public DataCollectorBase<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>>,
-                                     public MultibodyDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                                     public ActuationDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
-                                     public JointDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    struct DataCollectorContactTpl
+        : public DataCollectorBase<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>>,
+          public MultibodyDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
+          public ActuationDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>,
+          public JointDataMixinTpl<DataCollectorContactTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>
     {
         using PS = PhaseSpec;
 
@@ -26,18 +26,19 @@ namespace galileo
 
         DataCollectorContactTpl(std::shared_ptr<RobotData_t> robot_,
                                 std::shared_ptr<ActuationData_t> actuation_,
-                                std::shared_ptr<JointData_t> joint_) : MultibodyDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(robot_),
-                                                                       ActuationDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(actuation_),
-                                                                       JointDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(joint_)
+                                std::shared_ptr<JointData_t> joint_)
+            : MultibodyDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(robot_),
+              ActuationDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(actuation_),
+              JointDataMixinTpl<DataCollectorContactTpl<PS, ContactCollectionTpl>, PS>(joint_)
         {
         }
 
     }; // struct DataCollectorContactTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
-    struct DataCollectorImpulseTpl : public DataCollectorBase<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>>,
-                                     public MultibodyDataMixinTpl<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>, PhaseSpec>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
+    struct DataCollectorImpulseTpl
+        : public DataCollectorBase<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>>,
+          public MultibodyDataMixinTpl<DataCollectorImpulseTpl<PhaseSpec, ImpulseCollectionTpl>, PhaseSpec>
     {
         using PS = PhaseSpec;
 
@@ -48,7 +49,8 @@ namespace galileo
         using RobotData_t = typename PS::RobotData_t;
         using ImpulseData_t = ImpulseDataManager_t;
 
-        DataCollectorImpulseTpl(std::shared_ptr<RobotData_t> robot_) : MultibodyDataMixinTpl<DataCollectorImpulseTpl<PS, ImpulseCollectionTpl>, PS>(robot_)
+        DataCollectorImpulseTpl(std::shared_ptr<RobotData_t> robot_)
+            : MultibodyDataMixinTpl<DataCollectorImpulseTpl<PS, ImpulseCollectionTpl>, PS>(robot_)
         {
         }
 

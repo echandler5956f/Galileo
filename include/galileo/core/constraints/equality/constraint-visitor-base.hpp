@@ -9,7 +9,9 @@ namespace galileo
     namespace fusion
     {
         // Family tag for constraints
-        struct ConstraintFamily {};
+        struct ConstraintFamily
+        {
+        };
 
         // Trait specialization for Constraint family
         template <>

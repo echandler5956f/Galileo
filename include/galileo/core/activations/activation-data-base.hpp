@@ -3,9 +3,9 @@
 
 #include "galileo/core/activations/activation-base.hpp"
 
-#define GALILEO_ACTIVATION_DATA_TYPEDEF(Activation)   \
-    using A_t = typename traits<Activation>::A_t;     \
-    using Ar_t = typename traits<Activation>::Ar_t;   \
+#define GALILEO_ACTIVATION_DATA_TYPEDEF(Activation) \
+    using A_t = typename traits<Activation>::A_t; \
+    using Ar_t = typename traits<Activation>::Ar_t; \
     using Arr_t = typename traits<Activation>::Arr_t; \
     using Arr_diag_t = typename traits<Activation>::Arr_diag_t;
 
@@ -13,8 +13,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct ActivationDataBase
-        : public internal::CRTP<Derived>
+    struct ActivationDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -30,19 +29,9 @@ namespace galileo
         FORWARD_ACCESSOR(Arr_t, Arr);
 
     protected:
-        inline ActivationDataBase()
-        {
-        }
-
-        inline ActivationDataBase(const ActivationDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline ActivationDataBase &operator=(const ActivationDataBase &clone)
-        {
-            return *this;
-        }
+        inline ActivationDataBase() {}
+        inline ActivationDataBase(const ActivationDataBase &clone) { *this = clone; }
+        inline ActivationDataBase &operator=(const ActivationDataBase &clone) { return *this; }
 
     }; // struct ActivationDataBase
 

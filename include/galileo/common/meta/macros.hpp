@@ -5,21 +5,22 @@
 #define GALILEO_MAJOR_VERSION 0
 #define GALILEO_MINOR_VERSION 00
 
-#define GALILEO_VERSION_AT_LEAST(x, y, z) (GALILEO_WORLD_VERSION > x || (GALILEO_WORLD_VERSION >= x &&                                \
-                                                                         (GALILEO_MAJOR_VERSION > y || (GALILEO_MAJOR_VERSION >= y && \
-                                                                                                        GALILEO_MINOR_VERSION >= z))))
+#define GALILEO_VERSION_AT_LEAST(x, y, z) \
+    (GALILEO_WORLD_VERSION > x || \
+     (GALILEO_WORLD_VERSION >= x && \
+      (GALILEO_MAJOR_VERSION > y || (GALILEO_MAJOR_VERSION >= y && GALILEO_MINOR_VERSION >= z))))
 
 // Custom assertion macro that can be configured for testing
 #ifndef GALILEO_ASSERT
 #ifdef GALILEO_TESTING
 #include <stdexcept>
-#define GALILEO_ASSERT(condition, message)                          \
-    do                                                              \
-    {                                                               \
-        if (!(condition))                                           \
-        {                                                           \
+#define GALILEO_ASSERT(condition, message) \
+    do \
+    { \
+        if (!(condition)) \
+        { \
             throw std::runtime_error("Assertion failed: " message); \
-        }                                                           \
+        } \
     } while (0)
 #else
 #include <cassert>
@@ -35,13 +36,13 @@
  * @param ReturnType The return type of the accessor.
  * @param accessor_name The name of the accessor.
  */
-#define FORWARD_ACCESSOR(return_type, accessor_name)       \
-    return_type &accessor_name()                           \
-    {                                                      \
+#define FORWARD_ACCESSOR(return_type, accessor_name) \
+    return_type &accessor_name() \
+    { \
         return this->derived().accessor_name##_accessor(); \
-    }                                                      \
-    const return_type &accessor_name() const               \
-    {                                                      \
+    } \
+    const return_type &accessor_name() const \
+    { \
         return this->derived().accessor_name##_accessor(); \
     }
 
@@ -54,14 +55,14 @@
  * @param return_type The return type of the accessor.
  * @param accessor_name The name of the accessor (name of the variable).
  */
-#define DEFAULT_ACCESSOR(return_type, accessor_name)    \
-    return_type &accessor_name##_accessor()             \
-    {                                                   \
-        return accessor_name;                           \
-    }                                                   \
+#define DEFAULT_ACCESSOR(return_type, accessor_name) \
+    return_type &accessor_name##_accessor() \
+    { \
+        return accessor_name; \
+    } \
     const return_type &accessor_name##_accessor() const \
-    {                                                   \
-        return accessor_name;                           \
+    { \
+        return accessor_name; \
     }
 
 /**
@@ -75,14 +76,14 @@
  * @param ReturnType The return type of the accessor.
  * @param accessor_name The name of the accessor.
  */
-#define GENERIC_ACCESSOR(return_type, accessor_name)    \
-    return_type &accessor_name##_accessor()             \
-    {                                                   \
-        return accessor_name();                         \
-    }                                                   \
+#define GENERIC_ACCESSOR(return_type, accessor_name) \
+    return_type &accessor_name##_accessor() \
+    { \
+        return accessor_name(); \
+    } \
     const return_type &accessor_name##_accessor() const \
-    {                                                   \
-        return accessor_name();                         \
+    { \
+        return accessor_name(); \
     }
 
 #endif // __galileo_common_meta_macros_hpp__

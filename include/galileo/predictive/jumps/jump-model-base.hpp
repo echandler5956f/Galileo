@@ -8,8 +8,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class JumpModelBase
-        : public internal::CRTP<Derived>
+    class JumpModelBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -21,60 +20,28 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x);
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x);
         }
 
-        Data_t createData() const
-        {
-            return this->derived().createData();
-        }
+        Data_t createData() const { return this->derived().createData(); }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        const State_t &get_state() const
-        {
-            return get_ps().get_state();
-        }
-
-        const RobotModel_t &get_robot() const
-        {
-            return robot_.get();
-        }
-
-        const CostModelManager_t &get_costs() const
-        {
-            return this->derived().get_costs();
-        }
-
-        const ConstraintModelManager_t &get_constraints() const
-        {
-            return this->derived().get_constraints();
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const State_t &get_state() const { return get_ps().get_state(); }
+        const RobotModel_t &get_robot() const { return robot_.get(); }
+        const CostModelManager_t &get_costs() const { return this->derived().get_costs(); }
+        const ConstraintModelManager_t &get_constraints() const { return this->derived().get_constraints(); }
 
     protected:
-        inline JumpModelBase(const PS &ps)
-            : ps_(ps), robot_(ps.get_state().get_robot())
-        {
-        }
-
-        inline JumpModelBase(const JumpModelBase &clone)
-            : ps_(clone.ps_), robot_(clone.robot_)
-        {
-        }
-
+        inline JumpModelBase(const PS &ps) : ps_(ps), robot_(ps.get_state().get_robot()) {}
+        inline JumpModelBase(const JumpModelBase &clone) : ps_(clone.ps_), robot_(clone.robot_) {}
         inline JumpModelBase &operator=(const JumpModelBase &clone)
         {
             ps_ = clone.ps_;

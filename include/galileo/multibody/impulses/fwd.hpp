@@ -24,20 +24,16 @@ namespace galileo
     template <typename PhaseSpec>
     struct ImpulseData6dTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct ImpulseModelTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct ImpulseDataTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     class ImpulseModelManagerTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     class ImpulseDataManagerTpl;
 
 } // namespace galileo

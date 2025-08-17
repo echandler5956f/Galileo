@@ -19,15 +19,16 @@ namespace galileo
 
             // Install directory paths (for distribution builds)
             inline const std::string INSTALL_PREFIX = "@CMAKE_INSTALL_PREFIX@";
-            inline const std::string INSTALLED_RESOURCES_DIR = "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_DATADIR@/galileo/resources";
+            inline const std::string INSTALLED_RESOURCES_DIR =
+                "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_DATADIR@/galileo/resources";
 
             // Build configuration
             inline const std::string BUILD_TYPE = "@CMAKE_BUILD_TYPE@";
 
             // Version information
             inline const std::string VERSION = "@GALILEO_VERSION_NUMBER@";
-        }
-    }
-}
+        } // namespace config
+    } // namespace utils
+} // namespace galileo
 
 #endif // GALILEO_COMMON_UTILS_RESOURCE_CONFIG_GENERATED_HPP

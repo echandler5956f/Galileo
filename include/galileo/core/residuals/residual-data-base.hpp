@@ -3,10 +3,10 @@
 
 #include "galileo/core/residuals/residual-base.hpp"
 
-#define GALILEO_RESIDUAL_DATA_TYPEDEF(Residual)           \
-    using R_t = typename traits<Residual>::R_t;           \
-    using Rx_t = typename traits<Residual>::Rx_t;         \
-    using Ru_t = typename traits<Residual>::Ru_t;         \
+#define GALILEO_RESIDUAL_DATA_TYPEDEF(Residual) \
+    using R_t = typename traits<Residual>::R_t; \
+    using Rx_t = typename traits<Residual>::Rx_t; \
+    using Ru_t = typename traits<Residual>::Ru_t; \
     using Arr_Rx_t = typename traits<Residual>::Arr_Rx_t; \
     using Arr_Ru_t = typename traits<Residual>::Arr_Ru_t;
 
@@ -14,8 +14,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct ResidualDataBase
-        : public internal::CRTP<Derived>
+    struct ResidualDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -33,19 +32,9 @@ namespace galileo
         FORWARD_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
     protected:
-        inline ResidualDataBase()
-        {
-        }
-
-        inline ResidualDataBase(const ResidualDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline ResidualDataBase &operator=(const ResidualDataBase &clone)
-        {
-            return *this;
-        }
+        inline ResidualDataBase() {}
+        inline ResidualDataBase(const ResidualDataBase &clone) { *this = clone; }
+        inline ResidualDataBase &operator=(const ResidualDataBase &clone) { return *this; }
 
     }; // struct ResidualDataBase
 

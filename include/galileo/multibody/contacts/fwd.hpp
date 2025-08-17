@@ -24,20 +24,16 @@ namespace galileo
     template <typename PhaseSpec>
     struct ContactData6dTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct ContactModelTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct ContactDataTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     class ContactModelManagerTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     class ContactDataManagerTpl;
 
 } // namespace galileo

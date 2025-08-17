@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename RobotSpec>
-    class ActuationModelBase
-        : public internal::CRTP<Derived>
+    class ActuationModelBase : public internal::CRTP<Derived>
     {
     public:
         using RS = RobotSpec;
@@ -26,8 +25,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             // Nothing happens
         }
@@ -41,8 +39,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             // Nothing happens
         }
@@ -63,27 +60,13 @@ namespace galileo
             this->derived().torqueTransform(data, x, u);
         }
 
-        Data_t createData()
-        {
-            return this->derived().createData();
-        }
+        Data_t createData() { return this->derived().createData(); }
 
-        const RS &get_rs() const
-        {
-            return rs_;
-        }
+        const RS &get_rs() const { return rs_; }
 
     protected:
-        inline ActuationModelBase(const RS &rs)
-            : rs_(rs)
-        {
-        }
-
-        inline ActuationModelBase(const ActuationModelBase &clone)
-            : rs_(clone.rs_)
-        {
-        }
-
+        inline ActuationModelBase(const RS &rs) : rs_(rs) {}
+        inline ActuationModelBase(const ActuationModelBase &clone) : rs_(clone.rs_) {}
         inline ActuationModelBase &operator=(const ActuationModelBase &clone)
         {
             rs_ = clone.rs_;

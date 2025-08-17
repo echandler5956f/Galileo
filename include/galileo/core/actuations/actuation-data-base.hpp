@@ -3,9 +3,9 @@
 
 #include "galileo/core/actuations/actuation-base.hpp"
 
-#define GALILEO_ACTUATION_DATA_TYPEDEF(Actuation)                    \
-    using VectorNv_t = typename traits<Actuation>::VectorNv_t;       \
-    using VectorNua_t = typename traits<Actuation>::VectorNua_t;     \
+#define GALILEO_ACTUATION_DATA_TYPEDEF(Actuation) \
+    using VectorNv_t = typename traits<Actuation>::VectorNv_t; \
+    using VectorNua_t = typename traits<Actuation>::VectorNua_t; \
     using MatrixNvNdx_t = typename traits<Actuation>::MatrixNvNdx_t; \
     using MatrixNvNua_t = typename traits<Actuation>::MatrixNvNua_t; \
     using MatrixNuaNv_t = typename traits<Actuation>::MatrixNuaNv_t; \
@@ -15,8 +15,7 @@ namespace galileo
 {
 
     template <typename Derived, typename RobotSpec>
-    struct ActuationDataBase
-        : public internal::CRTP<Derived>
+    struct ActuationDataBase : public internal::CRTP<Derived>
     {
     public:
         using RS = RobotSpec;
@@ -35,19 +34,9 @@ namespace galileo
         FORWARD_ACCESSOR(BoolArrayNv_t, tau_set);
 
     protected:
-        inline ActuationDataBase()
-        {
-        }
-
-        inline ActuationDataBase(const ActuationDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline ActuationDataBase &operator=(const ActuationDataBase &clone)
-        {
-            return *this;
-        }
+        inline ActuationDataBase() {}
+        inline ActuationDataBase(const ActuationDataBase &clone) { *this = clone; }
+        inline ActuationDataBase &operator=(const ActuationDataBase &clone) { return *this; }
 
     }; // struct ActuationDataTpl
 

@@ -8,8 +8,7 @@ namespace galileo
 {
 
     template <typename RobotSpec>
-    class StateEuclideanTpl
-        : public StateBase<StateEuclideanTpl<RobotSpec>, RobotSpec>
+    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<RobotSpec>, RobotSpec>
     {
     public:
         using RS = RobotSpec;
@@ -19,22 +18,15 @@ namespace galileo
         using Base = StateBase<StateEuclideanTpl<RS>, RS>;
 
         // For StateEuclideanTpl specifically, robot spec must be valid and all dimensions must be set apriori.
-        StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub)
-            : Base(rs), lb_(lb), ub_(ub)
+        StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : Base(rs), lb_(lb), ub_(ub)
         {
             GALILEO_ASSERT(IsValidRobotSpec(rs), "StateEuclideanTpl: Invalid robot spec");
-            GALILEO_ASSERT(IsValidEuclidean(*this), "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
+            GALILEO_ASSERT(IsValidEuclidean(*this),
+                           "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
         }
 
-        VectorNx_t zero() const
-        {
-            return VectorNx_t::Zero(get_nx());
-        }
-
-        VectorNx_t rand() const
-        {
-            return VectorNx_t::Random(get_nx());
-        }
+        VectorNx_t zero() const { return VectorNx_t::Zero(get_nx()); }
+        VectorNx_t rand() const { return VectorNx_t::Random(get_nx()); }
 
         template <typename StateVector1, typename StateVector2, typename StateTangentVector>
         void diff(const Eigen::MatrixBase<StateVector1> &x0,
@@ -53,10 +45,14 @@ namespace galileo
         }
 
         template <Jcomponent jc = BOTH,
-                  typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
+                  typename StateVector1,
+                  typename StateVector2,
+                  typename JMatrix1,
+                  typename JMatrix2>
         void Jdiff(const Eigen::MatrixBase<StateVector1> &x0,
                    const Eigen::MatrixBase<StateVector2> &x1,
-                   Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond) const
+                   Eigen::MatrixBase<JMatrix1> &Jfirst,
+                   Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
             if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
@@ -70,8 +66,12 @@ namespace galileo
             }
         }
 
-        template <Jcomponent jc = BOTH, AssignmentOp op = SETTO,
-                  typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc = BOTH,
+                  AssignmentOp op = SETTO,
+                  typename StateVector,
+                  typename StateTangentVector,
+                  typename JMatrix1,
+                  typename JMatrix2>
         void Jintegrate(const Eigen::MatrixBase<StateVector> &x,
                         const Eigen::MatrixBase<StateTangentVector> &dx,
                         Eigen::MatrixBase<JMatrix1> &Jfirst,
@@ -98,8 +98,7 @@ namespace galileo
             }
         }
 
-        template <Jcomponent jc,
-                  typename StateVector, typename StateTangentVector, typename JMatrix>
+        template <Jcomponent jc, typename StateVector, typename StateTangentVector, typename JMatrix>
         void JintegrateTransport(const Eigen::MatrixBase<StateVector> &x,
                                  const Eigen::MatrixBase<StateTangentVector> &dx,
                                  Eigen::MatrixBase<JMatrix> &Jin) const
@@ -107,15 +106,8 @@ namespace galileo
             // Nothing to do
         }
 
-        const VectorNx_t &get_lb() const
-        {
-            return lb_;
-        }
-
-        const VectorNx_t &get_ub() const
-        {
-            return ub_;
-        }
+        const VectorNx_t &get_lb() const { return lb_; }
+        const VectorNx_t &get_ub() const { return ub_; }
 
         template <typename StateVector>
         void set_lb(const Eigen::MatrixBase<StateVector> &lb)
@@ -133,36 +125,25 @@ namespace galileo
         using Base::integrate_x;
         using Base::Jdiff_Js;
         using Base::Jintegrate_Js;
-
         using Base::get_rs;
-
         using Base::get_nqb;
         using Base::get_nqb_dim;
-
         using Base::get_nqj;
         using Base::get_nqj_dim;
-
         using Base::get_nq;
         using Base::get_nq_dim;
-
         using Base::get_nvb;
         using Base::get_nvb_dim;
-
         using Base::get_nvj;
         using Base::get_nvj_dim;
-
         using Base::get_nv;
         using Base::get_nv_dim;
-
         using Base::get_nrotors;
         using Base::get_nrotors_dim;
-
         using Base::get_nx;
         using Base::get_nx_dim;
-
         using Base::get_ndx;
         using Base::get_ndx_dim;
-
         using Base::get_nua;
         using Base::get_nua_dim;
 

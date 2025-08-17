@@ -42,20 +42,11 @@ namespace galileo
         {
 
             /** Return reference to this as derived object */
-            inline Derived &derived() & noexcept
-            {
-                return *static_cast<Derived *>(this);
-            }
+            inline Derived &derived() & noexcept { return *static_cast<Derived *>(this); }
             /** Return reference to this as derived object */
-            inline const Derived &derived() const & noexcept
-            {
-                return *static_cast<const Derived *>(this);
-            }
+            inline const Derived &derived() const & noexcept { return *static_cast<const Derived *>(this); }
             /** Return reference to this as derived object, when this is rvalue */
-            inline Derived &&derived() && noexcept
-            {
-                return std::move(*static_cast<Derived *>(this));
-            }
+            inline Derived &&derived() && noexcept { return std::move(*static_cast<Derived *>(this)); }
 
         }; // struct CRTP
 

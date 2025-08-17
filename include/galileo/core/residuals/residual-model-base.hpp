@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class ResidualModelBase
-        : public internal::CRTP<Derived>
+    class ResidualModelBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -34,8 +33,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x);
         }
@@ -49,24 +47,19 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x);
         }
 
         template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
-        void calcCostDiff(CostDataType &cdata,
-                          Data_t &rdata,
-                          const ActivationDataType &adata) const
+        void calcCostDiff(CostDataType &cdata, Data_t &rdata, const ActivationDataType &adata) const
         {
             this->derived().template calcCostDiffImpl<UpdateU>(cdata, rdata, adata);
         }
 
         template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
-        void calcCostDiffImpl(CostDataType &cdata,
-                              Data_t &rdata,
-                              const ActivationDataType &adata) const
+        void calcCostDiffImpl(CostDataType &cdata, Data_t &rdata, const ActivationDataType &adata) const
         {
             // This function computes the derivatives of the cost function based on a
             // Gauss-Newton approximation. We split the computation into branches based on
@@ -110,9 +103,7 @@ namespace galileo
         }
 
         template <typename CostDataType, typename ActivationDataType>
-        constexpr void calcCostDiffRxFullImpl(CostDataType &cdata,
-                                              Data_t &rdata,
-                                              const ActivationDataType &adata) const
+        constexpr void calcCostDiffRxFullImpl(CostDataType &cdata, Data_t &rdata, const ActivationDataType &adata) const
         {
             cdata.Lx.noalias() = rdata.Rx.transpose() * adata.Ar;
             rdata.Arr_Rx.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Rx;
@@ -126,8 +117,7 @@ namespace galileo
                                            const Eigen::MatrixBase<RqType> &Rq) const
         {
             head(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rq.transpose() * adata.Ar;
-            leftCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
-                adata.Arr.diagonal().asDiagonal() * Rq;
+            leftCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() = adata.Arr.diagonal().asDiagonal() * Rq;
             topLeftCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
                 Rq.transpose() * leftCols(rdata.Arr_Rx, get_ps().get_nv_dim());
         }
@@ -139,16 +129,13 @@ namespace galileo
                                            const Eigen::MatrixBase<RvType> &Rv) const
         {
             tail(cdata.Lx, get_ps().get_nv_dim()).noalias() = Rv.transpose() * adata.Ar;
-            rightCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() =
-                adata.Arr.diagonal().asDiagonal() * Rv;
+            rightCols(rdata.Arr_Rx, get_ps().get_nv_dim()).noalias() = adata.Arr.diagonal().asDiagonal() * Rv;
             bottomRightCorner(cdata.Lxx, get_ps().get_nv_dim(), get_ps().get_nv_dim()).noalias() =
                 Rv.transpose() * rightCols(rdata.Arr_Rx, get_ps().get_nv_dim());
         }
 
         template <typename CostDataType, typename ActivationDataType>
-        constexpr void calcCostDiffRuFullImpl(CostDataType &cdata,
-                                              Data_t &rdata,
-                                              const ActivationDataType &adata) const
+        constexpr void calcCostDiffRuFullImpl(CostDataType &cdata, Data_t &rdata, const ActivationDataType &adata) const
         {
             cdata.Lu.noalias() = rdata.Ru.transpose() * adata.Ar;
             rdata.Arr_Ru.noalias() = adata.Arr.diagonal().asDiagonal() * rdata.Ru;
@@ -186,47 +173,16 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        const DimNR_t &get_nr_dim() const
-        {
-            return nr_dim_;
-        }
-
-        int get_nr() const
-        {
-            return nr_dim_.value();
-        }
-
-        static constexpr bool get_q_dependent()
-        {
-            return QDependent;
-        }
-
-        static constexpr bool get_v_dependent()
-        {
-            return VDependent;
-        }
-
-        static constexpr bool get_u_dependent()
-        {
-            return UDependent;
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const DimNR_t &get_nr_dim() const { return nr_dim_; }
+        int get_nr() const { return nr_dim_.value(); }
+        static constexpr bool get_q_dependent() { return QDependent; }
+        static constexpr bool get_v_dependent() { return VDependent; }
+        static constexpr bool get_u_dependent() { return UDependent; }
 
     protected:
-        inline ResidualModelBase(const PS &ps, const DimNR_t &nr_dim)
-            : ps_(ps), nr_dim_(nr_dim)
-        {
-        }
-
-        inline ResidualModelBase(const ResidualModelBase &clone)
-            : ps_(clone.ps_), nr_dim_(clone.nr_dim_)
-        {
-        }
-
+        inline ResidualModelBase(const PS &ps, const DimNR_t &nr_dim) : ps_(ps), nr_dim_(nr_dim) {}
+        inline ResidualModelBase(const ResidualModelBase &clone) : ps_(clone.ps_), nr_dim_(clone.nr_dim_) {}
         inline ResidualModelBase &operator=(const ResidualModelBase &clone)
         {
             ps_ = clone.ps_;

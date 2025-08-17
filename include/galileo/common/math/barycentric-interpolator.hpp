@@ -28,8 +28,11 @@ namespace galileo
             // For fixed-size interpolators, check dimension consistency and copy element-wise
             if constexpr (DimensionTpl<N>::IsFixed)
             {
-                GALILEO_ASSERT(nodes.size() == N, "BarycentricInterpolator: Number of nodes must match template parameter N for fixed-size interpolators.");
-                if constexpr (InputVectorType::RowsAtCompileTime == Eigen::Dynamic || InputVectorType::ColsAtCompileTime == Eigen::Dynamic)
+                GALILEO_ASSERT(nodes.size() == N,
+                               "BarycentricInterpolator: Number of nodes must match template parameter N for "
+                               "fixed-size interpolators.");
+                if constexpr (InputVectorType::RowsAtCompileTime == Eigen::Dynamic ||
+                              InputVectorType::ColsAtCompileTime == Eigen::Dynamic)
                 {
                     nodes_ = nodes;
                 }
@@ -65,12 +68,17 @@ namespace galileo
          * computes the weighted average to produce the interpolated values at time t.
          */
         template <typename InputMatrixType, typename OutputVectorType>
-        void calc(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputVectorType> &u) const
+        void calc(const NumScalar &t,
+                  const Eigen::MatrixBase<InputMatrixType> &w,
+                  Eigen::MatrixBase<OutputVectorType> &u) const
         {
             using VectorType = typename Eigen::internal::plain_matrix_type<OutputVectorType>::type;
 
-            GALILEO_ASSERT(w.cols() == NDim_.value(), "BarycentricInterpolator: Input matrix must have the same number of columns as the number of nodes.");
-            GALILEO_ASSERT(t >= NumScalar(0.) && t <= NumScalar(1.), "BarycentricInterpolator: Time must be between 0 and 1.");
+            GALILEO_ASSERT(
+                w.cols() == NDim_.value(),
+                "BarycentricInterpolator: Input matrix must have the same number of columns as the number of nodes.");
+            GALILEO_ASSERT(t >= NumScalar(0.) && t <= NumScalar(1.),
+                           "BarycentricInterpolator: Time must be between 0 and 1.");
 
             // Compute the interpolated value using proper barycentric formula
             VectorType numerator = VectorType::Zero(w.rows());
@@ -88,7 +96,8 @@ namespace galileo
                 denominator += interpolant;
             }
 
-            GALILEO_ASSERT(std::abs(denominator) > std::numeric_limits<NumScalar>::epsilon(), "BarycentricInterpolator: Denominator is zero.");
+            GALILEO_ASSERT(std::abs(denominator) > std::numeric_limits<NumScalar>::epsilon(),
+                           "BarycentricInterpolator: Denominator is zero.");
 
             u = numerator / denominator;
         }
@@ -108,13 +117,21 @@ namespace galileo
          * these blocks are diagonal matrices.
          */
         template <typename InputMatrixType, typename OutputMatrixType>
-        void calcDiff(const NumScalar &t, const Eigen::MatrixBase<InputMatrixType> &w, Eigen::MatrixBase<OutputMatrixType> &du_dw) const
+        void calcDiff(const NumScalar &t,
+                      const Eigen::MatrixBase<InputMatrixType> &w,
+                      Eigen::MatrixBase<OutputMatrixType> &du_dw) const
         {
-            GALILEO_ASSERT(w.cols() == NDim_.value(), "BarycentricInterpolator: Input matrix must have the same number of columns as the number of nodes.");
-            GALILEO_ASSERT(t >= NumScalar(0.) && t <= NumScalar(1.), "BarycentricInterpolator: Time must be between 0 and 1.");
+            GALILEO_ASSERT(
+                w.cols() == NDim_.value(),
+                "BarycentricInterpolator: Input matrix must have the same number of columns as the number of nodes.");
+            GALILEO_ASSERT(t >= NumScalar(0.) && t <= NumScalar(1.),
+                           "BarycentricInterpolator: Time must be between 0 and 1.");
 
-            GALILEO_ASSERT(du_dw.rows() == w.rows(), "BarycentricInterpolator: Output matrix must have the same number of rows as the input matrix.");
-            GALILEO_ASSERT(du_dw.cols() == w.rows() * NDim_.value(), "BarycentricInterpolator: Output matrix must have (num_output_dims * num_nodes) columns.");
+            GALILEO_ASSERT(
+                du_dw.rows() == w.rows(),
+                "BarycentricInterpolator: Output matrix must have the same number of rows as the input matrix.");
+            GALILEO_ASSERT(du_dw.cols() == w.rows() * NDim_.value(),
+                           "BarycentricInterpolator: Output matrix must have (num_output_dims * num_nodes) columns.");
 
             // If t is very close to one of the nodes, the interpolation directly returns w.col(i).
             // In that case, the sensitivity with respect to that column is the identity,
@@ -140,7 +157,8 @@ namespace galileo
             }
 
             // Check for division by zero
-            GALILEO_ASSERT(std::abs(sum_c) > std::numeric_limits<NumScalar>::epsilon(), "BarycentricInterpolator: Sum of coefficients is zero.");
+            GALILEO_ASSERT(std::abs(sum_c) > std::numeric_limits<NumScalar>::epsilon(),
+                           "BarycentricInterpolator: Sum of coefficients is zero.");
 
             // The interpolated value is u = (sum_i c_i * w.col(i)) / sum_c.
             // Thus, for each element k of u:
@@ -155,15 +173,9 @@ namespace galileo
             }
         }
 
-        constexpr int get_n() const
-        {
-            return NDim_.value();
-        }
+        constexpr int get_n() const { return NDim_.value(); }
 
-        const DimensionTpl<N> &NDim() const
-        {
-            return NDim_;
-        }
+        const DimensionTpl<N> &NDim() const { return NDim_; }
 
     protected:
         void compute_weights()
@@ -171,8 +183,7 @@ namespace galileo
             weights_ = VectorN::Zero(NDim_.value());
 
             /*Barycentric weights*/
-            for (int j = 0; j < NDim_.value(); ++j)
-                weights_(j) = 1.0;
+            for (int j = 0; j < NDim_.value(); ++j) weights_(j) = 1.0;
 
             /*For all nodes*/
             for (int j = 0; j < NDim_.value(); ++j)

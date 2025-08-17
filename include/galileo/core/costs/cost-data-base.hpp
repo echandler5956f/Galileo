@@ -3,10 +3,10 @@
 
 #include "galileo/core/costs/cost-base.hpp"
 
-#define GALILEO_COST_DATA_TYPEDEF(Cost)         \
-    using L_t = typename traits<Cost>::L_t;     \
-    using Lx_t = typename traits<Cost>::Lx_t;   \
-    using Lu_t = typename traits<Cost>::Lu_t;   \
+#define GALILEO_COST_DATA_TYPEDEF(Cost) \
+    using L_t = typename traits<Cost>::L_t; \
+    using Lx_t = typename traits<Cost>::Lx_t; \
+    using Lu_t = typename traits<Cost>::Lu_t; \
     using Lxx_t = typename traits<Cost>::Lxx_t; \
     using Lxu_t = typename traits<Cost>::Lxu_t; \
     using Luu_t = typename traits<Cost>::Luu_t;
@@ -15,8 +15,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct CostDataBase
-        : public internal::CRTP<Derived>
+    struct CostDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -35,19 +34,9 @@ namespace galileo
         FORWARD_ACCESSOR(Luu_t, Luu);
 
     protected:
-        inline CostDataBase()
-        {
-        }
-
-        inline CostDataBase(const CostDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline CostDataBase &operator=(const CostDataBase &clone)
-        {
-            return *this;
-        }
+        inline CostDataBase() {}
+        inline CostDataBase(const CostDataBase &clone) { *this = clone; }
+        inline CostDataBase &operator=(const CostDataBase &clone) { return *this; }
 
     }; // struct CostDataBase
 

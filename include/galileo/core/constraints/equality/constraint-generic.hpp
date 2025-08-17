@@ -11,12 +11,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct ConstraintTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct traits<ConstraintTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -34,8 +32,7 @@ namespace galileo
         using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct traits<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -47,8 +44,7 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct traits<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -60,8 +56,7 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct ConstraintDataTpl
         : public ConstraintDataBase<ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
           ConstraintCollectionTpl<PhaseSpec>::ConstraintDataVariant_t
@@ -78,45 +73,22 @@ namespace galileo
 
         using DataVariant_t = typename Collection_t::ConstraintDataVariant_t;
 
-        DataVariant_t &toVariant()
-        {
-            return *static_cast<DataVariant_t *>(this);
-        }
-        const DataVariant_t &toVariant() const
-        {
-            return *static_cast<const DataVariant_t *>(this);
-        }
+        DataVariant_t &toVariant() { return *static_cast<DataVariant_t *>(this); }
+        const DataVariant_t &toVariant() const { return *static_cast<const DataVariant_t *>(this); }
 
-        H_t H() const
-        {
-            return galileo::constraint_H(*this);
-        }
+        H_t H() const { return galileo::constraint_H(*this); }
+        Hx_t Hx() const { return galileo::constraint_Hx(*this); }
+        Hu_t Hu() const { return galileo::constraint_Hu(*this); }
 
-        Hx_t Hx() const
-        {
-            return galileo::constraint_Hx(*this);
-        }
+        ConstraintDataTpl() : DataVariant_t() {}
 
-        Hu_t Hu() const
-        {
-            return galileo::constraint_Hu(*this);
-        }
-
-        ConstraintDataTpl()
-            : DataVariant_t()
-        {
-        }
-
-        ConstraintDataTpl(const DataVariant_t &data_variant)
-            : DataVariant_t(data_variant)
-        {
-        }
+        ConstraintDataTpl(const DataVariant_t &data_variant) : DataVariant_t(data_variant) {}
 
         template <typename ConstraintDataType>
         ConstraintDataTpl(const ConstraintDataBase<ConstraintDataType, PhaseSpec> &data)
-            : Collection_t::ConstraintDataVariant_t((DataVariant_t)data.derived())
+            : Collection_t::ConstraintDataVariant_t((DataVariant_t) data.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, ConstraintDataType>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, ConstraintDataType>) );
         }
 
         GENERIC_ACCESSOR(H_t, H);
@@ -125,8 +97,7 @@ namespace galileo
 
     }; // struct ConstraintDataTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct ConstraintModelTpl
         : public ConstraintModelBase<ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl>, PhaseSpec>,
           ConstraintCollectionTpl<PhaseSpec>::ConstraintModelVariant_t
@@ -143,32 +114,19 @@ namespace galileo
 
         using DimNH_t = typename traits<Meta_t>::DimNH_t;
 
-        ModelVariant_t &toVariant()
-        {
-            return *static_cast<ModelVariant_t *>(this);
-        }
+        ModelVariant_t &toVariant() { return *static_cast<ModelVariant_t *>(this); }
 
-        const ModelVariant_t &toVariant() const
-        {
-            return *static_cast<const ModelVariant_t *>(this);
-        }
+        const ModelVariant_t &toVariant() const { return *static_cast<const ModelVariant_t *>(this); }
 
-        ConstraintModelTpl()
-            : ModelVariant_t()
-        {
-        }
+        ConstraintModelTpl() : ModelVariant_t() {}
 
-        ConstraintModelTpl(const ModelVariant_t &model_variant)
-            : ModelVariant_t(model_variant)
-        {
-        }
+        ConstraintModelTpl(const ModelVariant_t &model_variant) : ModelVariant_t(model_variant) {}
 
         template <typename ConstraintModelType>
         ConstraintModelTpl(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &model)
-            : Base(DimNH_t(model.get_nh())),
-              Collection_t::ConstraintModelVariant_t((ModelVariant_t)model.derived())
+            : Base(DimNH_t(model.get_nh())), Collection_t::ConstraintModelVariant_t((ModelVariant_t) model.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ConstraintModelType>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ConstraintModelType>) );
         }
 
         template <typename DataCollector>
@@ -186,8 +144,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::constraint_calc_zeroth_order(*this, data, x.derived(), Blank());
         }
@@ -201,16 +158,12 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::constraint_calc_first_order(*this, data, x.derived(), Blank());
         }
 
-        int get_nh_impl() const
-        {
-            return galileo::constraint_get_nh(*this);
-        }
+        int get_nh_impl() const { return galileo::constraint_get_nh(*this); }
 
         using Base::get_nh;
 

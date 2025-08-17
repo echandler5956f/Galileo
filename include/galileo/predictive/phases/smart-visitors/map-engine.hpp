@@ -31,39 +31,31 @@ namespace galileo
 
         public:
             // Main propagation with args
-            template <typename BasicSpec,
-                      template <typename> class CollectionTpl,
-                      typename ArgsTmp>
-            static ReturnType run(
-                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
-                FoldStateType initial_state,
-                ArgsTmp args)
+            template <typename BasicSpec, template <typename> class CollectionTpl, typename ArgsTmp>
+            static ReturnType run(const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                                  std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
+                                  FoldStateType initial_state,
+                                  ArgsTmp args)
             {
                 return processPhases(phase_models, phase_data, initial_state, args);
             }
 
             // Main propagation without args
-            template <typename BasicSpec,
-                      template <typename> class CollectionTpl>
-            static ReturnType run(
-                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
-                FoldStateType initial_state)
+            template <typename BasicSpec, template <typename> class CollectionTpl>
+            static ReturnType run(const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                                  std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
+                                  FoldStateType initial_state)
             {
                 return processPhases(phase_models, phase_data, initial_state);
             }
 
         private:
             // Unified phase processing with directional folding
-            template <typename BasicSpec,
-                      template <typename> class CollectionTpl,
-                      typename ArgsTmp>
-            static ReturnType processPhases(
-                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
-                FoldStateType initial_state,
-                ArgsTmp args)
+            template <typename BasicSpec, template <typename> class CollectionTpl, typename ArgsTmp>
+            static ReturnType processPhases(const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                                            std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
+                                            FoldStateType initial_state,
+                                            ArgsTmp args)
             {
                 FoldStateType current_state = initial_state;
 
@@ -71,7 +63,8 @@ namespace galileo
                 auto data_iterators = get_iterators(phase_data);
 
                 for (auto model_it = model_iterators.first, data_it = data_iterators.first;
-                     model_it != model_iterators.second; ++model_it, ++data_it)
+                     model_it != model_iterators.second;
+                     ++model_it, ++data_it)
                 {
                     current_state = processPhaseInterior(*model_it, *data_it, current_state, args);
 
@@ -83,11 +76,13 @@ namespace galileo
                     {
                         if constexpr (IsDirectionallyInvariant || IsLeftFold)
                         {
-                            current_state = BoundaryBase::run(*model_it, *data_it, *next_model, *next_data, current_state, args);
+                            current_state =
+                                BoundaryBase::run(*model_it, *data_it, *next_model, *next_data, current_state, args);
                         }
                         else
                         {
-                            current_state = BoundaryBase::run(*next_model, *next_data, *model_it, *data_it, current_state, args);
+                            current_state =
+                                BoundaryBase::run(*next_model, *next_data, *model_it, *data_it, current_state, args);
                         }
                     }
                 }
@@ -95,12 +90,10 @@ namespace galileo
                 return current_state;
             }
 
-            template <typename BasicSpec,
-                      template <typename> class CollectionTpl>
-            static ReturnType processPhases(
-                const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
-                std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
-                FoldStateType initial_state)
+            template <typename BasicSpec, template <typename> class CollectionTpl>
+            static ReturnType processPhases(const std::vector<PhaseModelTpl<BasicSpec, CollectionTpl>> &phase_models,
+                                            std::vector<PhaseDataTpl<BasicSpec, CollectionTpl>> &phase_data,
+                                            FoldStateType initial_state)
             {
                 FoldStateType current_state = initial_state;
 
@@ -108,7 +101,8 @@ namespace galileo
                 auto data_iterators = get_iterators(phase_data);
 
                 for (auto model_it = model_iterators.first, data_it = data_iterators.first;
-                     model_it != model_iterators.second; ++model_it, ++data_it)
+                     model_it != model_iterators.second;
+                     ++model_it, ++data_it)
                 {
                     current_state = processPhaseInterior(*model_it, *data_it, current_state);
 
@@ -120,11 +114,13 @@ namespace galileo
                     {
                         if constexpr (IsDirectionallyInvariant || IsLeftFold)
                         {
-                            current_state = BoundaryBase::run(*model_it, *data_it, *next_model, *next_data, current_state);
+                            current_state =
+                                BoundaryBase::run(*model_it, *data_it, *next_model, *next_data, current_state);
                         }
                         else
                         {
-                            current_state = BoundaryBase::run(*next_model, *next_data, *model_it, *data_it, current_state);
+                            current_state =
+                                BoundaryBase::run(*next_model, *next_data, *model_it, *data_it, current_state);
                         }
                     }
                 }
@@ -133,25 +129,20 @@ namespace galileo
             }
 
             // Process interior segments within a single phase
-            template <typename BasicSpec,
-                      template <typename> class CollectionTpl,
-                      typename ArgsTmp>
-            static ReturnType processPhaseInterior(
-                const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
-                PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
-                FoldStateType state,
-                ArgsTmp args)
+            template <typename BasicSpec, template <typename> class CollectionTpl, typename ArgsTmp>
+            static ReturnType processPhaseInterior(const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
+                                                   PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
+                                                   FoldStateType state,
+                                                   ArgsTmp args)
             {
                 InternalPhaseInteriorVisitor<BasicSpec, CollectionTpl, ArgsTmp> visitor(phase_data, state, args);
                 return boost::apply_visitor(visitor, phase_model);
             }
 
-            template <typename BasicSpec,
-                      template <typename> class CollectionTpl>
-            static ReturnType processPhaseInterior(
-                const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
-                PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
-                FoldStateType state)
+            template <typename BasicSpec, template <typename> class CollectionTpl>
+            static ReturnType processPhaseInterior(const PhaseModelTpl<BasicSpec, CollectionTpl> &phase_model,
+                                                   PhaseDataTpl<BasicSpec, CollectionTpl> &phase_data,
+                                                   FoldStateType state)
             {
                 InternalPhaseInteriorVisitor<BasicSpec, CollectionTpl, NoArg> visitor(phase_data, state);
                 return boost::apply_visitor(visitor, phase_model);
@@ -164,7 +155,9 @@ namespace galileo
                 using PhaseDataVariant_t = PhaseDataTpl<BasicSpec, CollectionTpl>;
 
                 InternalPhaseInteriorVisitor(PhaseDataVariant_t &phase_data_, FoldStateType state_, ArgType args_)
-                    : phase_data(phase_data_), state(state_), args(args_) {}
+                    : phase_data(phase_data_), state(state_), args(args_)
+                {
+                }
 
                 template <typename PhaseModelType>
                 ReturnType operator()(const PhaseModelBase<PhaseModelType, BasicSpec> &phase_model) const
@@ -180,7 +173,8 @@ namespace galileo
                     // In forward iteration (IsLeftFold = true): model_it/data_it points to the subsequent segment
                     // In backward iteration (IsLeftFold = false): model_it/data_it points to the previous segment
                     for (auto model_it = model_iterators.first, data_it = data_iterators.first;
-                         model_it != model_iterators.second; ++model_it, ++data_it)
+                         model_it != model_iterators.second;
+                         ++model_it, ++data_it)
                     {
                         current_state = InteriorBase::run(*model_it, *data_it, current_state, args);
                     }
@@ -195,12 +189,15 @@ namespace galileo
 
             // Specialization for NoArg
             template <typename BasicSpec, template <typename> class CollectionTpl>
-            struct InternalPhaseInteriorVisitor<BasicSpec, CollectionTpl, NoArg> : public boost::static_visitor<ReturnType>
+            struct InternalPhaseInteriorVisitor<BasicSpec, CollectionTpl, NoArg>
+                : public boost::static_visitor<ReturnType>
             {
                 using PhaseDataVariant_t = PhaseDataTpl<BasicSpec, CollectionTpl>;
 
                 InternalPhaseInteriorVisitor(PhaseDataVariant_t &phase_data_, FoldStateType state_)
-                    : phase_data(phase_data_), state(state_) {}
+                    : phase_data(phase_data_), state(state_)
+                {
+                }
 
                 template <typename PhaseModelType>
                 ReturnType operator()(const PhaseModelBase<PhaseModelType, BasicSpec> &phase_model) const
@@ -216,7 +213,8 @@ namespace galileo
                     // In forward iteration (IsLeftFold = true): model_it/data_it points to the subsequent segment
                     // In backward iteration (IsLeftFold = false): model_it/data_it points to the previous segment
                     for (auto model_it = model_iterators.first, data_it = data_iterators.first;
-                         model_it != model_iterators.second; ++model_it, ++data_it)
+                         model_it != model_iterators.second;
+                         ++model_it, ++data_it)
                     {
                         current_state = InteriorBase::run(*model_it, *data_it, current_state);
                     }
@@ -246,9 +244,7 @@ namespace galileo
         }; // struct FoldEngineTpl
 
         // Convenience alias matching the expected user interface
-        template <typename InteriorPropagator,
-                  typename BoundaryPropagator,
-                  bool IsLeftFold = true>
+        template <typename InteriorPropagator, typename BoundaryPropagator, bool IsLeftFold = true>
         using FoldTpl = FoldEngineTpl<InteriorPropagator, BoundaryPropagator, IsLeftFold>;
 
     } // namespace fusion

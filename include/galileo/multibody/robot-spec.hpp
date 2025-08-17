@@ -9,78 +9,77 @@
 #include "galileo/core/basic-spec.hpp"
 
 // Macros to import the types and constants from a robot spec
-#define GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec)                 \
-    using State_t = typename RobotSpec::State_t;                   \
-    using ActuationMeta_t = typename RobotSpec::ActuationMeta_t;   \
+#define GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec) \
+    using State_t = typename RobotSpec::State_t; \
+    using ActuationMeta_t = typename RobotSpec::ActuationMeta_t; \
     using ActuationModel_t = typename RobotSpec::ActuationModel_t; \
     using ActuationData_t = typename RobotSpec::ActuationData_t;
 
-#define GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(RobotSpec)      \
-    using RobotModel_t = typename RobotSpec::RobotModel_t;         \
-    using RobotData_t = typename RobotSpec::RobotData_t;           \
-    using FrameIndex_t = typename RobotSpec::FrameIndex_t;         \
+#define GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(RobotSpec) \
+    using RobotModel_t = typename RobotSpec::RobotModel_t; \
+    using RobotData_t = typename RobotSpec::RobotData_t; \
+    using FrameIndex_t = typename RobotSpec::FrameIndex_t; \
     using ReferenceFrame_t = typename RobotSpec::ReferenceFrame_t; \
-    using SE3_t = typename RobotSpec::SE3_t;                       \
-    using Motion_t = typename RobotSpec::Motion_t;                 \
-    using Force_t = typename RobotSpec::Force_t;                   \
+    using SE3_t = typename RobotSpec::SE3_t; \
+    using Motion_t = typename RobotSpec::Motion_t; \
+    using Force_t = typename RobotSpec::Force_t; \
     using ActionMatrix_t = typename RobotSpec::ActionMatrix_t;
 
-#define GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec) \
-    GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(RobotSpec::BS);
+#define GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec) GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(RobotSpec::BS);
 
-#define GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec)    \
-    static constexpr int NQb = RobotSpec::NQb;             \
-    static constexpr int NQj = RobotSpec::NQj;             \
-    static constexpr int NVb = RobotSpec::NVb;             \
-    static constexpr int NVj = RobotSpec::NVj;             \
-    static constexpr int NRotors = RobotSpec::NRotors;     \
-    static constexpr int NQ = RobotSpec::NQ;               \
-    static constexpr int NV = RobotSpec::NV;               \
-    static constexpr int NX = RobotSpec::NX;               \
-    static constexpr int NDX = RobotSpec::NDX;             \
-    static constexpr int NUa = RobotSpec::NUa;             \
-    using DimNQb_t = typename RobotSpec::DimNQb_t;         \
-    using DimNQj_t = typename RobotSpec::DimNQj_t;         \
-    using DimNVb_t = typename RobotSpec::DimNVb_t;         \
-    using DimNVj_t = typename RobotSpec::DimNVj_t;         \
+#define GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec) \
+    static constexpr int NQb = RobotSpec::NQb; \
+    static constexpr int NQj = RobotSpec::NQj; \
+    static constexpr int NVb = RobotSpec::NVb; \
+    static constexpr int NVj = RobotSpec::NVj; \
+    static constexpr int NRotors = RobotSpec::NRotors; \
+    static constexpr int NQ = RobotSpec::NQ; \
+    static constexpr int NV = RobotSpec::NV; \
+    static constexpr int NX = RobotSpec::NX; \
+    static constexpr int NDX = RobotSpec::NDX; \
+    static constexpr int NUa = RobotSpec::NUa; \
+    using DimNQb_t = typename RobotSpec::DimNQb_t; \
+    using DimNQj_t = typename RobotSpec::DimNQj_t; \
+    using DimNVb_t = typename RobotSpec::DimNVb_t; \
+    using DimNVj_t = typename RobotSpec::DimNVj_t; \
     using DimNRotors_t = typename RobotSpec::DimNRotors_t; \
-    using DimNQ_t = typename RobotSpec::DimNQ_t;           \
-    using DimNV_t = typename RobotSpec::DimNV_t;           \
-    using DimNX_t = typename RobotSpec::DimNX_t;           \
-    using DimNDX_t = typename RobotSpec::DimNDX_t;         \
+    using DimNQ_t = typename RobotSpec::DimNQ_t; \
+    using DimNV_t = typename RobotSpec::DimNV_t; \
+    using DimNX_t = typename RobotSpec::DimNX_t; \
+    using DimNDX_t = typename RobotSpec::DimNDX_t; \
     using DimNUa_t = typename RobotSpec::DimNUa_t;
 
-#define GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec)              \
-    GALILEO_BASIC_SPEC_FIXED_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS)   \
+#define GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec) \
+    GALILEO_BASIC_SPEC_FIXED_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS) \
     GALILEO_BASIC_SPEC_DYNAMIC_SIZE_EIGEN_TYPES_TYPEDEF(RobotSpec::BS) \
-    using VectorNqb_t = typename RobotSpec::VectorNqb_t;               \
-    using VectorNqj_t = typename RobotSpec::VectorNqj_t;               \
-    using VectorNvb_t = typename RobotSpec::VectorNvb_t;               \
-    using VectorNvj_t = typename RobotSpec::VectorNvj_t;               \
-    using VectorNx_t = typename RobotSpec::VectorNx_t;                 \
-    using VectorNua_t = typename RobotSpec::VectorNua_t;               \
-    using VectorNdx_t = typename RobotSpec::VectorNdx_t;               \
-    using VectorNq_t = typename RobotSpec::VectorNq_t;                 \
-    using VectorNv_t = typename RobotSpec::VectorNv_t;                 \
-    using MatrixNx_t = typename RobotSpec::MatrixNx_t;                 \
-    using MatrixNua_t = typename RobotSpec::MatrixNua_t;               \
-    using MatrixNdx_t = typename RobotSpec::MatrixNdx_t;               \
-    using MatrixNq_t = typename RobotSpec::MatrixNq_t;                 \
-    using MatrixNv_t = typename RobotSpec::MatrixNv_t;                 \
-    using MatrixNvNdx_t = typename RobotSpec::MatrixNvNdx_t;           \
-    using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t;           \
-    using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t;           \
-    using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t;         \
-    using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t;         \
-    using MatrixNv6_t = typename RobotSpec::MatrixNv6_t;               \
-    using Matrix6Nv_t = typename RobotSpec::Matrix6Nv_t;               \
+    using VectorNqb_t = typename RobotSpec::VectorNqb_t; \
+    using VectorNqj_t = typename RobotSpec::VectorNqj_t; \
+    using VectorNvb_t = typename RobotSpec::VectorNvb_t; \
+    using VectorNvj_t = typename RobotSpec::VectorNvj_t; \
+    using VectorNx_t = typename RobotSpec::VectorNx_t; \
+    using VectorNua_t = typename RobotSpec::VectorNua_t; \
+    using VectorNdx_t = typename RobotSpec::VectorNdx_t; \
+    using VectorNq_t = typename RobotSpec::VectorNq_t; \
+    using VectorNv_t = typename RobotSpec::VectorNv_t; \
+    using MatrixNx_t = typename RobotSpec::MatrixNx_t; \
+    using MatrixNua_t = typename RobotSpec::MatrixNua_t; \
+    using MatrixNdx_t = typename RobotSpec::MatrixNdx_t; \
+    using MatrixNq_t = typename RobotSpec::MatrixNq_t; \
+    using MatrixNv_t = typename RobotSpec::MatrixNv_t; \
+    using MatrixNvNdx_t = typename RobotSpec::MatrixNvNdx_t; \
+    using MatrixNvNua_t = typename RobotSpec::MatrixNvNua_t; \
+    using MatrixNuaNv_t = typename RobotSpec::MatrixNuaNv_t; \
+    using MatrixNdxNua_t = typename RobotSpec::MatrixNdxNua_t; \
+    using MatrixNuaNdx_t = typename RobotSpec::MatrixNuaNdx_t; \
+    using MatrixNv6_t = typename RobotSpec::MatrixNv6_t; \
+    using Matrix6Nv_t = typename RobotSpec::Matrix6Nv_t; \
     using Matrix6Ndx_t = typename RobotSpec::Matrix6Ndx_t;
 
-#define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec)       \
-    GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec);            \
+#define GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RobotSpec) \
+    GALILEO_ROBOT_SPEC_META_TYPEDEF(RobotSpec); \
     GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(RobotSpec); \
-    GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec);         \
-    GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec);       \
+    GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(RobotSpec); \
+    GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(RobotSpec); \
     GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(RobotSpec);
 
 namespace galileo
@@ -187,109 +186,34 @@ namespace galileo
         /* Accessors for the RobotSpec dimensions */
         /* ---------------------------------------------------------------- */
 
-        const DimNQb_t &get_nqb_dim() const
-        {
-            return nqb_dim_;
-        }
-
-        int get_nqb() const
-        {
-            return nqb_dim_.value();
-        }
-
-        const DimNQj_t &get_nqj_dim() const
-        {
-            return nqj_dim_;
-        }
-
-        int get_nqj() const
-        {
-            return nqj_dim_.value();
-        }
-
-        const DimNVb_t &get_nvb_dim() const
-        {
-            return nvb_dim_;
-        }
-
-        int get_nvb() const
-        {
-            return nvb_dim_.value();
-        }
-
-        const DimNVj_t &get_nvj_dim() const
-        {
-            return nvj_dim_;
-        }
-
-        int get_nvj() const
-        {
-            return nvj_dim_.value();
-        }
-
-        const DimNRotors_t &get_nrotors_dim() const
-        {
-            return nrotors_dim_;
-        }
-
-        int get_nrotors() const
-        {
-            return nrotors_dim_.value();
-        }
-
-        const DimNQ_t &get_nq_dim() const
-        {
-            return nq_dim_;
-        }
-
-        int get_nq() const
-        {
-            return nq_dim_.value();
-        }
-
-        const DimNV_t &get_nv_dim() const
-        {
-            return nv_dim_;
-        }
-
-        int get_nv() const
-        {
-            return nv_dim_.value();
-        }
-
-        const DimNX_t &get_nx_dim() const
-        {
-            return nx_dim_;
-        }
-
-        int get_nx() const
-        {
-            return nx_dim_.value();
-        }
-
-        const DimNDX_t &get_ndx_dim() const
-        {
-            return ndx_dim_;
-        }
-
-        int get_ndx() const
-        {
-            return ndx_dim_.value();
-        }
-
-        const DimNUa_t &get_nua_dim() const
-        {
-            return nua_dim_;
-        }
-
-        int get_nua() const
-        {
-            return nua_dim_.value();
-        }
+        const DimNQb_t &get_nqb_dim() const { return nqb_dim_; }
+        int get_nqb() const { return nqb_dim_.value(); }
+        const DimNQj_t &get_nqj_dim() const { return nqj_dim_; }
+        int get_nqj() const { return nqj_dim_.value(); }
+        const DimNVb_t &get_nvb_dim() const { return nvb_dim_; }
+        int get_nvb() const { return nvb_dim_.value(); }
+        const DimNVj_t &get_nvj_dim() const { return nvj_dim_; }
+        int get_nvj() const { return nvj_dim_.value(); }
+        const DimNRotors_t &get_nrotors_dim() const { return nrotors_dim_; }
+        int get_nrotors() const { return nrotors_dim_.value(); }
+        const DimNQ_t &get_nq_dim() const { return nq_dim_; }
+        int get_nq() const { return nq_dim_.value(); }
+        const DimNV_t &get_nv_dim() const { return nv_dim_; }
+        int get_nv() const { return nv_dim_.value(); }
+        const DimNX_t &get_nx_dim() const { return nx_dim_; }
+        int get_nx() const { return nx_dim_.value(); }
+        const DimNDX_t &get_ndx_dim() const { return ndx_dim_; }
+        int get_ndx() const { return ndx_dim_.value(); }
+        const DimNUa_t &get_nua_dim() const { return nua_dim_; }
+        int get_nua() const { return nua_dim_.value(); }
 
         // Constructor to properly initialize compound dimensions through the base class
         RobotSpecTpl()
-            : nqb_dim_{}, nqj_dim_{}, nvb_dim_{}, nvj_dim_{}, nrotors_dim_{},
+            : nqb_dim_{},
+              nqj_dim_{},
+              nvb_dim_{},
+              nvj_dim_{},
+              nrotors_dim_{},
               nq_dim_(nqb_dim_ + nqj_dim_),
               nv_dim_(nvb_dim_ + nvj_dim_),
               nx_dim_(nq_dim_ + nv_dim_),

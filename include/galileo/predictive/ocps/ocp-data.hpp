@@ -6,8 +6,7 @@
 namespace galileo
 {
 
-    template <typename BasicSpec,
-              template <typename BS> class PhaseCollectionTpl>
+    template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
     struct OcpDataTpl
     {
     public:
@@ -19,9 +18,7 @@ namespace galileo
         using PhaseModel_t = PhaseModelTpl<BS, PhaseCollectionTpl>;
         using PhaseData_t = PhaseDataTpl<BS, PhaseCollectionTpl>;
 
-        OcpDataTpl()
-        {
-        }
+        OcpDataTpl() {}
 
         std::vector<PhaseData_t> phases;
 

@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived>
-    class SolverBase
-        : public internal::CRTP<Derived>
+    class SolverBase : public internal::CRTP<Derived>
     {
     public:
         using Meta_t = typename traits<Derived>::Meta_t;
@@ -16,19 +15,9 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
 
     protected:
-        inline SolverBase()
-        {
-        }
-
-        inline SolverBase(const SolverBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline SolverBase &operator=(const SolverBase &clone)
-        {
-            return *this;
-        }
+        inline SolverBase() {}
+        inline SolverBase(const SolverBase &clone) { *this = clone; }
+        inline SolverBase &operator=(const SolverBase &clone) { return *this; }
 
     }; // class SolverBase
 

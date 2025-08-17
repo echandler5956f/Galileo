@@ -8,8 +8,7 @@ namespace galileo
 {
 
     // Contact data mixin
-    template <typename Derived, typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename Derived, typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct ContactDataMixinTpl
     {
         using PS = PhaseSpec;
@@ -18,8 +17,7 @@ namespace galileo
         using ContactModelManager_t = typename traits<ContactManagerMeta_t>::ModelManager_t;
         using ContactDataManager_t = typename traits<ContactManagerMeta_t>::DataManager_t;
 
-        ContactDataMixinTpl(std::shared_ptr<ContactDataManager_t> data)
-            : contacts(data) {}
+        ContactDataMixinTpl(std::shared_ptr<ContactDataManager_t> data) : contacts(data) {}
 
         std::shared_ptr<ContactDataManager_t> contacts;
 

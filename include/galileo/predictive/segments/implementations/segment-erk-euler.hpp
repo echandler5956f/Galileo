@@ -35,8 +35,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct SegmentERKDataEulerTpl
-        : public SegmentERKDataBase<SegmentERKDataEulerTpl<PhaseSpec>, PhaseSpec>
+    struct SegmentERKDataEulerTpl : public SegmentERKDataBase<SegmentERKDataEulerTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -51,18 +50,15 @@ namespace galileo
         DEFAULT_ACCESSOR(XNext_t, XNext);
         DEFAULT_ACCESSOR(XNextx_t, XNextx);
         DEFAULT_ACCESSOR(XNextw_t, XNextw);
-
         DEFAULT_ACCESSOR(L_t, L);
         DEFAULT_ACCESSOR(Lx_t, Lx);
         DEFAULT_ACCESSOR(Lw_t, Lw);
         DEFAULT_ACCESSOR(Lxx_t, Lxx);
         DEFAULT_ACCESSOR(Lxw_t, Lxw);
         DEFAULT_ACCESSOR(Lww_t, Lww);
-
         DEFAULT_ACCESSOR(H_t, H);
         DEFAULT_ACCESSOR(Hx_t, Hx);
         DEFAULT_ACCESSOR(Hw_t, Hw);
-
         DEFAULT_ACCESSOR(G_t, G);
         DEFAULT_ACCESSOR(Gx_t, Gx);
         DEFAULT_ACCESSOR(Gw_t, Gw);
@@ -137,8 +133,7 @@ namespace galileo
     }; // struct SegmentERKDataEulerTpl
 
     template <typename PhaseSpec>
-    class SegmentERKModelEulerTpl
-        : public SegmentERKModelBase<SegmentERKModelEulerTpl<PhaseSpec>, PhaseSpec>
+    class SegmentERKModelEulerTpl : public SegmentERKModelBase<SegmentERKModelEulerTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -150,14 +145,11 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
         using Base = SegmentERKModelBase<SegmentERKModelEulerTpl<PS>, PS>;
 
-        SegmentERKModelEulerTpl(const PS &ps, const NodeModel_t &node,
+        SegmentERKModelEulerTpl(const PS &ps,
+                                const NodeModel_t &node,
                                 const ControlParamModel_t &control,
                                 const NumScalar period)
-            : Base(ps),
-              node_(node),
-              control_(control),
-              period_(period),
-              period_squared_(period * period)
+            : Base(ps), node_(node), control_(control), period_(period), period_squared_(period * period)
         {
         }
 
@@ -181,8 +173,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             node_.calc(data.node, x);
             data.dx.setZero();
@@ -234,8 +225,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             node_.calcDiff(data.node, x);
             get_state().Jintegrate(x, data.dx, data.XNextx, data.XNextx);
@@ -249,7 +239,8 @@ namespace galileo
         void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlParamVectorType> &w,
-                         const int maxiter, const NumScalar tol) const
+                         const int maxiter,
+                         const NumScalar tol) const
         {
             data.control.u.setZero();
             node_.quasiStatic(data.node, x, data.control.u, maxiter, tol);
@@ -257,20 +248,10 @@ namespace galileo
             w = data.control.w;
         }
 
-        Data_t createData() const
-        {
-            return Data_t(*this);
-        }
+        Data_t createData() const { return Data_t(*this); }
 
-        const ControlParamModel_t &get_control() const
-        {
-            return control_;
-        }
-
-        const NodeModel_t &get_node() const
-        {
-            return node_;
-        }
+        const ControlParamModel_t &get_control() const { return control_; }
+        const NodeModel_t &get_node() const { return node_; }
 
         using Base::get_ps;
         using Base::get_state;

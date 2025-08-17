@@ -8,8 +8,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct JumpDataBase
-        : public internal::CRTP<Derived>
+    struct JumpDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -22,34 +21,20 @@ namespace galileo
 
         FORWARD_ACCESSOR(CostDataManager_t, costs);
         FORWARD_ACCESSOR(ConstraintDataManager_t, constraints);
-
         FORWARD_ACCESSOR(XNext_t, XNext);
         FORWARD_ACCESSOR(XNextx_t, XNextx);
-
         FORWARD_ACCESSOR(L_t, L);
         FORWARD_ACCESSOR(Lx_t, Lx);
         FORWARD_ACCESSOR(Lxx_t, Lxx);
-
         FORWARD_ACCESSOR(H_t, H);
         FORWARD_ACCESSOR(Hx_t, Hx);
-
         FORWARD_ACCESSOR(G_t, G);
         FORWARD_ACCESSOR(Gx_t, Gx);
 
     protected:
-        inline JumpDataBase()
-        {
-        }
-
-        inline JumpDataBase(const JumpDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline JumpDataBase &operator=(const JumpDataBase &clone)
-        {
-            return *this;
-        }
+        inline JumpDataBase() {}
+        inline JumpDataBase(const JumpDataBase &clone) { *this = clone; }
+        inline JumpDataBase &operator=(const JumpDataBase &clone) { return *this; }
 
     }; // struct JumpDataBase
 

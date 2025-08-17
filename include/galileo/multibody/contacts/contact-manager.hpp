@@ -11,14 +11,11 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct ContactManagerTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    struct ContactItemTpl
-        : public ManagerItemTpl<ContactItemTpl<PhaseSpec, ContactCollectionTpl>>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    struct ContactItemTpl : public ManagerItemTpl<ContactItemTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
 
@@ -43,16 +40,14 @@ namespace galileo
 
     }; // struct ContactItemTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct traits<ContactItemTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
         using MetaManager_t = ContactManagerTpl<PS, ContactCollectionTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct traits<ContactManagerTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -81,8 +76,7 @@ namespace galileo
         using ForceVector_t = GALILEO_ALIGNED_STD_VECTOR(Force_t);
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct traits<ContactDataManagerTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -93,8 +87,7 @@ namespace galileo
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct traits<ContactModelManagerTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -105,10 +98,8 @@ namespace galileo
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    class ContactDataManagerTpl
-        : public ManagerDataBase<ContactDataManagerTpl<PhaseSpec, ContactCollectionTpl>>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    class ContactDataManagerTpl : public ManagerDataBase<ContactDataManagerTpl<PhaseSpec, ContactCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -164,10 +155,8 @@ namespace galileo
 
     }; // class ContactDataManagerTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
-    class ContactModelManagerTpl
-        : public ManagerModelBase<ContactModelManagerTpl<PhaseSpec, ContactCollectionTpl>>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    class ContactModelManagerTpl : public ManagerModelBase<ContactModelManagerTpl<PhaseSpec, ContactCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -192,11 +181,7 @@ namespace galileo
         using ForceVector_t = typename traits<MetaManager_t>::ForceVector_t;
         using ForceIterator_t = typename ForceVector_t::iterator;
 
-        ContactModelManagerTpl(const PS &ps)
-            : Base(),
-              ps_(ps), state_(ps.get_state())
-        {
-        }
+        ContactModelManagerTpl(const PS &ps) : Base(), ps_(ps), state_(ps.get_state()) {}
 
         template <typename StateVectorType>
         void calc(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
@@ -204,9 +189,9 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -228,9 +213,9 @@ namespace galileo
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -263,9 +248,9 @@ namespace galileo
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
 
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 Data_t &d_i = it_d->second;
@@ -274,8 +259,7 @@ namespace galileo
                     const int nc_i = get_model_n(m_i.model);
                     const auto force_i = segment(force, nc_accum_i, nc_i);
                     m_i.model.updateForce(d_i, force_i);
-                    const pinocchio::JointIndex joint =
-                        get_state().get_robot().frames[d_i.frame()].parentJoint;
+                    const pinocchio::JointIndex joint = get_state().get_robot().frames[d_i.frame()].parentJoint;
                     data.fext[joint] = d_i.fext();
                     nc_accum_i += nc_i;
                 }
@@ -293,15 +277,17 @@ namespace galileo
         }
 
         template <typename MatrixNcNdxType, typename MatrixNcNduType>
-        void updateForceDiff(DataManager_t &data, const Eigen::MatrixBase<MatrixNcNdxType> &df_dx, const Eigen::MatrixBase<MatrixNcNduType> &df_du) const
+        void updateForceDiff(DataManager_t &data,
+                             const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                             const Eigen::MatrixBase<MatrixNcNduType> &df_du) const
         {
             DimensionTpl<Eigen::Dynamic> nc_accum_i(0);
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
 
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 Data_t &d_i = it_d->second;
@@ -324,9 +310,9 @@ namespace galileo
         {
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 const Data_t &d_i = it_d->second;
@@ -354,44 +340,27 @@ namespace galileo
             return DataManager_t(*this, robot);
         }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const State_t &get_state() const { return state_.get(); }
 
-        const State_t &get_state() const
-        {
-            return state_.get();
-        }
-
-        int get_model_n(const Model_t &model) const
-        {
-            return model.get_nc();
-        }
+        int get_model_n(const Model_t &model) const { return model.get_nc(); }
 
         using Base::addItem;
         using Base::removeItem;
-
         using Base::changeItemStatus;
-
         using Base::get_active_set;
         using Base::get_inactive_set;
         using Base::get_items;
-
         using Base::get_item_status;
-
         using Base::get_n_active;
         using Base::get_n_active_dim;
-
         using Base::get_n_total;
         using Base::get_n_total_dim;
 
     protected:
         using Base::items_;
-
         using Base::active_set_;
         using Base::inactive_set_;
-
         using Base::active_dim_;
         using Base::total_dim_;
 

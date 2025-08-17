@@ -50,8 +50,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ResidualDataCoMPositionTpl
-        : public ResidualDataBase<ResidualDataCoMPositionTpl<PhaseSpec>, PhaseSpec>
+    struct ResidualDataCoMPositionTpl : public ResidualDataBase<ResidualDataCoMPositionTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -74,7 +73,8 @@ namespace galileo
         template <typename DataCollector>
         ResidualDataCoMPositionTpl(const Model_t &model, DataCollector *const collector)
             : robot(collector->robot),
-              R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+              R(model.get_nr()),
+              Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
               Arr_Ru(model.get_nr(), model.get_ps().get_nu())
@@ -97,8 +97,7 @@ namespace galileo
     }; // class ResidualDataCoMPositionTpl
 
     template <typename PhaseSpec>
-    class ResidualModelCoMPositionTpl
-        : public ResidualModelBase<ResidualModelCoMPositionTpl<PhaseSpec>, PhaseSpec>
+    class ResidualModelCoMPositionTpl : public ResidualModelBase<ResidualModelCoMPositionTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -113,10 +112,8 @@ namespace galileo
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         template <typename Vector3Type>
-        ResidualModelCoMPositionTpl(const PS &ps,
-                                    const Eigen::MatrixBase<Vector3Type> &c_ref)
-            : Base(ps, DimNR_t()),
-              c_ref_(c_ref)
+        ResidualModelCoMPositionTpl(const PS &ps, const Eigen::MatrixBase<Vector3Type> &c_ref)
+            : Base(ps, DimNR_t()), c_ref_(c_ref)
         {
         }
 
@@ -129,8 +126,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -144,8 +140,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -157,10 +152,8 @@ namespace galileo
         }
 
         using Base::get_ps;
-
         using Base::get_nr;
         using Base::get_nr_dim;
-
         using Base::get_q_dependent;
         using Base::get_u_dependent;
         using Base::get_v_dependent;

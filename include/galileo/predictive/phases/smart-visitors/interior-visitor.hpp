@@ -27,29 +27,24 @@ namespace galileo
 
             // Segment model-data transformation with args
             template <typename SegmentModel, typename SegmentData, typename ArgsTmp>
-            static ReturnType run(
-                const SegmentModelBaseOf_t<SegmentModel> &segment_model,
-                SegmentDataBaseOf_t<SegmentData> &segment_data,
-                FoldStateType state,
-                ArgsTmp args)
+            static ReturnType run(const SegmentModelBaseOf_t<SegmentModel> &segment_model,
+                                  SegmentDataBaseOf_t<SegmentData> &segment_data,
+                                  FoldStateType state,
+                                  ArgsTmp args)
             {
                 return bf::invoke(
                     &VisitorDerived::template algo<SegmentModel, SegmentData>,
-                    gf::append(
-                        boost::ref(segment_model.derived()),
-                        boost::ref(segment_data.derived()),
-                        state,
-                        args));
+                    gf::append(boost::ref(segment_model.derived()), boost::ref(segment_data.derived()), state, args));
             }
 
             // Segment model-data transformation without args
             template <typename SegmentModel, typename SegmentData>
-            static ReturnType run(
-                const SegmentModelBaseOf_t<SegmentModel> &segment_model,
-                SegmentDataBaseOf_t<SegmentData> &segment_data,
-                FoldStateType state)
+            static ReturnType run(const SegmentModelBaseOf_t<SegmentModel> &segment_model,
+                                  SegmentDataBaseOf_t<SegmentData> &segment_data,
+                                  FoldStateType state)
             {
-                return VisitorDerived::template algo<SegmentModel, SegmentData>(segment_model.derived(), segment_data.derived(), state);
+                return VisitorDerived::template algo<SegmentModel, SegmentData>(
+                    segment_model.derived(), segment_data.derived(), state);
             }
 
         }; // struct InteriorPropagatorBase

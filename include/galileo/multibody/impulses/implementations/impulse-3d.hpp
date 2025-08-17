@@ -52,8 +52,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ImpulseData3dTpl
-        : public ImpulseDataBase<ImpulseData3dTpl<PhaseSpec>, PhaseSpec>
+    struct ImpulseData3dTpl : public ImpulseDataBase<ImpulseData3dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -152,8 +151,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ImpulseModel3dTpl
-        : public ImpulseModelBase<ImpulseModel3dTpl<PhaseSpec>, PhaseSpec>
+    struct ImpulseModel3dTpl : public ImpulseModelBase<ImpulseModel3dTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -167,18 +165,13 @@ namespace galileo
 
         using DimNC_t = typename traits<Meta_t>::DimNC_t;
 
-        ImpulseModel3dTpl(const PS &ps,
-                          const FrameIndex_t id,
-                          const ReferenceFrame_t &type)
-            : Base(id, type, DimNC_t()),
-              ps_(ps),
-              robot_(ps.get_state().get_robot())
+        ImpulseModel3dTpl(const PS &ps, const FrameIndex_t id, const ReferenceFrame_t &type)
+            : Base(id, type, DimNC_t()), ps_(ps), robot_(ps.get_state().get_robot())
         {
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             pinocchio::updateFramePlacement(get_robot(), *data.robot, get_id());
             pinocchio::getFrameJacobian(get_robot(), *data.robot, get_id(), pinocchio::LOCAL, data.fJf);
@@ -196,13 +189,11 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const pinocchio::JointIndex joint = get_robot().frames[data.frame].parentJoint;
-            pinocchio::getJointVelocityDerivatives(get_robot(), *data.robot,
-                                                   joint, pinocchio::LOCAL,
-                                                   data.v_partial_dq, data.v_partial_dv);
+            pinocchio::getJointVelocityDerivatives(
+                get_robot(), *data.robot, joint, pinocchio::LOCAL, data.v_partial_dq, data.v_partial_dv);
             data.dv0_local_dq.noalias() = topRows<3>(data.fXj) * data.v_partial_dq;
 
             switch (get_type())
@@ -213,9 +204,9 @@ namespace galileo
             case pinocchio::ReferenceFrame::WORLD:
             case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
                 const auto oRf = data.robot->oMf[get_id()].rotation();
-                data.v0 = pinocchio::getFrameVelocity(get_robot(), *data.robot, get_id(),
-                                                      pinocchio::LOCAL_WORLD_ALIGNED)
-                              .linear();
+                data.v0 =
+                    pinocchio::getFrameVelocity(get_robot(), *data.robot, get_id(), pinocchio::LOCAL_WORLD_ALIGNED)
+                        .linear();
                 pinocchio::skew(data.v0, data.v0_skew);
                 data.v0_world_skew.noalias() = data.v0_skew * oRf;
                 data.dv0_dq.noalias() = oRf * data.dv0_local_dq;
@@ -225,8 +216,7 @@ namespace galileo
         }
 
         template <typename ForceVectorType>
-        void updateForce(Data_t &data,
-                         const Eigen::MatrixBase<ForceVectorType> &force) const
+        void updateForce(Data_t &data, const Eigen::MatrixBase<ForceVectorType> &force) const
         {
             data.f.linear() = force;
             data.f.angular().setZero();
@@ -244,38 +234,24 @@ namespace galileo
                 data.fext = data.jMf.act(data.f_local);
                 pinocchio::skew(data.f_local.linear(), data.f_skew);
                 data.fJf_df.noalias() = data.f_skew * bottomRows<3>(data.fJf);
-                data.dtau_dq.noalias() =
-                    -topRows<3>(data.fJf).transpose() * data.fJf_df;
+                data.dtau_dq.noalias() = -topRows<3>(data.fJf).transpose() * data.fJf_df;
                 break;
             }
         }
 
-        Data_t createData(RobotData_t *const robot) const
-        {
-            return Data_t(*this, robot);
-        }
+        Data_t createData(RobotData_t *const robot) const { return Data_t(*this, robot); }
 
         using Base::setZeroForce;
         using Base::setZeroForceDiff;
         using Base::updateForceDiff;
-
         using Base::get_id;
         using Base::get_type;
-
         using Base::set_id;
         using Base::set_type;
-
         using Base::get_nc;
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        const RobotModel_t &get_robot() const
-        {
-            return robot_.get();
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const RobotModel_t &get_robot() const { return robot_.get(); }
 
     protected:
         std::reference_wrapper<const PS> ps_;

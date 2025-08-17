@@ -20,9 +20,7 @@ namespace galileo
         const Eigen::MatrixBase<StateVectorType> &x,
         const Eigen::MatrixBase<ControlVectorType> &u);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename StateVectorType>
     inline void constraint_calc_zeroth_order(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
@@ -39,39 +37,31 @@ namespace galileo
         const Eigen::MatrixBase<StateVectorType> &x,
         const Eigen::MatrixBase<ControlVectorType> &u);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename StateVectorType>
     inline void constraint_calc_first_order(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
         const Eigen::MatrixBase<StateVectorType> &x,
         const Blank blank);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename DataCollector>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename DataCollector>
     inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
-        DataCollector *const collector);
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model, DataCollector *const collector);
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     inline int constraint_get_nh(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);
 
     // Constraint data visitors
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t constraint_H(
         const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t constraint_Hx(
         const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t constraint_Hu(
         const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data);
 

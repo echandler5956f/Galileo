@@ -14,33 +14,25 @@ namespace galileo
     {
     }; // struct CostDataVoid
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     struct CostModelResidualTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl,
-              template <typename PS> class ActivationTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
     struct CostDataResidualTpl;
 
     template <typename PhaseSpec>
     struct CostCollectionDefaultTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct CostModelTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct CostDataTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     class CostModelManagerTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     class CostDataManagerTpl;
 
 } // namespace galileo
