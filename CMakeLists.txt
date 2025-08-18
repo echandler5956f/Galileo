@@ -170,6 +170,8 @@ endif()
 
 if(BUILD_WITH_CANDLEWICK_SUPPORT)
   target_link_libraries(galileo INTERFACE candlewick::candlewick_multibody)
+
+  add_subdirectory(external)
 endif()
 
 set_target_properties(galileo PROPERTIES EXPORT_NAME Galileo)
