@@ -4,7 +4,7 @@
 #include "galileo/core/constraints/equality/constraint-base.hpp"
 
 #define GALILEO_CONSTRAINT_DATA_TYPEDEF(Constraint) \
-    using H_t = typename traits<Constraint>::H_t;   \
+    using H_t = typename traits<Constraint>::H_t; \
     using Hx_t = typename traits<Constraint>::Hx_t; \
     using Hu_t = typename traits<Constraint>::Hu_t;
 
@@ -12,8 +12,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct ConstraintDataBase
-        : public internal::CRTP<Derived>
+    struct ConstraintDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -29,19 +28,9 @@ namespace galileo
         FORWARD_ACCESSOR(Hu_t, Hu);
 
     protected:
-        inline ConstraintDataBase()
-        {
-        }
-
-        inline ConstraintDataBase(const ConstraintDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline ConstraintDataBase &operator=(const ConstraintDataBase &clone)
-        {
-            return *this;
-        }
+        inline ConstraintDataBase() {}
+        inline ConstraintDataBase(const ConstraintDataBase &clone) { *this = clone; }
+        inline ConstraintDataBase &operator=(const ConstraintDataBase &clone) { return *this; }
 
     }; // struct ConstraintDataBase
 

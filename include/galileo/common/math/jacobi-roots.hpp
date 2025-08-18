@@ -48,14 +48,14 @@ namespace galileo
 
         e(n - 1) = 0.0;
 
-        for (l = 1; l <= (int)n; l++)
+        for (l = 1; l <= (int) n; l++)
         {
             j = 0;
             for (;;)
             {
-                for (m = l; m <= (int)n; m++)
+                for (m = l; m <= (int) n; m++)
                 {
-                    if (m == (int)n)
+                    if (m == (int) n)
                     {
                         break;
                     }
@@ -125,7 +125,7 @@ namespace galileo
             k = i;
             p = d(i - 1);
 
-            for (j = ii; j <= (int)n; j++)
+            for (j = ii; j <= (int) n; j++)
             {
                 if (d(j - 1) < p)
                 {
@@ -154,9 +154,7 @@ namespace galileo
 
         JacobiRootsTpl() : alpha_(0.0), beta_(0.0) {}
 
-        JacobiRootsTpl(const NumScalar &alpha, const NumScalar &beta) : alpha_(alpha), beta_(beta)
-        {
-        }
+        JacobiRootsTpl(const NumScalar &alpha, const NumScalar &beta) : alpha_(alpha), beta_(beta) {}
 
         void compute_roots()
         {
@@ -164,7 +162,8 @@ namespace galileo
             NumScalar abi = 2.0 + ab;
 
             // Define the zero-th moment.
-            NumScalar zemu = std::pow(2.0, ab + 1.0) * std::tgamma(alpha_ + 1.0) * std::tgamma(beta_ + 1.0) / std::tgamma(abi);
+            NumScalar zemu =
+                std::pow(2.0, ab + 1.0) * std::tgamma(alpha_ + 1.0) * std::tgamma(beta_ + 1.0) / std::tgamma(abi);
 
             // Define the Jacobi matrix.
             roots_(0) = (beta_ - alpha_) / abi;
@@ -224,25 +223,10 @@ namespace galileo
             }
         }
 
-        const Eigen::GMatrix<NumScalar, N, N, Options> &get_jacobi_matrix() const
-        {
-            return jacobi_matrix_;
-        }
-
-        const Eigen::GMatrix<NumScalar, N, 1, Options> &get_roots() const
-        {
-            return roots_;
-        }
-
-        NumScalar get_alpha() const
-        {
-            return alpha_;
-        }
-
-        NumScalar get_beta() const
-        {
-            return beta_;
-        }
+        const Eigen::GMatrix<NumScalar, N, N, Options> &get_jacobi_matrix() const { return jacobi_matrix_; }
+        const Eigen::GMatrix<NumScalar, N, 1, Options> &get_roots() const { return roots_; }
+        NumScalar get_alpha() const { return alpha_; }
+        NumScalar get_beta() const { return beta_; }
 
     protected:
         Eigen::GMatrix<NumScalar, N, N, Options> jacobi_matrix_;

@@ -6,8 +6,8 @@
 
 #include "galileo/multibody/fwd.hpp"
 
-#define GALILEO_FORCE_DATA_TYPEDEF(Force)                        \
-    using MatrixNcNv_t = typename traits<Force>::MatrixNcNv_t;   \
+#define GALILEO_FORCE_DATA_TYPEDEF(Force) \
+    using MatrixNcNv_t = typename traits<Force>::MatrixNcNv_t; \
     using MatrixNcNdx_t = typename traits<Force>::MatrixNcNdx_t; \
     using MatrixNcNu_t = typename traits<Force>::MatrixNcNu_t;
 
@@ -15,8 +15,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct ForceDataBase
-        : public internal::CRTP<Derived>
+    struct ForceDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -40,19 +39,9 @@ namespace galileo
         FORWARD_ACCESSOR(MatrixNcNu_t, df_du);
 
     protected:
-        inline ForceDataBase()
-        {
-        }
-
-        inline ForceDataBase(const ForceDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline ForceDataBase &operator=(const ForceDataBase &clone)
-        {
-            return *this;
-        }
+        inline ForceDataBase() {}
+        inline ForceDataBase(const ForceDataBase &clone) { *this = clone; }
+        inline ForceDataBase &operator=(const ForceDataBase &clone) { return *this; }
 
     }; // struct ForceDataBase
 

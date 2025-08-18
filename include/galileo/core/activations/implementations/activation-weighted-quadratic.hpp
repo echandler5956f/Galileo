@@ -6,12 +6,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct ActivationWeightedQuadraticTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ActivationWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
@@ -34,22 +32,19 @@ namespace galileo
         using WeightVector_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ActivationDataWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using Meta_t = ActivationWeightedQuadraticTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ActivationModelWeightedQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using Meta_t = ActivationWeightedQuadraticTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct ActivationDataWeightedQuadraticTpl
         : public ActivationDataBase<ActivationDataWeightedQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
@@ -84,8 +79,7 @@ namespace galileo
 
     }; // class ActivationDataWeightedQuadraticTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     class ActivationModelWeightedQuadraticTpl
         : public ActivationModelBase<ActivationModelWeightedQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
@@ -101,8 +95,7 @@ namespace galileo
         using WeightVector_t = typename traits<Meta_t>::WeightVector_t;
 
         explicit ActivationModelWeightedQuadraticTpl(const PS &ps, const DimNR_t &nr_dim, const WeightVector_t &weights)
-            : Base(nr_dim),
-              weights_(weights)
+            : Base(nr_dim), weights_(weights)
         {
         }
 
@@ -120,20 +113,10 @@ namespace galileo
             data.Arr.diagonal() = weights_;
         }
 
-        Data_t createData() const
-        {
-            return Data_t(*this);
-        }
+        Data_t createData() const { return Data_t(*this); }
 
-        const WeightVector_t &get_weights() const
-        {
-            return weights_;
-        }
-
-        void setWeights(const WeightVector_t &weights)
-        {
-            weights_ = weights;
-        }
+        const WeightVector_t &get_weights() const { return weights_; }
+        void setWeights(const WeightVector_t &weights) { weights_ = weights; }
 
         using Base::get_nr;
         using Base::get_nr_dim;

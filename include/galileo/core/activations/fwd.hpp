@@ -5,19 +5,15 @@
 
 namespace galileo
 {
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelQuadraticTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataQuadraticTpl;
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
+    class ActivationModelQuadraticTpl;
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
+    struct ActivationDataQuadraticTpl;
 
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        class ActivationModelWeightedQuadraticTpl;
-        template <typename PhaseSpec,
-                  template <typename PS> class ResidualTpl>
-        struct ActivationDataWeightedQuadraticTpl;
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
+    class ActivationModelWeightedQuadraticTpl;
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
+    struct ActivationDataWeightedQuadraticTpl;
 
 } // namespace galileo
 

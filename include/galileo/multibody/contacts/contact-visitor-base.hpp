@@ -9,7 +9,9 @@ namespace galileo
     namespace fusion
     {
         // Family tag for contacts
-        struct ContactFamily {};
+        struct ContactFamily
+        {
+        };
 
         // Trait specialization for Contact family
         template <>

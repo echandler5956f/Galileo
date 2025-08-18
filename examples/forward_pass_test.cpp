@@ -229,32 +229,32 @@ GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec_t);
 
 int main(int argc, char **argv)
 {
-    CLI::App app{"Visualizer example"};
-    argv = app.ensure_utf8(argv);
-    std::array<Uint32, 2> window_dims{1920u, 1080u};
-    double fps;
+    // CLI::App app{"Visualizer example"};
+    // argv = app.ensure_utf8(argv);
+    // std::array<Uint32, 2> window_dims{1920u, 1080u};
+    // double fps;
 
-    app.add_option("--dims", window_dims, "Window dimensions.")
-        ->capture_default_str();
-    app.add_option<double, unsigned int>("--fps", fps, "Framerate")
-        ->default_val(60);
+    // app.add_option("--dims", window_dims, "Window dimensions.")
+    //     ->capture_default_str();
+    // app.add_option<double, unsigned int>("--fps", fps, "Framerate")
+    //     ->default_val(60);
 
-    CLI11_PARSE(app, argc, argv);
+    // CLI11_PARSE(app, argc, argv);
 
     pinocchio::Model model;
     pinocchio::GeometryModel geom_model;
     loadModels(go1_robot_spec, model, &geom_model, NULL);
     pinocchio::Data rdata(model);
 
-    Visualizer visualizer{{window_dims[0], window_dims[1]}, model, geom_model};
-    assert(!visualizer.hasExternalData());
-    pinocchio::Data &vis_data = visualizer.data();
+    // Visualizer visualizer{{window_dims[0], window_dims[1]}, model, geom_model};
+    // assert(!visualizer.hasExternalData());
+    // pinocchio::Data &vis_data = visualizer.data();
 
     State_t state = State_t(model);
-
     ActuationModel_t actuation = ActuationModel_t(state);
 
     PhaseSpec_t ps = PhaseSpec_t(state);
+    std::cout << ps << std::endl;
 
     pinocchio::FrameIndex fr_foot_id = model.getFrameId("FR_foot");
     std::cout << "DEBUG: FR_FOOT found with ID: " << fr_foot_id << std::endl;
@@ -313,9 +313,9 @@ int main(int argc, char **argv)
 
     jump_models.reserve(phases.size());
     jump_datas.reserve(phases.size());
-    segment_models.reserve(phases.size() * num_knots.size());
-    segment_datas.reserve(phases.size() * num_knots.size());
-    contact_managers.reserve(phases.size() * num_knots.size());
+    segment_models.reserve(phases.size() * num_knots[0]);
+    segment_datas.reserve(phases.size() * num_knots[0]);
+    contact_managers.reserve(phases.size() * num_knots[0]);
     impulse_managers.reserve(phases.size());
 
     for (int i = 0; i < phases.size(); i++)
@@ -454,69 +454,69 @@ int main(int argc, char **argv)
         }
     }
 
-    std::cout << "DEBUG: Total trajectory time: " << total_time << " seconds" << std::endl;
-    std::cout << "DEBUG: Number of knot points: " << knot_times.size() << std::endl;
+    // std::cout << "DEBUG: Total trajectory time: " << total_time << " seconds" << std::endl;
+    // std::cout << "DEBUG: Number of knot points: " << knot_times.size() << std::endl;
 
-    double dt = 1. / static_cast<double>(fps);
-    using duration_t = std::chrono::duration<double>;
-    double t = 0.;
-    VectorNq_t q = head(x0, ps.get_nq_dim());
-    VectorNq_t qn = q;
-    VectorNv_t v = tail(x0, ps.get_nv_dim());
+    // // double dt = 1. / static_cast<double>(fps);
+    // // using duration_t = std::chrono::duration<double>;
+    // // double t = 0.;
+    // // VectorNq_t q = head(x0, ps.get_nq_dim());
+    // // VectorNq_t qn = q;
+    // // VectorNv_t v = tail(x0, ps.get_nv_dim());
 
-    while (!visualizer.shouldExit())
-    {
-        const auto now = steady_clock::now();
+    // // while (!visualizer.shouldExit())
+    // // {
+    // //     const auto now = steady_clock::now();
 
-        // Cycle through the trajectory (loop when reaching the end)
-        double trajectory_t = fmod(t, total_time);
+    // //     // Cycle through the trajectory (loop when reaching the end)
+    // //     double trajectory_t = fmod(t, total_time);
 
-        // Find the appropriate knot points for interpolation
-        int knot_idx = 0;
-        for (int i = 0; i < knot_times.size() - 1; i++)
-        {
-            if (trajectory_t >= knot_times[i] && trajectory_t < knot_times[i + 1])
-            {
-                knot_idx = i;
-                break;
-            }
-        }
+    // //     // Find the appropriate knot points for interpolation
+    // //     int knot_idx = 0;
+    // //     for (int i = 0; i < knot_times.size() - 1; i++)
+    // //     {
+    // //         if (trajectory_t >= knot_times[i] && trajectory_t < knot_times[i + 1])
+    // //         {
+    // //             knot_idx = i;
+    // //             break;
+    // //         }
+    // //     }
 
-        if (knot_idx >= xs.size() - 1)
-        {
-            knot_idx = xs.size() - 2;
-        }
+    // //     if (knot_idx >= xs.size() - 1)
+    // //     {
+    // //         knot_idx = xs.size() - 2;
+    // //     }
 
-        // Calculate interpolation parameter
-        double alpha = 0.0;
-        if (knot_times[knot_idx + 1] > knot_times[knot_idx])
-        {
-            alpha = (trajectory_t - knot_times[knot_idx]) / (knot_times[knot_idx + 1] - knot_times[knot_idx]);
-        }
-        alpha = std::max(0.0, std::min(1.0, alpha)); // Clamp to [0,1]
+    // //     // Calculate interpolation parameter
+    // //     double alpha = 0.0;
+    // //     if (knot_times[knot_idx + 1] > knot_times[knot_idx])
+    // //     {
+    // //         alpha = (trajectory_t - knot_times[knot_idx]) / (knot_times[knot_idx + 1] - knot_times[knot_idx]);
+    // //     }
+    // //     alpha = std::max(0.0, std::min(1.0, alpha)); // Clamp to [0,1]
 
-        // Extract q and v from the state vectors
-        VectorNq_t q0_k = head(xs[knot_idx], ps.get_nq_dim());
-        VectorNq_t q1_k = head(xs[knot_idx + 1], ps.get_nq_dim());
-        VectorNv_t v0_k = tail(xs[knot_idx], ps.get_nv_dim());
-        VectorNv_t v1_k = tail(xs[knot_idx + 1], ps.get_nv_dim());
+    // //     // Extract q and v from the state vectors
+    // //     VectorNq_t q0_k = head(xs[knot_idx], ps.get_nq_dim());
+    // //     VectorNq_t q1_k = head(xs[knot_idx + 1], ps.get_nq_dim());
+    // //     VectorNv_t v0_k = tail(xs[knot_idx], ps.get_nv_dim());
+    // //     VectorNv_t v1_k = tail(xs[knot_idx + 1], ps.get_nv_dim());
 
-        // Interpolate configuration using pinocchio's manifold interpolation
-        pinocchio::interpolate(model, q0_k, q1_k, alpha, q);
+    // //     // Interpolate configuration using pinocchio's manifold interpolation
+    // //     pinocchio::interpolate(model, q0_k, q1_k, alpha, q);
 
-        // Linear interpolation for velocities
-        v = (1.0 - alpha) * v0_k + alpha * v1_k;
+    // //     // Linear interpolation for velocities
+    // //     v = (1.0 - alpha) * v0_k + alpha * v1_k;
 
-        // Update kinematics for visualization
-        pinocchio::forwardKinematics(model, vis_data, q, v);
-        pinocchio::updateFramePlacements(model, vis_data);
+    // //     // Update kinematics for visualization
+    // //     pinocchio::forwardKinematics(model, vis_data, q, v);
+    // //     pinocchio::updateFramePlacements(model, vis_data);
 
-        visualizer.display();
-        std::this_thread::sleep_until(now + duration_t(dt));
+    // //     visualizer.display();
+    // //     std::this_thread::sleep_until(now + duration_t(dt));
 
-        t += dt;
-        qn = q;
-    }
+    // //     t += dt;
+    // //     qn = q;
+    // // }
 
     return 0;
 }

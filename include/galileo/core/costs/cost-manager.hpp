@@ -12,14 +12,11 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct CostManagerTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
-    struct CostItemTpl
-        : public ManagerItemTpl<CostItemTpl<PhaseSpec, CostCollectionTpl>>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
+    struct CostItemTpl : public ManagerItemTpl<CostItemTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
 
@@ -35,9 +32,11 @@ namespace galileo
 
         using NumScalar = typename PS::NumScalar;
 
-        CostItemTpl(const std::string &name_, const Model_t &model_, const NumScalar &weight_, const bool active_ = true)
-            : Base(name_, model_, active_),
-              weight(weight_)
+        CostItemTpl(const std::string &name_,
+                    const Model_t &model_,
+                    const NumScalar &weight_,
+                    const bool active_ = true)
+            : Base(name_, model_, active_), weight(weight_)
         {
         }
 
@@ -48,16 +47,14 @@ namespace galileo
 
     }; // struct CostItemTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct traits<CostItemTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
         using MetaManager_t = CostManagerTpl<PS, CostCollectionTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct traits<CostManagerTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -84,8 +81,7 @@ namespace galileo
         using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct traits<CostDataManagerTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -96,8 +92,7 @@ namespace galileo
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct traits<CostModelManagerTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -108,10 +103,8 @@ namespace galileo
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
-    class CostDataManagerTpl
-        : public ManagerDataBase<CostDataManagerTpl<PhaseSpec, CostCollectionTpl>>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
+    class CostDataManagerTpl : public ManagerDataBase<CostDataManagerTpl<PhaseSpec, CostCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -159,10 +152,8 @@ namespace galileo
 
     }; // class CostDataManagerTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
-    class CostModelManagerTpl
-        : public ManagerModelBase<CostModelManagerTpl<PhaseSpec, CostCollectionTpl>>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
+    class CostModelManagerTpl : public ManagerModelBase<CostModelManagerTpl<PhaseSpec, CostCollectionTpl>>
     {
     public:
         using PS = PhaseSpec;
@@ -185,11 +176,7 @@ namespace galileo
         using NumScalar = typename PS::NumScalar;
         using VarScalar = typename PS::VarScalar;
 
-        CostModelManagerTpl(const PS &ps)
-            : Base(),
-              ps_(ps)
-        {
-        }
+        CostModelManagerTpl(const PS &ps) : Base(), ps_(ps) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(DataManager_t &data,
@@ -200,9 +187,9 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
-                end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -216,16 +203,15 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(DataManager_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             data.L = VarScalar(0.);
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
-                end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -251,9 +237,9 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
-                end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -271,17 +257,16 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(DataManager_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             data.Lx.setZero();
             data.Lxx.setZero();
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(),
-                end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -301,39 +286,25 @@ namespace galileo
             return DataManager_t(*this, collector);
         }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        int get_model_n(const Model_t &model) const
-        {
-            return 0;
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        int get_model_n(const Model_t &model) const { return 0; }
 
         using Base::addItem;
         using Base::removeItem;
-
         using Base::changeItemStatus;
-
         using Base::get_active_set;
         using Base::get_inactive_set;
         using Base::get_items;
-
         using Base::get_item_status;
-
         using Base::get_n_active;
         using Base::get_n_active_dim;
-
         using Base::get_n_total;
         using Base::get_n_total_dim;
 
     protected:
         using Base::items_;
-
         using Base::active_set_;
         using Base::inactive_set_;
-
         using Base::active_dim_;
         using Base::total_dim_;
 

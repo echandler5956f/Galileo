@@ -9,8 +9,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    struct SegmentERKDataBase
-        : public internal::CRTP<Derived>
+    struct SegmentERKDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -24,36 +23,23 @@ namespace galileo
         FORWARD_ACCESSOR(XNext_t, XNext);
         FORWARD_ACCESSOR(XNextx_t, XNextx);
         FORWARD_ACCESSOR(XNextw_t, XNextw);
-
         FORWARD_ACCESSOR(L_t, L);
         FORWARD_ACCESSOR(Lx_t, Lx);
         FORWARD_ACCESSOR(Lw_t, Lw);
         FORWARD_ACCESSOR(Lxx_t, Lxx);
         FORWARD_ACCESSOR(Lxw_t, Lxw);
         FORWARD_ACCESSOR(Lww_t, Lww);
-
         FORWARD_ACCESSOR(H_t, H);
         FORWARD_ACCESSOR(Hx_t, Hx);
         FORWARD_ACCESSOR(Hw_t, Hw);
-
         FORWARD_ACCESSOR(G_t, G);
         FORWARD_ACCESSOR(Gx_t, Gx);
         FORWARD_ACCESSOR(Gw_t, Gw);
 
     protected:
-        inline SegmentERKDataBase()
-        {
-        }
-
-        inline SegmentERKDataBase(const SegmentERKDataBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline SegmentERKDataBase &operator=(const SegmentERKDataBase &clone)
-        {
-            return *this;
-        }
+        inline SegmentERKDataBase() {}
+        inline SegmentERKDataBase(const SegmentERKDataBase &clone) { *this = clone; }
+        inline SegmentERKDataBase &operator=(const SegmentERKDataBase &clone) { return *this; }
 
     }; // struct SegmentERKDataBase
 

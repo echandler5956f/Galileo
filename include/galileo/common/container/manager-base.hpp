@@ -12,15 +12,16 @@ namespace galileo
 {
 
     template <typename Derived>
-    struct ManagerItemTpl
-        : public internal::CRTP<Derived>
+    struct ManagerItemTpl : public internal::CRTP<Derived>
     {
         using MetaManager_t = typename traits<Derived>::MetaManager_t;
         using Model_t = typename traits<MetaManager_t>::Model_t;
         using Data_t = typename traits<MetaManager_t>::Data_t;
 
         ManagerItemTpl(const std::string &name_, const Model_t &model_, const bool active_ = true)
-            : name(name_), model(model_), active(active_) {}
+            : name(name_), model(model_), active(active_)
+        {
+        }
 
         std::string name;
         Model_t model;
@@ -29,8 +30,7 @@ namespace galileo
     }; // struct ManagerItemTpl
 
     template <typename Derived>
-    class ManagerDataBase
-        : public internal::CRTP<Derived>
+    class ManagerDataBase : public internal::CRTP<Derived>
     {
     public:
         using MetaManager_t = typename traits<Derived>::MetaManager_t;
@@ -54,19 +54,16 @@ namespace galileo
         inline ManagerDataBase(const ModelManager_t &model_manager, DataCollector *const collector)
         {
             items.clear();
-            for (typename ModelContainer_t::const_iterator
-                     it = model_manager.get_items().begin();
-                 it != model_manager.get_items().end(); ++it)
+            for (typename ModelContainer_t::const_iterator it = model_manager.get_items().begin();
+                 it != model_manager.get_items().end();
+                 ++it)
             {
                 const Item_t &item = it->second;
                 items.insert(std::make_pair(item.name, item.model.createData(collector)));
             }
         }
 
-        inline ManagerDataBase(const ManagerDataBase &clone)
-            : items(clone.items)
-        {
-        }
+        inline ManagerDataBase(const ManagerDataBase &clone) : items(clone.items) {}
 
         inline ManagerDataBase &operator=(const ManagerDataBase &clone)
         {
@@ -77,8 +74,7 @@ namespace galileo
     }; // class ManagerDataBase
 
     template <typename Derived>
-    class ManagerModelBase
-        : public internal::CRTP<Derived>
+    class ManagerModelBase : public internal::CRTP<Derived>
     {
     public:
         using MetaManager_t = typename traits<Derived>::MetaManager_t;
@@ -104,8 +100,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(DataManager_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x);
         }
@@ -119,8 +114,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(DataManager_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x);
         }
@@ -150,12 +144,11 @@ namespace galileo
                 items_.insert(std::make_pair(name, std::move(item)));
             if (ret.second == false)
             {
-                std::cerr << "Warning: we couldn't add the " << name
-                          << " item, it already existed." << std::endl;
+                std::cerr << "Warning: we couldn't add the " << name << " item, it already existed." << std::endl;
             }
             else if (active)
             {
-                auto model_n = get_model_n(model);
+                const int model_n = get_model_n(model);
                 active_dim_ += model_n;
                 total_dim_ += model_n;
                 active_set_.insert(name);
@@ -167,10 +160,7 @@ namespace galileo
             }
         }
 
-        void removeItem(const std::string &name)
-        {
-            this->derived().removeItemImpl(name);
-        }
+        void removeItem(const std::string &name) { this->derived().removeItemImpl(name); }
 
         void removeItemImpl(const std::string &name)
         {
@@ -184,8 +174,7 @@ namespace galileo
             }
             else
             {
-                std::cerr << "Warning: we couldn't remove the " << name
-                          << " item, it doesn't exist." << std::endl;
+                std::cerr << "Warning: we couldn't remove the " << name << " item, it doesn't exist." << std::endl;
             }
         }
 
@@ -217,66 +206,36 @@ namespace galileo
             }
             else
             {
-                std::cerr << "Warning: we couldn't change the status of the " << name
-                          << " item, it doesn't exist." << std::endl;
+                std::cerr << "Warning: we couldn't change the status of the " << name << " item, it doesn't exist."
+                          << std::endl;
             }
         }
 
-        const ModelContainer_t &get_items() const
-        {
-            return items_;
-        }
-
-        const std::set<std::string> &get_active_set() const
-        {
-            return active_set_;
-        }
-
-        const std::set<std::string> &get_inactive_set() const
-        {
-            return inactive_set_;
-        }
+        const ModelContainer_t &get_items() const { return items_; }
+        const std::set<std::string> &get_active_set() const { return active_set_; }
+        const std::set<std::string> &get_inactive_set() const { return inactive_set_; }
 
         bool get_item_status(const std::string &name) const
         {
-            typename ModelContainer_t::const_iterator it =
-                items_.find(name);
+            typename ModelContainer_t::const_iterator it = items_.find(name);
             if (it != items_.end())
             {
                 return it->second.active;
             }
             else
             {
-                std::cerr << "Warning: we couldn't get the status of the " << name
-                          << " item, it doesn't exist." << std::endl;
+                std::cerr << "Warning: we couldn't get the status of the " << name << " item, it doesn't exist."
+                          << std::endl;
                 return false;
             }
         }
 
-        const DimensionTpl<Eigen::Dynamic> &get_n_active_dim() const
-        {
-            return active_dim_;
-        }
+        const DimensionTpl<Eigen::Dynamic> &get_n_active_dim() const { return active_dim_; }
+        int get_n_active() const { return active_dim_.value(); }
+        const DimensionTpl<Eigen::Dynamic> &get_n_total_dim() const { return total_dim_; }
+        int get_n_total() const { return total_dim_.value(); }
 
-        int get_n_active() const
-        {
-            return active_dim_.value();
-        }
-
-        const DimensionTpl<Eigen::Dynamic> &get_n_total_dim() const
-        {
-            return total_dim_;
-        }
-
-        int get_n_total() const
-        {
-            return total_dim_.value();
-        }
-
-        int get_model_n(const Model_t &model) const
-        {
-            return this->derived().get_model_n(model);
-        }
+        int get_model_n(const Model_t &model) const { return this->derived().get_model_n(model); }
 
     protected:
         inline ManagerModelBase()

@@ -14,8 +14,7 @@ namespace galileo
 
         using ActuationData_t = typename PS::ActuationData_t;
 
-        ActuationDataMixinTpl(std::shared_ptr<ActuationData_t> data)
-            : actuation(data) {}
+        ActuationDataMixinTpl(std::shared_ptr<ActuationData_t> data) : actuation(data) {}
 
         std::shared_ptr<ActuationData_t> actuation;
 

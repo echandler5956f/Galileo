@@ -11,16 +11,16 @@ namespace galileo
 
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct ConstraintCalcZerothOrderVisitor
-        : fusion::ConstraintUnaryVisitorBase<ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
+        : fusion::ConstraintUnaryVisitorBase<
+              ConstraintCalcZerothOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
     {
         using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
         template <typename ConstraintModelType>
-        static void algo(
-            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
-            const Eigen::MatrixBase<StateVectorType> &x,
-            const Eigen::MatrixBase<ControlVectorType> &u)
+        static void algo(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+                         ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
+                         const Eigen::MatrixBase<StateVectorType> &x,
+                         const Eigen::MatrixBase<ControlVectorType> &u)
         {
             constraint_model.calc(constraint_data.derived(), x.derived(), u.derived());
         }
@@ -48,19 +48,16 @@ namespace galileo
         using ArgsType = boost::fusion::vector<const StateVectorType &, Blank>;
 
         template <typename ConstraintModelType>
-        static void algo(
-            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
-            const Eigen::MatrixBase<StateVectorType> &x,
-            const Blank blank)
+        static void algo(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+                         ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
+                         const Eigen::MatrixBase<StateVectorType> &x,
+                         const Blank blank)
         {
             constraint_model.calc(constraint_data.derived(), x.derived());
         }
     };
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename StateVectorType>
     inline void constraint_calc_zeroth_order(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
@@ -74,16 +71,16 @@ namespace galileo
 
     template <typename PhaseSpec, typename StateVectorType, typename ControlVectorType>
     struct ConstraintCalcFirstOrderVisitor
-        : fusion::ConstraintUnaryVisitorBase<ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
+        : fusion::ConstraintUnaryVisitorBase<
+              ConstraintCalcFirstOrderVisitor<PhaseSpec, StateVectorType, ControlVectorType>>
     {
         using ArgsType = boost::fusion::vector<const StateVectorType &, const ControlVectorType &>;
 
         template <typename ConstraintModelType>
-        static void algo(
-            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
-            const Eigen::MatrixBase<StateVectorType> &x,
-            const Eigen::MatrixBase<ControlVectorType> &u)
+        static void algo(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+                         ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
+                         const Eigen::MatrixBase<StateVectorType> &x,
+                         const Eigen::MatrixBase<ControlVectorType> &u)
         {
             constraint_model.calcDiff(constraint_data.derived(), x.derived(), u.derived());
         }
@@ -111,19 +108,16 @@ namespace galileo
         using ArgsType = boost::fusion::vector<const StateVectorType &, Blank>;
 
         template <typename ConstraintModelType>
-        static void algo(
-            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
-            ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
-            const Eigen::MatrixBase<StateVectorType> &x,
-            const Blank blank)
+        static void algo(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+                         ConstraintDataBase<typename ConstraintModelType::Data_t, PhaseSpec> &constraint_data,
+                         const Eigen::MatrixBase<StateVectorType> &x,
+                         const Blank blank)
         {
             constraint_model.calcDiff(constraint_data.derived(), x.derived());
         }
     };
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename StateVectorType>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename StateVectorType>
     inline void constraint_calc_first_order(
         const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
         ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data,
@@ -135,12 +129,11 @@ namespace galileo
         Algo::run(constraint_model, constraint_data, typename Algo::ArgsType(x.derived(), blank));
     }
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename DataCollector>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename DataCollector>
     struct ConstraintCreateDataVisitor
-        : fusion::ConstraintUnaryVisitorBase<ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector>,
-                                             ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>>
+        : fusion::ConstraintUnaryVisitorBase<
+              ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector>,
+              ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using ArgsType = boost::fusion::vector<DataCollector *const>;
         using ConstraintCollection_t = ConstraintCollectionTpl<PhaseSpec>;
@@ -148,20 +141,16 @@ namespace galileo
         using ConstraintDataVariant_t = ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>;
 
         template <typename ConstraintModelType>
-        static ConstraintDataVariant_t algo(
-            const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
-            DataCollector *const collector)
+        static ConstraintDataVariant_t algo(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
+                                            DataCollector *const collector)
         {
             return ConstraintDataVariant_t(constraint_model.createData(collector));
         }
     };
 
-    template <typename PhaseSpec,
-              template <typename> class ConstraintCollectionTpl,
-              typename DataCollector>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename DataCollector>
     inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model,
-        DataCollector *const collector)
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model, DataCollector *const collector)
     {
         typedef ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector> Algo;
 
@@ -169,8 +158,7 @@ namespace galileo
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    struct ConstraintGetNHVisitor
-        : boost::static_visitor<int>
+    struct ConstraintGetNHVisitor : boost::static_visitor<int>
     {
 
         using ReturnType = int;
@@ -181,10 +169,7 @@ namespace galileo
             return constraint_model.get_nh();
         }
 
-        ReturnType operator()(const ConstraintModelVoid &) const
-        {
-            return 0;
-        }
+        ReturnType operator()(const ConstraintModelVoid &) const { return 0; }
 
         static ReturnType run(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model)
         {
@@ -220,7 +205,8 @@ namespace galileo
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t constraint_H(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
+    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::H_t constraint_H(
+        const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
     {
         return ConstraintHVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_data);
     }
@@ -244,7 +230,8 @@ namespace galileo
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t constraint_Hx(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
+    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hx_t constraint_Hx(
+        const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
     {
         return ConstraintHxVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_data);
     }
@@ -268,7 +255,8 @@ namespace galileo
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
-    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t constraint_Hu(const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
+    inline typename ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>::Hu_t constraint_Hu(
+        const ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_data)
     {
         return ConstraintHuVisitor<PhaseSpec, ConstraintCollectionTpl>::run(constraint_data);
     }

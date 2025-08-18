@@ -10,7 +10,9 @@ namespace galileo
     namespace fusion
     {
         // Family tag for phases
-        struct PhaseFamily {};
+        struct PhaseFamily
+        {
+        };
 
         // Trait specialization for Phase family
         template <>

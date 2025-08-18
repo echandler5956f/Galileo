@@ -10,12 +10,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct CostTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct traits<CostTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -34,8 +32,7 @@ namespace galileo
         using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct traits<CostDataTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -47,8 +44,7 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
     struct traits<CostModelTpl<PhaseSpec, CostCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -60,11 +56,9 @@ namespace galileo
         using Data_t = typename traits<Meta_t>::Data_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
-    struct CostDataTpl
-        : public CostDataBase<CostDataTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
-          CostCollectionTpl<PhaseSpec>::CostDataVariant_t
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
+    struct CostDataTpl : public CostDataBase<CostDataTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
+                         CostCollectionTpl<PhaseSpec>::CostDataVariant_t
     {
         using PS = PhaseSpec;
 
@@ -78,60 +72,23 @@ namespace galileo
 
         using DataVariant_t = typename Collection_t::CostDataVariant_t;
 
-        DataVariant_t &toVariant()
-        {
-            return *static_cast<DataVariant_t *>(this);
-        }
-        const DataVariant_t &toVariant() const
-        {
-            return *static_cast<const DataVariant_t *>(this);
-        }
+        DataVariant_t &toVariant() { return *static_cast<DataVariant_t *>(this); }
+        const DataVariant_t &toVariant() const { return *static_cast<const DataVariant_t *>(this); }
 
-        L_t L() const
-        {
-            return galileo::cost_L(*this);
-        }
+        L_t L() const { return galileo::cost_L(*this); }
+        Lx_t Lx() const { return galileo::cost_Lx(*this); }
+        Lu_t Lu() const { return galileo::cost_Lu(*this); }
+        Lxx_t Lxx() const { return galileo::cost_Lxx(*this); }
+        Lxu_t Lxu() const { return galileo::cost_Lxu(*this); }
+        Luu_t Luu() const { return galileo::cost_Luu(*this); }
 
-        Lx_t Lx() const
-        {
-            return galileo::cost_Lx(*this);
-        }
-
-        Lu_t Lu() const
-        {
-            return galileo::cost_Lu(*this);
-        }
-
-        Lxx_t Lxx() const
-        {
-            return galileo::cost_Lxx(*this);
-        }
-
-        Lxu_t Lxu() const
-        {
-            return galileo::cost_Lxu(*this);
-        }
-
-        Luu_t Luu() const
-        {
-            return galileo::cost_Luu(*this);
-        }
-
-        CostDataTpl()
-            : DataVariant_t()
-        {
-        }
-
-        CostDataTpl(const DataVariant_t &data_variant)
-            : DataVariant_t(data_variant)
-        {
-        }
-
+        CostDataTpl() : DataVariant_t() {}
+        CostDataTpl(const DataVariant_t &data_variant) : DataVariant_t(data_variant) {}
         template <typename CostDataType>
         CostDataTpl(const CostDataBase<CostDataType, PhaseSpec> &data)
-            : Collection_t::CostDataVariant_t((DataVariant_t)data.derived())
+            : Collection_t::CostDataVariant_t((DataVariant_t) data.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, CostDataType>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename DataVariant_t::types, CostDataType>) );
         }
 
         GENERIC_ACCESSOR(L_t, L);
@@ -143,11 +100,9 @@ namespace galileo
 
     }; // struct CostDataTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class CostCollectionTpl>
-    struct CostModelTpl
-        : public CostModelBase<CostModelTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
-          CostCollectionTpl<PhaseSpec>::CostModelVariant_t
+    template <typename PhaseSpec, template <typename> class CostCollectionTpl>
+    struct CostModelTpl : public CostModelBase<CostModelTpl<PhaseSpec, CostCollectionTpl>, PhaseSpec>,
+                          CostCollectionTpl<PhaseSpec>::CostModelVariant_t
     {
         using PS = PhaseSpec;
 
@@ -159,33 +114,17 @@ namespace galileo
 
         using ModelVariant_t = typename Collection_t::CostModelVariant_t;
 
-        CostModelTpl()
-            : ModelVariant_t()
-        {
-        }
-
-        CostModelTpl(const ModelVariant_t &model_variant)
-            : ModelVariant_t(model_variant)
-        {
-        }
-
+        CostModelTpl() : ModelVariant_t() {}
+        CostModelTpl(const ModelVariant_t &model_variant) : ModelVariant_t(model_variant) {}
         template <typename CostModelType>
         CostModelTpl(const CostModelBase<CostModelType, PhaseSpec> &model)
-            : Base(),
-              Collection_t::CostModelVariant_t((ModelVariant_t)model.derived())
+            : Base(), Collection_t::CostModelVariant_t((ModelVariant_t) model.derived())
         {
-            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, CostModelType>));
+            BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, CostModelType>) );
         }
 
-        ModelVariant_t &toVariant()
-        {
-            return *static_cast<ModelVariant_t *>(this);
-        }
-
-        const ModelVariant_t &toVariant() const
-        {
-            return *static_cast<const ModelVariant_t *>(this);
-        }
+        ModelVariant_t &toVariant() { return *static_cast<ModelVariant_t *>(this); }
+        const ModelVariant_t &toVariant() const { return *static_cast<const ModelVariant_t *>(this); }
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -196,8 +135,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::cost_calc_zeroth_order(*this, data, x.derived(), Blank());
         }
@@ -211,8 +149,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::cost_calc_first_order(*this, data, x.derived(), Blank());
         }

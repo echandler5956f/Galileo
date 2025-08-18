@@ -38,9 +38,8 @@ namespace galileo
         using Meta_t = ActuationFullTpl<RobotSpec>;
     };
 
-     template <typename RobotSpec>
-    class ActuationDataFullTpl
-        : public ActuationDataBase<ActuationDataFullTpl<RobotSpec>, RobotSpec>
+    template <typename RobotSpec>
+    class ActuationDataFullTpl : public ActuationDataBase<ActuationDataFullTpl<RobotSpec>, RobotSpec>
     {
     public:
         using RS = RobotSpec;
@@ -60,15 +59,12 @@ namespace galileo
         DEFAULT_ACCESSOR(BoolArrayNv_t, tau_set);
 
         ActuationDataFullTpl(const Model_t &model)
-            : tau(model.get_state().get_nv()),
-              u(model.get_state().get_nua()),
-              dtau_dx(model.get_state().get_nv(),
-                      model.get_state().get_ndx()),
-              dtau_du(model.get_state().get_nv(),
-                      model.get_state().get_nua()),
-              Mtau(model.get_state().get_nua(),
-                   model.get_state().get_nv()),
-              tau_set(model.get_state().get_nv())
+            : tau(model.get_rs().get_nv()),
+              u(model.get_rs().get_nua()),
+              dtau_dx(model.get_rs().get_nv(), model.get_rs().get_ndx()),
+              dtau_du(model.get_rs().get_nv(), model.get_rs().get_nua()),
+              Mtau(model.get_rs().get_nua(), model.get_rs().get_nv()),
+              tau_set(model.get_rs().get_nv())
         {
             tau.setZero();
             u.setZero();
@@ -87,8 +83,7 @@ namespace galileo
     };
 
     template <typename RobotSpec>
-    class ActuationModelFullTpl
-        : public ActuationModelBase<ActuationModelFullTpl<RobotSpec>, RobotSpec>
+    class ActuationModelFullTpl : public ActuationModelBase<ActuationModelFullTpl<RobotSpec>, RobotSpec>
     {
     public:
         using RS = RobotSpec;
@@ -100,10 +95,7 @@ namespace galileo
 
         using State_t = typename RS::State_t;
 
-        ActuationModelFullTpl(const State_t &state)
-            : Base(state)
-        {
-        }
+        ActuationModelFullTpl(const State_t &state) : Base(state.get_rs()) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -137,12 +129,9 @@ namespace galileo
             // has constant values which are set in createData
         }
 
-        Data_t createData() const
-        {
-            return Data_t(*this);
-        }
+        Data_t createData() const { return Data_t(*this); }
 
-        using Base::get_state;
+        using Base::get_rs;
 
     }; // class ActuationModelFullTpl
 

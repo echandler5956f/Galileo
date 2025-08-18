@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class SegmentERKModelBase
-        : public internal::CRTP<Derived>
+    class SegmentERKModelBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -29,8 +28,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calc(data, x);
         }
@@ -44,8 +42,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             this->derived().calcDiff(data, x);
         }
@@ -60,32 +57,14 @@ namespace galileo
             this->derived().quasiStatic(data, x, w, maxiter, tol);
         }
 
-        Data_t createData()
-        {
-            return this->derived().createData();
-        }
+        Data_t createData() { return this->derived().createData(); }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        const State_t &get_state() const
-        {
-            return state_.get();
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const State_t &get_state() const { return state_.get(); }
 
     protected:
-        inline SegmentERKModelBase(const PS &ps)
-            : ps_(ps), state_(ps.get_state())
-        {
-        }
-
-        inline SegmentERKModelBase(const SegmentERKModelBase &clone)
-            : ps_(clone.ps_), state_(clone.state_)
-        {
-        }
-
+        inline SegmentERKModelBase(const PS &ps) : ps_(ps), state_(ps.get_state()) {}
+        inline SegmentERKModelBase(const SegmentERKModelBase &clone) : ps_(clone.ps_), state_(clone.state_) {}
         inline SegmentERKModelBase &operator=(const SegmentERKModelBase &clone)
         {
             ps_ = clone.ps_;

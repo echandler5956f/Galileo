@@ -16,12 +16,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct JumpImpulseFwdDynTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct traits<JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -42,22 +40,19 @@ namespace galileo
         using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::DimNDX_t::Value>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct traits<JumpDataImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using Meta_t = JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct traits<JumpModelImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
         using Meta_t = JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct JumpDataImpulseFwdDynTpl
         : public JumpDataBase<JumpDataImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>, PhaseSpec>
     {
@@ -82,30 +77,21 @@ namespace galileo
 
         DEFAULT_ACCESSOR(CostDataManager_t, costs);
         DEFAULT_ACCESSOR(ConstraintDataManager_t, constraints);
-
         DEFAULT_ACCESSOR(XNext_t, XNext);
         DEFAULT_ACCESSOR(XNextx_t, XNextx);
 
         L_t &L_accessor() { return costs.L; }
         const L_t &L_accessor() const { return costs.L; }
-
         Lx_t &Lx_accessor() { return costs.Lx; }
         const Lx_t &Lx_accessor() const { return costs.Lx; }
-
         Lxx_t &Lxx_accessor() { return costs.Lxx; }
         const Lxx_t &Lxx_accessor() const { return costs.Lxx; }
-
         H_t &H_accessor() { return constraints.H; }
         const H_t &H_accessor() const { return constraints.H; }
-
         Hx_t &Hx_accessor() { return constraints.Hx; }
         const Hx_t &Hx_accessor() const { return constraints.Hx; }
-
-        // For now the inequality constraints accessor points to the equality constraints,
-        // until we implement inequality constraints
         G_t &G_accessor() { return constraints.H; }
         const G_t &G_accessor() const { return constraints.H; }
-
         Gx_t &Gx_accessor() { return constraints.Hx; }
         const Gx_t &Gx_accessor() const { return constraints.Hx; }
 
@@ -118,10 +104,8 @@ namespace galileo
               costs(model.get_costs().createData(data_collector.get())),
               constraints(model.get_constraints().createData(data_collector.get())),
               vnone(model.get_ps().get_nv()),
-              Kinv(model.get_ps().get_nv() +
-                       model.get_impulses().get_n_total(),
-                   model.get_ps().get_nv() +
-                       model.get_impulses().get_n_total()),
+              Kinv(model.get_ps().get_nv() + model.get_impulses().get_n_total(),
+                   model.get_ps().get_nv() + model.get_impulses().get_n_total()),
               df_dx(model.get_impulses().get_n_total(), model.get_ps().get_ndx()),
               dgrav_dq(model.get_ps().get_nv(), model.get_ps().get_nv())
         {
@@ -149,8 +133,7 @@ namespace galileo
 
     }; // class JumpDataImpulseFwdDynTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ImpulseCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     class JumpModelImpulseFwdDynTpl
         : public JumpModelBase<JumpModelImpulseFwdDynTpl<PhaseSpec, ImpulseCollectionTpl>, PhaseSpec>
     {
@@ -168,7 +151,8 @@ namespace galileo
         using ImpulseModelManager_t = typename traits<Meta_t>::ImpulseModelManager_t;
         using ImpulseDataManager_t = typename traits<Meta_t>::ImpulseDataManager_t;
 
-        JumpModelImpulseFwdDynTpl(PS &ps, const CostModelManager_t &costs,
+        JumpModelImpulseFwdDynTpl(PS &ps,
+                                  const CostModelManager_t &costs,
                                   const ConstraintModelManager_t &constraints,
                                   const ImpulseModelManager_t &impulses,
                                   const NumScalar &r_coeff = 0.0,
@@ -189,8 +173,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const auto nc_dim = get_impulses().get_n_active_dim();
 
@@ -204,9 +187,8 @@ namespace galileo
             }
             get_impulses().calc(data.impulses, x);
 
-            pinocchio::impulseDynamics(get_robot(), *data.robot.get(), v,
-                                       topRows(data.impulses.Jc, nc_dim),
-                                       r_coeff_, JMinvJt_damping_);
+            pinocchio::impulseDynamics(
+                get_robot(), *data.robot.get(), v, topRows(data.impulses.Jc, nc_dim), r_coeff_, JMinvJt_damping_);
 
             head(data.XNext, get_ps().get_nq_dim()) = q;
             tail(data.XNext, get_ps().get_nv_dim()) = data.robot->dq_after;
@@ -222,8 +204,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const auto nv_dim = get_ps().get_nv_dim();
             const auto nc_dim = get_impulses().get_n_active_dim();
@@ -236,11 +217,9 @@ namespace galileo
             // recursively: https://eigen.tuxfamily.org/bz/show_bug.cgi?id=408. Therefore,
             // it is not possible to pass data.Kinv.topLeftCorner(nv + nc, nv + nc)
             data.Kinv.resize(get_ps().get_nv() + nc_dim.value(), nv_dim.value() + nc_dim.value());
-            pinocchio::computeRNEADerivatives(get_robot(), *data.robot.get(), q,
-                                              data.vnone, data.robot->dq_after - v,
-                                              data.impulses.fext);
-            pinocchio::computeGeneralizedGravityDerivatives(get_robot(), *data.robot.get(),
-                                                            q, data.dgrav_dq);
+            pinocchio::computeRNEADerivatives(
+                get_robot(), *data.robot.get(), q, data.vnone, data.robot->dq_after - v, data.impulses.fext);
+            pinocchio::computeGeneralizedGravityDerivatives(get_robot(), *data.robot.get(), q, data.dgrav_dq);
             pinocchio::getKKTContactDynamicMatrixInverse(
                 get_robot(), *data.robot.get(), topRows(data.impulses.Jc, nc_dim), data.Kinv);
 
@@ -249,37 +228,30 @@ namespace galileo
             get_impulses().calcDiff(data.impulses, x);
             get_impulses().updateRneaDiff(data.impulses, *data.robot.get());
 
-            auto a_partial_dtau = topLeftCorner(data.Kinv, nv_dim, nv_dim);
-            auto a_partial_da = topRightCorner(data.Kinv, nv_dim, nc_dim);
-            auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_dim, nv_dim);
-            auto f_partial_da = bottomRightCorner(data.Kinv, nc_dim, nc_dim);
+            const auto a_partial_dtau = topLeftCorner(data.Kinv, nv_dim, nv_dim);
+            const auto a_partial_da = topRightCorner(data.Kinv, nv_dim, nc_dim);
+            const auto f_partial_dtau = bottomLeftCorner(data.Kinv, nc_dim, nv_dim);
+            const auto f_partial_da = bottomRightCorner(data.Kinv, nc_dim, nc_dim);
 
             data.robot->dtau_dq -= data.dgrav_dq;
             data.robot->M.template triangularView<Eigen::StrictlyLower>() =
-                data.robot->M.transpose()
-                    .template triangularView<Eigen::StrictlyLower>();
+                data.robot->M.transpose().template triangularView<Eigen::StrictlyLower>();
             topLeftCorner(data.XNextx, nv_dim, nv_dim).setIdentity();
             topRightCorner(data.XNextx, nv_dim, nv_dim).setZero();
-            bottomLeftCorner(data.XNextx, nv_dim, nv_dim).noalias() =
-                -a_partial_dtau * data.robot->dtau_dq;
+            bottomLeftCorner(data.XNextx, nv_dim, nv_dim).noalias() = -a_partial_dtau * data.robot->dtau_dq;
             bottomLeftCorner(data.XNextx, nv_dim, nv_dim).noalias() -=
                 a_partial_da * data.impulses.dv0_dq.topRows(nc_dim);
-            bottomRightCorner(data.XNextx, nv_dim, nv_dim).noalias() =
-                a_partial_dtau * data.robot->M;
+            bottomRightCorner(data.XNextx, nv_dim, nv_dim).noalias() = a_partial_dtau * data.robot->M;
 
             // Computing the cost derivatives
             if (enable_force_)
             {
-                topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() =
-                    f_partial_dtau * data.robot->dtau_dq;
+                topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() = f_partial_dtau * data.robot->dtau_dq;
                 topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() +=
                     f_partial_da * data.impulses.dv0_dq.topRows(nc_dim);
-                topRightCorner(data.df_dx, nc_dim, nv_dim).noalias() =
-                    f_partial_da * data.impulses.Jc.topRows(nc_dim);
-                get_impulses().updateVelocityDiff(data.impulses,
-                                                  bottomRows(data.XNextx, nv_dim));
-                get_impulses().updateForceDiff(data.impulses,
-                                               topRows(data.df_dx, nc_dim));
+                topRightCorner(data.df_dx, nc_dim, nv_dim).noalias() = f_partial_da * data.impulses.Jc.topRows(nc_dim);
+                get_impulses().updateVelocityDiff(data.impulses, bottomRows(data.XNextx, nv_dim));
+                get_impulses().updateForceDiff(data.impulses, topRows(data.df_dx, nc_dim));
             }
 
             get_costs().calcDiff(data.costs, x);
@@ -289,28 +261,13 @@ namespace galileo
             }
         }
 
-        Data_t createData() const
-        {
-            return Data_t(*this);
-        }
+        Data_t createData() const { return Data_t(*this); }
 
-        const CostModelManager_t &get_costs() const
-        {
-            return costs_.get();
-        }
-
-        const ConstraintModelManager_t &get_constraints() const
-        {
-            return constraints_.get();
-        }
-
-        const ImpulseModelManager_t &get_impulses() const
-        {
-            return impulses_.get();
-        }
+        const CostModelManager_t &get_costs() const { return costs_.get(); }
+        const ConstraintModelManager_t &get_constraints() const { return constraints_.get(); }
+        const ImpulseModelManager_t &get_impulses() const { return impulses_.get(); }
 
         using Base::get_ps;
-
         using Base::get_robot;
         using Base::get_state;
 

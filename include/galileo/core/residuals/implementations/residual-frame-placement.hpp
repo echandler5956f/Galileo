@@ -51,8 +51,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ResidualDataFramePlacementTpl
-        : public ResidualDataBase<ResidualDataFramePlacementTpl<PhaseSpec>, PhaseSpec>
+    struct ResidualDataFramePlacementTpl : public ResidualDataBase<ResidualDataFramePlacementTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -75,11 +74,13 @@ namespace galileo
         template <typename DataCollector>
         ResidualDataFramePlacementTpl(const Model_t &model, DataCollector *const collector)
             : robot(collector->robot),
-              R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+              R(model.get_nr()),
+              Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
               Arr_Ru(model.get_nr(), model.get_ps().get_nu()),
-              rJf(6, 6), fJf(6, model.get_ps().get_nv())
+              rJf(6, 6),
+              fJf(6, model.get_ps().get_nv())
         {
             R.setZero();
             Rx.setZero();
@@ -121,11 +122,8 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
-        ResidualModelFramePlacementTpl(const PS &ps,
-                                       const FrameIndex_t frame_id,
-                                       const SE3_t &p_ref)
-            : Base(ps, DimNR_t()),
-              frame_id_(frame_id), p_ref_(p_ref), oMf_inv_(p_ref.inverse())
+        ResidualModelFramePlacementTpl(const PS &ps, const FrameIndex_t frame_id, const SE3_t &p_ref)
+            : Base(ps, DimNR_t()), frame_id_(frame_id), p_ref_(p_ref), oMf_inv_(p_ref.inverse())
         {
         }
 
@@ -140,8 +138,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -152,18 +149,16 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             pinocchio::Jlog6(data.rMf, data.rJf);
-            pinocchio::getFrameJacobian(
-                get_ps().get_state().get_robot(),
-                *data.robot.get(),
-                frame_id_,
-                pinocchio::ReferenceFrame::LOCAL,
-                data.fJf);
+            pinocchio::getFrameJacobian(get_ps().get_state().get_robot(),
+                                        *data.robot.get(),
+                                        frame_id_,
+                                        pinocchio::ReferenceFrame::LOCAL,
+                                        data.fJf);
             leftCols(data.Rx, get_ps().get_nv_dim()).noalias() = data.rJf * data.fJf;
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -175,10 +170,8 @@ namespace galileo
         }
 
         using Base::get_ps;
-
         using Base::get_nr;
         using Base::get_nr_dim;
-
         using Base::get_q_dependent;
         using Base::get_u_dependent;
         using Base::get_v_dependent;

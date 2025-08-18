@@ -9,7 +9,9 @@ namespace galileo
     namespace fusion
     {
         // Family tag for costs
-        struct CostFamily {};
+        struct CostFamily
+        {
+        };
 
         // Trait specialization for Cost family
         template <>

@@ -17,7 +17,8 @@ namespace galileo
             template <typename LeftPhaseModelType>
             using LeftPhaseModelBaseOf_t = PhaseModelBase<LeftPhaseModelType, typename traits<LeftPhaseModelType>::BS>;
             template <typename RightPhaseModelType>
-            using RightPhaseModelBaseOf_t = PhaseModelBase<RightPhaseModelType, typename traits<RightPhaseModelType>::BS>;
+            using RightPhaseModelBaseOf_t =
+                PhaseModelBase<RightPhaseModelType, typename traits<RightPhaseModelType>::BS>;
 
             template <typename LeftPhaseDataType>
             using LeftPhaseDataBaseOf_t = PhaseDataBase<LeftPhaseDataType, typename traits<LeftPhaseDataType>::BS>;
@@ -31,67 +32,73 @@ namespace galileo
             using ReturnType = typename traits<VisitorDerived>::ReturnType;
 
             // Phase boundary transformation with args
-            template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData, typename ArgsTmp>
-            static ReturnType run(
-                const LeftPhaseModelBaseOf_t<CurrentPhaseModel> &current_phase_model,
-                const LeftPhaseDataBaseOf_t<CurrentPhaseData> &current_phase_data,
-                const RightPhaseModelBaseOf_t<NextPhaseModel> &next_phase_model,
-                const RightPhaseDataBaseOf_t<NextPhaseData> &next_phase_data,
-                FoldStateType state,
-                ArgsTmp args)
+            template <typename CurrentPhaseModel,
+                      typename CurrentPhaseData,
+                      typename NextPhaseModel,
+                      typename NextPhaseData,
+                      typename ArgsTmp>
+            static ReturnType run(const LeftPhaseModelBaseOf_t<CurrentPhaseModel> &current_phase_model,
+                                  const LeftPhaseDataBaseOf_t<CurrentPhaseData> &current_phase_data,
+                                  const RightPhaseModelBaseOf_t<NextPhaseModel> &next_phase_model,
+                                  const RightPhaseDataBaseOf_t<NextPhaseData> &next_phase_data,
+                                  FoldStateType state,
+                                  ArgsTmp args)
             {
                 return bf::invoke(
                     &VisitorDerived::template algo<CurrentPhaseModel, CurrentPhaseData, NextPhaseModel, NextPhaseData>,
-                    gf::append(
-                        boost::ref(current_phase_model.derived()),
-                        boost::ref(current_phase_data.derived()),
-                        boost::ref(next_phase_model.derived()),
-                        boost::ref(next_phase_data.derived()),
-                        state,
-                        args));
+                    gf::append(boost::ref(current_phase_model.derived()),
+                               boost::ref(current_phase_data.derived()),
+                               boost::ref(next_phase_model.derived()),
+                               boost::ref(next_phase_data.derived()),
+                               state,
+                               args));
             }
 
             // Phase boundary transformation without args
-            template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData>
-            static ReturnType run(
-                const LeftPhaseModelBaseOf_t<CurrentPhaseModel> &current_phase_model,
-                const LeftPhaseDataBaseOf_t<CurrentPhaseData> &current_phase_data,
-                const RightPhaseModelBaseOf_t<NextPhaseModel> &next_phase_model,
-                const RightPhaseDataBaseOf_t<NextPhaseData> &next_phase_data,
-                FoldStateType state)
+            template <typename CurrentPhaseModel,
+                      typename CurrentPhaseData,
+                      typename NextPhaseModel,
+                      typename NextPhaseData>
+            static ReturnType run(const LeftPhaseModelBaseOf_t<CurrentPhaseModel> &current_phase_model,
+                                  const LeftPhaseDataBaseOf_t<CurrentPhaseData> &current_phase_data,
+                                  const RightPhaseModelBaseOf_t<NextPhaseModel> &next_phase_model,
+                                  const RightPhaseDataBaseOf_t<NextPhaseData> &next_phase_data,
+                                  FoldStateType state)
             {
-                return VisitorDerived::template algo<CurrentPhaseModel, CurrentPhaseData, NextPhaseModel, NextPhaseData>(
-                    current_phase_model.derived(), current_phase_data.derived(), next_phase_model.derived(), next_phase_data.derived(), state);
+                return VisitorDerived::
+                    template algo<CurrentPhaseModel, CurrentPhaseData, NextPhaseModel, NextPhaseData>(
+                        current_phase_model.derived(),
+                        current_phase_data.derived(),
+                        next_phase_model.derived(),
+                        next_phase_data.derived(),
+                        state);
             }
 
             // Binary visitor dispatch for type-erased phases
-            template <typename BasicSpec,
-                template <typename> class CollectionTpl,
-                typename ArgsTmp>
-            static ReturnType run(
-                const PhaseModelTpl<BasicSpec, CollectionTpl> &current_phase_model,
-                const PhaseDataTpl<BasicSpec, CollectionTpl> &current_phase_data,
-                const PhaseModelTpl<BasicSpec, CollectionTpl> &next_phase_model,
-                const PhaseDataTpl<BasicSpec, CollectionTpl> &next_phase_data,
-                FoldStateType state,
-                ArgsTmp args)
+            template <typename BasicSpec, template <typename> class CollectionTpl, typename ArgsTmp>
+            static ReturnType run(const PhaseModelTpl<BasicSpec, CollectionTpl> &current_phase_model,
+                                  const PhaseDataTpl<BasicSpec, CollectionTpl> &current_phase_data,
+                                  const PhaseModelTpl<BasicSpec, CollectionTpl> &next_phase_model,
+                                  const PhaseDataTpl<BasicSpec, CollectionTpl> &next_phase_data,
+                                  FoldStateType state,
+                                  ArgsTmp args)
             {
                 InternalBoundaryVisitor<BasicSpec, CollectionTpl, ArgsTmp> visitor(state, args);
-                return boost::apply_visitor(visitor, current_phase_model, current_phase_data, next_phase_model, next_phase_data);
+                return boost::apply_visitor(
+                    visitor, current_phase_model, current_phase_data, next_phase_model, next_phase_data);
             }
 
             // Binary visitor dispatch without args
-            template <typename BasicSpec,
-                template <typename> class CollectionTpl>
-            static ReturnType run(
-                const PhaseModelTpl<BasicSpec, CollectionTpl> &current_phase_model,
-                const PhaseDataTpl<BasicSpec, CollectionTpl> &current_phase_data,
-                const PhaseModelTpl<BasicSpec, CollectionTpl> &next_phase_model,
-                const PhaseDataTpl<BasicSpec, CollectionTpl> &next_phase_data,
-                FoldStateType state)
+            template <typename BasicSpec, template <typename> class CollectionTpl>
+            static ReturnType run(const PhaseModelTpl<BasicSpec, CollectionTpl> &current_phase_model,
+                                  const PhaseDataTpl<BasicSpec, CollectionTpl> &current_phase_data,
+                                  const PhaseModelTpl<BasicSpec, CollectionTpl> &next_phase_model,
+                                  const PhaseDataTpl<BasicSpec, CollectionTpl> &next_phase_data,
+                                  FoldStateType state)
             {
                 InternalBoundaryVisitor<BasicSpec, CollectionTpl, NoArg> visitor(state);
-                return boost::apply_visitor(visitor, current_phase_model, current_phase_data, next_phase_model, next_phase_data);
+                return boost::apply_visitor(
+                    visitor, current_phase_model, current_phase_data, next_phase_model, next_phase_data);
             }
 
         private:
@@ -99,16 +106,19 @@ namespace galileo
             template <typename BasicSpec, template <typename> class CollectionTpl, typename ArgType>
             struct InternalBoundaryVisitor : public boost::static_visitor<ReturnType>
             {
-                InternalBoundaryVisitor(FoldStateType state_, ArgType args_)
-                    : state(state_), args(args_) {}
+                InternalBoundaryVisitor(FoldStateType state_, ArgType args_) : state(state_), args(args_) {}
 
-                template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData>
+                template <typename CurrentPhaseModel,
+                          typename CurrentPhaseData,
+                          typename NextPhaseModel,
+                          typename NextPhaseData>
                 ReturnType operator()(const LeftPhaseModelBaseOf_t<CurrentPhaseModel> &current_phase_model,
                                       const LeftPhaseDataBaseOf_t<CurrentPhaseData> &current_phase_data,
                                       const RightPhaseModelBaseOf_t<NextPhaseModel> &next_phase_model,
                                       const RightPhaseDataBaseOf_t<NextPhaseData> &next_phase_data) const
                 {
-                    return BoundaryPropagatorBase::run(current_phase_model, current_phase_data, next_phase_model, next_phase_data, state, args);
+                    return BoundaryPropagatorBase::run(
+                        current_phase_model, current_phase_data, next_phase_model, next_phase_data, state, args);
                 }
 
                 FoldStateType state;
@@ -121,13 +131,17 @@ namespace galileo
             {
                 InternalBoundaryVisitor(FoldStateType state_) : state(state_) {}
 
-                template <typename CurrentPhaseModel, typename CurrentPhaseData, typename NextPhaseModel, typename NextPhaseData>
+                template <typename CurrentPhaseModel,
+                          typename CurrentPhaseData,
+                          typename NextPhaseModel,
+                          typename NextPhaseData>
                 ReturnType operator()(const LeftPhaseModelBaseOf_t<CurrentPhaseModel> &current_phase_model,
                                       const LeftPhaseDataBaseOf_t<CurrentPhaseData> &current_phase_data,
                                       const RightPhaseModelBaseOf_t<NextPhaseModel> &next_phase_model,
                                       const RightPhaseDataBaseOf_t<NextPhaseData> &next_phase_data) const
                 {
-                    return BoundaryPropagatorBase::run(current_phase_model, current_phase_data, next_phase_model, next_phase_data, state);
+                    return BoundaryPropagatorBase::run(
+                        current_phase_model, current_phase_data, next_phase_model, next_phase_data, state);
                 }
 
                 FoldStateType state;

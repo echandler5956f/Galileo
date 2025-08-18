@@ -57,7 +57,65 @@ namespace galileo
             static constexpr int Value = (A == Dynamic || B == Dynamic) ? Dynamic : ((A < B) ? A : B);
         };
 
+        // Helper to extract compile-time value from raw integral or dimension types
+        template <auto Val>
+        struct extract_dim_v
+        {
+            static constexpr int Value = []()
+            {
+                if constexpr (std::is_integral_v<decltype(Val)>)
+                {
+                    return Val;
+                }
+                else
+                {
+                    static_assert(!Val.IsDynamic, "Cannot use dynamic dimension as template parameter");
+                    return Val.Value;
+                }
+            }();
+        };
+
+        // Type-based extraction (extends existing extract_dim_v for type parameters)
+        template <typename T>
+        struct extract_dim_t
+        {
+            static constexpr int Value = T::Value;
+        };
+
+        template <int Val>
+        struct extract_dim_t<std::integral_constant<int, Val>>
+        {
+            static constexpr int Value = Val;
+        };
+
+        // Unified operation template - handles all type combinations
+        template <typename A, typename B, template <int, int> class Op>
+        struct dim_op
+        {
+            static constexpr int Value = Op<extract_dim_t<A>::Value, extract_dim_t<B>::Value>::Value;
+            using type = DimensionTpl<Value>;
+        };
+
     } // namespace detail
+
+    // Unified interface - one set of templates for all cases
+    template <typename A, typename B>
+    using AddDim_t = typename detail::dim_op<A, B, detail::add>::type;
+    template <typename A, typename B>
+    using SubDim_t = typename detail::dim_op<A, B, detail::sub>::type;
+    template <typename A, typename B>
+    using MulDim_t = typename detail::dim_op<A, B, detail::mul>::type;
+    template <typename A, typename B>
+    using DivDim_t = typename detail::dim_op<A, B, detail::div>::type;
+
+    template <int A, int B>
+    static constexpr int AddDim_v = detail::dim_op<A, B, detail::add>::Value;
+    template <int A, int B>
+    static constexpr int SubDim_v = detail::dim_op<A, B, detail::sub>::Value;
+    template <int A, int B>
+    static constexpr int MulDim_v = detail::dim_op<A, B, detail::mul>::Value;
+    template <int A, int B>
+    static constexpr int DivDim_v = detail::dim_op<A, B, detail::div>::Value;
 
     /**
      * @brief Unified dimension class that handles both compile-time and runtime dimensions
@@ -102,7 +160,8 @@ namespace galileo
             requires(!IsDynamic)
             : runtime_value_(runtime_val)
         {
-            GALILEO_ASSERT(runtime_val == Value, "DimensionTpl: Dimension value does not match fixed compile-time size");
+            GALILEO_ASSERT(runtime_val == Value,
+                           "DimensionTpl: Dimension value does not match fixed compile-time size");
         }
 
         // Copy and assignment
@@ -122,7 +181,8 @@ namespace galileo
             }
             else
             {
-                GALILEO_ASSERT(runtime_val == Value, "DimensionTpl: Dimension value does not match fixed compile-time size");
+                GALILEO_ASSERT(runtime_val == Value,
+                               "DimensionTpl: Dimension value does not match fixed compile-time size");
                 GALILEO_ASSERT(runtime_val >= 0, "DimensionTpl: Runtime dimension values must be non-negative");
             }
         }
@@ -131,58 +191,59 @@ namespace galileo
         template <int OtherValue>
         auto operator+(const DimensionTpl<OtherValue> &other) const
         {
-            constexpr int result_compile_time = detail::add<Value, OtherValue>::Value;
             int runtime_result = value() + other.value();
             GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension addition resulted in negative runtime value");
-            return DimensionTpl<result_compile_time>(runtime_result);
+            return AddDim_t<Value, OtherValue>(runtime_result);
         }
 
         template <int OtherValue>
         auto operator-(const DimensionTpl<OtherValue> &other) const
             requires(IsDynamic || OtherValue == detail::Dynamic || Value >= OtherValue)
         {
-            constexpr int result_compile_time = detail::sub<Value, OtherValue>::Value;
             int runtime_result = value() - other.value();
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension subtraction resulted in negative runtime value");
-            return DimensionTpl<result_compile_time>(runtime_result);
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension subtraction resulted in negative runtime value");
+            return SubDim_t<Value, OtherValue>(runtime_result);
         }
 
         template <int OtherValue>
         auto operator*(const DimensionTpl<OtherValue> &other) const
         {
-            constexpr int result_compile_time = detail::mul<Value, OtherValue>::Value;
             int runtime_result = value() * other.value();
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension multiplication resulted in negative runtime value");
-            return DimensionTpl<result_compile_time>(runtime_result);
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension multiplication resulted in negative runtime value");
+            return MulDim_t<Value, OtherValue>(runtime_result);
         }
 
         template <int OtherValue>
         auto operator/(const DimensionTpl<OtherValue> &other) const
         {
-            constexpr int result_compile_time = detail::div<Value, OtherValue>::Value;
             int runtime_result = value() / other.value();
             GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension division resulted in negative runtime value");
-            return DimensionTpl<result_compile_time>(runtime_result);
+            return DivDim_t<Value, OtherValue>(runtime_result);
         }
 
         // Scalar operations
         auto operator+(int scalar) const
         {
             int runtime_result = value() + scalar;
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension scalar addition resulted in negative runtime value");
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension scalar addition resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(runtime_result);
         }
 
         auto operator-(int scalar) const
         {
             int runtime_result = value() - scalar;
-            GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension scalar subtraction resulted in negative runtime value");
+            GALILEO_ASSERT(runtime_result >= 0,
+                           "DimensionTpl: Dimension scalar subtraction resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(runtime_result);
         }
 
         auto operator*(int scalar) const
         {
-            GALILEO_ASSERT(scalar >= 0, "DimensionTpl: Dimension scalar multiplication resulted in negative runtime value");
+            GALILEO_ASSERT(scalar >= 0,
+                           "DimensionTpl: Dimension scalar multiplication resulted in negative runtime value");
             return DimensionTpl<detail::Dynamic>(value() * scalar);
         }
 
@@ -281,7 +342,8 @@ namespace galileo
         auto &operator+=(int scalar)
         {
             int new_runtime_value = value() + scalar;
-            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension scalar += resulted in negative runtime value");
+            GALILEO_ASSERT(new_runtime_value >= 0,
+                           "DimensionTpl: Dimension scalar += resulted in negative runtime value");
 
             if constexpr (IsFixed)
             {
@@ -296,7 +358,8 @@ namespace galileo
         auto &operator-=(int scalar)
         {
             int new_runtime_value = value() - scalar;
-            GALILEO_ASSERT(new_runtime_value >= 0, "DimensionTpl: Dimension scalar -= resulted in negative runtime value");
+            GALILEO_ASSERT(new_runtime_value >= 0,
+                           "DimensionTpl: Dimension scalar -= resulted in negative runtime value");
 
             if constexpr (IsFixed)
             {
@@ -337,24 +400,6 @@ namespace galileo
         constexpr int result_compile_time = detail::min<A, B>::Value;
         return DimensionTpl<result_compile_time>(std::min(a.value(), b.value()));
     }
-
-    // Helper to extract compile-time value from raw integral or dimension types
-    template <auto Val>
-    struct extract_compile_time_value
-    {
-        static constexpr int Value = []()
-        {
-            if constexpr (std::is_integral_v<decltype(Val)>)
-            {
-                return Val;
-            }
-            else
-            {
-                static_assert(!Val.IsDynamic, "Cannot use dynamic dimension as template parameter");
-                return Val.Value;
-            }
-        }();
-    };
 
 } // namespace galileo
 

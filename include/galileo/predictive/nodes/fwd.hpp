@@ -6,11 +6,9 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-        template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct NodeModelContactFwdDynTpl;
-    template <typename PhaseSpec,
-        template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct NodeDataContactFwdDynTpl;
 
 } // namespace galileo

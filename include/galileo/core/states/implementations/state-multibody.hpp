@@ -13,8 +13,7 @@ namespace galileo
 {
 
     template <typename RobotSpec>
-    class StateMultibodyTpl
-        : public StateBase<StateMultibodyTpl<RobotSpec>, RobotSpec>
+    class StateMultibodyTpl : public StateBase<StateMultibodyTpl<RobotSpec>, RobotSpec>
     {
     public:
         using RS = RobotSpec;
@@ -23,9 +22,7 @@ namespace galileo
 
         using Base = StateBase<StateMultibodyTpl<RS>, RS>;
 
-        StateMultibodyTpl(const RobotModel_t &model)
-            : Base(RS()),
-              model_(model)
+        StateMultibodyTpl(const RobotModel_t &model) : Base(RS()), model_(model)
         {
             if constexpr (RS::DimNQ_t::IsDynamic)
             {
@@ -33,9 +30,8 @@ namespace galileo
             }
             if constexpr (RS::DimNQb_t::IsDynamic)
             {
-                get_rs().nqb_dim_.set_value(model_.existJointName("root_joint")
-                                                ? model_.joints[model_.getJointId("root_joint")].nq()
-                                                : 0);
+                get_rs().nqb_dim_.set_value(
+                    model_.existJointName("root_joint") ? model_.joints[model_.getJointId("root_joint")].nq() : 0);
             }
             if constexpr (RS::DimNQj_t::IsDynamic)
             {
@@ -48,9 +44,7 @@ namespace galileo
             if constexpr (RS::DimNVb_t::IsDynamic)
             {
                 const std::size_t nvb =
-                    model_.existJointName("root_joint")
-                        ? model_.joints[model_.getJointId("root_joint")].nv()
-                        : 0;
+                    model_.existJointName("root_joint") ? model_.joints[model_.getJointId("root_joint")].nv() : 0;
                 get_rs().nvb_dim_.set_value(nvb);
             }
             if constexpr (RS::DimNVj_t::IsDynamic)
@@ -82,10 +76,7 @@ namespace galileo
             initialize();
         }
 
-        VectorNx_t zero() const
-        {
-            return x0_;
-        }
+        VectorNx_t zero() const { return x0_; }
 
         VectorNx_t rand() const
         {
@@ -110,8 +101,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVector2> &x1,
                   Eigen::MatrixBase<StateTangentVector> &dxout) const
         {
-            pinocchio::difference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
-                                  head(dxout, get_nv_dim()));
+            pinocchio::difference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()), head(dxout, get_nv_dim()));
             tail(dxout, get_nv_dim()) = tail(x1, get_nv_dim()) - tail(x0, get_nv_dim());
         }
 
@@ -120,38 +110,49 @@ namespace galileo
                        const Eigen::MatrixBase<StateTangentVector> &dx,
                        Eigen::MatrixBase<StateVector2> &xout) const
         {
-            pinocchio::integrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
-                                 head(xout, get_nq_dim()));
+            pinocchio::integrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()), head(xout, get_nq_dim()));
             tail(xout, get_nv_dim()) = tail(x, get_nv_dim()) + tail(dx, get_nv_dim());
         }
 
         template <Jcomponent jc = BOTH,
-                  typename StateVector1, typename StateVector2, typename JMatrix1, typename JMatrix2>
+                  typename StateVector1,
+                  typename StateVector2,
+                  typename JMatrix1,
+                  typename JMatrix2>
         void Jdiff(const Eigen::MatrixBase<StateVector1> &x0,
                    const Eigen::MatrixBase<StateVector2> &x1,
-                   Eigen::MatrixBase<JMatrix1> &Jfirst, Eigen::MatrixBase<JMatrix2> &Jsecond) const
+                   Eigen::MatrixBase<JMatrix1> &Jfirst,
+                   Eigen::MatrixBase<JMatrix2> &Jsecond) const
         {
-            if constexpr (IsFirst<jc> || IsBoth<jc>)
-                Jfirst.setZero();
-            if constexpr (IsSecond<jc> || IsBoth<jc>)
-                Jsecond.setZero();
+            if constexpr (IsFirst<jc> || IsBoth<jc>) Jfirst.setZero();
+            if constexpr (IsSecond<jc> || IsBoth<jc>) Jsecond.setZero();
 
             if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
-                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
-                                       topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0);
+                pinocchio::dDifference(model_,
+                                       head(x0, get_nq_dim()),
+                                       head(x1, get_nq_dim()),
+                                       topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()),
+                                       pinocchio::ARG0);
                 bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(-1.);
             }
             if constexpr (IsSecond<jc> || IsBoth<jc>)
             {
-                pinocchio::dDifference(model_, head(x0, get_nq_dim()), head(x1, get_nq_dim()),
-                                       topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1);
+                pinocchio::dDifference(model_,
+                                       head(x0, get_nq_dim()),
+                                       head(x1, get_nq_dim()),
+                                       topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()),
+                                       pinocchio::ARG1);
                 bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
             }
         }
 
-        template <Jcomponent jc = BOTH, AssignmentOp op = SETTO,
-                  typename StateVector, typename StateTangentVector, typename JMatrix1, typename JMatrix2>
+        template <Jcomponent jc = BOTH,
+                  AssignmentOp op = SETTO,
+                  typename StateVector,
+                  typename StateTangentVector,
+                  typename JMatrix1,
+                  typename JMatrix2>
         void Jintegrate(const Eigen::MatrixBase<StateVector> &x,
                         const Eigen::MatrixBase<StateTangentVector> &dx,
                         Eigen::MatrixBase<JMatrix1> &Jfirst,
@@ -160,32 +161,39 @@ namespace galileo
             // Only zero the matrices for SETTO operations, not for ADDTO/RMFROM
             if constexpr (IsSetTo<op>)
             {
-                if constexpr (IsFirst<jc> || IsBoth<jc>)
-                    Jfirst.setZero();
-                if constexpr (IsSecond<jc> || IsBoth<jc>)
-                    Jsecond.setZero();
+                if constexpr (IsFirst<jc> || IsBoth<jc>) Jfirst.setZero();
+                if constexpr (IsSecond<jc> || IsBoth<jc>) Jsecond.setZero();
             }
 
             if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
                 if constexpr (IsSetTo<op>)
                 {
-                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
-                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
+                    pinocchio::dIntegrate(model_,
+                                          head(x, get_nq_dim()),
+                                          head(dx, get_nv_dim()),
+                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()),
+                                          pinocchio::ARG0,
                                           pinocchio::SETTO);
                     bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
                 }
                 else if constexpr (IsAddTo<op>)
                 {
-                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
-                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
+                    pinocchio::dIntegrate(model_,
+                                          head(x, get_nq_dim()),
+                                          head(dx, get_nv_dim()),
+                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()),
+                                          pinocchio::ARG0,
                                           pinocchio::ADDTO);
                     bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() += VarScalar(1.);
                 }
                 else if constexpr (IsRmFrom<op>)
                 {
-                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
-                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()), pinocchio::ARG0,
+                    pinocchio::dIntegrate(model_,
+                                          head(x, get_nq_dim()),
+                                          head(dx, get_nv_dim()),
+                                          topLeftCorner(Jfirst, get_nv_dim(), get_nv_dim()),
+                                          pinocchio::ARG0,
                                           pinocchio::RMTO);
                     bottomRightCorner(Jfirst, get_nv_dim(), get_nv_dim()).diagonal().array() -= VarScalar(1.);
                 }
@@ -194,67 +202,58 @@ namespace galileo
             {
                 if constexpr (IsSetTo<op>)
                 {
-                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
-                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
+                    pinocchio::dIntegrate(model_,
+                                          head(x, get_nq_dim()),
+                                          head(dx, get_nv_dim()),
+                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()),
+                                          pinocchio::ARG1,
                                           pinocchio::SETTO);
                     bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() = VarScalar(1.);
                 }
                 else if constexpr (IsAddTo<op>)
                 {
-                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
-                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
+                    pinocchio::dIntegrate(model_,
+                                          head(x, get_nq_dim()),
+                                          head(dx, get_nv_dim()),
+                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()),
+                                          pinocchio::ARG1,
                                           pinocchio::ADDTO);
                     bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() += VarScalar(1.);
                 }
                 else if constexpr (IsRmFrom<op>)
                 {
-                    pinocchio::dIntegrate(model_, head(x, get_nq_dim()), head(dx, get_nv_dim()),
-                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()), pinocchio::ARG1,
+                    pinocchio::dIntegrate(model_,
+                                          head(x, get_nq_dim()),
+                                          head(dx, get_nv_dim()),
+                                          topLeftCorner(Jsecond, get_nv_dim(), get_nv_dim()),
+                                          pinocchio::ARG1,
                                           pinocchio::RMTO);
                     bottomRightCorner(Jsecond, get_nv_dim(), get_nv_dim()).diagonal().array() -= VarScalar(1.);
                 }
             }
         }
 
-        template <Jcomponent jc,
-                  typename StateVector, typename StateTangentVector, typename JMatrix>
+        template <Jcomponent jc, typename StateVector, typename StateTangentVector, typename JMatrix>
         void JintegrateTransport(const Eigen::MatrixBase<StateVector> &x,
                                  const Eigen::MatrixBase<StateTangentVector> &dx,
                                  Eigen::MatrixBase<JMatrix> &Jin) const
         {
             if constexpr (IsFirst<jc> || IsBoth<jc>)
             {
-                pinocchio::dIntegrateTransport(model_, head(x, get_nq_dim()),
-                                               head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()),
-                                               pinocchio::ARG0);
+                pinocchio::dIntegrateTransport(
+                    model_, head(x, get_nq_dim()), head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()), pinocchio::ARG0);
             }
             if constexpr (IsSecond<jc> || IsBoth<jc>)
             {
-                pinocchio::dIntegrateTransport(model_, head(x, get_nq_dim()),
-                                               head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()),
-                                               pinocchio::ARG1);
+                pinocchio::dIntegrateTransport(
+                    model_, head(x, get_nq_dim()), head(dx, get_nv_dim()), topRows(Jin, get_nv_dim()), pinocchio::ARG1);
             }
         }
 
-        const RobotModel_t &get_robot() const
-        {
-            return model_;
-        }
-
-        const VectorNx_t &get_x0() const
-        {
-            return x0_;
-        }
-
-        const VectorNx_t &get_lb() const
-        {
-            return lb_;
-        }
-
-        const VectorNx_t &get_ub() const
-        {
-            return ub_;
-        }
+        const RobotModel_t &get_robot() const { return model_; }
+        const VectorNx_t &get_x0() const { return x0_; }
+        const VectorNx_t &get_lb() const { return lb_; }
+        const VectorNx_t &get_ub() const { return ub_; }
 
         template <typename StateVector>
         void set_lb(const Eigen::MatrixBase<StateVector> &lb)
@@ -272,57 +271,48 @@ namespace galileo
         using Base::integrate_x;
         using Base::Jdiff_Js;
         using Base::Jintegrate_Js;
-
         using Base::get_rs;
-
         using Base::get_nqb;
         using Base::get_nqb_dim;
-
         using Base::get_nqj;
         using Base::get_nqj_dim;
-
         using Base::get_nq;
         using Base::get_nq_dim;
-
         using Base::get_nvb;
         using Base::get_nvb_dim;
-
         using Base::get_nvj;
         using Base::get_nvj_dim;
-
         using Base::get_nv;
         using Base::get_nv_dim;
-
         using Base::get_nrotors;
         using Base::get_nrotors_dim;
-
         using Base::get_nx;
         using Base::get_nx_dim;
-
         using Base::get_ndx;
         using Base::get_ndx_dim;
-
         using Base::get_nua;
         using Base::get_nua_dim;
 
         /**
          * @brief Display multibody state information to output stream
          */
-        void disp(std::ostream &os) const
+        void display(std::ostream &os, const std::string &indent = "  ") const
         {
-            os << "StateMultibody{\n";
-            os << "  RobotSpec: " << get_rs() << "\n";
-            os << "  Pinocchio Model:\n";
-            os << "    Model name: " << model_.name << "\n";
-            os << "    Number of joints: " << model_.njoints << "\n";
-            os << "    Number of bodies: " << model_.nbodies << "\n";
-            os << "    Number of frames: " << model_.nframes << "\n";
-            os << "    Has floating base: " << (get_nqb() > 0 ? "Yes" : "No") << "\n";
-            os << "  State Bounds:\n";
-            os << "    Lower bounds: " << lb_.transpose() << "\n";
-            os << "    Upper bounds: " << ub_.transpose() << "\n";
-            os << "    Default state: " << x0_.transpose() << "\n";
-            os << "}";
+            os << indent << "RobotSpec: {\n";
+            get_rs().display(os, indent + "  ");
+            os << indent << "}\n";
+            os << indent << "Pinocchio Model: {\n";
+            os << indent << "  Model name: " << model_.name << "\n";
+            os << indent << "  Number of joints: " << model_.njoints << "\n";
+            os << indent << "  Number of bodies: " << model_.nbodies << "\n";
+            os << indent << "  Number of frames: " << model_.nframes << "\n";
+            os << indent << "  Has floating base: " << (get_nqb() > 0 ? "Yes" : "No") << "\n";
+            os << indent << "}\n";
+            os << indent << "State Bounds: {\n";
+            os << indent << "  Lower bounds: " << lb_.transpose() << "\n";
+            os << indent << "  Upper bounds: " << ub_.transpose() << "\n";
+            os << indent << "  Default state: " << x0_.transpose() << "\n";
+            os << indent << "}\n";
         }
 
     protected:

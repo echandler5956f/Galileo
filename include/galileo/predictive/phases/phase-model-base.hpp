@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename BasicSpec>
-    class PhaseModelBase
-        : public internal::CRTP<Derived>
+    class PhaseModelBase : public internal::CRTP<Derived>
     {
     public:
         using BS = BasicSpec;
@@ -36,32 +35,21 @@ namespace galileo
         }
 
         template <typename StateMatrixType, typename ControlParamMatrixType>
-        void quasiStatic(Data_t &data, const Eigen::MatrixBase<StateMatrixType> &xs,
+        void quasiStatic(Data_t &data,
+                         const Eigen::MatrixBase<StateMatrixType> &xs,
                          Eigen::MatrixBase<ControlParamMatrixType> &ws,
-                         const int maxiter, const NumScalar &tol) const
+                         const int maxiter,
+                         const NumScalar &tol) const
         {
             this->derived().quasiStatic(data, xs, ws, maxiter, tol);
         }
 
-        Data_t createData() const
-        {
-            return this->derived().createData();
-        }
+        Data_t createData() const { return this->derived().createData(); }
 
     protected:
-        inline PhaseModelBase()
-        {
-        }
-
-        inline PhaseModelBase(const PhaseModelBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline PhaseModelBase &operator=(const PhaseModelBase &clone)
-        {
-            return *this;
-        }
+        inline PhaseModelBase() {}
+        inline PhaseModelBase(const PhaseModelBase &clone) { *this = clone; }
+        inline PhaseModelBase &operator=(const PhaseModelBase &clone) { return *this; }
 
     }; // class PhaseModelBase
 

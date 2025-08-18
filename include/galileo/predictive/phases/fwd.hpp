@@ -14,19 +14,14 @@ namespace galileo
     {
     }; // struct PhaseDataVoid
 
-    template <typename PhaseSpec,
-              template <typename PS> class JumpTpl>
+    template <typename PhaseSpec, template <typename> class JumpTpl>
     struct PhaseModelDefaultTpl;
-    template <typename PhaseSpec,
-              template <typename PS> class JumpTpl>
+    template <typename PhaseSpec, template <typename> class JumpTpl>
     struct PhaseDataDefaultTpl;
 
-    template <typename BasicSpec,
-              template <typename BS> class PhaseCollectionTpl>
+    template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
     struct PhaseModelTpl;
-
-    template <typename BasicSpec,
-              template <typename BS> class PhaseCollectionTpl>
+    template <typename BasicSpec, template <typename> class PhaseCollectionTpl>
     struct PhaseDataTpl;
 
 } // namespace galileo

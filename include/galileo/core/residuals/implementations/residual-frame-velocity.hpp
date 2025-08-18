@@ -51,8 +51,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ResidualDataFrameVelocityTpl
-        : public ResidualDataBase<ResidualDataFrameVelocityTpl<PhaseSpec>, PhaseSpec>
+    struct ResidualDataFrameVelocityTpl : public ResidualDataBase<ResidualDataFrameVelocityTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -75,7 +74,8 @@ namespace galileo
         template <typename DataCollector>
         ResidualDataFrameVelocityTpl(const Model_t &model, DataCollector *const collector)
             : robot(collector->robot),
-              R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+              R(model.get_nr()),
+              Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
               Arr_Ru(model.get_nr(), model.get_ps().get_nu())
@@ -98,8 +98,7 @@ namespace galileo
     }; // class ResidualDataFrameVelocityTpl
 
     template <typename PhaseSpec>
-    class ResidualModelFrameVelocityTpl
-        : public ResidualModelBase<ResidualModelFrameVelocityTpl<PhaseSpec>, PhaseSpec>
+    class ResidualModelFrameVelocityTpl : public ResidualModelBase<ResidualModelFrameVelocityTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -117,8 +116,7 @@ namespace galileo
                                       const FrameIndex_t frame_id,
                                       const Motion_t &velocity,
                                       const ReferenceFrame_t type)
-            : Base(ps, DimNR_t()),
-              frame_id_(frame_id), vref_(velocity), type_(type)
+            : Base(ps, DimNR_t()), frame_id_(frame_id), vref_(velocity), type_(type)
         {
         }
 
@@ -127,18 +125,14 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data.R = (pinocchio::getFrameVelocity(
-                          get_ps().get_state().get_robot(),
-                          *data.robot.get(),
-                          frame_id_,
-                          type_) -
-                      vref_)
-                         .toVector();
+            data.R =
+                (pinocchio::getFrameVelocity(get_ps().get_state().get_robot(), *data.robot.get(), frame_id_, type_) -
+                 vref_)
+                    .toVector();
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -148,18 +142,16 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            pinocchio::getFrameVelocityDerivatives(
-                get_ps().get_state().get_robot(),
-                *data.robot.get(),
-                frame_id_,
-                type_,
-                leftCols(data.Rx, get_ps().get_nv_dim()),
-                rightCols(data.Rx, get_ps().get_nv_dim()));
+            pinocchio::getFrameVelocityDerivatives(get_ps().get_state().get_robot(),
+                                                   *data.robot.get(),
+                                                   frame_id_,
+                                                   type_,
+                                                   leftCols(data.Rx, get_ps().get_nv_dim()),
+                                                   rightCols(data.Rx, get_ps().get_nv_dim()));
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -171,10 +163,8 @@ namespace galileo
         }
 
         using Base::get_ps;
-
         using Base::get_nr;
         using Base::get_nr_dim;
-
         using Base::get_q_dependent;
         using Base::get_u_dependent;
         using Base::get_v_dependent;

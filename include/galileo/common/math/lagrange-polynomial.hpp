@@ -85,10 +85,7 @@ namespace galileo
             return indefinite_integral.evaluate(b) - indefinite_integral.evaluate(a);
         }
 
-        NumScalar operator()(const NumScalar &t) const
-        {
-            return evaluate(t);
-        }
+        NumScalar operator()(const NumScalar &t) const { return evaluate(t); }
 
         template <typename OtherPolynomial>
         Polynomial operator+(const OtherPolynomial &other) const
@@ -168,23 +165,15 @@ namespace galileo
             return *this;
         }
 
-        const MatrixX &get_coeffs() const
-        {
-            return coeffs_;
-        }
-
-        int get_N() const
-        {
-            return N_;
-        }
+        const MatrixX &get_coeffs() const { return coeffs_; }
+        int get_N() const { return N_; }
 
         friend std::ostream &operator<<(std::ostream &os, const LagrangePolynomialTpl &poly)
         {
             os << "LagrangePolynomial(degree=" << poly.N_ - 1 << ", coefficients=[";
             for (int i = 0; i < poly.N_; ++i)
             {
-                if (i > 0)
-                    os << ", ";
+                if (i > 0) os << ", ";
                 os << poly.coeffs_(i);
             }
             os << "])";

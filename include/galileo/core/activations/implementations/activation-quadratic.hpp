@@ -6,12 +6,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct ActivationQuadraticTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ActivationQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
@@ -32,22 +30,19 @@ namespace galileo
         using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, DimNR_t::Value>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using Meta_t = ActivationQuadraticTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename PS> class ResidualTpl>
     struct traits<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>>
     {
         using Meta_t = ActivationQuadraticTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct ActivationDataQuadraticTpl
         : public ActivationDataBase<ActivationDataQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
@@ -65,8 +60,7 @@ namespace galileo
         DEFAULT_ACCESSOR(Ar_t, Ar);
         DEFAULT_ACCESSOR(Arr_t, Arr);
 
-        ActivationDataQuadraticTpl(const Model_t &model)
-            : A(0.), Ar(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
+        ActivationDataQuadraticTpl(const Model_t &model) : A(0.), Ar(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
         {
             Ar.setZero();
             Arr.setIdentity();
@@ -78,8 +72,7 @@ namespace galileo
 
     }; // class ActivationDataQuadraticTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     class ActivationModelQuadraticTpl
         : public ActivationModelBase<ActivationModelQuadraticTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
@@ -93,10 +86,7 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
-        explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &nr_dim)
-            : Base(nr_dim)
-        {
-        }
+        explicit ActivationModelQuadraticTpl(const PS &ps, const DimNR_t &nr_dim) : Base(nr_dim) {}
 
         template <typename ResidualVectorType>
         void calc(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
@@ -111,10 +101,7 @@ namespace galileo
             // The Hessian has constant values which were set in createData.
         }
 
-        Data_t createData() const
-        {
-            return Data_t(*this);
-        }
+        Data_t createData() const { return Data_t(*this); }
 
         using Base::get_nr;
         using Base::get_nr_dim;

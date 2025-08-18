@@ -17,12 +17,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct NodeContactFwdDynTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct traits<NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -53,22 +51,19 @@ namespace galileo
         using MatrixNc_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, Eigen::Dynamic>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct traits<NodeDataContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using Meta_t = NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct traits<NodeModelContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>>
     {
         using Meta_t = NodeContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct NodeDataContactFwdDynTpl
         : public NodeDataBase<NodeDataContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>
     {
@@ -96,48 +91,33 @@ namespace galileo
 
         DEFAULT_ACCESSOR(CostDataManager_t, costs);
         DEFAULT_ACCESSOR(ConstraintDataManager_t, constraints);
-
         DEFAULT_ACCESSOR(XAcc_t, XAcc);
         DEFAULT_ACCESSOR(XAccx_t, XAccx);
         DEFAULT_ACCESSOR(XAccu_t, XAccu);
 
         // Notice that we are overriding the default accessors for the costs and constraints
-
         L_t &L_accessor() { return costs.L; }
         const L_t &L_accessor() const { return costs.L; }
-
         Lx_t &Lx_accessor() { return costs.Lx; }
         const Lx_t &Lx_accessor() const { return costs.Lx; }
-
         Lu_t &Lu_accessor() { return costs.Lu; }
         const Lu_t &Lu_accessor() const { return costs.Lu; }
-
         Lxx_t &Lxx_accessor() { return costs.Lxx; }
         const Lxx_t &Lxx_accessor() const { return costs.Lxx; }
-
         Lxu_t &Lxu_accessor() { return costs.Lxu; }
         const Lxu_t &Lxu_accessor() const { return costs.Lxu; }
-
         Luu_t &Luu_accessor() { return costs.Luu; }
         const Luu_t &Luu_accessor() const { return costs.Luu; }
-
         H_t &H_accessor() { return constraints.H; }
         const H_t &H_accessor() const { return constraints.H; }
-
         Hx_t &Hx_accessor() { return constraints.Hx; }
         const Hx_t &Hx_accessor() const { return constraints.Hx; }
-
         Hu_t &Hu_accessor() { return constraints.Hu; }
         const Hu_t &Hu_accessor() const { return constraints.Hu; }
-
-        // For now the inequality constraints accessor points to the equality constraints,
-        // until we implement inequality constraints
         G_t &G_accessor() { return constraints.H; }
         const G_t &G_accessor() const { return constraints.H; }
-
         Gx_t &Gx_accessor() { return constraints.Hx; }
         const Gx_t &Gx_accessor() const { return constraints.Hx; }
-
         Gu_t &Gu_accessor() { return constraints.Hu; }
         const Gu_t &Gu_accessor() const { return constraints.Hu; }
 
@@ -145,25 +125,22 @@ namespace galileo
             : XAcc(model.get_ps().get_nv()),
               XAccx(model.get_ps().get_nv(), model.get_ps().get_ndx()),
               XAccu(model.get_ps().get_nv(), model.get_ps().get_nu()),
-              data_collector(std::make_shared<DataCollector_t>(std::make_shared<RobotData_t>(model.get_robot()),
-                             std::make_shared<ActuationData_t>(model.get_actuation().createData()),
-                             std::make_shared<JointData_t>(model.get_ps()))),
+              data_collector(std::make_shared<DataCollector_t>(
+                  std::make_shared<RobotData_t>(model.get_robot()),
+                  std::make_shared<ActuationData_t>(model.get_actuation().createData()),
+                  std::make_shared<JointData_t>(model.get_ps()))),
               robot(data_collector->robot),
               actuation(data_collector->actuation),
               joint(data_collector->joint),
               contacts(model.get_contacts().createData(robot.get())),
               costs(model.get_costs().createData(data_collector.get())),
               constraints(model.get_constraints().createData(data_collector.get())),
-              Kinv(model.get_ps().get_nv() +
-                       model.get_contacts().get_n_total(),
-                   model.get_ps().get_nv() +
-                       model.get_contacts().get_n_total()),
-              df_dx(model.get_contacts().get_n_total(),
-                    model.get_ps().get_ndx()),
+              Kinv(model.get_ps().get_nv() + model.get_contacts().get_n_total(),
+                   model.get_ps().get_nv() + model.get_contacts().get_n_total()),
+              df_dx(model.get_contacts().get_n_total(), model.get_ps().get_ndx()),
               df_du(model.get_contacts().get_n_total(), model.get_ps().get_nu()),
               tmp_xstatic(model.get_ps().get_nx()),
-              tmp_Jstatic(model.get_ps().get_nv(),
-                          model.get_ps().get_nu() + model.get_contacts().get_n_total())
+              tmp_Jstatic(model.get_ps().get_nv(), model.get_ps().get_nu() + model.get_contacts().get_n_total())
         {
             XAcc.setZero();
             XAccx.setZero();
@@ -198,8 +175,7 @@ namespace galileo
 
     }; // class NodeDataContactFwdDynTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ContactCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     class NodeModelContactFwdDynTpl
         : public NodeModelBase<NodeModelContactFwdDynTpl<PhaseSpec, ContactCollectionTpl>, PhaseSpec>
     {
@@ -221,7 +197,8 @@ namespace galileo
         using MatrixNcNv_t = typename traits<Meta_t>::MatrixNcNv_t;
         using MatrixNc_t = typename traits<Meta_t>::MatrixNc_t;
 
-        NodeModelContactFwdDynTpl(PS &ps, const CostModelManager_t &costs,
+        NodeModelContactFwdDynTpl(PS &ps,
+                                  const CostModelManager_t &costs,
                                   const ConstraintModelManager_t &constraints,
                                   const ContactModelManager_t &contacts,
                                   const ActuationModel_t &actuation,
@@ -274,11 +251,12 @@ namespace galileo
             //     std::cout << "A damping factor is needed as the contact Jacobian is not full-rank" << std::endl;
             // }
 
-            pinocchio::forwardDynamics(
-                get_robot(), *data.robot.get(), data.actuation->tau,
-                topRows(data.contacts.Jc, nc_dim),
-                head(data.contacts.a0, nc_dim),
-                JMinvJt_damping_);
+            pinocchio::forwardDynamics(get_robot(),
+                                       *data.robot.get(),
+                                       data.actuation->tau,
+                                       topRows(data.contacts.Jc, nc_dim),
+                                       head(data.contacts.a0, nc_dim),
+                                       JMinvJt_damping_);
             data.XAcc = data.robot->ddq;
 
             get_contacts().updateAcceleration(data.contacts, data.robot->ddq);
@@ -295,8 +273,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
@@ -326,8 +303,7 @@ namespace galileo
             // recursively: https://eigen.tuxfamily.org/bz/show_bug.cgi?id=408. Therefore,
             // it is not possible to pass data.Kinv.topLeftCorner(nv + nc, nv + nc)
             data.Kinv.resize(get_ps().get_nv() + nc_dim.value(), nv_dim.value() + nc_dim.value());
-            pinocchio::computeRNEADerivatives(get_robot(), *data.robot.get(), q, v, data.XAcc,
-                                              data.contacts.fext);
+            pinocchio::computeRNEADerivatives(get_robot(), *data.robot.get(), q, v, data.XAcc, data.contacts.fext);
             get_contacts().updateRneaDiff(data.contacts, *data.robot.get());
             pinocchio::getKKTContactDynamicMatrixInverse(
                 get_robot(), *data.robot.get(), topRows(data.contacts.Jc, nc_dim), data.Kinv);
@@ -351,20 +327,13 @@ namespace galileo
             // Computing the cost derivatives
             if (enable_force_)
             {
-                topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() =
-                    f_partial_dtau * data.robot->dtau_dq;
-                topRightCorner(data.df_dx, nc_dim, nv_dim).noalias() =
-                    f_partial_dtau * data.robot->dtau_dv;
-                topRows(data.df_dx, nc_dim).noalias() +=
-                    f_partial_da * topRows(data.contacts.da0_dx, nc_dim);
-                topRows(data.df_dx, nc_dim).noalias() -=
-                    f_partial_dtau * data.actuation->dtau_dx;
-                topRows(data.df_du, nc_dim).noalias() =
-                    -f_partial_dtau * data.actuation->dtau_du;
-                get_contacts().updateAccelerationDiff(data.contacts,
-                                                      bottomRows(data.XAccx, nv_dim));
-                get_contacts().updateForceDiff(data.contacts, topRows(data.df_dx, nc_dim),
-                                               topRows(data.df_du, nc_dim));
+                topLeftCorner(data.df_dx, nc_dim, nv_dim).noalias() = f_partial_dtau * data.robot->dtau_dq;
+                topRightCorner(data.df_dx, nc_dim, nv_dim).noalias() = f_partial_dtau * data.robot->dtau_dv;
+                topRows(data.df_dx, nc_dim).noalias() += f_partial_da * topRows(data.contacts.da0_dx, nc_dim);
+                topRows(data.df_dx, nc_dim).noalias() -= f_partial_dtau * data.actuation->dtau_dx;
+                topRows(data.df_du, nc_dim).noalias() = -f_partial_dtau * data.actuation->dtau_du;
+                get_contacts().updateAccelerationDiff(data.contacts, bottomRows(data.XAccx, nv_dim));
+                get_contacts().updateForceDiff(data.contacts, topRows(data.df_dx, nc_dim), topRows(data.df_du, nc_dim));
             }
             get_costs().calcDiff(data.costs, x, u);
             if (get_constraints().get_n_active() > 0 || get_constraints().get_n_active() > 0)
@@ -374,8 +343,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             get_costs().calcDiff(data.costs, x);
             if (get_constraints().get_n_active() > 0 || get_constraints().get_n_active() > 0)
@@ -388,14 +356,15 @@ namespace galileo
         void quasiStatic(Data_t &data,
                          const Eigen::MatrixBase<StateVectorType> &x,
                          Eigen::MatrixBase<ControlVectorType> &u,
-                         const int maxiter, const NumScalar tol) const
+                         const int maxiter,
+                         const NumScalar tol) const
         {
             // Collect dimensions
             const auto nq_dim = get_ps().get_nq_dim();
             const auto nv_dim = get_ps().get_nv_dim();
             const auto nu_dim = get_ps().get_nu_dim();
             const auto nc_dim = get_contacts().get_n_active_dim();
-        
+
             // Build the static state [ q; 0 ]
             const auto q = head(x, nq_dim);
             const auto v = VectorNv_t::Zero(nv_dim.value());
@@ -423,7 +392,7 @@ namespace galileo
             leftCols(data.tmp_Jstatic, nu_dim) = B;
             rightCols(data.tmp_Jstatic, nc_dim) = Jc.transpose();
 
-            if constexpr (true) 
+            if constexpr (true)
             {
                 // Solve [B  Jc^{T}] [u; \lambda] = h
                 rhs = h;
@@ -431,12 +400,12 @@ namespace galileo
             else
             {
                 MatrixX_t Jc_dyn = MatrixX_t(Jc);
-                VectorX_t ddq = - pseudoInverse(Jc_dyn) * a0;
+                VectorX_t ddq = -pseudoInverse(Jc_dyn) * a0;
                 VectorX_t tau_eff = h + M * ddq;
                 // Solve B u + Jc^{T} \lambda = \tau_{eff}
                 rhs = tau_eff;
             }
-            
+
             VectorX_t z = pseudoInverse(data.tmp_Jstatic) * rhs;
 
             data.robot->lambda_c = tail(z, nc_dim);
@@ -445,39 +414,18 @@ namespace galileo
             data.robot->tau.setZero();
         }
 
-        Data_t createData() const
-        {
-            return Data_t(*this);
-        }
+        Data_t createData() const { return Data_t(*this); }
 
-        const CostModelManager_t &get_costs() const
-        {
-            return costs_.get();
-        }
-
-        const ConstraintModelManager_t &get_constraints() const
-        {
-            return constraints_.get();
-        }
-
-        const ContactModelManager_t &get_contacts() const
-        {
-            return contacts_.get();
-        }
-
-        const ActuationModel_t &get_actuation() const
-        {
-            return actuation_.get();
-        }
+        const CostModelManager_t &get_costs() const { return costs_.get(); }
+        const ConstraintModelManager_t &get_constraints() const { return constraints_.get(); }
+        const ContactModelManager_t &get_contacts() const { return contacts_.get(); }
+        const ActuationModel_t &get_actuation() const { return actuation_.get(); }
 
         using Base::get_ps;
-
         using Base::get_robot;
         using Base::get_state;
-
         using Base::get_u_lb;
         using Base::get_u_ub;
-
         using Base::set_u_lb;
         using Base::set_u_ub;
 

@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename PhaseSpec>
-    class ActivationModelBase
-        : public internal::CRTP<Derived>
+    class ActivationModelBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
@@ -20,45 +19,25 @@ namespace galileo
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         template <typename ResidualVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<ResidualVectorType> &r) const
+        void calc(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
             this->derived().calc(data, r);
         }
 
         template <typename ResidualVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<ResidualVectorType> &r) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<ResidualVectorType> &r) const
         {
             this->derived().calcDiff(data, r);
         }
 
-        Data_t createData() const
-        {
-            return this->derived().createData();
-        }
+        Data_t createData() const { return this->derived().createData(); }
 
-        const DimNR_t &get_nr_dim() const
-        {
-            return nr_dim_;
-        }
-
-        int get_nr() const
-        {
-            return nr_dim_.value();
-        }
+        const DimNR_t &get_nr_dim() const { return nr_dim_; }
+        int get_nr() const { return nr_dim_.value(); }
 
     protected:
-        inline ActivationModelBase(const DimNR_t &nr_dim)
-            : nr_dim_(nr_dim)
-        {
-        }
-
-        inline ActivationModelBase(const ActivationModelBase &clone)
-            : nr_dim_(clone.nr_dim_)
-        {
-        }
-
+        inline ActivationModelBase(const DimNR_t &nr_dim) : nr_dim_(nr_dim) {}
+        inline ActivationModelBase(const ActivationModelBase &clone) : nr_dim_(clone.nr_dim_) {}
         inline ActivationModelBase &operator=(const ActivationModelBase &clone)
         {
             nr_dim_ = clone.nr_dim_;

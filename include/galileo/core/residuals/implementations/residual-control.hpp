@@ -45,8 +45,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ResidualDataControlTpl
-        : public ResidualDataBase<ResidualDataControlTpl<PhaseSpec>, PhaseSpec>
+    struct ResidualDataControlTpl : public ResidualDataBase<ResidualDataControlTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -68,7 +67,8 @@ namespace galileo
 
         template <typename DataCollector>
         ResidualDataControlTpl(const Model_t &model, DataCollector *const collector)
-            : R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+            : R(model.get_nr()),
+              Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
               Arr_Ru(model.get_nr(), model.get_ps().get_nu())
@@ -90,8 +90,7 @@ namespace galileo
     }; // class ResidualDataControlTpl
 
     template <typename PhaseSpec>
-    class ResidualModelControlTpl
-        : public ResidualModelBase<ResidualModelControlTpl<PhaseSpec>, PhaseSpec>
+    class ResidualModelControlTpl : public ResidualModelBase<ResidualModelControlTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -106,10 +105,8 @@ namespace galileo
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         template <typename ControlVectorType>
-        ResidualModelControlTpl(const PS &ps,
-                                const Eigen::MatrixBase<ControlVectorType> &u_ref)
-            : Base(ps, DimNR_t()),
-              u_ref_(u_ref)
+        ResidualModelControlTpl(const PS &ps, const Eigen::MatrixBase<ControlVectorType> &u_ref)
+            : Base(ps, DimNR_t()), u_ref_(u_ref)
         {
         }
 
@@ -122,8 +119,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             data.R.setZero();
         }
@@ -137,16 +133,13 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             // The Jacobian has constant values which were set in createData
         }
 
         template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
-        void calcCostDiffImpl(CostDataType &cdata,
-                              Data_t &rdata,
-                              const ActivationDataType &adata) const
+        void calcCostDiffImpl(CostDataType &cdata, Data_t &rdata, const ActivationDataType &adata) const
         {
             cdata.Lu = adata.Ar;
             cdata.Luu = adata.Arr;
@@ -159,10 +152,8 @@ namespace galileo
         }
 
         using Base::get_ps;
-
         using Base::get_nr;
         using Base::get_nr_dim;
-
         using Base::get_q_dependent;
         using Base::get_u_dependent;
         using Base::get_v_dependent;

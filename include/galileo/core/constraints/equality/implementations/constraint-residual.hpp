@@ -6,12 +6,10 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct ConstraintResidualTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ConstraintResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using PS = PhaseSpec;
@@ -32,24 +30,21 @@ namespace galileo
         using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = ConstraintResidualTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct traits<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl>>
     {
         using SpecOfBaseClass = PhaseSpec;
         using Meta_t = ConstraintResidualTpl<PhaseSpec, ResidualTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     struct ConstraintDataResidualTpl
         : public ConstraintDataBase<ConstraintDataResidualTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
@@ -90,8 +85,7 @@ namespace galileo
 
     }; // struct ConstraintDataResidualTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ResidualTpl>
+    template <typename PhaseSpec, template <typename> class ResidualTpl>
     class ConstraintModelResidualTpl
         : public ConstraintModelBase<ConstraintModelResidualTpl<PhaseSpec, ResidualTpl>, PhaseSpec>
     {
@@ -110,9 +104,7 @@ namespace galileo
         using ResidualData_t = typename traits<Meta_t>::ResidualData_t;
 
         ConstraintModelResidualTpl(const PS &ps, const ResidualModel_t &residual)
-            : Base(DimNH_t(residual.get_nr())),
-              ps_(ps),
-              residual_(residual)
+            : Base(DimNH_t(residual.get_nr())), ps_(ps), residual_(residual)
         {
         }
 
@@ -126,8 +118,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             residual_.calc(data.residual, x);
             data.H = data.residual.R;
@@ -144,8 +135,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             residual_.calcDiff(data.residual, x);
             data.Hx = data.residual.Rx;
@@ -158,15 +148,8 @@ namespace galileo
             return Data_t(*this, collector);
         }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        const ResidualModel_t &get_residual() const
-        {
-            return residual_;
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        const ResidualModel_t &get_residual() const { return residual_; }
 
         using Base::get_nh;
 

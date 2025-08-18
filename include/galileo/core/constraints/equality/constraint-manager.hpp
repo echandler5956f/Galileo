@@ -9,14 +9,11 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct ConstraintManagerTpl;
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
-    struct ConstraintItemTpl
-        : public ManagerItemTpl<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
+    struct ConstraintItemTpl : public ManagerItemTpl<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
 
@@ -41,16 +38,14 @@ namespace galileo
 
     }; // struct ConstraintItemTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct traits<ConstraintItemTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
         using MetaManager_t = ConstraintManagerTpl<PS, ConstraintCollectionTpl>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct traits<ConstraintManagerTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -76,8 +71,7 @@ namespace galileo
         using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct traits<ConstraintDataManagerTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -88,8 +82,7 @@ namespace galileo
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     struct traits<ConstraintModelManagerTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
         using PS = PhaseSpec;
@@ -100,8 +93,7 @@ namespace galileo
         using DataManager_t = typename traits<MetaManager_t>::DataManager_t;
     };
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     class ConstraintDataManagerTpl
         : public ManagerDataBase<ConstraintDataManagerTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
@@ -143,8 +135,7 @@ namespace galileo
 
     }; // class ConstraintDataManagerTpl
 
-    template <typename PhaseSpec,
-              template <typename PS> class ConstraintCollectionTpl>
+    template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     class ConstraintModelManagerTpl
         : public ManagerModelBase<ConstraintModelManagerTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
@@ -166,11 +157,7 @@ namespace galileo
         using ModelContainer_t = typename traits<MetaManager_t>::ModelContainer_t;
         using DataContainer_t = typename traits<MetaManager_t>::DataContainer_t;
 
-        ConstraintModelManagerTpl(const PS &ps)
-            : Base(),
-              ps_(ps)
-        {
-        }
+        ConstraintModelManagerTpl(const PS &ps) : Base(), ps_(ps) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(DataManager_t &data,
@@ -181,9 +168,9 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -191,7 +178,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x, u);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     segment(data.H, nh_accum_i, nh_i) = d_i.H();
                     nh_accum_i += nh_i;
                 }
@@ -199,16 +186,15 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(DataManager_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -216,7 +202,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calc(d_i, x);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     segment(data.H, nh_accum_i, nh_i) = d_i.H();
                     nh_accum_i += nh_i;
                 }
@@ -232,9 +218,9 @@ namespace galileo
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -242,7 +228,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x, u);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     block(data.Hx, nh_accum_i, 0, nh_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     block(data.Hu, nh_accum_i, 0, nh_i, get_ps().get_nu_dim()) = d_i.Hu();
                     nh_accum_i += nh_i;
@@ -251,16 +237,15 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(DataManager_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(DataManager_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             DimensionTpl<Eigen::Dynamic> nh_accum_i(0);
 
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
-            for (it_m = items_.begin(), end_m = items_.end(),
-                it_d = data.items.begin(), end_d = data.items.end();
-                 it_m != end_m || it_d != end_d; ++it_m, ++it_d)
+            for (it_m = items_.begin(), end_m = items_.end(), it_d = data.items.begin(), end_d = data.items.end();
+                 it_m != end_m || it_d != end_d;
+                 ++it_m, ++it_d)
             {
                 const Item_t &m_i = it_m->second;
                 if (m_i.active)
@@ -268,7 +253,7 @@ namespace galileo
                     Data_t &d_i = it_d->second;
 
                     m_i.model.calcDiff(d_i, x);
-                    auto nh_i = get_model_n(m_i.model);
+                    const int nh_i = get_model_n(m_i.model);
                     block(data.Hx, nh_accum_i, 0, nh_i, get_ps().get_ndx_dim()) = d_i.Hx();
                     nh_accum_i += nh_i;
                 }
@@ -281,39 +266,25 @@ namespace galileo
             return DataManager_t(*this, collector);
         }
 
-        const PS &get_ps() const
-        {
-            return ps_.get();
-        }
-
-        int get_model_n(const Model_t &model) const
-        {
-            return model.get_nh();
-        }
+        const PS &get_ps() const { return ps_.get(); }
+        int get_model_n(const Model_t &model) const { return model.get_nh(); }
 
         using Base::addItem;
         using Base::removeItem;
-
         using Base::changeItemStatus;
-
         using Base::get_active_set;
         using Base::get_inactive_set;
         using Base::get_items;
-
         using Base::get_item_status;
-
         using Base::get_n_active;
         using Base::get_n_active_dim;
-
         using Base::get_n_total;
         using Base::get_n_total_dim;
 
     protected:
         using Base::items_;
-
         using Base::active_set_;
         using Base::inactive_set_;
-
         using Base::active_dim_;
         using Base::total_dim_;
 

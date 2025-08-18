@@ -51,8 +51,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec>
-    struct ResidualDataStateTpl
-        : public ResidualDataBase<ResidualDataStateTpl<PhaseSpec>, PhaseSpec>
+    struct ResidualDataStateTpl : public ResidualDataBase<ResidualDataStateTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -75,7 +74,8 @@ namespace galileo
         template <typename DataCollector>
         ResidualDataStateTpl(const Model_t &model, DataCollector *const collector)
             : robot(collector->robot),
-              R(model.get_nr()), Rx(model.get_nr(), model.get_ps().get_ndx()),
+              R(model.get_nr()),
+              Rx(model.get_nr(), model.get_ps().get_ndx()),
               Ru(model.get_nr(), model.get_ps().get_nu()),
               Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
               Arr_Ru(model.get_nr(), model.get_ps().get_nu())
@@ -98,8 +98,7 @@ namespace galileo
     }; // class ResidualDataStateTpl
 
     template <typename PhaseSpec>
-    class ResidualModelStateTpl
-        : public ResidualModelBase<ResidualModelStateTpl<PhaseSpec>, PhaseSpec>
+    class ResidualModelStateTpl : public ResidualModelBase<ResidualModelStateTpl<PhaseSpec>, PhaseSpec>
     {
     public:
         using PS = PhaseSpec;
@@ -114,10 +113,8 @@ namespace galileo
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         template <typename StateVectorType>
-        ResidualModelStateTpl(const PS &ps,
-                              const Eigen::MatrixBase<StateVectorType> &x_ref)
-            : Base(ps, DimNR_t()),
-              x_ref_(x_ref)
+        ResidualModelStateTpl(const PS &ps, const Eigen::MatrixBase<StateVectorType> &x_ref)
+            : Base(ps, DimNR_t()), x_ref_(x_ref)
         {
         }
 
@@ -130,8 +127,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calc(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
@@ -145,39 +141,30 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             calcDiff(data, x, VectorNu_t::Zero(get_ps().get_nu()));
         }
 
         template <bool UpdateU = true, typename CostDataType, typename ActivationDataType>
-        void calcCostDiffImpl(CostDataType &cdata,
-                              Data_t &rdata,
-                              const ActivationDataType &adata) const
+        void calcCostDiffImpl(CostDataType &cdata, Data_t &rdata, const ActivationDataType &adata) const
         {
             const PS &ps = get_ps();
             const RobotModel_t &robot = get_ps().get_state().get_robot();
 
             // trust
-            for (pinocchio::JointIndex i = 1;
-                 i < (pinocchio::JointIndex)robot.njoints; ++i)
+            for (pinocchio::JointIndex i = 1; i < (pinocchio::JointIndex) robot.njoints; ++i)
             {
-                const auto &RxBlock = block(rdata.Rx, robot.idx_vs[i], robot.idx_vs[i],
-                                                   robot.nvs[i], robot.nvs[i]);
+                const auto &RxBlock = block(rdata.Rx, robot.idx_vs[i], robot.idx_vs[i], robot.nvs[i], robot.nvs[i]);
                 segment(cdata.Lx, robot.idx_vs[i], robot.nvs[i]).noalias() =
-                    RxBlock.transpose() *
-                    segment(adata.Ar, robot.idx_vs[i], robot.nvs[i]);
+                    RxBlock.transpose() * segment(adata.Ar, robot.idx_vs[i], robot.nvs[i]);
 
-                block(cdata.Lxx, robot.idx_vs[i], robot.idx_vs[i], robot.nvs[i], robot.nvs[i])
-                    .noalias() = RxBlock.transpose() *
-                                 segment(adata.Arr.diagonal(), robot.idx_vs[i], robot.nvs[i])
-                                     .asDiagonal() *
-                                 RxBlock;
+                block(cdata.Lxx, robot.idx_vs[i], robot.idx_vs[i], robot.nvs[i], robot.nvs[i]).noalias() =
+                    RxBlock.transpose() * segment(adata.Arr.diagonal(), robot.idx_vs[i], robot.nvs[i]).asDiagonal() *
+                    RxBlock;
             }
             tail(cdata.Lx, ps.get_nv_dim()) = tail(adata.Ar, ps.get_nv_dim());
-            cdata.Lxx.diagonal().tail(ps.get_nv_dim()).noalias() =
-                adata.Arr.diagonal().tail(ps.get_nv_dim());
+            cdata.Lxx.diagonal().tail(ps.get_nv_dim()).noalias() = adata.Arr.diagonal().tail(ps.get_nv_dim());
         }
 
         template <typename DataCollector>
@@ -187,10 +174,8 @@ namespace galileo
         }
 
         using Base::get_ps;
-
         using Base::get_nr;
         using Base::get_nr_dim;
-
         using Base::get_q_dependent;
         using Base::get_u_dependent;
         using Base::get_v_dependent;

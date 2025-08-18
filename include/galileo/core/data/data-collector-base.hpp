@@ -7,23 +7,12 @@ namespace galileo
 {
 
     template <typename Derived>
-    struct DataCollectorBase
-        : public internal::CRTP<Derived>
+    struct DataCollectorBase : public internal::CRTP<Derived>
     {
     protected:
-        inline DataCollectorBase()
-        {
-        }
-
-        inline DataCollectorBase(const DataCollectorBase &clone)
-        {
-            *this = clone;
-        }
-
-        inline DataCollectorBase &operator=(const DataCollectorBase &clone)
-        {
-            return *this;
-        }
+        inline DataCollectorBase() {}
+        inline DataCollectorBase(const DataCollectorBase &clone) { *this = clone; }
+        inline DataCollectorBase &operator=(const DataCollectorBase &clone) { return *this; }
 
     }; // struct DataCollectorBase
 

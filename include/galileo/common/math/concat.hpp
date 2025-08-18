@@ -16,10 +16,7 @@ namespace galileo
         static constexpr int C2 = Eigen::MatrixBase<M2>::ColsAtCompileTime;
 
         // The new row count is either (R1+R2) if both are fixed, else Dynamic.
-        static constexpr int Rows =
-            (R1 != Eigen::Dynamic && R2 != Eigen::Dynamic)
-                ? (R1 + R2)
-                : Eigen::Dynamic;
+        static constexpr int Rows = (R1 != Eigen::Dynamic && R2 != Eigen::Dynamic) ? (R1 + R2) : Eigen::Dynamic;
 
         // If both have known, identical columns => keep that at compile time
         static constexpr bool sameFixedCols = (C1 != Eigen::Dynamic && C2 != Eigen::Dynamic && C1 == C2);
@@ -41,10 +38,7 @@ namespace galileo
         static constexpr int R2 = Eigen::MatrixBase<V2>::RowsAtCompileTime;
 
         // The new row count is either (R1+R2) if both are fixed, else Dynamic.
-        static constexpr int Rows =
-            (R1 != Eigen::Dynamic && R2 != Eigen::Dynamic)
-                ? (R1 + R2)
-                : Eigen::Dynamic;
+        static constexpr int Rows = (R1 != Eigen::Dynamic && R2 != Eigen::Dynamic) ? (R1 + R2) : Eigen::Dynamic;
 
     public:
         // The underlying scalar type (e.g. double)

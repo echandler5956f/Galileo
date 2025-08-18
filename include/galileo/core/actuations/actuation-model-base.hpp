@@ -7,8 +7,7 @@ namespace galileo
 {
 
     template <typename Derived, typename RobotSpec>
-    class ActuationModelBase
-        : public internal::CRTP<Derived>
+    class ActuationModelBase : public internal::CRTP<Derived>
     {
     public:
         using RS = RobotSpec;
@@ -16,8 +15,6 @@ namespace galileo
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-
-        using State_t = typename RS::State_t;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -28,8 +25,7 @@ namespace galileo
         }
 
         template <typename StateVectorType>
-        void calc(Data_t &data,
-                  const Eigen::MatrixBase<StateVectorType> &x) const
+        void calc(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             // Nothing happens
         }
@@ -43,8 +39,7 @@ namespace galileo
         }
 
         template <typename StateVectorType, typename ControlVectorType>
-        void calcDiff(Data_t &data,
-                      const Eigen::MatrixBase<StateVectorType> &x) const
+        void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             // Nothing happens
         }
@@ -65,34 +60,20 @@ namespace galileo
             this->derived().torqueTransform(data, x, u);
         }
 
-        Data_t createData()
-        {
-            return this->derived().createData();
-        }
+        Data_t createData() { return this->derived().createData(); }
 
-        const State_t &get_state() const
-        {
-            return state_.get();
-        }
+        const RS &get_rs() const { return rs_; }
 
     protected:
-        inline ActuationModelBase(const State_t &state)
-            : state_(state)
-        {
-        }
-
-        inline ActuationModelBase(const ActuationModelBase &clone)
-            : state_(clone.state_)
-        {
-        }
-
+        inline ActuationModelBase(const RS &rs) : rs_(rs) {}
+        inline ActuationModelBase(const ActuationModelBase &clone) : rs_(clone.rs_) {}
         inline ActuationModelBase &operator=(const ActuationModelBase &clone)
         {
-            state_ = clone.state_;
+            rs_ = clone.rs_;
             return *this;
         }
 
-        std::reference_wrapper<const State_t> state_;
+        RS rs_;
 
     }; // class ActuationModelBase
 

@@ -55,36 +55,27 @@ namespace galileo
 
         public:
             // Model + Data + Args
-            template <typename PhaseSpec,
-                      template <typename PS> class CollectionTpl,
-                      typename ArgsTmp>
-            static ReturnType run(
-                const ModelTpl<PhaseSpec, CollectionTpl> &model,
-                DataTpl<PhaseSpec, CollectionTpl> &data,
-                ArgsTmp args)
+            template <typename PhaseSpec, template <typename PS> class CollectionTpl, typename ArgsTmp>
+            static ReturnType run(const ModelTpl<PhaseSpec, CollectionTpl> &model,
+                                  DataTpl<PhaseSpec, CollectionTpl> &data,
+                                  ArgsTmp args)
             {
-                InternalVisitorModelAndData<ModelTpl<PhaseSpec, CollectionTpl>, ArgsTmp>
-                    visitor(data, args);
+                InternalVisitorModelAndData<ModelTpl<PhaseSpec, CollectionTpl>, ArgsTmp> visitor(data, args);
                 return boost::apply_visitor(visitor, model);
             }
 
             // Model + Data (no args)
             template <typename PhaseSpec, template <typename PS> class CollectionTpl>
-            static ReturnType run(
-                const ModelTpl<PhaseSpec, CollectionTpl> &model,
-                DataTpl<PhaseSpec, CollectionTpl> &data)
+            static ReturnType run(const ModelTpl<PhaseSpec, CollectionTpl> &model,
+                                  DataTpl<PhaseSpec, CollectionTpl> &data)
             {
-                InternalVisitorModelAndData<ModelTpl<PhaseSpec, CollectionTpl>, NoArg>
-                    visitor(data);
+                InternalVisitorModelAndData<ModelTpl<PhaseSpec, CollectionTpl>, NoArg> visitor(data);
                 return boost::apply_visitor(visitor, model);
             }
 
             // Base Model + Data + Args
             template <typename ModelType, typename ArgsTmp>
-            static ReturnType run(
-                const ModelBaseOf_t<ModelType> &model,
-                DataOf_t<ModelType> &data,
-                ArgsTmp args)
+            static ReturnType run(const ModelBaseOf_t<ModelType> &model, DataOf_t<ModelType> &data, ArgsTmp args)
             {
                 InternalVisitorModelAndData<ModelType, ArgsTmp> visitor(data, args);
                 return visitor(model.derived());
@@ -92,18 +83,14 @@ namespace galileo
 
             // Base Model + Data (no args)
             template <typename ModelType>
-            static ReturnType run(
-                const ModelBaseOf_t<ModelType> &model,
-                DataOf_t<ModelType> &data)
+            static ReturnType run(const ModelBaseOf_t<ModelType> &model, DataOf_t<ModelType> &data)
             {
                 InternalVisitorModelAndData<ModelType, NoArg> visitor(data);
                 return visitor(model.derived());
             }
 
             // Model + Args
-            template <typename PhaseSpec,
-                      template <typename PS> class CollectionTpl,
-                      typename ArgsTmp>
+            template <typename PhaseSpec, template <typename PS> class CollectionTpl, typename ArgsTmp>
             static ReturnType run(const ModelTpl<PhaseSpec, CollectionTpl> &model, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
@@ -111,9 +98,7 @@ namespace galileo
             }
 
             // Data + Args
-            template <typename PhaseSpec,
-                      template <typename PS> class CollectionTpl,
-                      typename ArgsTmp>
+            template <typename PhaseSpec, template <typename PS> class CollectionTpl, typename ArgsTmp>
             static ReturnType run(const DataTpl<PhaseSpec, CollectionTpl> &data, ArgsTmp args)
             {
                 InternalVisitorModel<ArgsTmp> visitor(args);
@@ -175,18 +160,15 @@ namespace galileo
             {
                 using Data = typename traits<Model>::Data_t;
 
-                InternalVisitorModelAndData(Data &data_, ArgType args_)
-                    : data(data_), args(args_) {}
+                InternalVisitorModelAndData(Data &data_, ArgType args_) : data(data_), args(args_) {}
 
                 template <typename ModelType>
                 ReturnType operator()(const ModelBaseOf_t<ModelType> &model) const
                 {
-                    return bf::invoke(
-                        &VisitorDerived::template algo<ModelType>,
-                        gf::append(
-                            boost::ref(model.derived()),
-                            boost::ref(boost::get<DataOf_t<ModelType>>(data)),
-                            args));
+                    return bf::invoke(&VisitorDerived::template algo<ModelType>,
+                                      gf::append(boost::ref(model.derived()),
+                                                 boost::ref(boost::get<DataOf_t<ModelType>>(data)),
+                                                 args));
                 }
 
                 Data &data;
@@ -204,11 +186,9 @@ namespace galileo
                 template <typename ModelType>
                 ReturnType operator()(const ModelBaseOf_t<ModelType> &model) const
                 {
-                    return bf::invoke(
-                        &VisitorDerived::template algo<ModelType>,
-                        bf::make_vector(
-                            boost::ref(model.derived()),
-                            boost::ref(boost::get<DataOf_t<ModelType>>(data))));
+                    return bf::invoke(&VisitorDerived::template algo<ModelType>,
+                                      bf::make_vector(boost::ref(model.derived()),
+                                                      boost::ref(boost::get<DataOf_t<ModelType>>(data))));
                 }
 
                 Data &data;
@@ -223,17 +203,15 @@ namespace galileo
                 template <typename ModelType>
                 ReturnType operator()(const ModelBaseOf_t<ModelType> &model) const
                 {
-                    return bf::invoke(
-                        &VisitorDerived::template algo<ModelType>,
-                        gf::append(boost::ref(model.derived()), args));
+                    return bf::invoke(&VisitorDerived::template algo<ModelType>,
+                                      gf::append(boost::ref(model.derived()), args));
                 }
 
                 template <typename DataType>
                 ReturnType operator()(const DataBaseOf_t<DataType> &data) const
                 {
-                    return bf::invoke(
-                        &VisitorDerived::template algo<DataType>,
-                        gf::append(boost::ref(data.derived()), args));
+                    return bf::invoke(&VisitorDerived::template algo<DataType>,
+                                      gf::append(boost::ref(data.derived()), args));
                 }
 
                 ArgType args;
