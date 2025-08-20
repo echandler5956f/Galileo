@@ -127,8 +127,8 @@ include(CMakePackageConfigHelpers)
 
 # Generate resource configuration header for the main library
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/galileo/common/utils/resource_config.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/include/galileo/common/utils/resource_config_generated.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/galileo/common/utils/resource-config.hpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/include/galileo/common/utils/resource-config-generated.hpp"
     @ONLY
 )
 

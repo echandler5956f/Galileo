@@ -4,7 +4,7 @@
 #include <string>
 #include <filesystem>
 
-#include "galileo/common/utils/resource_config.hpp"
+#include "galileo/common/utils/resource-config.hpp"
 
 namespace galileo
 {
