@@ -5,20 +5,20 @@
 
   <default>
     <default class="go1">
-      <geom friction="0.6" margin="0.001" condim="1"/>
+      <geom friction="0.8" margin="0.001" condim="1"/>
       <joint axis="0 1 0" damping="2" armature="0.01" frictionloss="0.2"/>
-      <position kp="100" forcerange="-23.7 23.7"/>
+      <motor ctrlrange="-23.7 23.7" /> 
       <default class="abduction">
         <joint axis="1 0 0" damping="1" range="-0.863 0.863"/>
-        <position ctrlrange="-0.863 0.863"/>
+        <motor ctrlrange="-24.0 24.0" /> 
       </default>
       <default class="hip">
         <joint range="-0.686 4.501"/>
-        <position ctrlrange="-0.686 4.501"/>
+        <motor ctrlrange="-24.0 24.0" /> 
       </default>
       <default class="knee">
         <joint range="-2.818 -0.888"/>
-        <position forcerange="-35.55 35.55" ctrlrange="-2.818 -0.888"/>
+        <motor ctrlrange="-45.43 45.43" />
       </default>
       <default class="visual">
         <geom type="mesh" contype="0" conaffinity="0" group="2" material="dark"/>
@@ -115,8 +115,8 @@
             <geom class="visual" mesh="calf"/>
             <geom class="calf1"/>
             <geom class="calf2"/>
-            <geom name="FR" class="foot"/>
-            <site name="FR" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
+            <geom name="FR_foot_geom" class="foot"/>
+            <site name="FR_site" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
           </body>
         </body>
       </body>
@@ -142,8 +142,8 @@
             <geom class="visual" mesh="calf"/>
             <geom class="calf1"/>
             <geom class="calf2"/>
-            <geom name="FL" class="foot"/>
-            <site name="FL" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
+            <geom name="FL_foot_geom" class="foot"/>
+            <site name="FL_site" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
           </body>
         </body>
       </body>
@@ -170,8 +170,8 @@
             <geom class="visual" mesh="calf"/>
             <geom class="calf1"/>
             <geom class="calf2"/>
-            <geom name="RR" class="foot"/>
-            <site name="RR" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
+            <geom name="RR_foot_geom" class="foot"/>
+            <site name="RR_site" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
           </body>
         </body>
       </body>
@@ -198,8 +198,8 @@
             <geom class="visual" mesh="calf"/>
             <geom class="calf1"/>
             <geom class="calf2"/>
-            <geom name="RL" class="foot"/>
-            <site name="RL" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
+            <geom name="RL_foot_geom" class="foot"/>
+            <site name="RL_site" pos="0 0 -0.213" type="sphere" size="0.023" group="5"/>
           </body>
         </body>
       </body>
@@ -207,22 +207,21 @@
   </worldbody>
 
   <actuator>
-    <position class="abduction" name="FR_hip" joint="FR_hip_joint"/>
-    <position class="hip" name="FR_thigh" joint="FR_thigh_joint"/>
-    <position class="knee" name="FR_calf" joint="FR_calf_joint"/>
-    <position class="abduction" name="FL_hip" joint="FL_hip_joint"/>
-    <position class="hip" name="FL_thigh" joint="FL_thigh_joint"/>
-    <position class="knee" name="FL_calf" joint="FL_calf_joint"/>
-    <position class="abduction" name="RR_hip" joint="RR_hip_joint"/>
-    <position class="hip" name="RR_thigh" joint="RR_thigh_joint"/>
-    <position class="knee" name="RR_calf" joint="RR_calf_joint"/>
-    <position class="abduction" name="RL_hip" joint="RL_hip_joint"/>
-    <position class="hip" name="RL_thigh" joint="RL_thigh_joint"/>
-    <position class="knee" name="RL_calf" joint="RL_calf_joint"/>
+    <motor class="abduction" name="FR_hip" joint="FR_hip_joint"/>
+    <motor class="hip" name="FR_thigh" joint="FR_thigh_joint"/>
+    <motor class="knee" name="FR_calf" joint="FR_calf_joint"/>
+    <motor class="abduction" name="FL_hip" joint="FL_hip_joint"/>
+    <motor class="hip" name="FL_thigh" joint="FL_thigh_joint"/>
+    <motor class="knee" name="FL_calf" joint="FL_calf_joint"/>
+    <motor class="abduction" name="RR_hip" joint="RR_hip_joint"/>
+    <motor class="hip" name="RR_thigh" joint="RR_thigh_joint"/>
+    <motor class="knee" name="RR_calf" joint="RR_calf_joint"/>
+    <motor class="abduction" name="RL_hip" joint="RL_hip_joint"/>
+    <motor class="hip" name="RL_thigh" joint="RL_thigh_joint"/>
+    <motor class="knee" name="RL_calf" joint="RL_calf_joint"/>
   </actuator>
 
   <keyframe>
-    <key name="home" qpos="0 0 0.27 1 0 0 0 0 0.9 -1.8 0 0.9 -1.8 0 0.9 -1.8 0 0.9 -1.8"
-      ctrl="0 0.9 -1.8 0 0.9 -1.8 0 0.9 -1.8 0 0.9 -1.8"/>
+    <key name="standing" qpos="0 0 0.26 1 0 0 0 0 0.8 -1.853 0 0.8 -1.853 0 0.8 -1.853 0 0.8 -1.853" />
   </keyframe>
 </mujoco>
