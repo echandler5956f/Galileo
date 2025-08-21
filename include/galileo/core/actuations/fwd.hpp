@@ -6,14 +6,14 @@
 namespace galileo
 {
 
-    template <typename RobotSpec>
+    template <typename Spec>
     class ActuationModelFloatingBaseTpl;
-    template <typename RobotSpec>
+    template <typename Spec>
     class ActuationDataFloatingBaseTpl;
 
-    template <typename RobotSpec>
+    template <typename Spec>
     class ActuationModelFullTpl;
-    template <typename RobotSpec>
+    template <typename Spec>
     class ActuationDataFullTpl;
 
 } // namespace galileo

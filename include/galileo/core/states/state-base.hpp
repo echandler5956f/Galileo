@@ -2,18 +2,18 @@
 #define __galileo_core_states_state_base_hpp__
 
 #include "galileo/core/fwd.hpp"
-#include "galileo/multibody/robot-spec.hpp"
+#include "galileo/core/system-spec.hpp"
 
 namespace galileo
 {
 
-    template <typename Derived, typename RobotSpec>
+    template <typename Derived, typename Spec>
     class StateBase : public internal::CRTP<Derived>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
+        GALILEO_SYSTEM_SPEC_MASTER_TYPEDEF(SS);
 
         /**
          * @brief Generate a zero state
@@ -266,68 +266,41 @@ namespace galileo
             return Jacs;
         }
 
-        const RS &get_rs() const { return rs_; }
-        RS &get_rs() { return rs_; }
-
         /**
-         * @brief Return the dimension (if any) of the floating base configuration space of the state
+         * @brief Return the system specification
          */
-        const DimNQb_t &get_nqb_dim() const { return rs_.get_nqb_dim(); }
-        int get_nqb() const { return rs_.get_nqb(); }
-
-        /**
-         * @brief Return the dimension of the joint configuration space of the state
-         */
-        const DimNQj_t &get_nqj_dim() const { return rs_.get_nqj_dim(); }
-        int get_nqj() const { return rs_.get_nqj(); }
+        const SS &get_spec() const { return spec_; }
+        SS &get_spec() { return spec_; }
 
         /**
          * @brief Return the dimension of the configuration space of the state
          */
-        const DimNQ_t &get_nq_dim() const { return rs_.get_nq_dim(); }
-        int get_nq() const { return rs_.get_nq(); }
-
-        /**
-         * @brief Return the dimension (if any) of the floating base velocity space of the state
-         */
-        const DimNVb_t &get_nvb_dim() const { return rs_.get_nvb_dim(); }
-        int get_nvb() const { return rs_.get_nvb(); }
-
-        /**
-         * @brief Return the dimension of the joint velocity space of the state
-         */
-        const DimNVj_t &get_nvj_dim() const { return rs_.get_nvj_dim(); }
-        int get_nvj() const { return rs_.get_nvj(); }
+        const DimNQ_t &get_nq_dim() const { return spec_.get_nq_dim(); }
+        int get_nq() const { return spec_.get_nq(); }
 
         /**
          * @brief Return the dimension of the velocity space of the state
          */
-        const DimNV_t &get_nv_dim() const { return rs_.get_nv_dim(); }
-        int get_nv() const { return rs_.get_nv(); }
-
-        /**
-         * @brief Return the number of rotors attached to the floating base (if any)
-         */
-        const DimNRotors_t &get_nrotors_dim() const { return rs_.get_nrotors_dim(); }
-        int get_nrotors() const { return rs_.get_nrotors(); }
+        const DimNV_t &get_nv_dim() const { return spec_.get_nv_dim(); }
+        int get_nv() const { return spec_.get_nv(); }
 
         /**
          * @brief Return the dimension of the state
          */
-        const DimNX_t &get_nx_dim() const { return rs_.get_nx_dim(); }
-        int get_nx() const { return rs_.get_nx(); }
+        const DimNX_t &get_nx_dim() const { return spec_.get_nx_dim(); }
+        int get_nx() const { return spec_.get_nx(); }
 
         /**
          * @brief Return the dimension of the tangent space of the state manifold
          */
-        const DimNDX_t &get_ndx_dim() const { return rs_.get_ndx_dim(); }
-        int get_ndx() const { return rs_.get_ndx(); }
+        const DimNDX_t &get_ndx_dim() const { return spec_.get_ndx_dim(); }
+        int get_ndx() const { return spec_.get_ndx(); }
 
         /**
          * @brief Return the dimension of the actuated torque space of the state
          */
-        const DimNUa_t &get_nua_dim() const { return rs_.get_nua_dim(); }
-        int get_nua() const { return rs_.get_nua(); }
+        const DimNUa_t &get_nua_dim() const { return spec_.get_nua_dim(); }
+        int get_nua() const { return spec_.get_nua(); }
 
         /**
          * @brief Return the state lower bound
@@ -376,15 +349,15 @@ namespace galileo
         }
 
     protected:
-        inline StateBase(const RS &rs) : rs_(rs) {}
-        inline StateBase(const StateBase &clone) : rs_(clone.rs_) {}
+        inline StateBase(const SS &spec) : spec_(spec) {}
+        inline StateBase(const StateBase &clone) : spec_(clone.spec_) {}
         inline StateBase &operator=(const StateBase &clone)
         {
-            rs_ = clone.rs_;
+            spec_ = clone.spec_;
             return *this;
         }
 
-        RS rs_;
+        SS spec_;
 
     }; // class StateBase
 

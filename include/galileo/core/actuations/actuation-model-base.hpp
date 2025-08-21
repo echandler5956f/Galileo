@@ -6,11 +6,11 @@
 namespace galileo
 {
 
-    template <typename Derived, typename RobotSpec>
+    template <typename Derived, typename Spec>
     class ActuationModelBase : public internal::CRTP<Derived>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
 
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
@@ -62,18 +62,18 @@ namespace galileo
 
         Data_t createData() { return this->derived().createData(); }
 
-        const RS &get_rs() const { return rs_; }
+        const SS &get_spec() const { return spec_; }
 
     protected:
-        inline ActuationModelBase(const RS &rs) : rs_(rs) {}
-        inline ActuationModelBase(const ActuationModelBase &clone) : rs_(clone.rs_) {}
+        inline ActuationModelBase(const SS &spec) : spec_(spec) {}
+        inline ActuationModelBase(const ActuationModelBase &clone) : spec_(clone.spec_) {}
         inline ActuationModelBase &operator=(const ActuationModelBase &clone)
         {
-            rs_ = clone.rs_;
+            spec_ = clone.spec_;
             return *this;
         }
 
-        RS rs_;
+        SS spec_;
 
     }; // class ActuationModelBase
 

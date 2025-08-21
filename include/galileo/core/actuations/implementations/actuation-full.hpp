@@ -6,48 +6,48 @@
 namespace galileo
 {
 
-    template <typename RobotSpec>
+    template <typename Spec>
     class ActuationFullTpl;
 
-    template <typename RobotSpec>
-    struct traits<ActuationFullTpl<RobotSpec>>
+    template <typename Spec>
+    struct traits<ActuationFullTpl<Spec>>
     {
-        using RS = RobotSpec;
+        using SS = Spec;
 
-        using Meta_t = ActuationFullTpl<RS>;
-        using Model_t = ActuationModelFullTpl<RS>;
-        using Data_t = ActuationDataFullTpl<RS>;
+        using Meta_t = ActuationFullTpl<SS>;
+        using Model_t = ActuationModelFullTpl<SS>;
+        using Data_t = ActuationDataFullTpl<SS>;
 
-        using VectorNv_t = typename RS::VectorNv_t;
-        using VectorNua_t = typename RS::VectorNua_t;
-        using MatrixNvNdx_t = typename RS::MatrixNvNdx_t;
-        using MatrixNvNua_t = typename RS::MatrixNvNua_t;
-        using MatrixNuaNv_t = typename RS::MatrixNuaNv_t;
-        using BoolArrayNv_t = Eigen::Array<bool, RS::NV, 1>;
+        using VectorNv_t = typename SS::VectorNv_t;
+        using VectorNua_t = typename SS::VectorNua_t;
+        using MatrixNvNdx_t = typename SS::MatrixNvNdx_t;
+        using MatrixNvNua_t = typename SS::MatrixNvNua_t;
+        using MatrixNuaNv_t = typename SS::MatrixNuaNv_t;
+        using BoolArrayNv_t = Eigen::Array<bool, SS::NV, 1>;
     };
 
-    template <typename RobotSpec>
-    struct traits<ActuationModelFullTpl<RobotSpec>>
+    template <typename Spec>
+    struct traits<ActuationModelFullTpl<Spec>>
     {
-        using Meta_t = ActuationFullTpl<RobotSpec>;
+        using Meta_t = ActuationFullTpl<Spec>;
     };
 
-    template <typename RobotSpec>
-    struct traits<ActuationDataFullTpl<RobotSpec>>
+    template <typename Spec>
+    struct traits<ActuationDataFullTpl<Spec>>
     {
-        using Meta_t = ActuationFullTpl<RobotSpec>;
+        using Meta_t = ActuationFullTpl<Spec>;
     };
 
-    template <typename RobotSpec>
-    class ActuationDataFullTpl : public ActuationDataBase<ActuationDataFullTpl<RobotSpec>, RobotSpec>
+    template <typename Spec>
+    class ActuationDataFullTpl : public ActuationDataBase<ActuationDataFullTpl<Spec>, Spec>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
 
-        using Meta_t = ActuationFullTpl<RS>;
+        using Meta_t = ActuationFullTpl<SS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ActuationDataBase<ActuationDataFullTpl<RS>, RS>;
+        using Base = ActuationDataBase<ActuationDataFullTpl<SS>, SS>;
 
         GALILEO_ACTUATION_DATA_TYPEDEF(Meta_t);
 
@@ -59,12 +59,12 @@ namespace galileo
         DEFAULT_ACCESSOR(BoolArrayNv_t, tau_set);
 
         ActuationDataFullTpl(const Model_t &model)
-            : tau(model.get_rs().get_nv()),
-              u(model.get_rs().get_nua()),
-              dtau_dx(model.get_rs().get_nv(), model.get_rs().get_ndx()),
-              dtau_du(model.get_rs().get_nv(), model.get_rs().get_nua()),
-              Mtau(model.get_rs().get_nua(), model.get_rs().get_nv()),
-              tau_set(model.get_rs().get_nv())
+            : tau(model.get_spec().get_nv()),
+              u(model.get_spec().get_nua()),
+              dtau_dx(model.get_spec().get_nv(), model.get_spec().get_ndx()),
+              dtau_du(model.get_spec().get_nv(), model.get_spec().get_nua()),
+              Mtau(model.get_spec().get_nua(), model.get_spec().get_nv()),
+              tau_set(model.get_spec().get_nv())
         {
             tau.setZero();
             u.setZero();
@@ -82,20 +82,20 @@ namespace galileo
         BoolArrayNv_t tau_set;
     };
 
-    template <typename RobotSpec>
-    class ActuationModelFullTpl : public ActuationModelBase<ActuationModelFullTpl<RobotSpec>, RobotSpec>
+    template <typename Spec>
+    class ActuationModelFullTpl : public ActuationModelBase<ActuationModelFullTpl<Spec>, Spec>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
 
-        using Meta_t = ActuationFullTpl<RS>;
+        using Meta_t = ActuationFullTpl<SS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ActuationModelBase<ActuationModelFullTpl<RS>, RS>;
+        using Base = ActuationModelBase<ActuationModelFullTpl<SS>, SS>;
 
-        using State_t = typename RS::State_t;
+        using State_t = typename SS::State_t;
 
-        ActuationModelFullTpl(const State_t &state) : Base(state.get_rs()) {}
+        ActuationModelFullTpl(const SS &spec) : Base(spec) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -131,7 +131,7 @@ namespace galileo
 
         Data_t createData() const { return Data_t(*this); }
 
-        using Base::get_rs;
+        using Base::get_spec;
 
     }; // class ActuationModelFullTpl
 

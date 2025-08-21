@@ -9,6 +9,9 @@
 
 namespace galileo
 {
+    // forward declaration
+    template <int Value_>
+    class DimensionTpl;
 
     // Compile-time arithmetic helpers
     namespace detail
@@ -109,13 +112,17 @@ namespace galileo
     using DivDim_t = typename detail::dim_op<A, B, detail::div>::type;
 
     template <int A, int B>
-    static constexpr int AddDim_v = detail::dim_op<A, B, detail::add>::Value;
+    static constexpr int AddDim_v =
+        detail::dim_op<std::integral_constant<int, A>, std::integral_constant<int, B>, detail::add>::Value;
     template <int A, int B>
-    static constexpr int SubDim_v = detail::dim_op<A, B, detail::sub>::Value;
+    static constexpr int SubDim_v =
+        detail::dim_op<std::integral_constant<int, A>, std::integral_constant<int, B>, detail::sub>::Value;
     template <int A, int B>
-    static constexpr int MulDim_v = detail::dim_op<A, B, detail::mul>::Value;
+    static constexpr int MulDim_v =
+        detail::dim_op<std::integral_constant<int, A>, std::integral_constant<int, B>, detail::mul>::Value;
     template <int A, int B>
-    static constexpr int DivDim_v = detail::dim_op<A, B, detail::div>::Value;
+    static constexpr int DivDim_v =
+        detail::dim_op<std::integral_constant<int, A>, std::integral_constant<int, B>, detail::div>::Value;
 
     /**
      * @brief Unified dimension class that handles both compile-time and runtime dimensions
@@ -193,7 +200,7 @@ namespace galileo
         {
             int runtime_result = value() + other.value();
             GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension addition resulted in negative runtime value");
-            return AddDim_t<Value, OtherValue>(runtime_result);
+            return AddDim_t<DimensionTpl<Value>, DimensionTpl<OtherValue>>(runtime_result);
         }
 
         template <int OtherValue>
@@ -203,7 +210,7 @@ namespace galileo
             int runtime_result = value() - other.value();
             GALILEO_ASSERT(runtime_result >= 0,
                            "DimensionTpl: Dimension subtraction resulted in negative runtime value");
-            return SubDim_t<Value, OtherValue>(runtime_result);
+            return SubDim_t<DimensionTpl<Value>, DimensionTpl<OtherValue>>(runtime_result);
         }
 
         template <int OtherValue>
@@ -212,7 +219,7 @@ namespace galileo
             int runtime_result = value() * other.value();
             GALILEO_ASSERT(runtime_result >= 0,
                            "DimensionTpl: Dimension multiplication resulted in negative runtime value");
-            return MulDim_t<Value, OtherValue>(runtime_result);
+            return MulDim_t<DimensionTpl<Value>, DimensionTpl<OtherValue>>(runtime_result);
         }
 
         template <int OtherValue>
@@ -220,7 +227,7 @@ namespace galileo
         {
             int runtime_result = value() / other.value();
             GALILEO_ASSERT(runtime_result >= 0, "DimensionTpl: Dimension division resulted in negative runtime value");
-            return DivDim_t<Value, OtherValue>(runtime_result);
+            return DivDim_t<DimensionTpl<Value>, DimensionTpl<OtherValue>>(runtime_result);
         }
 
         // Scalar operations

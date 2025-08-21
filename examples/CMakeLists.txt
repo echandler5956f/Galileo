@@ -11,8 +11,8 @@ if(BUILD_WITH_CANDLEWICK_SUPPORT)
   # add_executable(candlewick_advanced_test candlewick_advanced_test.cpp)
   # target_link_libraries(candlewick_advanced_test PRIVATE galileo example-robot-data::example-robot-data)
 
-  add_executable(forward_pass_test forward_pass_test.cpp)
-  target_link_libraries(forward_pass_test PRIVATE galileo example-robot-data::example-robot-data)
+  # add_executable(forward_pass_test forward_pass_test.cpp)
+  # target_link_libraries(forward_pass_test PRIVATE galileo example-robot-data::example-robot-data)
 endif()
 
 # add_executable(test1 test1.cpp)
@@ -26,3 +26,6 @@ endif()
 
 # add_executable(pinocchio_size_check pinocchio_size_check.cpp)
 # target_link_libraries(pinocchio_size_check PRIVATE galileo)
+
+add_executable(dimension_extraction dimension_extraction.cpp)
+target_link_libraries(dimension_extraction PRIVATE galileo)

@@ -14,11 +14,11 @@
 namespace galileo
 {
 
-    template <typename Derived, typename RobotSpec>
+    template <typename Derived, typename Spec>
     struct ActuationDataBase : public internal::CRTP<Derived>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
 
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;

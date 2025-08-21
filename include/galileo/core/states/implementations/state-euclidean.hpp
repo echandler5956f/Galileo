@@ -2,25 +2,21 @@
 #define __galileo_core_states_state_euclidean_hpp__
 
 #include "galileo/core/states/state-base.hpp"
-#include "galileo/multibody/robot-spec.hpp"
 
 namespace galileo
 {
 
-    template <typename RobotSpec>
-    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<RobotSpec>, RobotSpec>
+    template <typename Spec>
+    class StateEuclideanTpl : public StateBase<StateEuclideanTpl<Spec>, Spec>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
+        GALILEO_SYSTEM_SPEC_MASTER_TYPEDEF(SS);
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
+        using Base = StateBase<StateEuclideanTpl<SS>, SS>;
 
-        using Base = StateBase<StateEuclideanTpl<RS>, RS>;
-
-        // For StateEuclideanTpl specifically, robot spec must be valid and all dimensions must be set apriori.
-        StateEuclideanTpl(const RS &rs, const VectorNx_t &lb, const VectorNx_t &ub) : Base(rs), lb_(lb), ub_(ub)
+        StateEuclideanTpl(const SS &spec, const VectorNx_t &lb, const VectorNx_t &ub) : Base(spec), lb_(lb), ub_(ub)
         {
-            GALILEO_ASSERT(IsValidRobotSpec(rs), "StateEuclideanTpl: Invalid robot spec");
             GALILEO_ASSERT(IsValidEuclidean(*this),
                            "StateEuclideanTpl: Invalid dimensions for Euclidean state (nx != ndx)");
         }
@@ -125,21 +121,11 @@ namespace galileo
         using Base::integrate_x;
         using Base::Jdiff_Js;
         using Base::Jintegrate_Js;
-        using Base::get_rs;
-        using Base::get_nqb;
-        using Base::get_nqb_dim;
-        using Base::get_nqj;
-        using Base::get_nqj_dim;
+        using Base::get_spec;
         using Base::get_nq;
         using Base::get_nq_dim;
-        using Base::get_nvb;
-        using Base::get_nvb_dim;
-        using Base::get_nvj;
-        using Base::get_nvj_dim;
         using Base::get_nv;
         using Base::get_nv_dim;
-        using Base::get_nrotors;
-        using Base::get_nrotors_dim;
         using Base::get_nx;
         using Base::get_nx_dim;
         using Base::get_ndx;
@@ -152,8 +138,8 @@ namespace galileo
          */
         void display(std::ostream &os, const std::string &indent = "  ") const
         {
-            os << indent << "RobotSpec: {:\n";
-            get_rs().display(os, indent + "  ");
+            os << indent << "Spec: {\n";
+            get_spec().display(os, indent + "  ");
             os << indent << "}\n";
             os << indent << "State Bounds: {\n";
             os << indent << "  Lower bounds: " << lb_.transpose() << "\n";
@@ -168,8 +154,8 @@ namespace galileo
 
     }; // class StateEuclideanTpl
 
-    template <typename RS>
-    bool IsValidEuclidean(const StateEuclideanTpl<RS> &state)
+    template <typename SS>
+    bool IsValidEuclidean(const StateEuclideanTpl<SS> &state)
     {
         return state.get_nx() == state.get_ndx();
     }

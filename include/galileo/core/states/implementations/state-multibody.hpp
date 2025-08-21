@@ -5,76 +5,27 @@
 #include <pinocchio/multibody/model.hpp>
 
 #include "galileo/core/states/state-base.hpp"
-#include "galileo/multibody/robot-spec.hpp"
 
 #include <limits>
 
 namespace galileo
 {
 
-    template <typename RobotSpec>
-    class StateMultibodyTpl : public StateBase<StateMultibodyTpl<RobotSpec>, RobotSpec>
+    template <typename Spec>
+    class StateMultibodyTpl : public StateBase<StateMultibodyTpl<Spec>, Spec>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
+        GALILEO_SYSTEM_SPEC_MASTER_TYPEDEF(SS);
 
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
+        using Base = StateBase<StateMultibodyTpl<SS>, SS>;
 
-        using Base = StateBase<StateMultibodyTpl<RS>, RS>;
+        // Multibody-specific typedefs
+        using RobotModel_t = typename SS::RobotModel_t;
+        using VectorNqb_t = typename SS::VectorNqb_t;
+        using VectorNvb_t = typename SS::VectorNvb_t;
 
-        StateMultibodyTpl(const RobotModel_t &model) : Base(RS()), model_(model)
-        {
-            if constexpr (RS::DimNQ_t::IsDynamic)
-            {
-                get_rs().nq_dim_.set_value(model_.nq);
-            }
-            if constexpr (RS::DimNQb_t::IsDynamic)
-            {
-                get_rs().nqb_dim_.set_value(
-                    model_.existJointName("root_joint") ? model_.joints[model_.getJointId("root_joint")].nq() : 0);
-            }
-            if constexpr (RS::DimNQj_t::IsDynamic)
-            {
-                get_rs().nqj_dim_.set_value(get_nq() - get_nqb());
-            }
-            if constexpr (RS::DimNV_t::IsDynamic)
-            {
-                get_rs().nv_dim_.set_value(model_.nv);
-            }
-            if constexpr (RS::DimNVb_t::IsDynamic)
-            {
-                const std::size_t nvb =
-                    model_.existJointName("root_joint") ? model_.joints[model_.getJointId("root_joint")].nv() : 0;
-                get_rs().nvb_dim_.set_value(nvb);
-            }
-            if constexpr (RS::DimNVj_t::IsDynamic)
-            {
-                const std::size_t nvj = get_nv() - get_nvb();
-                get_rs().nvj_dim_.set_value(nvj);
-            }
-            if constexpr (RS::DimNX_t::IsDynamic)
-            {
-                get_rs().nx_dim_.set_value(get_nq_dim() + get_nv_dim());
-            }
-            if constexpr (RS::DimNDX_t::IsDynamic)
-            {
-                get_rs().ndx_dim_.set_value(get_nv_dim() + get_nv_dim());
-            }
-            if constexpr (RS::DimNRotors_t::IsDynamic)
-            {
-                // We do not know anything about rotors at this point in the OCP data pipeline, so if rotors are
-                // used, any dynamic evaluation is deferred to ActuationModelFloatingBaseThrustersTpl's constructor.
-                // Of course, compile-time NRotors will always be available at this point.
-                get_rs().nrotors_dim_.set_value(0);
-            }
-            if constexpr (RS::DimNUa_t::IsDynamic)
-            {
-                get_rs().nua_dim_.set_value(get_nvj_dim() + get_nrotors_dim());
-            }
-
-            GALILEO_ASSERT(IsValidRobotSpec(get_rs()), "StateMultibodyTpl: Invalid robot spec");
-            initialize();
-        }
+        StateMultibodyTpl(const SS &spec, const RobotModel_t &model) : Base(spec), model_(model) { initialize(); }
 
         VectorNx_t zero() const { return x0_; }
 
@@ -88,7 +39,7 @@ namespace galileo
             // Need to add checks based on the type of the first joint.
             // Currently assumes pinocchio::JointModelFreeFlyer
             // TODO: Add support for other joint types
-            if (get_nqb() >= 3)
+            if (get_spec().get_nqb() >= 3)
             {
                 head(xrand, 3) = Eigen::Matrix<NumScalar, 3, 1>::Random();
             }
@@ -267,25 +218,11 @@ namespace galileo
             ub_ = ub;
         }
 
-        using Base::diff_dx;
-        using Base::integrate_x;
-        using Base::Jdiff_Js;
-        using Base::Jintegrate_Js;
-        using Base::get_rs;
-        using Base::get_nqb;
-        using Base::get_nqb_dim;
-        using Base::get_nqj;
-        using Base::get_nqj_dim;
+        using Base::get_spec;
         using Base::get_nq;
         using Base::get_nq_dim;
-        using Base::get_nvb;
-        using Base::get_nvb_dim;
-        using Base::get_nvj;
-        using Base::get_nvj_dim;
         using Base::get_nv;
         using Base::get_nv_dim;
-        using Base::get_nrotors;
-        using Base::get_nrotors_dim;
         using Base::get_nx;
         using Base::get_nx_dim;
         using Base::get_ndx;
@@ -298,15 +235,15 @@ namespace galileo
          */
         void display(std::ostream &os, const std::string &indent = "  ") const
         {
-            os << indent << "RobotSpec: {\n";
-            get_rs().display(os, indent + "  ");
+            os << indent << "Spec: {\n";
+            get_spec().display(os, indent + "  ");
             os << indent << "}\n";
             os << indent << "Pinocchio Model: {\n";
             os << indent << "  Model name: " << model_.name << "\n";
             os << indent << "  Number of joints: " << model_.njoints << "\n";
             os << indent << "  Number of bodies: " << model_.nbodies << "\n";
             os << indent << "  Number of frames: " << model_.nframes << "\n";
-            os << indent << "  Has floating base: " << (get_nqb() > 0 ? "Yes" : "No") << "\n";
+            os << indent << "  Has floating base: " << (get_spec().get_nqb() > 0 ? "Yes" : "No") << "\n";
             os << indent << "}\n";
             os << indent << "State Bounds: {\n";
             os << indent << "  Lower bounds: " << lb_.transpose() << "\n";
@@ -325,11 +262,15 @@ namespace galileo
             lb_ = -VectorNx_t::Constant(get_nx(), std::numeric_limits<NumScalar>::infinity());
             ub_ = VectorNx_t::Constant(get_nx(), std::numeric_limits<NumScalar>::infinity());
 
-            head(lb_, get_nqb_dim()) = -VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
-            head(ub_, get_nqb_dim()) = VectorNqb_t::Constant(get_nqb(), std::numeric_limits<NumScalar>::max());
+            head(lb_, get_spec().get_nqb_dim()) =
+                -VectorNqb_t::Constant(get_spec().get_nqb(), std::numeric_limits<NumScalar>::max());
+            head(ub_, get_spec().get_nqb_dim()) =
+                VectorNqb_t::Constant(get_spec().get_nqb(), std::numeric_limits<NumScalar>::max());
 
-            segment(lb_, get_nqb(), get_nqj_dim()) = tail(model_.lowerPositionLimit, get_nqj_dim());
-            segment(ub_, get_nqb(), get_nqj_dim()) = tail(model_.upperPositionLimit, get_nqj_dim());
+            segment(lb_, get_spec().get_nqb(), get_spec().get_nqj_dim()) =
+                tail(model_.lowerPositionLimit, get_spec().get_nqj_dim());
+            segment(ub_, get_spec().get_nqb(), get_spec().get_nqj_dim()) =
+                tail(model_.upperPositionLimit, get_spec().get_nqj_dim());
 
             segment(lb_, get_nq(), get_nv_dim()) = -model_.velocityLimit;
             segment(ub_, get_nq(), get_nv_dim()) = model_.velocityLimit;

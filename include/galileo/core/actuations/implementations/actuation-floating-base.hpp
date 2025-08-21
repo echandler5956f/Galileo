@@ -6,48 +6,48 @@
 namespace galileo
 {
 
-    template <typename RobotSpec>
+    template <typename Spec>
     class ActuationFloatingBaseTpl;
 
-    template <typename RobotSpec>
-    struct traits<ActuationFloatingBaseTpl<RobotSpec>>
+    template <typename Spec>
+    struct traits<ActuationFloatingBaseTpl<Spec>>
     {
-        using RS = RobotSpec;
+        using SS = Spec;
 
-        using Meta_t = ActuationFloatingBaseTpl<RS>;
-        using Model_t = ActuationModelFloatingBaseTpl<RS>;
-        using Data_t = ActuationDataFloatingBaseTpl<RS>;
+        using Meta_t = ActuationFloatingBaseTpl<SS>;
+        using Model_t = ActuationModelFloatingBaseTpl<SS>;
+        using Data_t = ActuationDataFloatingBaseTpl<SS>;
 
-        using VectorNv_t = typename RS::VectorNv_t;
-        using VectorNua_t = typename RS::VectorNua_t;
-        using MatrixNvNdx_t = typename RS::MatrixNvNdx_t;
-        using MatrixNvNua_t = typename RS::MatrixNvNua_t;
-        using MatrixNuaNv_t = typename RS::MatrixNuaNv_t;
-        using BoolArrayNv_t = Eigen::Array<bool, RS::NV, 1>;
+        using VectorNv_t = typename SS::VectorNv_t;
+        using VectorNua_t = typename SS::VectorNua_t;
+        using MatrixNvNdx_t = typename SS::MatrixNvNdx_t;
+        using MatrixNvNua_t = typename SS::MatrixNvNua_t;
+        using MatrixNuaNv_t = typename SS::MatrixNuaNv_t;
+        using BoolArrayNv_t = Eigen::Array<bool, SS::NV, 1>;
     };
 
-    template <typename RobotSpec>
-    struct traits<ActuationModelFloatingBaseTpl<RobotSpec>>
+    template <typename Spec>
+    struct traits<ActuationModelFloatingBaseTpl<Spec>>
     {
-        using Meta_t = ActuationFloatingBaseTpl<RobotSpec>;
+        using Meta_t = ActuationFloatingBaseTpl<Spec>;
     };
 
-    template <typename RobotSpec>
-    struct traits<ActuationDataFloatingBaseTpl<RobotSpec>>
+    template <typename Spec>
+    struct traits<ActuationDataFloatingBaseTpl<Spec>>
     {
-        using Meta_t = ActuationFloatingBaseTpl<RobotSpec>;
+        using Meta_t = ActuationFloatingBaseTpl<Spec>;
     };
 
-    template <typename RobotSpec>
-    class ActuationDataFloatingBaseTpl : public ActuationDataBase<ActuationDataFloatingBaseTpl<RobotSpec>, RobotSpec>
+    template <typename Spec>
+    class ActuationDataFloatingBaseTpl : public ActuationDataBase<ActuationDataFloatingBaseTpl<Spec>, Spec>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
 
-        using Meta_t = ActuationFloatingBaseTpl<RS>;
+        using Meta_t = ActuationFloatingBaseTpl<SS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ActuationDataBase<ActuationDataFloatingBaseTpl<RS>, RS>;
+        using Base = ActuationDataBase<ActuationDataFloatingBaseTpl<SS>, SS>;
 
         GALILEO_ACTUATION_DATA_TYPEDEF(Meta_t);
 
@@ -59,12 +59,12 @@ namespace galileo
         DEFAULT_ACCESSOR(BoolArrayNv_t, tau_set);
 
         ActuationDataFloatingBaseTpl(const Model_t &model)
-            : tau(model.get_rs().get_nv()),
-              u(model.get_rs().get_nua()),
-              dtau_dx(model.get_rs().get_nv(), model.get_rs().get_ndx()),
-              dtau_du(model.get_rs().get_nv(), model.get_rs().get_nua()),
-              Mtau(model.get_rs().get_nua(), model.get_rs().get_nv()),
-              tau_set(model.get_rs().get_nv())
+            : tau(model.get_spec().get_nv()),
+              u(model.get_spec().get_nua()),
+              dtau_dx(model.get_spec().get_nv(), model.get_spec().get_ndx()),
+              dtau_du(model.get_spec().get_nv(), model.get_spec().get_nua()),
+              Mtau(model.get_spec().get_nua(), model.get_spec().get_nv()),
+              tau_set(model.get_spec().get_nv())
         {
             tau.setZero();
             u.setZero();
@@ -73,9 +73,9 @@ namespace galileo
             Mtau.setZero();
             tau_set.setOnes();
 
-            dtau_du.diagonal(-model.get_rs().get_nvb()).setOnes();
-            Mtau.diagonal(model.get_rs().get_nvb()).setOnes();
-            for (int i = 0; i < model.get_rs().get_nvb(); ++i) tau_set(i) = false;
+            dtau_du.diagonal(-model.get_spec().get_nvb()).setOnes();
+            Mtau.diagonal(model.get_spec().get_nvb()).setOnes();
+            for (int i = 0; i < model.get_spec().get_nvb(); ++i) tau_set(i) = false;
         }
 
         VectorNv_t tau;
@@ -86,27 +86,27 @@ namespace galileo
         BoolArrayNv_t tau_set;
     };
 
-    template <typename RobotSpec>
-    class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<RobotSpec>, RobotSpec>
+    template <typename Spec>
+    class ActuationModelFloatingBaseTpl : public ActuationModelBase<ActuationModelFloatingBaseTpl<Spec>, Spec>
     {
     public:
-        using RS = RobotSpec;
+        using SS = Spec;
 
-        using Meta_t = ActuationFloatingBaseTpl<RS>;
+        using Meta_t = ActuationFloatingBaseTpl<SS>;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
-        using Base = ActuationModelBase<ActuationModelFloatingBaseTpl<RS>, RS>;
+        using Base = ActuationModelBase<ActuationModelFloatingBaseTpl<SS>, SS>;
 
-        using State_t = typename RS::State_t;
+        using State_t = typename SS::State_t;
 
-        ActuationModelFloatingBaseTpl(const State_t &state) : Base(state.get_rs()) {}
+        ActuationModelFloatingBaseTpl(const SS &spec) : Base(spec) {}
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            tail(data.tau, get_rs().get_nua_dim()) = u;
+            tail(data.tau, get_spec().get_nua_dim()) = u;
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -122,7 +122,7 @@ namespace galileo
                       const Eigen::MatrixBase<StateVectorType> &x,
                       const Eigen::MatrixBase<TauVectorType> &tau) const
         {
-            data.u = tail(tau, get_rs().get_nua_dim());
+            data.u = tail(tau, get_spec().get_nua_dim());
         }
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -135,7 +135,7 @@ namespace galileo
 
         Data_t createData() const { return Data_t(*this); }
 
-        using Base::get_rs;
+        using Base::get_spec;
 
     }; // class ActuationModelFloatingBaseTpl
 
