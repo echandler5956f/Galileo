@@ -1,14 +1,13 @@
 #ifndef __galileo_predictive_phases_phase_spec_hpp__
 #define __galileo_predictive_phases_phase_spec_hpp__
 
-#include "galileo/multibody/robot-spec.hpp"
+#include "galileo/core/system-spec.hpp"
 #include "galileo/predictive/phases/fwd.hpp"
 
 #include <array>
 #include <vector>
 
 #define GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec) \
-    GALILEO_ROBOT_SPEC_META_TYPEDEF(PhaseSpec::RS); \
     using ConstraintManagerMeta_t = typename PhaseSpec::ConstraintManagerMeta_t; \
     using ConstraintCollection_t = typename PhaseSpec::ConstraintCollection_t; \
     using ConstraintModelManager_t = typename PhaseSpec::ConstraintModelManager_t; \
@@ -36,12 +35,10 @@
     using PhaseModel_t = typename PhaseSpec::PhaseModel_t; \
     using PhaseData_t = typename PhaseSpec::PhaseData_t;
 
-#define GALILEO_PHASE_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec) GALILEO_ROBOT_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec::RS);
-
-#define GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec) GALILEO_ROBOT_SPEC_SCALARS_TYPEDEF(PhaseSpec::RS);
+#define GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec) GALILEO_SYSTEM_SPEC_SCALARS_TYPEDEF(PhaseSpec::SS);
 
 #define GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec) \
-    GALILEO_ROBOT_SPEC_CONSTANTS_TYPEDEF(PhaseSpec::RS); \
+    GALILEO_SYSTEM_SPEC_CONSTANTS_TYPEDEF(PhaseSpec::SS); \
     static constexpr int NU = PhaseSpec::NU; \
     static constexpr int NOrder = PhaseSpec::NOrder; \
     static constexpr int NW = PhaseSpec::NW; \
@@ -88,7 +85,7 @@
     using Gw_t = typename PhaseSpec::Gw_t;
 
 #define GALILEO_PHASE_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec) \
-    GALILEO_ROBOT_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec::RS); \
+    GALILEO_SYSTEM_SPEC_EIGEN_TYPES_TYPEDEF(PhaseSpec::SS); \
     using VectorNu_t = typename PhaseSpec::VectorNu_t; \
     using VectorNw_t = typename PhaseSpec::VectorNw_t; \
     using MatrixNu_t = typename PhaseSpec::MatrixNu_t; \
@@ -115,7 +112,6 @@
 
 #define GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PhaseSpec) \
     GALILEO_PHASE_SPEC_META_TYPEDEF(PhaseSpec); \
-    GALILEO_PHASE_SPEC_PINOCCHIO_TYPES_TYPEDEF(PhaseSpec); \
     GALILEO_PHASE_SPEC_SCALARS_TYPEDEF(PhaseSpec); \
     GALILEO_PHASE_SPEC_CONSTANTS_TYPEDEF(PhaseSpec); \
     GALILEO_PHASE_SPEC_NODE_TYPES_TYPEDEF(PhaseSpec); \
@@ -130,22 +126,36 @@ namespace galileo
     /* ---------------------------------------------------------------- */
     /* Fully specifies the types and constants used in a phase. */
     /* ---------------------------------------------------------------- */
-    template <typename RobotSpec,
+    template <typename DomainSystemSpec,
               template <typename> class ConstraintManagerTpl,
               template <typename> class CostManagerTpl,
               template <typename> class NodeTpl,
               template <typename> class ControlParamTpl,
               template <typename> class SegmentTpl,
               template <typename> class PhaseTpl>
-    struct PhaseSpecTpl
+    struct PhaseSpecTpl : public DomainSystemSpec
     {
-        using RS = RobotSpec;
-        using BS = typename RS::BS;
-        using PS =
-            PhaseSpecTpl<RS, ConstraintManagerTpl, CostManagerTpl, NodeTpl, ControlParamTpl, SegmentTpl, PhaseTpl>;
+        using PS = PhaseSpecTpl<DomainSystemSpec,
+                                ConstraintManagerTpl,
+                                CostManagerTpl,
+                                NodeTpl,
+                                ControlParamTpl,
+                                SegmentTpl,
+                                PhaseTpl>;
+        using SS = DomainSystemSpec;
+        using Base = DomainSystemSpec;
+        using BS = typename SS::BS;
 
-        // Import the robot spec types and constants
-        GALILEO_ROBOT_SPEC_MASTER_TYPEDEF(RS);
+        /* ---------------------------------------------------------------- */
+        /* Import the system spec types and constants */
+        /* ---------------------------------------------------------------- */
+        GALILEO_SYSTEM_SPEC_MASTER_TYPEDEF(Base);
+
+        using State_t = typename Base::State_t;
+
+        using ActuationMeta_t = typename Base::ActuationMeta_t;
+        using ActuationModel_t = typename Base::ActuationModel_t;
+        using ActuationData_t = typename Base::ActuationData_t;
 
         /* ---------------------------------------------------------------- */
         /* Meta template types */
@@ -312,55 +322,79 @@ namespace galileo
         using PhaseData_t = typename traits<PhaseMeta_t>::Data_t;
 
         /* ---------------------------------------------------------------- */
+        /* Additional dimension storage */
+        /* ---------------------------------------------------------------- */
+        using Base::nq_dim_;
+        using Base::nv_dim_;
+        using Base::nx_dim_;
+        using Base::ndx_dim_;
+        using Base::nua_dim_;
+        using Base::nqb_dim_;
+        using Base::nqj_dim_;
+        using Base::nvb_dim_;
+        using Base::nvj_dim_;
+        using Base::nrotors_dim_;
+
+        DimNU_t nu_dim_;
+        DimNOrder_t norder_dim_;
+        DimNW_t nw_dim_;
+        DimNStages_t nstages_dim_;
+
+        /* ---------------------------------------------------------------- */
+        /* Constructors */
+        /* ---------------------------------------------------------------- */
+        PhaseSpecTpl(const DomainSystemSpec &ss, int NU_ = NU, int NOrder_ = NOrder, int NStages_ = NStages)
+            : Base(ss), nu_dim_{NU_}, norder_dim_{NOrder_}, nw_dim_(nu_dim_ * norder_dim_), nstages_dim_{NStages_}
+        {
+        }
+
+        /* ---------------------------------------------------------------- */
         /* Accessors for the PhaseSpec dimensions */
         /* ---------------------------------------------------------------- */
+        using Base::get_nq;
+        using Base::get_nq_dim;
+        using Base::get_nv;
+        using Base::get_nv_dim;
+        using Base::get_nx;
+        using Base::get_nx_dim;
+        using Base::get_ndx;
+        using Base::get_ndx_dim;
+        using Base::get_nua;
+        using Base::get_nua_dim;
+        using Base::get_nqb;
+        using Base::get_nqb_dim;
+        using Base::get_nqj;
+        using Base::get_nqj_dim;
+        using Base::get_nvb;
+        using Base::get_nvb_dim;
+        using Base::get_nvj;
+        using Base::get_nvj_dim;
+        using Base::get_nrotors;
+        using Base::get_nrotors_dim;
 
-        const State_t &get_state() const { return state_.get(); }
-        const DimNQb_t &get_nqb_dim() const { return get_state().get_nqb_dim(); }
-        int get_nqb() const { return get_state().get_nqb(); }
-        const DimNQj_t &get_nqj_dim() const { return get_state().get_nqj_dim(); }
-        int get_nqj() const { return get_state().get_nqj(); }
-        const DimNVb_t &get_nvb_dim() const { return get_state().get_nvb_dim(); }
-        int get_nvb() const { return get_state().get_nvb(); }
-        const DimNVj_t &get_nvj_dim() const { return get_state().get_nvj_dim(); }
-        int get_nvj() const { return get_state().get_nvj(); }
-        const DimNRotors_t &get_nrotors_dim() const { return get_state().get_nrotors_dim(); }
-        int get_nrotors() const { return get_state().get_nrotors(); }
-        const DimNQ_t &get_nq_dim() const { return get_state().get_nq_dim(); }
-        int get_nq() const { return get_state().get_nq(); }
-        const DimNV_t &get_nv_dim() const { return get_state().get_nv_dim(); }
-        int get_nv() const { return get_state().get_nv(); }
-        const DimNX_t &get_nx_dim() const { return get_state().get_nx_dim(); }
-        int get_nx() const { return get_state().get_nx(); }
-        const DimNDX_t &get_ndx_dim() const { return get_state().get_ndx_dim(); }
-        int get_ndx() const { return get_state().get_ndx(); }
-        const DimNUa_t &get_nua_dim() const { return get_state().get_nua_dim(); }
-        int get_nua() const { return get_state().get_nua(); }
-        const DimNU_t &get_nu_dim() const { return nu_dim_; }
         int get_nu() const { return nu_dim_.value(); }
-        void set_nu(int nu) { nu_dim_.set_value(nu); }
-        const DimNOrder_t &get_norder_dim() const { return norder_dim_; }
+        const DimNU_t &get_nu_dim() const { return nu_dim_; }
         int get_norder() const { return norder_dim_.value(); }
-        void set_norder(int norder) { norder_dim_.set_value(norder); }
-        const DimNW_t &get_nw_dim() const { return nw_dim_; }
+        const DimNOrder_t &get_norder_dim() const { return norder_dim_; }
         int get_nw() const { return nw_dim_.value(); }
-        void set_nw(int nw) { nw_dim_.set_value(nw); }
-        const DimNStages_t &get_nstages_dim() const { return nstages_dim_; }
+        const DimNW_t &get_nw_dim() const { return nw_dim_; }
         int get_nstages() const { return nstages_dim_.value(); }
-        void set_nstages(int nstages) { nstages_dim_.set_value(nstages); }
+        const DimNStages_t &get_nstages_dim() const { return nstages_dim_; }
 
-        // Constructor to properly initialize compound dimensions
-        // state_ is bound to the true state, and unmodifiable after this point.
-        PhaseSpecTpl(const State_t &state)
-            : state_(state), nu_dim_{}, norder_dim_{}, nw_dim_(nu_dim_ * norder_dim_), nstages_dim_{}
+        inline bool is_valid_spec() const
         {
+            bool valid_base = Base::is_valid_spec();
+            bool valid_nu = (get_nu() >= 0);
+            bool valid_norder = (get_norder() >= 0);
+            bool valid_nw = (get_nw() == get_nu() * get_norder());
+            bool valid_nstages = (get_nstages() > 0); // Zero stages is not allowed
+            return valid_base && valid_nu && valid_norder && valid_nw && valid_nstages;
         }
 
         void display(std::ostream &os, const std::string &indent = "  ") const
         {
-            os << indent << "State: {\n";
-            get_state().display(os, indent + "  ");
-            os << indent << "}\n";
+            Base::display(os, indent);
+
             os << indent << "Phase-Specific Dimensions: {\n";
             os << indent << "  Control: {\n";
             os << indent << "    NU (Control dimension):         " << nu_dim_ << "\n";
@@ -371,7 +405,7 @@ namespace galileo
             os << indent << "    NStages (Runge-Kutta stages):   " << nstages_dim_ << "\n";
             os << indent << "  }\n";
             os << indent << "}\n";
-            os << indent << "Configuration: " << (IsValidPhaseSpec(*this) ? "VALID" : "INVALID") << "\n";
+            os << indent << "Spec configuration is " << (is_valid_spec() ? "VALID" : "INVALID") << "\n";
         }
 
         // Stream output operator
@@ -382,30 +416,7 @@ namespace galileo
             os << "}";
             return os;
         }
-
-    protected:
-        /* ---------------------------------------------------------------- */
-        /*Actual storage of dimensions */
-        /* ---------------------------------------------------------------- */
-
-        std::reference_wrapper<const State_t> state_;
-
-        DimNU_t nu_dim_;
-        DimNOrder_t norder_dim_;
-        DimNW_t nw_dim_;
-        DimNStages_t nstages_dim_;
     };
-
-    // Helper function to validate if a phase spec is in a valid configuration at runtime
-    template <typename PhaseSpec>
-    bool IsValidPhaseSpec(const PhaseSpec &ps)
-    {
-        bool valid_nu = (ps.get_nu() >= 0);
-        bool valid_norder = (ps.get_norder() >= 0);
-        bool valid_nw = (ps.get_nw() == ps.get_nu() * ps.get_norder());
-        bool valid_nstages = (ps.get_nstages() > 0); // Zero stages is not allowed
-        return valid_nu && valid_norder && valid_nw && valid_nstages && IsValidRobotSpec(ps.get_state().get_rs());
-    }
 
 } // namespace galileo
 

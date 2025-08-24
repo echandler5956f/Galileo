@@ -24,6 +24,8 @@ namespace galileo
 
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
+        using State_t = typename PS::State_t;
+
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -173,7 +175,8 @@ namespace galileo
             return this->derived().createData(collector);
         }
 
-        const PS &get_ps() const { return ps_.get(); }
+        const PS &get_ps() const { return ps_; }
+        const State_t &get_state() const { return state_; }
         const DimNR_t &get_nr_dim() const { return nr_dim_; }
         int get_nr() const { return nr_dim_.value(); }
         static constexpr bool get_q_dependent() { return QDependent; }
@@ -181,16 +184,18 @@ namespace galileo
         static constexpr bool get_u_dependent() { return UDependent; }
 
     protected:
-        inline ResidualModelBase(const PS &ps, const DimNR_t &nr_dim) : ps_(ps), nr_dim_(nr_dim) {}
-        inline ResidualModelBase(const ResidualModelBase &clone) : ps_(clone.ps_), nr_dim_(clone.nr_dim_) {}
+        inline ResidualModelBase(const PS &ps, const State_t &state, const DimNR_t &nr_dim) : ps_(ps), state_(state), nr_dim_(nr_dim) {}
+        inline ResidualModelBase(const ResidualModelBase &clone) : ps_(clone.ps_), state_(clone.state_), nr_dim_(clone.nr_dim_) {}
         inline ResidualModelBase &operator=(const ResidualModelBase &clone)
         {
             ps_ = clone.ps_;
+            state_ = clone.state_;
             nr_dim_ = clone.nr_dim_;
             return *this;
         }
 
-        std::reference_wrapper<const PS> ps_;
+        PS ps_;
+        State_t state_;
         DimNR_t nr_dim_;
 
     }; // class ResidualModelBase

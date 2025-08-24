@@ -7,13 +7,15 @@
 namespace galileo
 {
 
-    template <typename Derived, typename Spec>
+    template <typename Derived, typename SystemSpec>
     class StateBase : public internal::CRTP<Derived>
     {
     public:
-        using SS = Spec;
+        using SS = SystemSpec;
 
-        GALILEO_SYSTEM_SPEC_MASTER_TYPEDEF(SS);
+        using VectorNx_t = typename SS::VectorNx_t;
+        using VectorNdx_t = typename SS::VectorNdx_t;
+        using MatrixNdx_t = typename SS::MatrixNdx_t;
 
         /**
          * @brief Generate a zero state
@@ -103,8 +105,8 @@ namespace galileo
          * \mathbf{o}(\mathbf{x}_{0})\f$,
          *
          * where \f$\mathbf{J}_{\mathbf{x}_{1}}\f$ and
-         * \f$\mathbf{J}_{\mathbf{x}_{0}}\f$ are the Jacobian with respect to the
-         * current and previous state, respectively.
+         * \f$\mathbf{J}_{\mathbf{x}_{0}}\f$ are the Jacobian with resst to the
+         * current and previous state, resstively.
          *
          * @param[in] x0           Previous state point (size `nx`)
          * @param[in] x1           Current state point (size `nx`)
@@ -148,7 +150,7 @@ namespace galileo
          * \mathbf{o}(\delta\mathbf{x})\f$,
          *
          * where \f$\mathbf{J}_{\delta\mathbf{x}}\f$ and \f$\mathbf{J}_{\mathbf{x}}\f$
-         * are the Jacobian with respect to the state and velocity, respectively.
+         * are the Jacobian with resst to the state and velocity, resstively.
          *
          * @param[in] x            State point (size `nx`)
          * @param[in] dx           Velocity vector (size `ndx`)
@@ -202,7 +204,7 @@ namespace galileo
         template <typename StateVector1, typename StateVector2>
         VectorNdx_t diff_dx(const Eigen::MatrixBase<StateVector1> &x0, const Eigen::MatrixBase<StateVector2> &x1) const
         {
-            VectorNdx_t dx = VectorNdx_t::Zero(get_ndx());
+            VectorNdx_t dx = VectorNdx_t::Zero(get_ss().get_ndx());
             this->derived().diff(x0, x1, dx);
             return dx;
         }
@@ -218,7 +220,7 @@ namespace galileo
         VectorNx_t integrate_x(const Eigen::MatrixBase<StateVector> &x,
                                const Eigen::MatrixBase<StateTangentVector> &dx) const
         {
-            VectorNx_t xout = VectorNx_t::Zero(get_nx());
+            VectorNx_t xout = VectorNx_t::Zero(get_ss().get_nx());
             this->derived().integrate(x, dx, xout);
             return xout;
         }
@@ -234,8 +236,8 @@ namespace galileo
         std::vector<MatrixNdx_t> Jdiff_Js(const Eigen::MatrixBase<StateVector1> &x0,
                                           const Eigen::MatrixBase<StateVector2> &x1) const
         {
-            MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
-            MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
+            MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ss().get_ndx(), get_ss().get_ndx());
+            MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ss().get_ndx(), get_ss().get_ndx());
             std::vector<MatrixNdx_t> Jacs;
             Jdiff<jc>(x0, x1, Jfirst, Jsecond);
 
@@ -255,8 +257,8 @@ namespace galileo
         std::vector<MatrixNdx_t> Jintegrate_Js(const Eigen::MatrixBase<StateVector> &x,
                                                const Eigen::MatrixBase<StateTangentVector> &dx) const
         {
-            MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ndx(), get_ndx());
-            MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ndx(), get_ndx());
+            MatrixNdx_t Jfirst = MatrixNdx_t::Zero(get_ss().get_ndx(), get_ss().get_ndx());
+            MatrixNdx_t Jsecond = MatrixNdx_t::Zero(get_ss().get_ndx(), get_ss().get_ndx());
             std::vector<MatrixNdx_t> Jacs;
             Jintegrate<jc, SETTO>(x, dx, Jfirst, Jsecond);
 
@@ -267,40 +269,10 @@ namespace galileo
         }
 
         /**
-         * @brief Return the system specification
+         * @brief Return the system ssification
          */
-        const SS &get_spec() const { return spec_; }
-        SS &get_spec() { return spec_; }
-
-        /**
-         * @brief Return the dimension of the configuration space of the state
-         */
-        const DimNQ_t &get_nq_dim() const { return spec_.get_nq_dim(); }
-        int get_nq() const { return spec_.get_nq(); }
-
-        /**
-         * @brief Return the dimension of the velocity space of the state
-         */
-        const DimNV_t &get_nv_dim() const { return spec_.get_nv_dim(); }
-        int get_nv() const { return spec_.get_nv(); }
-
-        /**
-         * @brief Return the dimension of the state
-         */
-        const DimNX_t &get_nx_dim() const { return spec_.get_nx_dim(); }
-        int get_nx() const { return spec_.get_nx(); }
-
-        /**
-         * @brief Return the dimension of the tangent space of the state manifold
-         */
-        const DimNDX_t &get_ndx_dim() const { return spec_.get_ndx_dim(); }
-        int get_ndx() const { return spec_.get_ndx(); }
-
-        /**
-         * @brief Return the dimension of the actuated torque space of the state
-         */
-        const DimNUa_t &get_nua_dim() const { return spec_.get_nua_dim(); }
-        int get_nua() const { return spec_.get_nua(); }
+        const SS &get_ss() const { return ss_; }
+        SS &get_ss() { return ss_; }
 
         /**
          * @brief Return the state lower bound
@@ -335,7 +307,7 @@ namespace galileo
          * @param os Output stream
          *
          * This method must be implemented by derived classes to provide
-         * state-specific display information.
+         * state-ssific display information.
          */
         void display(std::ostream &os, const std::string &indent = "  ") const { this->derived().display(os, indent); }
 
@@ -349,15 +321,15 @@ namespace galileo
         }
 
     protected:
-        inline StateBase(const SS &spec) : spec_(spec) {}
-        inline StateBase(const StateBase &clone) : spec_(clone.spec_) {}
+        inline StateBase(const SS &ss) : ss_(ss) {}
+        inline StateBase(const StateBase &clone) : ss_(clone.ss_) {}
         inline StateBase &operator=(const StateBase &clone)
         {
-            spec_ = clone.spec_;
+            ss_ = clone.ss_;
             return *this;
         }
 
-        SS spec_;
+        SS ss_;
 
     }; // class StateBase
 

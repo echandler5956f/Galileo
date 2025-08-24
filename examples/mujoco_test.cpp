@@ -10,7 +10,7 @@
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
 
-#include "galileo/common/utils/resource_finder.hpp"
+#include "galileo/common/utils/resource-finder.hpp"
 
 // =================================================================================================
 // 1. GLOBAL VARIABLES AND DATA STRUCTURES

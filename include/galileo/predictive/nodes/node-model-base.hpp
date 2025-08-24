@@ -2,7 +2,6 @@
 #define __galileo_predictive_nodes_node_model_base_hpp__
 
 #include "galileo/predictive/nodes/node-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
@@ -19,12 +18,11 @@ namespace galileo
 
         using DimNU_t = typename traits<Meta_t>::DimNU_t;
 
-        using NumScalar = typename PS::NumScalar;
         using State_t = typename PS::State_t;
-        using RobotModel_t = typename PS::RobotModel_t;
         using CostModelManager_t = typename PS::CostModelManager_t;
         using ConstraintModelManager_t = typename PS::ConstraintModelManager_t;
 
+        using NumScalar = typename PS::NumScalar;
         using UBound_t = Eigen::GMatrix<NumScalar, DimNU_t::Value, 1, PS::Options>;
 
         template <typename StateVectorType, typename ControlVectorType>
@@ -67,10 +65,8 @@ namespace galileo
 
         Data_t createData() const { return this->derived().createData(); }
 
-        const PS &get_ps() const { return ps_.get(); }
-        PS &get_ps() { return ps_.get(); }
-        const State_t &get_state() const { return get_ps().get_state(); }
-        const RobotModel_t &get_robot() const { return robot_.get(); }
+        const PS &get_ps() const { return ps_; }
+        const State_t &get_state() const { return state_; }
         const CostModelManager_t &get_costs() const { return this->derived().get_costs(); }
         const ConstraintModelManager_t &get_constraints() const { return this->derived().get_constraints(); }
         const UBound_t &get_u_lb() const { return u_lb_; }
@@ -79,28 +75,28 @@ namespace galileo
         void set_u_ub(const UBound_t &u_ub) { u_ub_ = u_ub; }
 
     protected:
-        inline NodeModelBase(PS &ps)
+        inline NodeModelBase(PS &ps, const State_t &state)
             : ps_(ps),
-              robot_(ps.get_state().get_robot()),
+              state_(state),
               u_lb_(UBound_t::Zero(get_ps().get_nu())),
               u_ub_(UBound_t::Zero(get_ps().get_nu()))
         {
         }
         inline NodeModelBase(const NodeModelBase &clone)
-            : ps_(clone.ps_), robot_(clone.robot_), u_lb_(clone.u_lb_), u_ub_(clone.u_ub_)
+            : ps_(clone.ps_), state_(clone.state_), u_lb_(clone.u_lb_), u_ub_(clone.u_ub_)
         {
         }
         inline NodeModelBase &operator=(const NodeModelBase &clone)
         {
             ps_ = clone.ps_;
-            robot_ = clone.robot_;
+            state_ = clone.state_;
             u_lb_ = clone.u_lb_;
             u_ub_ = clone.u_ub_;
             return *this;
         }
 
-        std::reference_wrapper<PS> ps_;
-        std::reference_wrapper<const RobotModel_t> robot_;
+        PS ps_;
+        State_t state_;
         UBound_t u_lb_;
         UBound_t u_ub_;
 

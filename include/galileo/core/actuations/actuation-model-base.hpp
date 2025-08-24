@@ -6,15 +6,17 @@
 namespace galileo
 {
 
-    template <typename Derived, typename Spec>
+    template <typename Derived, typename SystemSpec>
     class ActuationModelBase : public internal::CRTP<Derived>
     {
     public:
-        using SS = Spec;
+        using SS = SystemSpec;
 
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
+
+        using State_t = typename SS::State_t;
 
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
@@ -62,18 +64,21 @@ namespace galileo
 
         Data_t createData() { return this->derived().createData(); }
 
-        const SS &get_spec() const { return spec_; }
+        const SS &get_ss() const { return ss_; }
+        const State_t &get_state() const { return state_; }
 
     protected:
-        inline ActuationModelBase(const SS &spec) : spec_(spec) {}
-        inline ActuationModelBase(const ActuationModelBase &clone) : spec_(clone.spec_) {}
+        inline ActuationModelBase(const SS &ss, const State_t &state) : ss_(ss), state_(state) {}
+        inline ActuationModelBase(const ActuationModelBase &clone) : ss_(clone.ss_), state_(clone.state_) {}
         inline ActuationModelBase &operator=(const ActuationModelBase &clone)
         {
-            spec_ = clone.spec_;
+            ss_ = clone.ss_;
+            state_ = clone.state_;
             return *this;
         }
 
-        SS spec_;
+        SS ss_;
+        State_t state_;
 
     }; // class ActuationModelBase
 

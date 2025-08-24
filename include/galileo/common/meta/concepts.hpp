@@ -32,19 +32,20 @@ namespace galileo
     template <AssignmentOp op>
     concept IsRmFrom = (op == RMFROM);
 
+    // generic, but intentionally lines up with pinocchio::ArgumentPosition
     enum Jcomponent
     {
-        BOTH = 0,
-        FIRST = 1,
-        SECOND = 2
+        FIRST = 0,
+        SECOND = 1,
+        BOTH = 2
     }; // enum Jcomponent
 
-    template <Jcomponent jc>
-    concept IsBoth = (jc == BOTH);
     template <Jcomponent jc>
     concept IsFirst = (jc == FIRST);
     template <Jcomponent jc>
     concept IsSecond = (jc == SECOND);
+    template <Jcomponent jc>
+    concept IsBoth = (jc == BOTH);
 
 } // namespace galileo
 

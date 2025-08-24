@@ -1,7 +1,7 @@
 #ifndef __galileo_core_system_spec_hpp__
 #define __galileo_core_system_spec_hpp__
 
-#include "galileo/core/basic-spec.hpp"
+#include "galileo/core/fwd.hpp"
 
 // Macros to import the types and constants from a system spec
 #define GALILEO_SYSTEM_SPEC_SCALARS_TYPEDEF(SystemSpec) GALILEO_BASIC_SPEC_SCALARS_TYPEDEF(SystemSpec::BS);
@@ -54,6 +54,8 @@ namespace galileo
     template <typename BasicSpec, int _NQ, int _NV, int _NUa>
     struct SystemSpecTpl
     {
+        using SS = SystemSpecTpl<BasicSpec, _NQ, _NV, _NUa>;
+
         /* ---------------------------------------------------------------- */
         /* Import the basic spec types and constants */
         /* ---------------------------------------------------------------- */
@@ -158,7 +160,10 @@ namespace galileo
         }
 
     protected:
-        inline SystemSpecTpl() : nq_dim_{}, nv_dim_{}, nx_dim_{}, ndx_dim_{}, nua_dim_{} {}
+        inline SystemSpecTpl(int NQ_, int NV_, int NUa_)
+            : nq_dim_{NQ_}, nv_dim_{NV_}, nx_dim_{NQ_ + NV_}, ndx_dim_{2 * NV_}, nua_dim_{NUa_}
+        {
+        }
         inline SystemSpecTpl(const SystemSpecTpl &clone)
             : nq_dim_{clone.nq_dim_},
               nv_dim_{clone.nv_dim_},
@@ -175,6 +180,66 @@ namespace galileo
             ndx_dim_ = clone.ndx_dim_;
             nua_dim_ = clone.nua_dim_;
             return *this;
+        }
+    };
+
+    /* ---------------------------------------------------------------- */
+    /* Defines the default spec based on State and Actuation types. */
+    /* ---------------------------------------------------------------- */
+    template <typename BasicSpec,
+              int _NQ,
+              int _NV,
+              int _NUa,
+              template <typename> class StateTpl,
+              template <typename> class ActuationTpl>
+    struct DefaultSpecTpl : public SystemSpecTpl<BasicSpec, _NQ, _NV, _NUa>
+    {
+        using DS = DefaultSpecTpl<BasicSpec, _NQ, _NV, _NUa, StateTpl, ActuationTpl>;
+        using SS = SystemSpecTpl<BasicSpec, _NQ, _NV, _NUa>;
+        using Base = SS;
+        using BS = BasicSpec;
+
+        /* ---------------------------------------------------------------- */
+        /* Import the system spec types and constants */
+        /* ---------------------------------------------------------------- */
+        GALILEO_SYSTEM_SPEC_MASTER_TYPEDEF(Base);
+
+        /* ---------------------------------------------------------------- */
+        /* Template types */
+        /* ---------------------------------------------------------------- */
+        using State_t = StateTpl<DS>;
+
+        using ActuationMeta_t = ActuationTpl<DS>;
+        using ActuationModel_t = typename traits<ActuationMeta_t>::Model_t;
+        using ActuationData_t = typename traits<ActuationMeta_t>::Data_t;
+
+        using Base::nq_dim_;
+        using Base::nv_dim_;
+        using Base::nx_dim_;
+        using Base::ndx_dim_;
+        using Base::nua_dim_;
+
+        DefaultSpecTpl(int NQ_, int NV_, int NUa_) : Base(NQ_, NV_, NUa_) {}
+
+        using Base::get_nq;
+        using Base::get_nq_dim;
+        using Base::get_nv;
+        using Base::get_nv_dim;
+        using Base::get_nx;
+        using Base::get_nx_dim;
+        using Base::get_ndx;
+        using Base::get_ndx_dim;
+        using Base::get_nua;
+        using Base::get_nua_dim;
+        using Base::is_valid_spec;
+        using Base::display;
+
+        friend std::ostream &operator<<(std::ostream &os, const DefaultSpecTpl &ds)
+        {
+            os << "DefaultSpec: {\n";
+            ds.display(os, "  ");
+            os << "}";
+            return os;
         }
     };
 

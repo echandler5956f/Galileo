@@ -808,9 +808,9 @@ TEST_CASE("Type Safety and Concept Validation", "[eigen][concepts]")
 
     SECTION("Extract compile time value validation")
     {
-        static_assert(extract_compile_time_value<42>::Value == 42);
-        static_assert(extract_compile_time_value<15>::Value == 15);
-        static_assert(extract_compile_time_value<0>::Value == 0);
+        static_assert(detail::extract_dim_v<42>::Value == 42);
+        static_assert(detail::extract_dim_v<15>::Value == 15);
+        static_assert(detail::extract_dim_v<0>::Value == 0);
 
         // Note: extract_compile_time_value with DimensionTpl objects as template parameters
         // requires constexpr DimensionTpl values, but DimensionTpl objects cannot be used

@@ -17,39 +17,40 @@
 
 #include "galileo/predictive/phases/phase-spec.hpp"
 
-#include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
+#include "galileo/domains/multibody/core/actuations/impl/actuation-floating-base.hpp"
 
-#include "galileo/core/states/implementations/state-multibody.hpp"
+#include "galileo/domains/multibody/core/states/impl/state-multibody.hpp"
 
-#include "galileo/core/activations/implementations/activation-quadratic.hpp"
+#include "galileo/core/activations/impl/activation-quadratic.hpp"
 
-#include "galileo/core/residuals/implementations/residual-frame-velocity.hpp"
+#include "galileo/domains/multibody/core/residuals/impl/residual-frame-velocity.hpp"
 
 #include "galileo/core/costs/cost-manager.hpp"
-#include "galileo/core/costs/implementations/cost-residual.hpp"
+#include "galileo/core/costs/impl/cost-residual.hpp"
 
 #include "galileo/core/constraints/equality/constraint-manager.hpp"
-#include "galileo/core/constraints/equality/implementations/constraint-residual.hpp"
+#include "galileo/core/constraints/equality/impl/constraint-residual.hpp"
 
-#include "galileo/multibody/contacts/contact-manager.hpp"
-#include "galileo/multibody/contacts/implementations/contact-3d.hpp"
+#include "galileo/domains/multibody/spatial/contacts/impl/contact-3d.hpp"
+#include "galileo/domains/multibody/spatial/contacts/contact-manager.hpp"
 
-#include "galileo/multibody/impulses/impulse-manager.hpp"
+#include "galileo/domains/multibody/spatial/impulses/impl/impulse-3d.hpp"
+#include "galileo/domains/multibody/spatial/impulses/impulse-manager.hpp"
 
-#include "galileo/multibody/impulses/implementations/impulse-3d.hpp"
-
-#include "galileo/predictive/nodes/implementations/node-contact-fwddyn.hpp"
+#include "galileo/domains/multibody/predictive/nodes/impl/node-contact-fwddyn.hpp"
 
 #include "galileo/common/math/barycentric-interpolator.hpp"
 #include "galileo/common/math/jacobi-roots.hpp"
 
-#include "galileo/core/controls/implementations/control-param-polynomial.hpp"
+#include "galileo/core/controls/impl/control-param-polynomial.hpp"
 
-#include "galileo/predictive/segments/implementations/segment-erk-euler.hpp"
+#include "galileo/predictive/segments/impl/segment-erk-euler.hpp"
 
-#include "galileo/predictive/jumps/implementations/jump-impulse-fwddyn.hpp"
+#include "galileo/domains/multibody/predictive/jumps/impl/jump-impulse-fwddyn.hpp"
 
-#include "galileo/predictive/phases/implementations/phase-default.hpp"
+#include "galileo/domains/multibody/core/multibody-spec.hpp"
+
+#include "galileo/predictive/phases/impl/phase-default.hpp"
 
 #include "galileo/core/data/data-collector-default.hpp"
 
@@ -89,7 +90,7 @@ constexpr int NVb_ = 6;
 constexpr int NVj_ = 12;
 constexpr int NRotors_ = 0;
 
-using RobotSpec_t = galileo::RobotSpecTpl<BasicSpec_t, NQb_, NQj_, NVb_, NVj_, NRotors_, StateTpl, ActuationTpl>;
+using SystemSpec_t = galileo::MultibodySpecTpl<BasicSpec_t, NQb_, NQj_, NVb_, NVj_, NRotors_, StateTpl, ActuationTpl>;
 
 template <typename PhaseSpec>
 using ResidualFrameVelocityTpl = galileo::ResidualFrameVelocityTpl<PhaseSpec>;
@@ -190,7 +191,7 @@ using JumpWalkingTpl = galileo::JumpImpulseFwdDynTpl<PhaseSpec, ImpulseCollectio
 template <typename PhaseSpec>
 using PhaseWalkingTpl = galileo::PhaseDefaultTpl<PhaseSpec, JumpWalkingTpl>;
 
-using PhaseSpec_t = galileo::PhaseSpecTpl<RobotSpec_t, ConstraintManagerWalkingTpl, CostManagerWalkingTpl, NodeWalkingTpl, ControlParamWalkingTpl, SegmentWalkingTpl, PhaseWalkingTpl>;
+using PhaseSpec_t = galileo::PhaseSpecTpl<SystemSpec_t, ConstraintManagerWalkingTpl, CostManagerWalkingTpl, NodeWalkingTpl, ControlParamWalkingTpl, SegmentWalkingTpl, PhaseWalkingTpl>;
 
 using RobotModel_t = typename PhaseSpec_t::RobotModel_t;
 using RobotData_t = typename PhaseSpec_t::RobotData_t;
@@ -250,10 +251,12 @@ int main(int argc, char **argv)
     // assert(!visualizer.hasExternalData());
     // pinocchio::Data &vis_data = visualizer.data();
 
-    State_t state = State_t(model);
-    ActuationModel_t actuation = ActuationModel_t(state);
+    SystemSpec_t ss(model);
 
-    PhaseSpec_t ps = PhaseSpec_t(state);
+    State_t state = State_t(ss, model);
+    ActuationModel_t actuation = ActuationModel_t(ss, state);
+
+    PhaseSpec_t ps = PhaseSpec_t(ss);
     std::cout << ps << std::endl;
 
     pinocchio::FrameIndex fr_foot_id = model.getFrameId("FR_foot");
@@ -323,11 +326,11 @@ int main(int argc, char **argv)
         if (i > 0)
         {
             std::cout << "DEBUG: Creating impulse manager for phase " << i << std::endl;
-            ImpulseModelManager_t impulse_manager(ps);
+            ImpulseModelManager_t impulse_manager(ps, state);
             for (const auto &foot_id : phases[i])
             {
                 // std::cout << "DEBUG: Creating impulse for foot " << foot_id << " phase " << i << std::endl;
-                ImpulseModel_t impulse(ps, foot_id, pinocchio::LOCAL_WORLD_ALIGNED);
+                ImpulseModel_t impulse(ps, state, foot_id, pinocchio::LOCAL_WORLD_ALIGNED);
                 impulse_manager.addItem("impulse_" + std::to_string(foot_id), impulse);
                 // std::cout << "DEBUG: Finished creating impulse for foot " << foot_id << " phase " << i << std::endl;
             }
@@ -337,11 +340,11 @@ int main(int argc, char **argv)
         for (int j = 0; j < num_knots[i]; j++)
         {
             std::cout << "DEBUG: Creating contact manager for phase " << i << " knot " << j << std::endl;
-            ContactModelManager_t contact_manager(ps);
+            ContactModelManager_t contact_manager(ps, state);
             for (const auto &foot_id : phases[i])
             {
                 // std::cout << "DEBUG: Creating contact for foot " << foot_id << " knot " << j << std::endl;
-                ContactModel_t contact(ps, foot_id, pinocchio::LOCAL_WORLD_ALIGNED,
+                ContactModel_t contact(ps, state, foot_id, pinocchio::LOCAL_WORLD_ALIGNED,
                                        Eigen::Vector3d::Zero(), Eigen::Vector2d(0., 0.));
                 contact_manager.addItem("contact_" + std::to_string(foot_id), contact);
                 // std::cout << "DEBUG: Finished creating contact for foot " << foot_id << " knot " << j << std::endl;
@@ -355,7 +358,7 @@ int main(int argc, char **argv)
         if (i > 0)
         {
             std::cout << "DEBUG: Creating jump model for phase " << i << std::endl;
-            JumpModel_t jump_model(ps, empty_cost_manager, empty_constraint_manager, *impulse_managers[i-1]);
+            JumpModel_t jump_model(ps, state, empty_cost_manager, empty_constraint_manager, *impulse_managers[i-1]);
             // std::cout << "DEBUG: Finished creating jump model for phase " << i << std::endl;
             jump_models.push_back(std::make_shared<JumpModel_t>(jump_model));
             // std::cout << "DEBUG: Creating jump data for phase " << i << std::endl;
@@ -365,11 +368,11 @@ int main(int argc, char **argv)
         for (int j = 0; j < num_knots[i]; j++)
         {
             std::cout << "DEBUG: Creating models for phase " << i << " knot " << j << std::endl;
-            NodeModel_t node(ps, empty_cost_manager, empty_constraint_manager, *contact_managers[i*num_knots[i] + j], actuation, 0.0, true);
+            NodeModel_t node(ps, state, empty_cost_manager, empty_constraint_manager, *contact_managers[i*num_knots[i] + j], actuation, 0.0, true);
             // std::cout << "DEBUG: Finished creating node for phase " << i << " knot " << j << std::endl;
             // std::cout << "DEBUG: Creating segment model for phase " << i << " knot " << j << std::endl;
             double timestep = phase_durations[i] / num_knots[i];
-            SegmentModel_t segment_model(ps, node, control_param, timestep);
+            SegmentModel_t segment_model(ps, state, node, control_param, timestep);
             // std::cout << "DEBUG: Finished creating segment model for phase " << i << " knot " << j << std::endl;
             segment_models.push_back(std::make_shared<SegmentModel_t>(segment_model));
             // std::cout << "DEBUG: Creating segment data for phase " << i << " knot " << j << std::endl;

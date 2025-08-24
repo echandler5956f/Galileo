@@ -1,8 +1,7 @@
 #ifndef __galileo_core_data_data_collector_impulses_hpp__
 #define __galileo_core_data_data_collector_impulses_hpp__
 
-#include "galileo/multibody/impulses/impulse-manager.hpp"
-#include "galileo/multibody/impulses/fwd.hpp"
+#include "galileo/domains/multibody/spatial/impulses/impulse-manager.hpp"
 
 namespace galileo
 {

@@ -1,8 +1,7 @@
 #ifndef __galileo_core_data_data_collector_contacts_hpp__
 #define __galileo_core_data_data_collector_contacts_hpp__
 
-#include "galileo/multibody/contacts/contact-manager.hpp"
-#include "galileo/multibody/contacts/fwd.hpp"
+#include "galileo/domains/multibody/spatial/contacts/contact-manager.hpp"
 
 namespace galileo
 {

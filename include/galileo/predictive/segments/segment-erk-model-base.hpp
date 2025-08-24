@@ -16,8 +16,8 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        using NumScalar = typename PS::NumScalar;
         using State_t = typename PS::State_t;
+        using NumScalar = typename PS::NumScalar;
 
         template <typename StateVectorType, typename ControlParamVectorType>
         void calc(Data_t &data,
@@ -59,11 +59,11 @@ namespace galileo
 
         Data_t createData() { return this->derived().createData(); }
 
-        const PS &get_ps() const { return ps_.get(); }
-        const State_t &get_state() const { return state_.get(); }
+        const PS &get_ps() const { return ps_; }
+        const State_t &get_state() const { return state_; }
 
     protected:
-        inline SegmentERKModelBase(const PS &ps) : ps_(ps), state_(ps.get_state()) {}
+        inline SegmentERKModelBase(const PS &ps, const State_t &state) : ps_(ps), state_(state) {}
         inline SegmentERKModelBase(const SegmentERKModelBase &clone) : ps_(clone.ps_), state_(clone.state_) {}
         inline SegmentERKModelBase &operator=(const SegmentERKModelBase &clone)
         {
@@ -72,8 +72,8 @@ namespace galileo
             return *this;
         }
 
-        std::reference_wrapper<const PS> ps_;
-        std::reference_wrapper<const State_t> state_;
+        PS ps_;
+        State_t state_;
 
     }; // class SegmentERKModelBase
 

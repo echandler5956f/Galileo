@@ -6,8 +6,6 @@
 #include "galileo/predictive/phases/phase-collection.hpp"
 #include "galileo/predictive/phases/phase-visitors.hxx"
 
-#include "galileo/core/basic-spec.hpp"
-
 namespace galileo
 {
 

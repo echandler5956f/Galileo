@@ -13,14 +13,18 @@ namespace galileo
     public:
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
-
         using Meta_t = typename PS::ControlParamMeta_t;
         using Model_t = typename PS::ControlParamModel_t;
         using Data_t = typename PS::ControlParamData_t;
 
+        using U_t = typename PS::VectorNu_t;
+        using W_t = typename PS::VectorNw_t;
+        using Uw_t = typename PS::MatrixNuNw_t;
+
         ControlParamDataTpl(const Model_t &model)
-            : u(model.get_nu()), w(model.get_nw()), du_dw(model.get_nu(), model.get_nw())
+            : u(model.get_ps().get_nu()),
+              w(model.get_ps().get_nw()),
+              du_dw(model.get_ps().get_nu(), model.get_ps().get_nw())
         {
             u.setZero();
             w.setZero();

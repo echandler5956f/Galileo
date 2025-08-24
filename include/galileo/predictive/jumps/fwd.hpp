@@ -6,11 +6,6 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
-    struct JumpModelImpulseFwdDynTpl;
-    template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
-    struct JumpDataImpulseFwdDynTpl;
-
 } // namespace galileo
 
 #endif // __galileo_predictive_jumps_fwd_hpp__

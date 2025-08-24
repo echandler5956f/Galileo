@@ -2,7 +2,6 @@
 #define __galileo_predictive_nodes_node_data_base_hpp__
 
 #include "galileo/predictive/nodes/node-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
@@ -13,14 +12,26 @@ namespace galileo
     public:
         using PS = PhaseSpec;
 
-        GALILEO_PHASE_SPEC_MASTER_TYPEDEF(PS);
-
         using Meta_t = typename traits<Derived>::Meta_t;
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        FORWARD_ACCESSOR(CostDataManager_t, costs);
-        FORWARD_ACCESSOR(ConstraintDataManager_t, constraints);
+        using XAcc_t = typename PS::XAcc_t;
+        using XAccx_t = typename PS::XAccx_t;
+        using XAccu_t = typename PS::XAccu_t;
+        using L_t = typename PS::L_t;
+        using Lx_t = typename PS::Lx_t;
+        using Lu_t = typename PS::Lu_t;
+        using Lxx_t = typename PS::Lxx_t;
+        using Lxu_t = typename PS::Lxu_t;
+        using Luu_t = typename PS::Luu_t;
+        using H_t = typename PS::H_t;
+        using Hx_t = typename PS::Hx_t;
+        using Hu_t = typename PS::Hu_t;
+        using G_t = typename PS::G_t;
+        using Gx_t = typename PS::Gx_t;
+        using Gu_t = typename PS::Gu_t;
+
         FORWARD_ACCESSOR(XAcc_t, XAcc);
         FORWARD_ACCESSOR(XAccx_t, XAccx);
         FORWARD_ACCESSOR(XAccu_t, XAccu);

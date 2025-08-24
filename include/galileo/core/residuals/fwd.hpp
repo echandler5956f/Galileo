@@ -12,26 +12,6 @@ namespace galileo
     struct ResidualDataControlTpl;
 
     template <typename PhaseSpec>
-    class ResidualModelFramePlacementTpl;
-    template <typename PhaseSpec>
-    struct ResidualDataFramePlacementTpl;
-
-    template <typename PhaseSpec>
-    class ResidualModelFrameTranslationTpl;
-    template <typename PhaseSpec>
-    struct ResidualDataFrameTranslationTpl;
-
-    template <typename PhaseSpec>
-    class ResidualModelFrameVelocityTpl;
-    template <typename PhaseSpec>
-    struct ResidualDataFrameVelocityTpl;
-
-    template <typename PhaseSpec>
-    class ResidualModelCoMPositionTpl;
-    template <typename PhaseSpec>
-    struct ResidualDataCoMPositionTpl;
-
-    template <typename PhaseSpec>
     class ResidualModelStateTpl;
     template <typename PhaseSpec>
     struct ResidualDataStateTpl;

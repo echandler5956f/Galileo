@@ -20,6 +20,7 @@ namespace galileo
 #include "galileo/common/meta/dimension.hpp"
 #include "galileo/common/meta/eigen.hpp"
 #include "galileo/common/meta/macros.hpp"
+#include "galileo/common/meta/basic-spec.hpp"
 
 namespace galileo
 {

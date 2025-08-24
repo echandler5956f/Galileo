@@ -68,13 +68,7 @@ namespace galileo
 
         Data_t createData() const { return this->derived().createData(); }
 
-        const PS &get_ps() const { return ps_.get(); }
-        const DimNU_t &get_nu_dim() const { return get_ps().get_nu_dim(); }
-        int get_nu() const { return get_ps().get_nu(); }
-        const DimNOrder_t &get_norder_dim() const { return get_ps().get_norder_dim(); }
-        int get_norder() const { return get_ps().get_norder(); }
-        const DimNW_t &get_nw_dim() const { return get_ps().get_nw_dim(); }
-        int get_nw() const { return get_ps().get_nw(); }
+        const PS &get_ps() const { return ps_; }
 
     protected:
         inline ControlParamModelBase(const PS &ps) : ps_(ps) {}
@@ -85,7 +79,7 @@ namespace galileo
             return *this;
         }
 
-        std::reference_wrapper<const PS> ps_;
+        PS ps_;
 
     }; // class ControlParamModelBase
 

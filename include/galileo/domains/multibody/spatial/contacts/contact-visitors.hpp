@@ -1,0 +1,126 @@
+#ifndef __galileo_multibody_spatial_contacts_contact_visitors_hpp__
+#define __galileo_multibody_spatial_contacts_contact_visitors_hpp__
+
+#include "galileo/domains/multibody/spatial/contacts/fwd.hpp"
+
+namespace galileo
+{
+
+    // These are basically all the visitors that we need in order to homogenously iterate over a set of heterogeneous contacts
+
+    // Contact model visitors
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl, typename StateVectorType>
+    inline void contact_calc_zeroth_order(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                                          ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data,
+                                          const Eigen::MatrixBase<StateVectorType> &x);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl, typename StateVectorType>
+    inline void contact_calc_first_order(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                                         ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data,
+                                         const Eigen::MatrixBase<StateVectorType> &x);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl, typename ForceVectorType>
+    inline void contact_update_force(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                                     ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data,
+                                     const Eigen::MatrixBase<ForceVectorType> &force);
+
+    template <typename PhaseSpec,
+              template <typename> class ContactCollectionTpl,
+              typename MatrixNcNdxType,
+              typename MatrixNcNuType>
+    inline void contact_update_force_diff(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                                          ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data,
+                                          const Eigen::MatrixBase<MatrixNcNdxType> &df_dx,
+                                          const Eigen::MatrixBase<MatrixNcNuType> &df_du);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline void contact_set_zero_force(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                                       ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline void contact_set_zero_force_diff(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                                            ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        typename PhaseSpec::RobotData_t *const robot);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t contact_get_id(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline void contact_set_id(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+                               const typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t &id);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::ReferenceFrame_t contact_get_type(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline void contact_set_type(
+        const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        const typename ContactModelTpl<PhaseSpec, ContactCollectionTpl>::ReferenceFrame_t &type);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline int contact_get_nc(const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model);
+
+    // Contact data visitors
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotDataPointer_t contact_robot_data(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::FrameIndex_t contact_frame(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::ReferenceFrame_t contact_type_data(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::SE3_t contact_jMf(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNv_t contact_Jc(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::Force_t contact_f(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::Force_t contact_fext(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNdx_t contact_df_dx(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNu_t contact_df_du(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::ActionMatrix_t contact_fXj(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::VectorNc_t contact_a0(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNcNdx_t contact_da0_dx(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+    template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::MatrixNv_t contact_dtau_dq(
+        const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
+
+} // namespace galileo
+
+#endif // __galileo_multibody_spatial_contacts_contact_visitors_hpp__

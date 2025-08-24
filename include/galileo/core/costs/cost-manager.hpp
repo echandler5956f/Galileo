@@ -286,7 +286,7 @@ namespace galileo
             return DataManager_t(*this, collector);
         }
 
-        const PS &get_ps() const { return ps_.get(); }
+        const PS &get_ps() const { return ps_; }
         int get_model_n(const Model_t &model) const { return 0; }
 
         using Base::addItem;
@@ -308,7 +308,7 @@ namespace galileo
         using Base::active_dim_;
         using Base::total_dim_;
 
-        std::reference_wrapper<const PS> ps_;
+        PS ps_;
 
     }; // class CostModelManagerTpl
 

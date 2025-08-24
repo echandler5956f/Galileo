@@ -26,10 +26,11 @@ namespace galileo
         using Data_t = ConstraintDataTpl<PS, ConstraintCollectionTpl>;
 
         using DimNH_t = DimensionTpl<Eigen::Dynamic>;
+        static constexpr int NH = DimNH_t::Value;
 
-        using H_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNDX_t::Value, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
+        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
+        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
@@ -115,13 +116,10 @@ namespace galileo
         using DimNH_t = typename traits<Meta_t>::DimNH_t;
 
         ModelVariant_t &toVariant() { return *static_cast<ModelVariant_t *>(this); }
-
         const ModelVariant_t &toVariant() const { return *static_cast<const ModelVariant_t *>(this); }
 
         ConstraintModelTpl() : ModelVariant_t() {}
-
         ConstraintModelTpl(const ModelVariant_t &model_variant) : ModelVariant_t(model_variant) {}
-
         template <typename ConstraintModelType>
         ConstraintModelTpl(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &model)
             : Base(DimNH_t(model.get_nh())), Collection_t::ConstraintModelVariant_t((ModelVariant_t) model.derived())
@@ -163,9 +161,9 @@ namespace galileo
             galileo::constraint_calc_first_order(*this, data, x.derived(), Blank());
         }
 
-        int get_nh_impl() const { return galileo::constraint_get_nh(*this); }
-
         using Base::get_nh;
+
+        int get_nh_impl() const { return galileo::constraint_get_nh(*this); }
 
     }; // struct ConstraintModelTpl
 

@@ -4,42 +4,43 @@
 
 #include "galileo/predictive/phases/phase-spec.hpp"
 
-#include "galileo/core/actuations/implementations/actuation-floating-base.hpp"
+#include "galileo/domains/multibody/core/actuations/impl/actuation-floating-base.hpp"
 
-#include "galileo/core/states/implementations/state-multibody.hpp"
+#include "galileo/domains/multibody/core/states/impl/state-multibody.hpp"
 
-#include "galileo/core/activations/implementations/activation-weighted-quadratic.hpp"
+#include "galileo/core/activations/impl/activation-weighted-quadratic.hpp"
 
-#include "galileo/core/residuals/implementations/residual-com-position.hpp"
-#include "galileo/core/residuals/implementations/residual-control.hpp"
-#include "galileo/core/residuals/implementations/residual-frame-translation.hpp"
-#include "galileo/core/residuals/implementations/residual-frame-velocity.hpp"
-#include "galileo/core/residuals/implementations/residual-state.hpp"
+#include "galileo/core/residuals/impl/residual-control.hpp"
+
+#include "galileo/domains/multibody/core/residuals/impl/residual-com-position.hpp"
+#include "galileo/domains/multibody/core/residuals/impl/residual-frame-translation.hpp"
+#include "galileo/domains/multibody/core/residuals/impl/residual-frame-velocity.hpp"
+#include "galileo/domains/multibody/core/residuals/impl/residual-multibody-state.hpp"
 
 #include "galileo/core/costs/cost-manager.hpp"
-#include "galileo/core/costs/implementations/cost-residual.hpp"
+#include "galileo/core/costs/impl/cost-residual.hpp"
 
 #include "galileo/core/constraints/equality/constraint-manager.hpp"
-#include "galileo/core/constraints/equality/implementations/constraint-residual.hpp"
+#include "galileo/core/constraints/equality/impl/constraint-residual.hpp"
 
-#include "galileo/multibody/contacts/implementations/contact-3d.hpp"
-#include "galileo/multibody/contacts/contact-manager.hpp"
+#include "galileo/domains/multibody/spatial/contacts/impl/contact-3d.hpp"
+#include "galileo/domains/multibody/spatial/contacts/contact-manager.hpp"
 
-#include "galileo/multibody/impulses/implementations/impulse-3d.hpp"
-#include "galileo/multibody/impulses/impulse-manager.hpp"
+#include "galileo/domains/multibody/spatial/impulses/impl/impulse-3d.hpp"
+#include "galileo/domains/multibody/spatial/impulses/impulse-manager.hpp"
 
-#include "galileo/predictive/nodes/implementations/node-contact-fwddyn.hpp"
+#include "galileo/domains/multibody/predictive/nodes/impl/node-contact-fwddyn.hpp"
 
 #include "galileo/common/math/barycentric-interpolator.hpp"
 #include "galileo/common/math/jacobi-roots.hpp"
 
-#include "galileo/core/controls/implementations/control-param-polynomial.hpp"
+#include "galileo/core/controls/impl/control-param-polynomial.hpp"
 
-#include "galileo/predictive/segments/implementations/segment-erk-euler.hpp"
+#include "galileo/predictive/segments/impl/segment-erk-euler.hpp"
 
-#include "galileo/predictive/jumps/implementations/jump-impulse-fwddyn.hpp"
+#include "galileo/domains/multibody/predictive/jumps/impl/jump-impulse-fwddyn.hpp"
 
-#include "galileo/predictive/phases/implementations/phase-default.hpp"
+#include "galileo/predictive/phases/impl/phase-default.hpp"
 
 #include "galileo/core/data/data-collector-default.hpp"
 

@@ -597,32 +597,32 @@ TEST_CASE("DimensionTpl - Extract Compile Time Value", "[dimensions]")
     SECTION("Extract from raw integer")
     {
         constexpr int raw_value = 42;
-        constexpr int extracted = extract_compile_time_value<raw_value>::Value;
+        constexpr int extracted = detail::extract_dim_v<raw_value>::Value;
         REQUIRE(extracted == 42);
     }
 
     SECTION("Extract from fixed dimension - concept validation")
     {
-        // Note: extract_compile_time_value with DimensionTpl objects as template parameters
+        // Note: extract_dim_v with DimensionTpl objects as template parameters
         // is intended for use with constexpr dimension values in template contexts,
         // but DimensionTpl objects cannot be used as template non-type parameters
         // because they are not structural types. This is by design - the extraction
         // should be used with compile-time constants, not runtime objects.
-        static_assert(extract_compile_time_value<15>::Value == 15);
-        static_assert(extract_compile_time_value<0>::Value == 0);
+        static_assert(detail::extract_dim_v<15>::Value == 15);
+        static_assert(detail::extract_dim_v<0>::Value == 0);
     }
 
     SECTION("Extract from negative integer")
     {
         constexpr int negative_value = -5;
-        constexpr int extracted = extract_compile_time_value<negative_value>::Value;
+        constexpr int extracted = detail::extract_dim_v<negative_value>::Value;
         REQUIRE(extracted == -5);
     }
 
     SECTION("Extract from large integer")
     {
         constexpr int large_value = 9999;
-        constexpr int extracted = extract_compile_time_value<large_value>::Value;
+        constexpr int extracted = detail::extract_dim_v<large_value>::Value;
         REQUIRE(extracted == 9999);
     }
 }
