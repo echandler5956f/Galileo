@@ -26,9 +26,9 @@ namespace galileo
         using DimNH_t = typename traits<ResidualMeta_t>::DimNR_t;
         static constexpr int NH = DimNH_t::Value;
 
-        using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
+        using H_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>>;
+        using Hx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>>;
+        using Hu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class ResidualTpl>
@@ -68,11 +68,11 @@ namespace galileo
         DEFAULT_ACCESSOR(Hu_t, Hu);
 
         template <typename DataCollector>
-        ConstraintDataResidualTpl(const Model_t &model, DataCollector *const collector)
-            : residual(model.get_residual().createData(collector)),
-              H(model.get_nh()),
-              Hx(model.get_nh(), model.get_ps().get_ndx()),
-              Hu(model.get_nh(), model.get_ps().get_nu())
+        ConstraintDataResidualTpl(const Model_t &model, MemoryArena &arena, DataCollector *const collector)
+            : residual(model.get_residual().createData(arena, collector)),
+              H(arena, model.get_nh(), 1),
+              Hx(arena, model.get_nh(), model.get_ps().get_ndx()),
+              Hu(arena, model.get_nh(), model.get_ps().get_nu())
         {
             H.setZero();
             Hx.setZero();
@@ -144,9 +144,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return Data_t(*this, collector);
+            return Data_t(*this, arena, collector);
         }
 
         const PS &get_ps() const { return ps_; }

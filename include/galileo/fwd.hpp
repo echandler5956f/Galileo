@@ -22,6 +22,9 @@ namespace galileo
 #include "galileo/common/meta/macros.hpp"
 #include "galileo/common/meta/basic-spec.hpp"
 
+#include "galileo/common/memory/arena.hpp"
+#include "galileo/common/container/arena-matrix.hpp"
+
 namespace galileo
 {
 

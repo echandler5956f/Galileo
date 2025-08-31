@@ -16,21 +16,21 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        using XAcc_t = typename PS::XAcc_t;
-        using XAccx_t = typename PS::XAccx_t;
-        using XAccu_t = typename PS::XAccu_t;
+        using XAcc_t = ArenaMatrixTpl<typename PS::XAcc_t>;
+        using XAccx_t = ArenaMatrixTpl<typename PS::XAccx_t>;
+        using XAccu_t = ArenaMatrixTpl<typename PS::XAccu_t>;
         using L_t = typename PS::L_t;
-        using Lx_t = typename PS::Lx_t;
-        using Lu_t = typename PS::Lu_t;
-        using Lxx_t = typename PS::Lxx_t;
-        using Lxu_t = typename PS::Lxu_t;
-        using Luu_t = typename PS::Luu_t;
-        using H_t = typename PS::H_t;
-        using Hx_t = typename PS::Hx_t;
-        using Hu_t = typename PS::Hu_t;
-        using G_t = typename PS::G_t;
-        using Gx_t = typename PS::Gx_t;
-        using Gu_t = typename PS::Gu_t;
+        using Lx_t = ArenaMatrixTpl<typename PS::Lx_t>;
+        using Lu_t = ArenaMatrixTpl<typename PS::Lu_t>;
+        using Lxx_t = ArenaMatrixTpl<typename PS::Lxx_t>;
+        using Lxu_t = ArenaMatrixTpl<typename PS::Lxu_t>;
+        using Luu_t = ArenaMatrixTpl<typename PS::Luu_t>;
+        using H_t = ArenaMatrixTpl<typename PS::H_t>;
+        using Hx_t = ArenaMatrixTpl<typename PS::Hx_t>;
+        using Hu_t = ArenaMatrixTpl<typename PS::Hu_t>;
+        using G_t = ArenaMatrixTpl<typename PS::G_t>;
+        using Gx_t = ArenaMatrixTpl<typename PS::Gx_t>;
+        using Gu_t = ArenaMatrixTpl<typename PS::Gu_t>;
 
         FORWARD_ACCESSOR(XAcc_t, XAcc);
         FORWARD_ACCESSOR(XAccx_t, XAccx);

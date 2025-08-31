@@ -41,6 +41,7 @@ namespace galileo
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     inline ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> impulse_create_data(
         const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model,
+        MemoryArena &arena,
         typename PhaseSpec::RobotData_t *const robot);
 
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
@@ -66,7 +67,7 @@ namespace galileo
     // Impulse data visitors
 
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
-    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotDataPointer_t impulse_robot_data(
+    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotData_t *impulse_robot_data(
         const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data);
 
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>

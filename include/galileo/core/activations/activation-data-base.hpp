@@ -7,7 +7,6 @@
     using A_t = typename traits<Activation>::A_t; \
     using Ar_t = typename traits<Activation>::Ar_t; \
     using Arr_t = typename traits<Activation>::Arr_t; \
-    using Arr_diag_t = typename traits<Activation>::Arr_diag_t;
 
 namespace galileo
 {

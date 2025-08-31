@@ -18,7 +18,7 @@ namespace galileo
 
         using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;
         using Model_t = ControlParamModelPolynomialTpl<PS, NOrder_>;
-        using Data_t = ControlParamDataTpl<PS>;
+        using Data_t = ControlParamDataPolynomialTpl<PS, NOrder_>;
 
         using DimNOrder_t = DimensionTpl<NOrder_>;
         static constexpr int NOrder = DimNOrder_t::Value;
@@ -29,6 +29,48 @@ namespace galileo
     {
         using Meta_t = ControlParamPolynomialTpl<PhaseSpec, NOrder_>;
     };
+
+    template <typename PhaseSpec, int NOrder_>
+    struct traits<ControlParamDataPolynomialTpl<PhaseSpec, NOrder_>>
+    {
+        using Meta_t = ControlParamPolynomialTpl<PhaseSpec, NOrder_>;
+    };
+
+    template <typename PhaseSpec, int NOrder_>
+    class ControlParamDataPolynomialTpl
+        : public ControlParamDataBase<ControlParamDataPolynomialTpl<PhaseSpec, NOrder_>, PhaseSpec>
+    {
+    public:
+        using PS = PhaseSpec;
+
+        using Meta_t = ControlParamPolynomialTpl<PS, NOrder_>;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
+        using Base = ControlParamDataBase<ControlParamDataPolynomialTpl<PS, NOrder_>, PS>;
+
+        using VectorNu_t = ArenaMatrixTpl<typename PS::VectorNu_t>;
+        using VectorNw_t = ArenaMatrixTpl<typename PS::VectorNw_t>;
+        using MatrixNuNw_t = ArenaMatrixTpl<typename PS::MatrixNuNw_t>;
+
+        DEFAULT_ACCESSOR(VectorNu_t, u);
+        DEFAULT_ACCESSOR(VectorNw_t, w);
+        DEFAULT_ACCESSOR(MatrixNuNw_t, du_dw);
+
+        ControlParamDataPolynomialTpl(const Model_t &model, MemoryArena &arena)
+            : u(arena, model.get_ps().get_nu(), 1),
+              w(arena, model.get_ps().get_nw(), 1),
+              du_dw(arena, model.get_ps().get_nu(), model.get_ps().get_nw())
+        {
+            u.setZero();
+            w.setZero();
+            du_dw.setZero();
+        }
+
+        VectorNu_t u;
+        VectorNw_t w;
+        MatrixNuNw_t du_dw;
+
+    }; // class ControlParamDataPolynomialTpl
 
     template <typename PhaseSpec, int NOrder_>
     class ControlParamModelPolynomialTpl
@@ -122,7 +164,7 @@ namespace galileo
             }
         }
 
-        Data_t createData() const { return Data_t(*this); }
+        Data_t createData(MemoryArena &arena) const { return Data_t(*this, arena); }
 
         using Base::get_ps;
 

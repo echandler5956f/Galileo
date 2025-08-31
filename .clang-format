@@ -63,5 +63,5 @@ IndentWrappedFunctionNames: true
 AlignAfterOpenBracket: Align
 BinPackParameters: false
 BinPackArguments: false
-BinPackTemplateArguments: false
+BinPackTemplateArguments: true
 ExperimentalAutoDetectBinPacking: false

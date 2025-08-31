@@ -16,15 +16,15 @@ namespace galileo
         using Model_t = typename traits<Meta_t>::Model_t;
         using Data_t = typename traits<Meta_t>::Data_t;
 
-        using XNext_t = typename PS::XNext_t;
-        using XNextx_t = typename PS::XNextx_t;
+        using XNext_t = ArenaMatrixTpl<typename PS::XNext_t>;
+        using XNextx_t = ArenaMatrixTpl<typename PS::XNextx_t>;
         using L_t = typename PS::L_t;
-        using Lx_t = typename PS::Lx_t;
-        using Lxx_t = typename PS::Lxx_t;
-        using H_t = typename PS::H_t;
-        using Hx_t = typename PS::Hx_t;
-        using G_t = typename PS::G_t;
-        using Gx_t = typename PS::Gx_t;
+        using Lx_t = ArenaMatrixTpl<typename PS::Lx_t>;
+        using Lxx_t = ArenaMatrixTpl<typename PS::Lxx_t>;
+        using H_t = ArenaMatrixTpl<typename PS::H_t>;
+        using Hx_t = ArenaMatrixTpl<typename PS::Hx_t>;
+        using G_t = ArenaMatrixTpl<typename PS::G_t>;
+        using Gx_t = ArenaMatrixTpl<typename PS::Gx_t>;
 
         FORWARD_ACCESSOR(XNext_t, XNext);
         FORWARD_ACCESSOR(XNextx_t, XNextx);

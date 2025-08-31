@@ -42,7 +42,7 @@ namespace galileo
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl, typename DataCollector>
     inline CostDataTpl<PhaseSpec, CostCollectionTpl> cost_create_data(
-        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model, DataCollector *const collector);
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model, MemoryArena &arena, DataCollector *const collector);
 
     // Cost data visitors
 

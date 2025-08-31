@@ -28,12 +28,21 @@ namespace galileo
         static constexpr int NC = DimNC_t::Value;
 
         // Traits required by ForceDataBase
-        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NV, PS::Options>;
-        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NDX, PS::Options>;
-        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NU, PS::Options>;
+        using MatrixNcNv_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, PS::NV, PS::Options>>;
+        using MatrixNcNdx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, PS::NDX, PS::Options>>;
+        using MatrixNcNu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, PS::NU, PS::Options>>;
 
         // Traits required by ContactDataBase
-        using VectorNc_t = Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options>;
+        using VectorNc_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options>>;
+        using MatrixNv_t = ArenaMatrixTpl<typename PS::MatrixNv_t>;
+
+        using RobotData_t = typename PS::RobotData_t;
+        using FrameIndex_t = typename PS::FrameIndex_t;
+        using ReferenceFrame_t = typename PS::ReferenceFrame_t;
+        using SE3_t = typename PS::SE3_t;
+        using ActionMatrix_t = typename PS::ActionMatrix_t;
+        using Force_t = typename PS::Force_t;
+        using Motion_t = typename PS::Motion_t;
     };
 
     template <typename PhaseSpec>
@@ -63,18 +72,12 @@ namespace galileo
 
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
 
-        using RobotData_t = typename PS::RobotData_t;
-        using FrameIndex_t = typename PS::FrameIndex_t;
-        using ReferenceFrame_t = typename PS::ReferenceFrame_t;
-        using SE3_t = typename PS::SE3_t;
-        using ActionMatrix_t = typename PS::ActionMatrix_t;
-        using Force_t = typename PS::Force_t;
+        using Matrix3_t = ArenaMatrixTpl<typename PS::Matrix3_t>;
+        using Matrix6_t = ArenaMatrixTpl<typename PS::Matrix6_t>;
+        using Matrix6Ndx_t = ArenaMatrixTpl<typename PS::Matrix6Ndx_t>;
+        using Matrix6Nv_t = ArenaMatrixTpl<typename PS::Matrix6Nv_t>;
+
         using Motion_t = typename PS::Motion_t;
-        using MatrixNv_t = typename PS::MatrixNv_t;
-        using Matrix3_t = typename PS::Matrix3_t;
-        using Matrix6_t = typename PS::Matrix6_t;
-        using Matrix6Ndx_t = typename PS::Matrix6Ndx_t;
-        using Matrix6Nv_t = typename PS::Matrix6Nv_t;
 
         // Members required by ForceDataBase
         RobotData_t *robot;
@@ -132,32 +135,39 @@ namespace galileo
         Matrix6_t rMf_Jlog6;
         Matrix6Nv_t fJf_df;
 
-        ContactData6dTpl(const Model_t &model, RobotData_t *const robot_data)
+        ContactData6dTpl(const Model_t &model, MemoryArena &arena, RobotData_t *const robot_data)
             : robot(robot_data),
               frame(model.get_id()),
               type(model.get_type()),
               jMf(model.get_state().get_robot().frames[frame].placement),
-              Jc(model.get_nc(), model.get_ps().get_nv()),
+              Jc(arena, model.get_nc(), model.get_ps().get_nv()),
               f(Force_t::Zero()),
               fext(Force_t::Zero()),
-              df_dx(model.get_nc(), model.get_ps().get_ndx()),
-              df_du(model.get_nc(), model.get_ps().get_nu()),
+              df_dx(arena, model.get_nc(), model.get_ps().get_ndx()),
+              df_du(arena, model.get_nc(), model.get_ps().get_nu()),
               fXj(jMf.inverse().toActionMatrix()),
-              a0(model.get_nc()),
-              da0_dx(model.get_nc(), model.get_ps().get_ndx()),
-              dtau_dq(model.get_ps().get_nv(), model.get_ps().get_nv()),
+              a0(arena, model.get_nc()),
+              da0_dx(arena, model.get_nc(), model.get_ps().get_ndx()),
+              dtau_dq(arena, model.get_ps().get_nv(), model.get_ps().get_nv()),
               rMf(SE3_t::Identity()),
               lwaMl(SE3_t::Identity()),
               v(Motion_t::Zero()),
               a0_local(model.get_nc()),
               f_local(Force_t::Zero()),
-              da0_local_dx(model.get_nc(), model.get_ps().get_ndx()),
-              fJf(6, model.get_ps().get_nv()),
-              v_partial_dq(6, model.get_ps().get_nv()),
-              a_partial_dq(6, model.get_ps().get_nv()),
-              a_partial_dv(6, model.get_ps().get_nv()),
-              a_partial_da(6, model.get_ps().get_nv()),
-              fJf_df(model.get_nc(), model.get_ps().get_nv())
+              da0_local_dx(arena, model.get_nc(), model.get_ps().get_ndx()),
+              fJf(arena, 6, model.get_ps().get_nv()),
+              v_partial_dq(arena, 6, model.get_ps().get_nv()),
+              a_partial_dq(arena, 6, model.get_ps().get_nv()),
+              a_partial_dv(arena, 6, model.get_ps().get_nv()),
+              a_partial_da(arena, 6, model.get_ps().get_nv()),
+              av_world_skew(arena, 3, 3),
+              aw_world_skew(arena, 3, 3),
+              av_skew(arena, 3, 3),
+              aw_skew(arena, 3, 3),
+              fv_skew(arena, 3, 3),
+              fw_skew(arena, 3, 3),
+              rMf_Jlog6(arena, 6, 6),
+              fJf_df(arena, model.get_nc(), model.get_ps().get_nv())
         {
             Jc.setZero();
             df_dx.setZero();
@@ -305,7 +315,7 @@ namespace galileo
             }
         }
 
-        Data_t createData(RobotData_t *const robot) const { return Data_t(*this, robot); }
+        Data_t createData(MemoryArena &arena, RobotData_t *const robot) const { return Data_t(*this, arena, robot); }
 
         template <typename ForceVectorType>
         void updateForce(Data_t &data, const Eigen::MatrixBase<ForceVectorType> &f) const

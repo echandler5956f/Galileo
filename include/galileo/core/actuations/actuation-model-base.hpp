@@ -62,7 +62,7 @@ namespace galileo
             this->derived().torqueTransform(data, x, u);
         }
 
-        Data_t createData() { return this->derived().createData(); }
+        Data_t createData(MemoryArena &arena) { return this->derived().createData(arena); }
 
         const SS &get_ss() const { return ss_; }
         const State_t &get_state() const { return state_; }

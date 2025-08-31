@@ -135,26 +135,26 @@ namespace galileo
               ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector>,
               ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>>
     {
-        using ArgsType = boost::fusion::vector<DataCollector *const>;
+        using ArgsType = boost::fusion::vector<MemoryArena &, DataCollector *const>;
         using ConstraintCollection_t = ConstraintCollectionTpl<PhaseSpec>;
         using ConstraintModelVariant_t = ConstraintCollection_t::ConstraintModelVariant_t;
         using ConstraintDataVariant_t = ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl>;
 
         template <typename ConstraintModelType>
         static ConstraintDataVariant_t algo(const ConstraintModelBase<ConstraintModelType, PhaseSpec> &constraint_model,
-                                            DataCollector *const collector)
+                                            MemoryArena &arena, DataCollector *const collector)
         {
-            return ConstraintDataVariant_t(constraint_model.createData(collector));
+            return ConstraintDataVariant_t(constraint_model.createData(arena, collector));
         }
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename DataCollector>
     inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model, DataCollector *const collector)
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model, MemoryArena &arena, DataCollector *const collector)
     {
         typedef ConstraintCreateDataVisitor<PhaseSpec, ConstraintCollectionTpl, DataCollector> Algo;
 
-        return Algo::run(constraint_model, typename Algo::ArgsType(collector));
+        return Algo::run(constraint_model, typename Algo::ArgsType(arena, collector));
     }
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>

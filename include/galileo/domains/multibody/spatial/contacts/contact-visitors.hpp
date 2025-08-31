@@ -45,6 +45,7 @@ namespace galileo
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        MemoryArena &arena,
         typename PhaseSpec::RobotData_t *const robot);
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
@@ -70,7 +71,7 @@ namespace galileo
     // Contact data visitors
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
-    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotDataPointer_t contact_robot_data(
+    inline typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotData_t *contact_robot_data(
         const ContactDataTpl<PhaseSpec, ContactCollectionTpl> &contact_data);
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>

@@ -74,11 +74,14 @@ namespace galileo
         using DataContainer_t = std::map<std::string, Data_t>;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>;
-        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, 1, PS::Options>;
-        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNDX_t::Value, PS::Options>;
-        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNU_t::Value, PS::Options>;
-        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using Lx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, 1, PS::Options>>;
+        using Lu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, 1, PS::Options>>;
+        using Lxx_t = ArenaMatrixTpl<
+            Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNDX_t::Value, PS::Options>>;
+        using Lxu_t = ArenaMatrixTpl<
+            Eigen::GMatrix<typename PS::VarScalar, PS::DimNDX_t::Value, PS::DimNU_t::Value, PS::Options>>;
+        using Luu_t =
+            ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::DimNU_t::Value, PS::DimNU_t::Value, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl>
@@ -126,14 +129,14 @@ namespace galileo
         GALILEO_COST_DATA_TYPEDEF(MetaManager_t);
 
         template <typename DataCollector>
-        CostDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
-            : Base(model_manager, collector),
+        CostDataManagerTpl(const ModelManager_t &model_manager, MemoryArena &arena, DataCollector *const collector)
+            : Base(model_manager, arena, collector),
               L(0.),
-              Lx(model_manager.get_ps().get_ndx()),
-              Lu(model_manager.get_ps().get_nu()),
-              Lxx(model_manager.get_ps().get_ndx(), model_manager.get_ps().get_ndx()),
-              Lxu(model_manager.get_ps().get_ndx(), model_manager.get_ps().get_nu()),
-              Luu(model_manager.get_ps().get_nu(), model_manager.get_ps().get_nu())
+              Lx(arena, model_manager.get_ps().get_ndx()),
+              Lu(arena, model_manager.get_ps().get_nu()),
+              Lxx(arena, model_manager.get_ps().get_ndx(), model_manager.get_ps().get_ndx()),
+              Lxu(arena, model_manager.get_ps().get_ndx(), model_manager.get_ps().get_nu()),
+              Luu(arena, model_manager.get_ps().get_nu(), model_manager.get_ps().get_nu())
         {
             Lx.setZero();
             Lu.setZero();
@@ -281,9 +284,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        DataManager_t createData(DataCollector *const collector) const
+        DataManager_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return DataManager_t(*this, collector);
+            return DataManager_t(*this, arena, collector);
         }
 
         const PS &get_ps() const { return ps_; }

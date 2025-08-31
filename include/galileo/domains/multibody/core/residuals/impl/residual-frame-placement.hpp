@@ -32,11 +32,11 @@ namespace galileo
         static constexpr bool VDependent = false;
         static constexpr bool UDependent = false;
 
-        using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
-        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
+        using R_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>>;
+        using Rx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>>;
+        using Ru_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>>;
+        using Arr_Rx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>>;
+        using Arr_Ru_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>>;
     };
 
     template <typename PhaseSpec>
@@ -64,8 +64,9 @@ namespace galileo
 
         using RobotData_t = typename PS::RobotData_t;
         using SE3_t = typename PS::SE3_t;
-        using Matrix6_t = typename PS::Matrix6_t;
-        using Matrix6Nv_t = typename PS::Matrix6Nv_t;
+
+        using Matrix6_t = ArenaMatrixTpl<typename PS::Matrix6_t>;
+        using Matrix6Nv_t = ArenaMatrixTpl<typename PS::Matrix6Nv_t>;
 
         GALILEO_RESIDUAL_DATA_TYPEDEF(Meta_t);
 
@@ -76,15 +77,15 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
         template <typename DataCollector>
-        ResidualDataFramePlacementTpl(const Model_t &model, DataCollector *const collector)
+        ResidualDataFramePlacementTpl(const Model_t &model, MemoryArena &arena, DataCollector *const collector)
             : robot(collector->robot),
-              R(model.get_nr()),
-              Rx(model.get_nr(), model.get_ps().get_ndx()),
-              Ru(model.get_nr(), model.get_ps().get_nu()),
-              Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
-              Arr_Ru(model.get_nr(), model.get_ps().get_nu()),
-              rJf(6, 6),
-              fJf(6, model.get_ps().get_nv())
+              R(arena, model.get_nr(), 1),
+              Rx(arena, model.get_nr(), model.get_ps().get_ndx()),
+              Ru(arena, model.get_nr(), model.get_ps().get_nu()),
+              Arr_Rx(arena, model.get_nr(), model.get_ps().get_ndx()),
+              Arr_Ru(arena, model.get_nr(), model.get_ps().get_nu()),
+              rJf(arena, 6, 6),
+              fJf(arena, 6, model.get_ps().get_nv())
         {
             R.setZero();
             Rx.setZero();
@@ -129,7 +130,10 @@ namespace galileo
         using SE3_t = typename PS::SE3_t;
         using FrameIndex_t = typename PS::FrameIndex_t;
 
-        ResidualModelFramePlacementTpl(const PS &ps, const State_t &state, const FrameIndex_t frame_id, const SE3_t &p_ref)
+        ResidualModelFramePlacementTpl(const PS &ps,
+                                       const State_t &state,
+                                       const FrameIndex_t frame_id,
+                                       const SE3_t &p_ref)
             : Base(ps, state, DimNR_t(6)), frame_id_(frame_id), p_ref_(p_ref), oMf_inv_(p_ref.inverse())
         {
         }
@@ -139,7 +143,7 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            pinocchio::updateFramePlacement(get_state().get_robot(), *data.robot.get(), frame_id_);
+            pinocchio::updateFramePlacement(get_state().get_robot(), *data.robot, frame_id_);
             data.rMf = oMf_inv_ * data.robot->oMf[frame_id_];
             data.R = pinocchio::log6(data.rMf).toVector();
         }
@@ -156,11 +160,8 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             pinocchio::Jlog6(data.rMf, data.rJf);
-            pinocchio::getFrameJacobian(get_state().get_robot(),
-                                        *data.robot.get(),
-                                        frame_id_,
-                                        pinocchio::ReferenceFrame::LOCAL,
-                                        data.fJf);
+            pinocchio::getFrameJacobian(
+                get_state().get_robot(), *data.robot, frame_id_, pinocchio::ReferenceFrame::LOCAL, data.fJf);
             leftCols(data.Rx, get_ps().get_nv_dim()).noalias() = data.rJf * data.fJf;
         }
 
@@ -171,9 +172,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return Data_t(*this, collector);
+            return Data_t(*this, arena, collector);
         }
 
         using Base::get_ps;

@@ -6,9 +6,8 @@
 namespace galileo
 {
 
-    template <typename PhaseSpec>
-    struct ControlParamDataTpl;
-
+    template <typename PhaseSpec, int NOrder_>
+    struct ControlParamDataPolynomialTpl;
     template <typename PhaseSpec, int NOrder_>
     struct ControlParamModelPolynomialTpl;
 

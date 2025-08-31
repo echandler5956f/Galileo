@@ -32,11 +32,11 @@ namespace galileo
         static constexpr bool VDependent = true;
         static constexpr bool UDependent = false;
 
-        using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
-        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
+        using R_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>>;
+        using Rx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>>;
+        using Ru_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>>;
+        using Arr_Rx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>>;
+        using Arr_Ru_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>>;
     };
 
     template <typename PhaseSpec>
@@ -73,13 +73,13 @@ namespace galileo
         DEFAULT_ACCESSOR(Arr_Ru_t, Arr_Ru);
 
         template <typename DataCollector>
-        ResidualDataFrameVelocityTpl(const Model_t &model, DataCollector *const collector)
+        ResidualDataFrameVelocityTpl(const Model_t &model, MemoryArena &arena, DataCollector *const collector)
             : robot(collector->robot),
-              R(model.get_nr()),
-              Rx(model.get_nr(), model.get_ps().get_ndx()),
-              Ru(model.get_nr(), model.get_ps().get_nu()),
-              Arr_Rx(model.get_nr(), model.get_ps().get_ndx()),
-              Arr_Ru(model.get_nr(), model.get_ps().get_nu())
+              R(arena, model.get_nr(), 1),
+              Rx(arena, model.get_nr(), model.get_ps().get_ndx()),
+              Ru(arena, model.get_nr(), model.get_ps().get_nu()),
+              Arr_Rx(arena, model.get_nr(), model.get_ps().get_ndx()),
+              Arr_Ru(arena, model.get_nr(), model.get_ps().get_nu())
         {
             R.setZero();
             Rx.setZero();
@@ -131,10 +131,8 @@ namespace galileo
                   const Eigen::MatrixBase<StateVectorType> &x,
                   const Eigen::MatrixBase<ControlVectorType> &u) const
         {
-            data.R =
-                (pinocchio::getFrameVelocity(get_state().get_robot(), *data.robot.get(), frame_id_, type_) -
-                 vref_)
-                    .toVector();
+            data.R = (pinocchio::getFrameVelocity(get_state().get_robot(), *data.robot, frame_id_, type_) - vref_)
+                         .toVector();
         }
 
         template <typename StateVectorType>
@@ -149,7 +147,7 @@ namespace galileo
                       const Eigen::MatrixBase<ControlVectorType> &u) const
         {
             pinocchio::getFrameVelocityDerivatives(get_state().get_robot(),
-                                                   *data.robot.get(),
+                                                   *data.robot,
                                                    frame_id_,
                                                    type_,
                                                    leftCols(data.Rx, get_ps().get_nv_dim()),
@@ -163,9 +161,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return Data_t(*this, collector);
+            return Data_t(*this, arena, collector);
         }
 
         using Base::get_ps;

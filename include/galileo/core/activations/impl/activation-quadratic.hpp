@@ -25,9 +25,9 @@ namespace galileo
         using DimNR_t = typename traits<ResidualMeta_t>::DimNR_t;
 
         using A_t = typename PS::VarScalar;
-        using Ar_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>;
-        using Arr_t = Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, DimNR_t::Value, PS::Options>;
-        using Arr_diag_t = Eigen::DiagonalMatrix<typename PS::VarScalar, DimNR_t::Value>;
+        using Ar_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, 1, PS::Options>>;
+        using Arr_t =
+            ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, DimNR_t::Value, DimNR_t::Value, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class ResidualTpl>
@@ -60,7 +60,8 @@ namespace galileo
         DEFAULT_ACCESSOR(Ar_t, Ar);
         DEFAULT_ACCESSOR(Arr_t, Arr);
 
-        ActivationDataQuadraticTpl(const Model_t &model) : A(0.), Ar(model.get_nr()), Arr(Arr_diag_t(model.get_nr()))
+        ActivationDataQuadraticTpl(const Model_t &model, MemoryArena &arena)
+            : A(0.), Ar(arena, model.get_nr(), 1), Arr(arena, model.get_nr(), model.get_nr())
         {
             Ar.setZero();
             Arr.setIdentity();
@@ -101,7 +102,7 @@ namespace galileo
             // The Hessian has constant values which were set in createData.
         }
 
-        Data_t createData() const { return Data_t(*this); }
+        Data_t createData(MemoryArena &arena) const { return Data_t(*this, arena); }
 
         using Base::get_nr;
         using Base::get_nr_dim;

@@ -30,11 +30,11 @@ namespace galileo
         static constexpr bool VDependent = true;
         static constexpr bool UDependent = false;
 
-        using R_t = Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>;
-        using Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
-        using Arr_Rx_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>;
-        using Arr_Ru_t = Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>;
+        using R_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, 1, PS::Options>>;
+        using Rx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>>;
+        using Ru_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>>;
+        using Arr_Rx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NDX, PS::Options>>;
+        using Arr_Ru_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NR, PS::NU, PS::Options>>;
     };
 
     template <typename PhaseSpec>
@@ -61,7 +61,9 @@ namespace galileo
         using DimNR_t = typename traits<Meta_t>::DimNR_t;
 
         template <typename StateVectorType>
-        ResidualModelMultibodyStateTpl(const PS &ps, const State_t &state, const Eigen::MatrixBase<StateVectorType> &x_ref)
+        ResidualModelMultibodyStateTpl(const PS &ps,
+                                       const State_t &state,
+                                       const Eigen::MatrixBase<StateVectorType> &x_ref)
             : Base(ps, state, DimNR_t(ps.get_ndx()), x_ref)
         {
         }
@@ -75,7 +77,6 @@ namespace galileo
             const PS &ps = get_ps();
             const RobotModel_t &robot = get_state().get_robot();
 
-            // trust
             for (JointIndex_t i = 1; i < (JointIndex_t) robot.njoints; ++i)
             {
                 const auto &RxBlock = block(rdata.Rx, robot.idx_vs[i], robot.idx_vs[i], robot.nvs[i], robot.nvs[i]);

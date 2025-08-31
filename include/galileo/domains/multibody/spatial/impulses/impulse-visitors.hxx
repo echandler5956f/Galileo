@@ -163,26 +163,26 @@ namespace galileo
         : fusion::ImpulseUnaryVisitorBase<ImpulseCreateDataVisitor<PhaseSpec, ImpulseCollectionTpl>,
                                           ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>>
     {
-        using ArgsType = boost::fusion::vector<typename PhaseSpec::RobotData_t *const>;
+        using ArgsType = boost::fusion::vector<MemoryArena &, typename PhaseSpec::RobotData_t *const>;
         using ImpulseCollection_t = ImpulseCollectionTpl<PhaseSpec>;
         using ImpulseModelVariant_t = ImpulseCollection_t::ImpulseModelVariant_t;
         using ImpulseDataVariant_t = ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>;
 
         template <typename ImpulseModelType>
         static ImpulseDataVariant_t algo(const ImpulseModelBase<ImpulseModelType, PhaseSpec> &impulse_model,
-                                         typename PhaseSpec::RobotData_t *const robot)
+                                         MemoryArena &arena, typename PhaseSpec::RobotData_t *const robot)
         {
-            return ImpulseDataVariant_t(impulse_model.createData(robot));
+            return ImpulseDataVariant_t(impulse_model.createData(arena, robot));
         }
     };
 
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     inline ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> impulse_create_data(
         const ImpulseModelTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_model,
-        typename PhaseSpec::RobotData_t *const robot)
+        MemoryArena &arena, typename PhaseSpec::RobotData_t *const robot)
     {
         typedef ImpulseCreateDataVisitor<PhaseSpec, ImpulseCollectionTpl> Algo;
-        return Algo::run(impulse_model, typename Algo::ArgsType(robot));
+        return Algo::run(impulse_model, typename Algo::ArgsType(arena, robot));
     }
 
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
@@ -307,10 +307,10 @@ namespace galileo
 
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
     struct ImpulseRobotDataVisitor
-        : boost::static_visitor<typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotData_t>
+        : boost::static_visitor<typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotData_t *>
     {
 
-        using ReturnType = typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotDataPointer_t;
+        using ReturnType = typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotData_t *;
 
         template <typename ImpulseDataType>
         ReturnType operator()(const ImpulseDataBase<ImpulseDataType, PhaseSpec> &impulse_data) const
@@ -325,7 +325,7 @@ namespace galileo
     };
 
     template <typename PhaseSpec, template <typename> class ImpulseCollectionTpl>
-    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotData_t *impulse_robot_data(
+    inline typename ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl>::RobotData_t impulse_robot_data(
         const ImpulseDataTpl<PhaseSpec, ImpulseCollectionTpl> &impulse_data)
     {
         return ImpulseRobotDataVisitor<PhaseSpec, ImpulseCollectionTpl>::run(impulse_data);

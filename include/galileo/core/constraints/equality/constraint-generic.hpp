@@ -28,9 +28,9 @@ namespace galileo
         using DimNH_t = DimensionTpl<Eigen::Dynamic>;
         static constexpr int NH = DimNH_t::Value;
 
-        using H_t = Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>;
+        using H_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NH, 1, PS::Options>>;
+        using Hx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NH, PS::NDX, PS::Options>>;
+        using Hu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NH, PS::NU, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
@@ -127,12 +127,6 @@ namespace galileo
             BOOST_MPL_ASSERT((boost::mpl::contains<typename ModelVariant_t::types, ConstraintModelType>) );
         }
 
-        template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
-        {
-            return galileo::constraint_create_data(*this, collector);
-        }
-
         template <typename StateVectorType, typename ControlVectorType>
         void calc(Data_t &data,
                   const Eigen::MatrixBase<StateVectorType> &x,
@@ -159,6 +153,12 @@ namespace galileo
         void calcDiff(Data_t &data, const Eigen::MatrixBase<StateVectorType> &x) const
         {
             galileo::constraint_calc_first_order(*this, data, x.derived(), Blank());
+        }
+
+        template <typename DataCollector>
+        Data_t createData(MemoryArena &arena, DataCollector *const collector) const
+        {
+            return galileo::constraint_create_data(*this, arena, collector);
         }
 
         using Base::get_nh;

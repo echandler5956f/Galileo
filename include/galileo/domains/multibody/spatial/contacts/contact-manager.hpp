@@ -66,11 +66,11 @@ namespace galileo
         using ModelContainer_t = std::map<std::string, Item_t>;
         using DataContainer_t = std::map<std::string, Data_t>;
 
-        using Jc_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>;
-        using a0_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1, PS::Options>;
-        using da0_dx_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX, PS::Options>;
-        using dv_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, 1, PS::Options>;
-        using ddv_dx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options>;
+        using Jc_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>>;
+        using a0_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, 1, PS::Options>>;
+        using da0_dx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NDX, PS::Options>>;
+        using dv_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NV, 1, PS::Options>>;
+        using ddv_dx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
@@ -126,14 +126,14 @@ namespace galileo
         using Force_t = typename PS::Force_t;
         using ForceVector_t = GALILEO_ALIGNED_STD_VECTOR(Force_t);
 
-        ContactDataManagerTpl(const ModelManager_t &model_manager, RobotData_t *const robot)
-            : Base(model_manager, robot),
+        ContactDataManagerTpl(const ModelManager_t &model_manager, MemoryArena &arena, RobotData_t *const robot)
+            : Base(model_manager, arena, robot),
               fext(model_manager.get_state().get_robot().njoints, Force_t::Zero()),
-              Jc(model_manager.get_n_total(), model_manager.get_ps().get_nv()),
-              a0(model_manager.get_n_total()),
-              da0_dx(model_manager.get_n_total(), model_manager.get_ps().get_ndx()),
-              dv(model_manager.get_ps().get_nv()),
-              ddv_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
+              Jc(arena, model_manager.get_n_total(), model_manager.get_ps().get_nv()),
+              a0(arena, model_manager.get_n_total()),
+              da0_dx(arena, model_manager.get_n_total(), model_manager.get_ps().get_ndx()),
+              dv(arena, model_manager.get_ps().get_nv()),
+              ddv_dx(arena, model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
         {
             Jc.setZero();
             a0.setZero();
@@ -306,7 +306,7 @@ namespace galileo
             }
         }
 
-        void updateRneaDiff(DataManager_t &data, RobotData_t &robot_data) const
+        void updateRneaDiff(DataManager_t &data, RobotData_t *const robot) const
         {
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -324,7 +324,7 @@ namespace galileo
                         break;
                     case ReferenceFrame_t::WORLD:
                     case ReferenceFrame_t::LOCAL_WORLD_ALIGNED:
-                        robot_data.dtau_dq += d_i.dtau_dq();
+                        robot.dtau_dq += d_i.dtau_dq();
                         break;
                     }
                 }
@@ -333,11 +333,11 @@ namespace galileo
 
         // Template parameter is here to allow consistency with ManagerModelBase
         template <typename RobotDataType>
-        DataManager_t createData(RobotDataType *const robot) const
+        DataManager_t createData(MemoryArena &arena, RobotDataType *const robot) const
         {
             static_assert(std::is_same<RobotDataType, RobotData_t>::value,
                           "ContactDataManagerTpl::createData template parameter must be RobotData_t");
-            return DataManager_t(*this, robot);
+            return DataManager_t(*this, arena, robot);
         }
 
         const PS &get_ps() const { return ps_; }

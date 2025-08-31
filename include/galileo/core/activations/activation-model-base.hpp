@@ -30,7 +30,7 @@ namespace galileo
             this->derived().calcDiff(data, r);
         }
 
-        Data_t createData() const { return this->derived().createData(); }
+        Data_t createData(MemoryArena &arena) const { return this->derived().createData(arena); }
 
         const DimNR_t &get_nr_dim() const { return nr_dim_; }
         int get_nr() const { return nr_dim_.value(); }

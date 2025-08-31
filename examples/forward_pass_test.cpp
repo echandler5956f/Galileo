@@ -59,6 +59,9 @@
 #include <iostream>
 #include <string>
 
+#include "galileo/common/memory/arena.hpp"
+#include "galileo/common/container/arena-matrix.hpp"
+
 using namespace candlewick::multibody;
 using std::chrono::steady_clock;
 namespace fs = std::filesystem;
@@ -247,6 +250,9 @@ int main(int argc, char **argv)
     loadModels(go1_robot_spec, model, &geom_model, NULL);
     pinocchio::Data rdata(model);
 
+    static std::array<std::byte, 4 * 1024 * 1024> buffer{};
+    galileo::MemoryArena arena(buffer.data(), buffer.size());
+
     // Visualizer visualizer{{window_dims[0], window_dims[1]}, model, geom_model};
     // assert(!visualizer.hasExternalData());
     // pinocchio::Data &vis_data = visualizer.data();
@@ -362,7 +368,7 @@ int main(int argc, char **argv)
             // std::cout << "DEBUG: Finished creating jump model for phase " << i << std::endl;
             jump_models.push_back(std::make_shared<JumpModel_t>(jump_model));
             // std::cout << "DEBUG: Creating jump data for phase " << i << std::endl;
-            jump_datas.push_back(std::make_shared<JumpData_t>(jump_model.createData()));
+            jump_datas.push_back(std::make_shared<JumpData_t>(jump_model.createData(arena)));
             // std::cout << "DEBUG: Finished creating jump data for phase " << i << std::endl;
         }
         for (int j = 0; j < num_knots[i]; j++)
@@ -376,7 +382,7 @@ int main(int argc, char **argv)
             // std::cout << "DEBUG: Finished creating segment model for phase " << i << " knot " << j << std::endl;
             segment_models.push_back(std::make_shared<SegmentModel_t>(segment_model));
             // std::cout << "DEBUG: Creating segment data for phase " << i << " knot " << j << std::endl;
-            segment_datas.push_back(std::make_shared<SegmentData_t>(segment_model.createData()));
+            segment_datas.push_back(std::make_shared<SegmentData_t>(segment_model.createData(arena)));
             // std::cout << "DEBUG: Finished creating segment data for phase " << i << " knot " << j << std::endl;
         }
     }

@@ -2,38 +2,32 @@
 #define __galileo_core_controls_control_param_data_base_hpp__
 
 #include "galileo/core/controls/control-param-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
 
-    template <typename PhaseSpec>
-    struct ControlParamDataTpl
+    template <typename Derived, typename PhaseSpec>
+    struct ControlParamDataBase : public internal::CRTP<Derived>
     {
     public:
         using PS = PhaseSpec;
 
-        using Meta_t = typename PS::ControlParamMeta_t;
-        using Model_t = typename PS::ControlParamModel_t;
-        using Data_t = typename PS::ControlParamData_t;
+        using Meta_t = typename traits<Derived>::Meta_t;
+        using Model_t = typename traits<Meta_t>::Model_t;
+        using Data_t = typename traits<Meta_t>::Data_t;
 
-        using U_t = typename PS::VectorNu_t;
-        using W_t = typename PS::VectorNw_t;
-        using Uw_t = typename PS::MatrixNuNw_t;
+        using VectorNu_t = ArenaMatrixTpl<typename PS::VectorNu_t>;
+        using VectorNw_t = ArenaMatrixTpl<typename PS::VectorNw_t>;
+        using MatrixNuNw_t = ArenaMatrixTpl<typename PS::MatrixNuNw_t>;
 
-        ControlParamDataTpl(const Model_t &model)
-            : u(model.get_ps().get_nu()),
-              w(model.get_ps().get_nw()),
-              du_dw(model.get_ps().get_nu(), model.get_ps().get_nw())
-        {
-            u.setZero();
-            w.setZero();
-            du_dw.setZero();
-        }
+        FORWARD_ACCESSOR(VectorNu_t, u);
+        FORWARD_ACCESSOR(VectorNw_t, w);
+        FORWARD_ACCESSOR(MatrixNuNw_t, du_dw);
 
-        U_t u;
-        W_t w;
-        Uw_t du_dw;
+    protected:
+        inline ControlParamDataBase() {}
+        inline ControlParamDataBase(const ControlParamDataBase &clone) { *this = clone; }
+        inline ControlParamDataBase &operator=(const ControlParamDataBase &clone) { return *this; }
 
     }; // struct ControlParamDataTpl
 

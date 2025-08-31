@@ -25,11 +25,11 @@ namespace galileo
         using Data_t = CostDataTpl<PS, CostCollectionTpl>;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>>;
+        using Lu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>>;
+        using Lxx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>>;
+        using Lxu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>>;
+        using Luu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl>
@@ -155,9 +155,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return galileo::cost_create_data(*this, collector);
+            return galileo::cost_create_data(*this, arena, collector);
         }
 
     }; // struct CostModelTpl

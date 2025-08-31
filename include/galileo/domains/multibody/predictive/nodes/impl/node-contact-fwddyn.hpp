@@ -44,10 +44,11 @@ namespace galileo
         // using NC = traits<NodeDerived>::NC;
         // using Kinv_t = Eigen::GMatrix<VarScalar, PS::NV + NC, PS::NV + NC>;
         // using Jstatic_t = Eigen::GMatrix<VarScalar, PS::NV, NU + NC>;
-        using Kinv_t = Eigen::GMatrix<typename PS::VarScalar, AddDim_v<PS::NV, NC>, AddDim_v<PS::NV, NC>>;
-        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NDX>;
-        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, NU>;
-        using Jstatic_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, AddDim_v<NU, NC>>;
+        using Kinv_t =
+            ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, AddDim_v<PS::NV, NC>, AddDim_v<PS::NV, NC>>>;
+        using MatrixNcNdx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, PS::NDX>>;
+        using MatrixNcNu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, NU>>;
+        using Jstatic_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NV, AddDim_v<NU, NC>>>;
     };
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
@@ -78,34 +79,36 @@ namespace galileo
         using ContactModelManager_t = typename traits<Meta_t>::ContactModelManager_t;
         using ContactDataManager_t = typename traits<Meta_t>::ContactDataManager_t;
 
-        using XAcc_t = typename PS::XAcc_t;
-        using XAccx_t = typename PS::XAccx_t;
-        using XAccu_t = typename PS::XAccu_t;
+        using XAcc_t = ArenaMatrixTpl<typename PS::XAcc_t>;
+        using XAccx_t = ArenaMatrixTpl<typename PS::XAccx_t>;
+        using XAccu_t = ArenaMatrixTpl<typename PS::XAccu_t>;
         using L_t = typename PS::L_t;
-        using Lx_t = typename PS::Lx_t;
-        using Lu_t = typename PS::Lu_t;
-        using Lxx_t = typename PS::Lxx_t;
-        using Lxu_t = typename PS::Lxu_t;
-        using Luu_t = typename PS::Luu_t;
-        using H_t = typename PS::H_t;
-        using Hx_t = typename PS::Hx_t;
-        using Hu_t = typename PS::Hu_t;
-        using G_t = typename PS::G_t;
-        using Gx_t = typename PS::Gx_t;
-        using Gu_t = typename PS::Gu_t;
+        using Lx_t = ArenaMatrixTpl<typename PS::Lx_t>;
+        using Lu_t = ArenaMatrixTpl<typename PS::Lu_t>;
+        using Lxx_t = ArenaMatrixTpl<typename PS::Lxx_t>;
+        using Lxu_t = ArenaMatrixTpl<typename PS::Lxu_t>;
+        using Luu_t = ArenaMatrixTpl<typename PS::Luu_t>;
+        using H_t = ArenaMatrixTpl<typename PS::H_t>;
+        using Hx_t = ArenaMatrixTpl<typename PS::Hx_t>;
+        using Hu_t = ArenaMatrixTpl<typename PS::Hu_t>;
+        using G_t = ArenaMatrixTpl<typename PS::G_t>;
+        using Gx_t = ArenaMatrixTpl<typename PS::Gx_t>;
+        using Gu_t = ArenaMatrixTpl<typename PS::Gu_t>;
+
+        using CostDataManager_t = typename PS::CostDataManager_t;
+        using ConstraintDataManager_t = typename PS::ConstraintDataManager_t;
 
         using DataCollector_t = typename traits<Meta_t>::DataCollector_t;
         using RobotData_t = typename DataCollector_t::RobotData_t;
         using ActuationData_t = typename DataCollector_t::ActuationData_t;
         using JointData_t = typename DataCollector_t::JointData_t;
+
+        using VectorNx_t = ArenaMatrixTpl<typename PS::VectorNx_t>;
+
         using Kinv_t = typename traits<Meta_t>::Kinv_t;
         using MatrixNcNdx_t = typename traits<Meta_t>::MatrixNcNdx_t;
         using MatrixNcNu_t = typename traits<Meta_t>::MatrixNcNu_t;
         using Jstatic_t = typename traits<Meta_t>::Jstatic_t;
-
-        using CostDataManager_t = typename PS::CostDataManager_t;
-        using ConstraintDataManager_t = typename PS::ConstraintDataManager_t;
-        using VectorNx_t = typename PS::VectorNx_t;
 
         DEFAULT_ACCESSOR(XAcc_t, XAcc);
         DEFAULT_ACCESSOR(XAccx_t, XAccx);
@@ -137,26 +140,27 @@ namespace galileo
         Gu_t &Gu_accessor() { return constraints.Hu; }
         const Gu_t &Gu_accessor() const { return constraints.Hu; }
 
-        NodeDataContactFwdDynTpl(const Model_t &model)
-            : XAcc(model.get_ps().get_nv()),
-              XAccx(model.get_ps().get_nv(), model.get_ps().get_ndx()),
-              XAccu(model.get_ps().get_nv(), model.get_ps().get_nu()),
+        NodeDataContactFwdDynTpl(const Model_t &model, MemoryArena &arena)
+            : XAcc(arena, model.get_ps().get_nv()),
+              XAccx(arena, model.get_ps().get_nv(), model.get_ps().get_ndx()),
+              XAccu(arena, model.get_ps().get_nv(), model.get_ps().get_nu()),
               data_collector(std::make_shared<DataCollector_t>(
                   std::make_shared<RobotData_t>(model.get_state().get_robot()),
-                  std::make_shared<ActuationData_t>(model.get_actuation().createData()),
+                  std::make_shared<ActuationData_t>(model.get_actuation().createData(arena)),
                   std::make_shared<JointData_t>(model.get_ps()))),
               robot(data_collector->robot),
               actuation(data_collector->actuation),
               joint(data_collector->joint),
-              contacts(model.get_contacts().createData(robot.get())),
-              costs(model.get_costs().createData(data_collector.get())),
-              constraints(model.get_constraints().createData(data_collector.get())),
-              Kinv(model.get_ps().get_nv() + model.get_contacts().get_n_total(),
+              contacts(model.get_contacts().createData(arena, robot.get())),
+              costs(model.get_costs().createData(arena, data_collector.get())),
+              constraints(model.get_constraints().createData(arena, data_collector.get())),
+              Kinv(arena,
+                   model.get_ps().get_nv() + model.get_contacts().get_n_total(),
                    model.get_ps().get_nv() + model.get_contacts().get_n_total()),
-              df_dx(model.get_contacts().get_n_total(), model.get_ps().get_ndx()),
-              df_du(model.get_contacts().get_n_total(), model.get_ps().get_nu()),
-              tmp_xstatic(model.get_ps().get_nx()),
-              tmp_Jstatic(model.get_ps().get_nv(), model.get_ps().get_nu() + model.get_contacts().get_n_total())
+              df_dx(arena, model.get_contacts().get_n_total(), model.get_ps().get_ndx()),
+              df_du(arena, model.get_contacts().get_n_total(), model.get_ps().get_nu()),
+              tmp_xstatic(arena, model.get_ps().get_nx()),
+              tmp_Jstatic(arena, model.get_ps().get_nv(), model.get_ps().get_nu() + model.get_contacts().get_n_total())
         {
             XAcc.setZero();
             XAccx.setZero();
@@ -251,8 +255,8 @@ namespace galileo
 
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
-            pinocchio::computeAllTerms(get_state().get_robot(), *data.robot.get(), q, v);
-            pinocchio::computeCentroidalMomentum(get_state().get_robot(), *data.robot.get());
+            pinocchio::computeAllTerms(get_state().get_robot(), *data.robot, q, v);
+            pinocchio::computeCentroidalMomentum(get_state().get_robot(), *data.robot);
 
             if (!with_armature_)
             {
@@ -262,7 +266,7 @@ namespace galileo
             get_contacts().calc(data.contacts, x);
 
             pinocchio::forwardDynamics(get_state().get_robot(),
-                                       *data.robot.get(),
+                                       *data.robot,
                                        data.actuation->tau,
                                        topRows(data.contacts.Jc, nc_dim),
                                        head(data.contacts.a0, nc_dim),
@@ -287,8 +291,8 @@ namespace galileo
         {
             const auto q = head(x, get_ps().get_nq_dim());
             const auto v = tail(x, get_ps().get_nv_dim());
-            pinocchio::computeAllTerms(get_state().get_robot(), *data.robot.get(), q, v);
-            pinocchio::computeCentroidalMomentum(get_state().get_robot(), *data.robot.get());
+            pinocchio::computeAllTerms(get_state().get_robot(), *data.robot, q, v);
+            pinocchio::computeCentroidalMomentum(get_state().get_robot(), *data.robot);
             get_costs().calc(data.costs, x);
             data.L_accessor() = data.costs.L;
             if (get_constraints().get_n_active() > 0 || get_constraints().get_n_active() > 0)
@@ -314,10 +318,10 @@ namespace galileo
             // it is not possible to pass data.Kinv.topLeftCorner(nv + nc, nv + nc)
             data.Kinv.resize(get_ps().get_nv() + nc_dim.value(), nv_dim.value() + nc_dim.value());
             pinocchio::computeRNEADerivatives(
-                get_state().get_robot(), *data.robot.get(), q, v, data.XAcc, data.contacts.fext);
-            get_contacts().updateRneaDiff(data.contacts, *data.robot.get());
+                get_state().get_robot(), *data.robot, q, v, data.XAcc, data.contacts.fext);
+            get_contacts().updateRneaDiff(data.contacts, *data.robot);
             pinocchio::getKKTContactDynamicMatrixInverse(
-                get_state().get_robot(), *data.robot.get(), topRows(data.contacts.Jc, nc_dim), data.Kinv);
+                get_state().get_robot(), *data.robot, topRows(data.contacts.Jc, nc_dim), data.Kinv);
 
             get_actuation().calcDiff(*data.actuation.get(), x, u);
             get_contacts().calcDiff(data.contacts, x);
@@ -384,10 +388,9 @@ namespace galileo
             u.setZero();
 
             // Compute M(q) and bias h(q,0)
-            pinocchio::computeAllTerms(get_state().get_robot(), *data.robot.get(), q, v);
-            pinocchio::rnea(get_state().get_robot(), *data.robot.get(), q, v, v);
+            pinocchio::computeAllTerms(get_state().get_robot(), *data.robot, q, v);
+            pinocchio::rnea(get_state().get_robot(), *data.robot, q, v, v);
             const auto &h = data.robot->tau;
-            const auto &M = data.robot->M;
 
             // Linearize actuation & contacts
             get_actuation().calc(*data.actuation.get(), data.tmp_xstatic, u);
@@ -398,20 +401,20 @@ namespace galileo
             const auto Jc = topRows(data.contacts.Jc, nc_dim);
             const auto a0 = head(data.contacts.a0, nc_dim);
 
-            data.tmp_Jstatic.conservativeResize(nv_dim.value(), nu_dim.value() + nc_dim.value());
-            leftCols(data.tmp_Jstatic, nu_dim) = B;
-            rightCols(data.tmp_Jstatic, nc_dim) = Jc.transpose();
+            // data.tmp_Jstatic.conservativeResize(nv_dim.value(), nu_dim.value() + nc_dim.value());
+            // leftCols(data.tmp_Jstatic, nu_dim) = B;
+            // rightCols(data.tmp_Jstatic, nc_dim) = Jc.transpose();
 
-            // Solve [B  Jc^{T}] [u; \lambda] = h
-            VectorX_t z = pseudoInverse(data.tmp_Jstatic) * h;
+            // // Solve [B  Jc^{T}] [u; \lambda] = h
+            // VectorX_t z = pseudoInverse(data.tmp_Jstatic) * h;
 
-            data.robot->lambda_c = tail(z, nc_dim);
-            u = head(z, nu_dim);
+            // data.robot->lambda_c = tail(z, nc_dim);
+            // u = head(z, nu_dim);
 
             data.robot->tau.setZero();
         }
 
-        Data_t createData() const { return Data_t(*this); }
+        Data_t createData(MemoryArena &arena) const { return Data_t(*this, arena); }
 
         const CostModelManager_t &get_costs() const { return costs_.get(); }
         const ConstraintModelManager_t &get_constraints() const { return constraints_.get(); }

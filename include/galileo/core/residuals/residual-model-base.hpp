@@ -170,9 +170,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return this->derived().createData(collector);
+            return this->derived().createData(arena, collector);
         }
 
         const PS &get_ps() const { return ps_; }
@@ -184,8 +184,14 @@ namespace galileo
         static constexpr bool get_u_dependent() { return UDependent; }
 
     protected:
-        inline ResidualModelBase(const PS &ps, const State_t &state, const DimNR_t &nr_dim) : ps_(ps), state_(state), nr_dim_(nr_dim) {}
-        inline ResidualModelBase(const ResidualModelBase &clone) : ps_(clone.ps_), state_(clone.state_), nr_dim_(clone.nr_dim_) {}
+        inline ResidualModelBase(const PS &ps, const State_t &state, const DimNR_t &nr_dim)
+            : ps_(ps), state_(state), nr_dim_(nr_dim)
+        {
+        }
+        inline ResidualModelBase(const ResidualModelBase &clone)
+            : ps_(clone.ps_), state_(clone.state_), nr_dim_(clone.nr_dim_)
+        {
+        }
         inline ResidualModelBase &operator=(const ResidualModelBase &clone)
         {
             ps_ = clone.ps_;

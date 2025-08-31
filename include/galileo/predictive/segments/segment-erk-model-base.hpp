@@ -57,7 +57,7 @@ namespace galileo
             this->derived().quasiStatic(data, x, w, maxiter, tol);
         }
 
-        Data_t createData() { return this->derived().createData(); }
+        Data_t createData(MemoryArena &arena) { return this->derived().createData(arena); }
 
         const PS &get_ps() const { return ps_; }
         const State_t &get_state() const { return state_; }

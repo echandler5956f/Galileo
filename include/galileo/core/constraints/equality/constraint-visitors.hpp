@@ -46,7 +46,7 @@ namespace galileo
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl, typename DataCollector>
     inline ConstraintDataTpl<PhaseSpec, ConstraintCollectionTpl> constraint_create_data(
-        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model, DataCollector *const collector);
+        const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model, MemoryArena &arena, DataCollector *const collector);
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
     inline int constraint_get_nh(const ConstraintModelTpl<PhaseSpec, ConstraintCollectionTpl> &constraint_model);

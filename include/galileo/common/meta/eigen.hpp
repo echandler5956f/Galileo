@@ -15,6 +15,19 @@ namespace galileo
 
     namespace detail
     {
+
+#if defined(EIGEN_MAX_ALIGN_BYTES)
+        inline constexpr std::size_t k_eigen_align_bytes = static_cast<std::size_t>(EIGEN_MAX_ALIGN_BYTES);
+#elif defined(EIGEN_MAX_STATIC_ALIGN_BYTES)
+        inline constexpr std::size_t k_eigen_align_bytes = static_cast<std::size_t>(EIGEN_MAX_STATIC_ALIGN_BYTES);
+#else
+        inline constexpr std::size_t k_eigen_align_bytes = 64u;
+#endif
+
+        // Ensure we never go below the language ABI's max_align_t.
+        inline constexpr std::size_t k_default_align_bytes =
+            (k_eigen_align_bytes > alignof(std::max_align_t) ? k_eigen_align_bytes : alignof(std::max_align_t));
+
         // Helper alias that automatically corrects the storage order for 1xN or Nx1
         // This is necessary because Eigen column vectors must be stored in column-major order,
         // while row vectors must be stored in row-major order. If a matrix is fed two constants,

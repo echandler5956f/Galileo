@@ -128,26 +128,26 @@ namespace galileo
         : fusion::CostUnaryVisitorBase<CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector>,
                                        CostDataTpl<PhaseSpec, CostCollectionTpl>>
     {
-        using ArgsType = boost::fusion::vector<DataCollector *const>;
+        using ArgsType = boost::fusion::vector<MemoryArena &, DataCollector *const>;
         using CostCollection_t = CostCollectionTpl<PhaseSpec>;
         using CostModelVariant_t = CostCollection_t::CostModelVariant_t;
         using CostDataVariant_t = CostDataTpl<PhaseSpec, CostCollectionTpl>;
 
         template <typename CostModelType>
         static CostDataVariant_t algo(const CostModelBase<CostModelType, PhaseSpec> &cost_model,
-                                      DataCollector *const collector)
+                                      MemoryArena &arena, DataCollector *const collector)
         {
-            return CostDataVariant_t(cost_model.createData(collector));
+            return CostDataVariant_t(cost_model.createData(arena, collector));
         }
     };
 
     template <typename PhaseSpec, template <typename> class CostCollectionTpl, typename DataCollector>
     inline CostDataTpl<PhaseSpec, CostCollectionTpl> cost_create_data(
-        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model, DataCollector *const collector)
+        const CostModelTpl<PhaseSpec, CostCollectionTpl> &cost_model, MemoryArena &arena, DataCollector *const collector)
     {
         typedef CostCreateDataVisitor<PhaseSpec, CostCollectionTpl, DataCollector> Algo;
 
-        return Algo::run(cost_model, typename Algo::ArgsType(collector));
+        return Algo::run(cost_model, typename Algo::ArgsType(arena, collector));
     }
 
     // Cost data visitors

@@ -47,25 +47,26 @@ namespace galileo
 
         using NodeData_t = typename PS::NodeData_t;
         using ControlParamData_t = typename PS::ControlParamData_t;
-        using VectorNdx_t = typename PS::VectorNdx_t;
-        using MatrixNvNw_t = typename PS::MatrixNvNw_t;
-        using MatrixNuNw_t = typename PS::MatrixNuNw_t;
 
-        using XNext_t = typename PS::XNext_t;
-        using XNextx_t = typename PS::XNextx_t;
-        using XNextw_t = typename PS::XNextw_t;
+        using VectorNdx_t = ArenaMatrixTpl<typename PS::VectorNdx_t>;
+        using MatrixNvNw_t = ArenaMatrixTpl<typename PS::MatrixNvNw_t>;
+        using MatrixNuNw_t = ArenaMatrixTpl<typename PS::MatrixNuNw_t>;
+
+        using XNext_t = ArenaMatrixTpl<typename PS::XNext_t>;
+        using XNextx_t = ArenaMatrixTpl<typename PS::XNextx_t>;
+        using XNextw_t = ArenaMatrixTpl<typename PS::XNextw_t>;
         using L_t = typename PS::L_t;
-        using Lx_t = typename PS::Lx_t;
-        using Lw_t = typename PS::Lw_t;
-        using Lxx_t = typename PS::Lxx_t;
-        using Lxw_t = typename PS::Lxw_t;
-        using Lww_t = typename PS::Lww_t;
-        using H_t = typename PS::H_t;
-        using Hx_t = typename PS::Hx_t;
-        using Hw_t = typename PS::Hw_t;
-        using G_t = typename PS::G_t;
-        using Gx_t = typename PS::Gx_t;
-        using Gw_t = typename PS::Gw_t;
+        using Lx_t = ArenaMatrixTpl<typename PS::Lx_t>;
+        using Lw_t = ArenaMatrixTpl<typename PS::Lw_t>;
+        using Lxx_t = ArenaMatrixTpl<typename PS::Lxx_t>;
+        using Lxw_t = ArenaMatrixTpl<typename PS::Lxw_t>;
+        using Lww_t = ArenaMatrixTpl<typename PS::Lww_t>;
+        using H_t = ArenaMatrixTpl<typename PS::H_t>;
+        using Hx_t = ArenaMatrixTpl<typename PS::Hx_t>;
+        using Hw_t = ArenaMatrixTpl<typename PS::Hw_t>;
+        using G_t = ArenaMatrixTpl<typename PS::G_t>;
+        using Gx_t = ArenaMatrixTpl<typename PS::Gx_t>;
+        using Gw_t = ArenaMatrixTpl<typename PS::Gw_t>;
 
         DEFAULT_ACCESSOR(XNext_t, XNext);
         DEFAULT_ACCESSOR(XNextx_t, XNextx);
@@ -83,27 +84,27 @@ namespace galileo
         DEFAULT_ACCESSOR(Gx_t, Gx);
         DEFAULT_ACCESSOR(Gw_t, Gw);
 
-        SegmentERKDataEulerTpl(const Model_t &model)
-            : node(model.get_node().createData()),
-              control(model.get_control().createData()),
-              dx(model.get_ps().get_ndx()),
-              da_dw(model.get_ps().get_nv(), model.get_ps().get_nw()),
-              Luw(model.get_ps().get_nu(), model.get_ps().get_nw()),
-              XNext(model.get_ps().get_nx()),
-              XNextx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
-              XNextw(model.get_ps().get_ndx(), model.get_ps().get_nw()),
+        SegmentERKDataEulerTpl(const Model_t &model, MemoryArena &arena)
+            : node(model.get_node().createData(arena)),
+              control(model.get_control().createData(arena)),
+              dx(arena, model.get_ps().get_ndx()),
+              da_dw(arena, model.get_ps().get_nv(), model.get_ps().get_nw()),
+              Luw(arena, model.get_ps().get_nu(), model.get_ps().get_nw()),
+              XNext(arena, model.get_ps().get_nx()),
+              XNextx(arena, model.get_ps().get_ndx(), model.get_ps().get_ndx()),
+              XNextw(arena, model.get_ps().get_ndx(), model.get_ps().get_nw()),
               L(L_t(0.)),
-              Lx(model.get_ps().get_ndx()),
-              Lw(model.get_ps().get_nw()),
-              Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
-              Lxw(model.get_ps().get_ndx(), model.get_ps().get_nw()),
-              Lww(model.get_ps().get_nw(), model.get_ps().get_nw()),
-              H(model.get_node().get_constraints().get_n_active()),
-              Hx(model.get_node().get_constraints().get_n_active(), model.get_ps().get_ndx()),
-              Hw(model.get_node().get_constraints().get_n_active(), model.get_ps().get_nw()),
-              G(model.get_node().get_constraints().get_n_active()),
-              Gx(model.get_node().get_constraints().get_n_active(), model.get_ps().get_ndx()),
-              Gw(model.get_node().get_constraints().get_n_active(), model.get_ps().get_nw())
+              Lx(arena, model.get_ps().get_ndx()),
+              Lw(arena, model.get_ps().get_nw()),
+              Lxx(arena, model.get_ps().get_ndx(), model.get_ps().get_ndx()),
+              Lxw(arena, model.get_ps().get_ndx(), model.get_ps().get_nw()),
+              Lww(arena, model.get_ps().get_nw(), model.get_ps().get_nw()),
+              H(arena, model.get_node().get_constraints().get_n_active()),
+              Hx(arena, model.get_node().get_constraints().get_n_active(), model.get_ps().get_ndx()),
+              Hw(arena, model.get_node().get_constraints().get_n_active(), model.get_ps().get_nw()),
+              G(arena, model.get_node().get_constraints().get_n_active()),
+              Gx(arena, model.get_node().get_constraints().get_n_active(), model.get_ps().get_ndx()),
+              Gw(arena, model.get_node().get_constraints().get_n_active(), model.get_ps().get_nw())
         {
             dx.setZero();
             da_dw.setZero();
@@ -246,7 +247,7 @@ namespace galileo
 
             data.Gx = data.node.Gx_accessor();
             data.Hx = data.node.Hx_accessor();
-            data.Gw.conservativeResize(node_.get_constraints().get_n_active(), get_ps().get_nw());
+            data.Gw.conservativeResize(node_.get_constraints().get_n_active(), get_ps().get_nw()); // todo
             data.Hw.conservativeResize(node_.get_constraints().get_n_active(), get_ps().get_nw());
             control_.multiplyByJacobian(data.control, data.node.Gu_accessor(), data.Gw);
             control_.multiplyByJacobian(data.control, data.node.Hu_accessor(), data.Hw);
@@ -276,7 +277,7 @@ namespace galileo
             w = data.control.w;
         }
 
-        Data_t createData() const { return Data_t(*this); }
+        Data_t createData(MemoryArena &arena) const { return Data_t(*this, arena); }
 
         const ControlParamModel_t &get_control() const { return control_; }
         const NodeModel_t &get_node() const { return node_; }

@@ -18,12 +18,12 @@ namespace galileo
         using Model_t = ActuationModelFullTpl<SS>;
         using Data_t = ActuationDataFullTpl<SS>;
 
-        using VectorNv_t = typename SS::VectorNv_t;
-        using VectorNua_t = typename SS::VectorNua_t;
-        using MatrixNvNdx_t = typename SS::MatrixNvNdx_t;
-        using MatrixNvNua_t = typename SS::MatrixNvNua_t;
-        using MatrixNuaNv_t = typename SS::MatrixNuaNv_t;
-        using BoolArrayNv_t = Eigen::Array<bool, SS::NV, 1>;
+        using VectorNv_t = ArenaMatrixTpl<typename SS::VectorNv_t>;
+        using VectorNua_t = ArenaMatrixTpl<typename SS::VectorNua_t>;
+        using MatrixNvNdx_t = ArenaMatrixTpl<typename SS::MatrixNvNdx_t>;
+        using MatrixNvNua_t = ArenaMatrixTpl<typename SS::MatrixNvNua_t>;
+        using MatrixNuaNv_t = ArenaMatrixTpl<typename SS::MatrixNuaNv_t>;
+        using BoolArrayNv_t = ArenaMatrixTpl<Eigen::Array<bool, SS::NV, 1>>;
     };
 
     template <typename SystemSpec>
@@ -58,13 +58,13 @@ namespace galileo
         DEFAULT_ACCESSOR(MatrixNuaNv_t, Mtau);
         DEFAULT_ACCESSOR(BoolArrayNv_t, tau_set);
 
-        ActuationDataFullTpl(const Model_t &model)
-            : tau(model.get_ss().get_nv()),
-              u(model.get_ss().get_nua()),
-              dtau_dx(model.get_ss().get_nv(), model.get_ss().get_ndx()),
-              dtau_du(model.get_ss().get_nv(), model.get_ss().get_nua()),
-              Mtau(model.get_ss().get_nua(), model.get_ss().get_nv()),
-              tau_set(model.get_ss().get_nv())
+        ActuationDataFullTpl(const Model_t &model, MemoryArena &arena)
+            : tau(arena, model.get_ss().get_nv(), 1),
+              u(arena, model.get_ss().get_nua(), 1),
+              dtau_dx(arena, model.get_ss().get_nv(), model.get_ss().get_ndx()),
+              dtau_du(arena, model.get_ss().get_nv(), model.get_ss().get_nua()),
+              Mtau(arena, model.get_ss().get_nua(), model.get_ss().get_nv()),
+              tau_set(arena, model.get_ss().get_nv(), 1)
         {
             tau.setZero();
             u.setZero();
@@ -80,7 +80,8 @@ namespace galileo
         MatrixNvNua_t dtau_du;
         MatrixNuaNv_t Mtau;
         BoolArrayNv_t tau_set;
-    };
+
+    }; // class ActuationDataFullTpl
 
     template <typename SystemSpec>
     class ActuationModelFullTpl : public ActuationModelBase<ActuationModelFullTpl<SystemSpec>, SystemSpec>
@@ -129,7 +130,7 @@ namespace galileo
             // has constant values which are set in createData
         }
 
-        Data_t createData() const { return Data_t(*this); }
+        Data_t createData(MemoryArena &arena) const { return Data_t(*this, arena); }
 
         using Base::get_ss;
         using Base::get_state;

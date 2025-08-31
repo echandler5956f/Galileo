@@ -6,7 +6,9 @@
 
 #define GALILEO_IMPULSE_DATA_TYPEDEF(Impulse) \
     GALILEO_FORCE_DATA_TYPEDEF(Impulse); \
-    using VectorNc_t = typename traits<Impulse>::VectorNc_t;
+    using ActionMatrix_t = typename traits<Impulse>::ActionMatrix_t; \
+    using VectorNc_t = typename traits<Impulse>::VectorNc_t; \
+    using MatrixNv_t = typename traits<Impulse>::MatrixNv_t;
 
 namespace galileo
 {
@@ -71,9 +73,9 @@ namespace galileo
         GALILEO_IMPULSE_DATA_TYPEDEF(Meta_t);
 
         // Accessors required by ImpulseDataBase
-        FORWARD_ACCESSOR(typename PS::ActionMatrix_t, fXj);
+        FORWARD_ACCESSOR(ActionMatrix_t, fXj);
         FORWARD_ACCESSOR(MatrixNcNv_t, dv0_dq);
-        FORWARD_ACCESSOR(typename PS::MatrixNv_t, dtau_dq);
+        FORWARD_ACCESSOR(MatrixNv_t, dtau_dq);
 
         // We have to override the CRTP derived() method that ForceDataBase inherits from internal::CRTP so that
         // we can return the derived object of ImpulseDataBase rather than ImpulseDataBase itself
@@ -88,24 +90,24 @@ namespace galileo
         // Fulfill the contract for ForceDataBase and forward calls to the next derived class.
         // This uses the overridden derived() method to find the grandchild (e.g., ImpulseDataTpl).
 
-        auto &robot_accessor() { return this->derived().robot_accessor(); }
-        const auto &robot_accessor() const { return this->derived().robot_accessor(); }
-        auto &frame_accessor() { return this->derived().frame_accessor(); }
-        const auto &frame_accessor() const { return this->derived().frame_accessor(); }
-        auto &type_accessor() { return this->derived().type_accessor(); }
-        const auto &type_accessor() const { return this->derived().type_accessor(); }
-        auto &jMf_accessor() { return this->derived().jMf_accessor(); }
-        const auto &jMf_accessor() const { return this->derived().jMf_accessor(); }
-        auto &f_accessor() { return this->derived().f_accessor(); }
-        const auto &f_accessor() const { return this->derived().f_accessor(); }
-        auto &fext_accessor() { return this->derived().fext_accessor(); }
-        const auto &fext_accessor() const { return this->derived().fext_accessor(); }
-        auto &Jc_accessor() { return this->derived().Jc_accessor(); }
-        const auto &Jc_accessor() const { return this->derived().Jc_accessor(); }
-        auto &df_dx_accessor() { return this->derived().df_dx_accessor(); }
-        const auto &df_dx_accessor() const { return this->derived().df_dx_accessor(); }
-        auto &df_du_accessor() { return this->derived().df_du_accessor(); }
-        const auto &df_du_accessor() const { return this->derived().df_du_accessor(); }
+        RobotData_t &robot_accessor() { return this->derived().robot_accessor(); }
+        const RobotData_t &robot_accessor() const { return this->derived().robot_accessor(); }
+        FrameIndex_t &frame_accessor() { return this->derived().frame_accessor(); }
+        const FrameIndex_t &frame_accessor() const { return this->derived().frame_accessor(); }
+        ReferenceFrame_t &type_accessor() { return this->derived().type_accessor(); }
+        const ReferenceFrame_t &type_accessor() const { return this->derived().type_accessor(); }
+        SE3_t &jMf_accessor() { return this->derived().jMf_accessor(); }
+        const SE3_t &jMf_accessor() const { return this->derived().jMf_accessor(); }
+        Force_t &f_accessor() { return this->derived().f_accessor(); }
+        const Force_t &f_accessor() const { return this->derived().f_accessor(); }
+        Force_t &fext_accessor() { return this->derived().fext_accessor(); }
+        const Force_t &fext_accessor() const { return this->derived().fext_accessor(); }
+        MatrixNcNv_t &Jc_accessor() { return this->derived().Jc_accessor(); }
+        const MatrixNcNv_t &Jc_accessor() const { return this->derived().Jc_accessor(); }
+        MatrixNcNdx_t &df_dx_accessor() { return this->derived().df_dx_accessor(); }
+        const MatrixNcNdx_t &df_dx_accessor() const { return this->derived().df_dx_accessor(); }
+        MatrixNcNu_t &df_du_accessor() { return this->derived().df_du_accessor(); }
+        const MatrixNcNu_t &df_du_accessor() const { return this->derived().df_du_accessor(); }
 
     protected:
         inline ImpulseDataBase() {}
@@ -170,7 +172,12 @@ namespace galileo
 
         void setZeroForceDiff(Data_t &data) const { this->derived().setZeroForceDiffImpl(data); }
         void setZeroForceDiffImpl(Data_t &data) const { data.df_dx.setZero(); }
-        Data_t createData(RobotData_t *const robot) const { return this->derived().createData(robot); }
+
+        Data_t createData(MemoryArena &arena, RobotData_t *const robot) const
+        {
+            return this->derived().createData(arena, robot);
+        }
+
         FrameIndex_t get_id() const { return this->derived().get_id_impl(); }
         FrameIndex_t get_id_impl() const { return id_; }
         void set_id(const FrameIndex_t &id) { this->derived().set_id_impl(id); }

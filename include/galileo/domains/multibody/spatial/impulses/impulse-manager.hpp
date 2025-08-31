@@ -66,10 +66,10 @@ namespace galileo
         using ModelContainer_t = std::map<std::string, Item_t>;
         using DataContainer_t = std::map<std::string, Data_t>;
 
-        using Jc_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>;
-        using dv0_dq_t = Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>;
-        using vnext_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, 1, PS::Options>;
-        using dnext_dx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options>;
+        using Jc_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>>;
+        using dv0_dq_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, Eigen::Dynamic, PS::NV, PS::Options>>;
+        using vnext_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NV, 1, PS::Options>>;
+        using dnext_dx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NV, PS::NDX, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename PS> class ImpulseCollectionTpl>
@@ -124,13 +124,13 @@ namespace galileo
         using Force_t = typename PS::Force_t;
         using ForceVector_t = GALILEO_ALIGNED_STD_VECTOR(Force_t);
 
-        ImpulseDataManagerTpl(const ModelManager_t &model_manager, RobotData_t *const robot)
-            : Base(model_manager, robot),
+        ImpulseDataManagerTpl(const ModelManager_t &model_manager, MemoryArena &arena, RobotData_t *const robot)
+            : Base(model_manager, arena, robot),
               fext(model_manager.get_state().get_robot().njoints, Force_t::Zero()),
-              Jc(model_manager.get_n_total(), model_manager.get_ps().get_nv()),
-              dv0_dq(model_manager.get_n_total(), model_manager.get_ps().get_nv()),
-              vnext(model_manager.get_ps().get_nv()),
-              dnext_dx(model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
+              Jc(arena, model_manager.get_n_total(), model_manager.get_ps().get_nv()),
+              dv0_dq(arena, model_manager.get_n_total(), model_manager.get_ps().get_nv()),
+              vnext(arena, model_manager.get_ps().get_nv()),
+              dnext_dx(arena, model_manager.get_ps().get_nv(), model_manager.get_ps().get_ndx())
         {
             Jc.setZero();
             dv0_dq.setZero();
@@ -295,7 +295,7 @@ namespace galileo
             }
         }
 
-        void updateRneaDiff(DataManager_t &data, RobotData_t &robot_data) const
+        void updateRneaDiff(DataManager_t &data, RobotData_t *const robot) const
         {
             typename ModelContainer_t::const_iterator it_m, end_m;
             typename DataContainer_t::iterator it_d, end_d;
@@ -313,7 +313,7 @@ namespace galileo
                         break;
                     case ReferenceFrame_t::WORLD:
                     case ReferenceFrame_t::LOCAL_WORLD_ALIGNED:
-                        robot_data.dtau_dq += d_i.dtau_dq();
+                        robot.dtau_dq += d_i.dtau_dq();
                         break;
                     }
                 }
@@ -322,11 +322,11 @@ namespace galileo
 
         // Template parameter is here to allow consistency with ManagerModelBase
         template <typename RobotDataType>
-        DataManager_t createData(RobotDataType *const robot) const
+        DataManager_t createData(MemoryArena &arena, RobotDataType *const robot) const
         {
             static_assert(std::is_same<RobotDataType, RobotData_t>::value,
                           "ImpulseModelManagerTpl::createData template parameter must be RobotData_t");
-            return DataManager_t(*this, robot);
+            return DataManager_t(*this, arena, robot);
         }
 
         const PS &get_ps() const { return ps_; }

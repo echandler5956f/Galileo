@@ -51,7 +51,7 @@ namespace galileo
 
     protected:
         template <typename DataCollector>
-        inline ManagerDataBase(const ModelManager_t &model_manager, DataCollector *const collector)
+        inline ManagerDataBase(const ModelManager_t &model_manager, MemoryArena &arena, DataCollector *const collector)
         {
             items.clear();
             for (typename ModelContainer_t::const_iterator it = model_manager.get_items().begin();
@@ -59,7 +59,7 @@ namespace galileo
                  ++it)
             {
                 const Item_t &item = it->second;
-                items.insert(std::make_pair(item.name, item.model.createData(collector)));
+                items.insert(std::make_pair(item.name, item.model.createData(arena, collector)));
             }
         }
 
@@ -120,9 +120,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        DataManager_t createData(DataCollector *const collector) const
+        DataManager_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return this->derived().createData(collector);
+            return this->derived().createData(arena, collector);
         }
 
         template <typename... Args>

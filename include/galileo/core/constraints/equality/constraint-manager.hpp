@@ -66,9 +66,11 @@ namespace galileo
 
         using DimNH_t = DimensionTpl<Eigen::Dynamic>;
 
-        using H_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, 1, PS::Options>;
-        using Hx_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNDX_t::Value, PS::Options>;
-        using Hu_t = Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>;
+        using H_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, 1, PS::Options>>;
+        using Hx_t =
+            ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNDX_t::Value, PS::Options>>;
+        using Hu_t =
+            ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, DimNH_t::Value, PS::DimNU_t::Value, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class ConstraintCollectionTpl>
@@ -117,11 +119,13 @@ namespace galileo
         GALILEO_CONSTRAINT_DATA_TYPEDEF(MetaManager_t);
 
         template <typename DataCollector>
-        ConstraintDataManagerTpl(const ModelManager_t &model_manager, DataCollector *const collector)
-            : Base(model_manager, collector),
-              H(model_manager.get_n_total()),
-              Hx(model_manager.get_n_total(), model_manager.get_ps().get_ndx()),
-              Hu(model_manager.get_n_total(), model_manager.get_ps().get_nu())
+        ConstraintDataManagerTpl(const ModelManager_t &model_manager,
+                                 MemoryArena &arena,
+                                 DataCollector *const collector)
+            : Base(model_manager, arena, collector),
+              H(arena, model_manager.get_n_total(), 1),
+              Hx(arena, model_manager.get_n_total(), model_manager.get_ps().get_ndx()),
+              Hu(arena, model_manager.get_n_total(), model_manager.get_ps().get_nu())
         {
             H.setZero();
             Hx.setZero();
@@ -261,9 +265,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        DataManager_t createData(DataCollector *const collector) const
+        DataManager_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return DataManager_t(*this, collector);
+            return DataManager_t(*this, arena, collector);
         }
 
         const PS &get_ps() const { return ps_; }

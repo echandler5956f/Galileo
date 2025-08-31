@@ -29,12 +29,21 @@ namespace galileo
         static constexpr int NU = DimNU_t::Value;
 
         // Traits required by ForceDataBase
-        using MatrixNcNv_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NV, PS::Options, 6, PS::NV>;
-        using MatrixNcNdx_t = Eigen::GMatrix<typename PS::VarScalar, NC, PS::NDX, PS::Options, 6, PS::NDX>;
-        using MatrixNcNu_t = Eigen::GMatrix<typename PS::VarScalar, NC, NU, PS::Options, 6, NU>;
+        using MatrixNcNv_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, PS::NV, PS::Options, 6, PS::NV>>;
+        using MatrixNcNdx_t =
+            ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, PS::NDX, PS::Options, 6, PS::NDX>>;
+        using MatrixNcNu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, NU, PS::Options, 6, NU>>;
 
         // Traits required by ContactDataBase
-        using VectorNc_t = Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options, 6, 1>;
+        using VectorNc_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, NC, 1, PS::Options, 6, 1>>;
+        using MatrixNv_t = ArenaMatrixTpl<typename PS::MatrixNv_t>;
+
+        using RobotData_t = typename PS::RobotData_t;
+        using FrameIndex_t = typename PS::FrameIndex_t;
+        using ReferenceFrame_t = typename PS::ReferenceFrame_t;
+        using SE3_t = typename PS::SE3_t;
+        using ActionMatrix_t = typename PS::ActionMatrix_t;
+        using Force_t = typename PS::Force_t;
     };
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
@@ -77,14 +86,6 @@ namespace galileo
         using Base = ContactDataBase<ContactDataTpl<PS, ContactCollectionTpl>, PS>;
 
         GALILEO_CONTACT_DATA_TYPEDEF(Meta_t);
-
-        using RobotData_t = typename PS::RobotData_t;
-        using FrameIndex_t = typename PS::FrameIndex_t;
-        using ReferenceFrame_t = typename PS::ReferenceFrame_t;
-        using SE3_t = typename PS::SE3_t;
-        using ActionMatrix_t = typename PS::ActionMatrix_t;
-        using Force_t = typename PS::Force_t;
-        using MatrixNv_t = typename PS::MatrixNv_t;
 
         using DataVariant_t = typename Collection_t::ContactDataVariant_t;
 
@@ -175,7 +176,10 @@ namespace galileo
             galileo::contact_calc_first_order(*this, data, x.derived());
         }
 
-        Data_t createData(RobotData_t *const robot) const { return galileo::contact_create_data(*this, robot); }
+        Data_t createData(MemoryArena &arena, RobotData_t *const robot) const
+        {
+            return galileo::contact_create_data(*this, arena, robot);
+        }
 
         template <typename ForceVectorType>
         void updateForce(Data_t &data, const Eigen::MatrixBase<ForceVectorType> &force) const

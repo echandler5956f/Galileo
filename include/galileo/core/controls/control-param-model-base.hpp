@@ -2,7 +2,6 @@
 #define __galileo_core_controls_control_param_model_base_hpp__
 
 #include "galileo/core/controls/control-param-base.hpp"
-#include "galileo/predictive/phases/phase-spec.hpp"
 
 namespace galileo
 {
@@ -66,7 +65,7 @@ namespace galileo
             this->derived().template multiplyJacobianTransposeBy<op>(data, A, out);
         }
 
-        Data_t createData() const { return this->derived().createData(); }
+        Data_t createData(MemoryArena &arena) const { return this->derived().createData(arena); }
 
         const PS &get_ps() const { return ps_; }
 

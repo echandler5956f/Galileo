@@ -6,17 +6,23 @@
 namespace galileo
 {
     // Concepts to constrain templates to Eigen types
-    template <typename Derived>
-    concept IsEigenRowVector = (Derived::RowsAtCompileTime == 1 && Derived::ColsAtCompileTime != 1);
+    template <typename T>
+    concept IsEigenDenseBase = std::is_base_of_v<Eigen::DenseBase<std::decay_t<T>>, std::decay_t<T>>;
 
-    template <typename Derived>
-    concept IsEigenColVector = (Derived::ColsAtCompileTime == 1 && Derived::RowsAtCompileTime != 1);
+    template <typename T>
+    concept IsEigenMatrixBase = std::is_base_of_v<Eigen::MatrixBase<std::decay_t<T>>, std::decay_t<T>>;
 
-    template <typename Derived>
-    concept IsEigenVector = IsEigenRowVector<Derived> || IsEigenColVector<Derived>;
+    template <typename T>
+    concept IsEigenRowVector = IsEigenMatrixBase<T> && (T::RowsAtCompileTime == 1 && T::ColsAtCompileTime != 1);
 
-    template <typename Derived>
-    concept IsEigenMatrix = !IsEigenVector<Derived>;
+    template <typename T>
+    concept IsEigenColVector = IsEigenMatrixBase<T> && (T::ColsAtCompileTime == 1 && T::RowsAtCompileTime != 1);
+
+    template <typename T>
+    concept IsEigenVector = IsEigenRowVector<T> || IsEigenColVector<T>;
+
+    template <typename T>
+    concept IsEigenMatrix = !IsEigenVector<T>;
 
     enum AssignmentOp
     {

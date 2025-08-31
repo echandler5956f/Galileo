@@ -171,26 +171,27 @@ namespace galileo
         : fusion::ContactUnaryVisitorBase<ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl>,
                                           ContactDataTpl<PhaseSpec, ContactCollectionTpl>>
     {
-        using ArgsType = boost::fusion::vector<typename PhaseSpec::RobotData_t *const>;
+        using ArgsType = boost::fusion::vector<MemoryArena &, typename PhaseSpec::RobotData_t *const>;
         using ContactCollection_t = ContactCollectionTpl<PhaseSpec>;
         using ContactModelVariant_t = ContactCollection_t::ContactModelVariant_t;
         using ContactDataVariant_t = ContactDataTpl<PhaseSpec, ContactCollectionTpl>;
 
         template <typename ContactModelType>
         static ContactDataVariant_t algo(const ContactModelBase<ContactModelType, PhaseSpec> &contact_model,
-                                         typename PhaseSpec::RobotData_t *const robot)
+                                         MemoryArena &arena, typename PhaseSpec::RobotData_t *const robot)
         {
-            return ContactDataVariant_t(contact_model.createData(robot));
+            return ContactDataVariant_t(contact_model.createData(arena, robot));
         }
     };
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     inline ContactDataTpl<PhaseSpec, ContactCollectionTpl> contact_create_data(
         const ContactModelTpl<PhaseSpec, ContactCollectionTpl> &contact_model,
+        MemoryArena &arena,
         typename PhaseSpec::RobotData_t *const robot)
     {
         typedef ContactCreateDataVisitor<PhaseSpec, ContactCollectionTpl> Algo;
-        return Algo::run(contact_model, typename Algo::ArgsType(robot));
+        return Algo::run(contact_model, typename Algo::ArgsType(arena, robot));
     }
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
@@ -315,10 +316,10 @@ namespace galileo
 
     template <typename PhaseSpec, template <typename> class ContactCollectionTpl>
     struct ContactRobotDataVisitor
-        : boost::static_visitor<typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotData_t>
+        : boost::static_visitor<typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotData_t *>
     {
 
-        using ReturnType = typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotDataPointer_t;
+        using ReturnType = typename ContactDataTpl<PhaseSpec, ContactCollectionTpl>::RobotData_t *;
 
         template <typename ContactDataType>
         ReturnType operator()(const ContactDataBase<ContactDataType, PhaseSpec> &contact_data) const

@@ -28,11 +28,11 @@ namespace galileo
         using ActivationData_t = typename traits<ActivationMeta_t>::Data_t;
 
         using L_t = typename PS::VarScalar;
-        using Lx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>;
-        using Lu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>;
-        using Lxx_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>;
-        using Lxu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>;
-        using Luu_t = Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>;
+        using Lx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NDX, 1, PS::Options>>;
+        using Lu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NU, 1, PS::Options>>;
+        using Lxx_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NDX, PS::Options>>;
+        using Lxu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NDX, PS::NU, PS::Options>>;
+        using Luu_t = ArenaMatrixTpl<Eigen::GMatrix<typename PS::VarScalar, PS::NU, PS::NU, PS::Options>>;
     };
 
     template <typename PhaseSpec, template <typename> class ResidualTpl, template <typename> class ActivationTpl>
@@ -79,15 +79,15 @@ namespace galileo
         DEFAULT_ACCESSOR(Luu_t, Luu);
 
         template <typename DataCollector>
-        CostDataResidualTpl(const Model_t &model, DataCollector *const collector)
-            : activation(model.get_activation().createData()),
-              residual(model.get_residual().createData(collector)),
+        CostDataResidualTpl(const Model_t &model, MemoryArena &arena, DataCollector *const collector)
+            : activation(model.get_activation().createData(arena)),
+              residual(model.get_residual().createData(arena, collector)),
               L(L_t(0.)),
-              Lx(model.get_ps().get_ndx()),
-              Lu(model.get_ps().get_nu()),
-              Lxx(model.get_ps().get_ndx(), model.get_ps().get_ndx()),
-              Lxu(model.get_ps().get_ndx(), model.get_ps().get_nu()),
-              Luu(model.get_ps().get_nu(), model.get_ps().get_nu())
+              Lx(arena, model.get_ps().get_ndx()),
+              Lu(arena, model.get_ps().get_nu()),
+              Lxx(arena, model.get_ps().get_ndx(), model.get_ps().get_ndx()),
+              Lxu(arena, model.get_ps().get_ndx(), model.get_ps().get_nu()),
+              Luu(arena, model.get_ps().get_nu(), model.get_ps().get_nu())
         {
             Lx.setZero();
             Lu.setZero();
@@ -190,9 +190,9 @@ namespace galileo
         }
 
         template <typename DataCollector>
-        Data_t createData(DataCollector *const collector) const
+        Data_t createData(MemoryArena &arena, DataCollector *const collector) const
         {
-            return Data_t(*this, collector);
+            return Data_t(*this, arena, collector);
         }
 
         const PS &get_ps() const { return ps_; }

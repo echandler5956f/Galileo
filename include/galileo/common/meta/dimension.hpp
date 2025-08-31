@@ -1,11 +1,11 @@
 #ifndef __galileo_common_meta_dimension_hpp__
 #define __galileo_common_meta_dimension_hpp__
 
-#include "galileo/common/meta/macros.hpp"
-
 #include <cmath>
 #include <iostream>
 #include <type_traits>
+
+#include "galileo/common/meta/macros.hpp"
 
 namespace galileo
 {
